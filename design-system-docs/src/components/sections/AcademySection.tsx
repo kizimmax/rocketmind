@@ -1,0 +1,51 @@
+import React from 'react';
+
+export function AcademySection() {
+    return (
+        <section className="py-24 lg:py-32 bg-background" id="academy">
+            <div className="container mx-auto px-5 lg:px-20">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                    <div className="lg:col-span-5 flex flex-col gap-8">
+                        <h2 className="font-heading font-bold text-[32px] md:text-[40px] lg:text-[56px] tracking-[-0.01em] uppercase text-foreground">
+                            Академия
+                        </h2>
+                        <div className="flex flex-col gap-4">
+                            <p className="font-body text-base lg:text-lg leading-[1.618] text-muted-foreground">
+                                Академия Rocketmind — это среда, где управленцы и команды осваивают бизнес-дизайн, платформенное мышление и работу с гипотезами.
+                            </p>
+                            <p className="font-body text-base lg:text-lg leading-[1.618] text-muted-foreground">
+                                Мы обучаем тому, что сами применяем в проектах: от системной стратегии до запуска цифровых инициатив.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
+                            <h4 className="font-heading font-bold text-xl uppercase tracking-[-0.005em] text-foreground">
+                                Практикум по бизнес-дизайну
+                            </h4>
+                            <p className="font-body text-base text-muted-foreground leading-[1.618] flex-grow">
+                                Навыки стратегического развития бизнеса — от поиска бизнес-модели до проектирования платформ и экосистем.
+                            </p>
+                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[#A172F8] bg-transparent text-[#A172F8] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[hsl(265_91%_71%/0.08)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                                Подробнее
+                            </button>
+                        </div>
+
+                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
+                            <h4 className="font-heading font-bold text-xl uppercase tracking-[-0.005em] text-foreground">
+                                Бизнес-дизайн. Быстрый старт
+                            </h4>
+                            <p className="font-body text-base text-muted-foreground leading-[1.618] flex-grow">
+                                Онлайн-курс, который поможет быстро понять суть бизнес-дизайна и начать мыслить как стратег.
+                            </p>
+                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[#A172F8] bg-transparent text-[#A172F8] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[hsl(265_91%_71%/0.08)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                                Подробнее
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
