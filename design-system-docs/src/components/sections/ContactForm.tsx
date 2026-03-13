@@ -52,13 +52,13 @@ export function ContactForm() {
 
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-4 border-t border-border mt-2">
                                 <label className="flex items-start gap-3 cursor-pointer group">
-                                    <input type="checkbox" className="mt-1 w-4 h-4 rounded border-border text-[#FFCC00] focus:ring-[#FFCC00]/50" defaultChecked />
+                                    <input type="checkbox" className="mt-1 w-4 h-4 rounded border-border text-[var(--rm-yellow-100)] focus:ring-[var(--rm-yellow-100)]/50" defaultChecked />
                                     <span className="font-body text-sm text-muted-foreground group-hover:text-foreground transition-colors max-w-[250px] leading-[1.618]">
                                         Cогласен на обработку персональных данных
                                     </span>
                                 </label>
 
-                                <button type="submit" className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-md bg-[#FFCC00] text-[#121212] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[#FFE040] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[#E6B800] w-full sm:w-auto">
+                                <button type="submit" className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[var(--rm-yellow-500)] w-full sm:w-auto">
                                     Отправить
                                 </button>
                             </div>

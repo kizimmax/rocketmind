@@ -31,7 +31,7 @@ export function Header() {
                 </nav>
 
                 <div className="flex items-center gap-4">
-                    <button className="hidden sm:inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[#FFCC00] text-[#121212] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[#FFE040] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[#E6B800]">
+                    <button className="hidden sm:inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[var(--rm-yellow-500)]">
                         Оставить заявку
                     </button>
                     <button className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">

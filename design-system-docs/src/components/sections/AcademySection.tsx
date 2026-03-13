@@ -27,7 +27,7 @@ export function AcademySection() {
                             <p className="font-body text-base text-muted-foreground leading-[1.618] flex-grow">
                                 Навыки стратегического развития бизнеса — от поиска бизнес-модели до проектирования платформ и экосистем.
                             </p>
-                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[#A172F8] bg-transparent text-[#A172F8] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[hsl(265_91%_71%/0.08)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[var(--rm-violet-300)] bg-transparent text-[var(--rm-violet-100)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
                                 Подробнее
                             </button>
                         </div>
@@ -39,7 +39,7 @@ export function AcademySection() {
                             <p className="font-body text-base text-muted-foreground leading-[1.618] flex-grow">
                                 Онлайн-курс, который поможет быстро понять суть бизнес-дизайна и начать мыслить как стратег.
                             </p>
-                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[#A172F8] bg-transparent text-[#A172F8] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[hsl(265_91%_71%/0.08)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[var(--rm-violet-300)] bg-transparent text-[var(--rm-violet-100)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
                                 Подробнее
                             </button>
                         </div>

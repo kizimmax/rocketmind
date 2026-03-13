@@ -926,87 +926,212 @@ export default function DesignSystemPage() {
 
           {/* ═══════ 1. COLORS ═══════ */}
           <Section id="colors" title="1. Цветовая палитра" version={DS_VERSION}>
-            <p className="text-muted-foreground mb-6">
-              Все цвета определяются через CSS-переменные. Единственный акцентный цвет — <strong className="text-[var(--rm-yellow-100)]">#FFCC00</strong> (жёлтый).
-              Фиолетовый используется только как категориальный цвет в графиках и тегах.
+            <p className="text-muted-foreground mb-8">
+              Все цвета — CSS-переменные. Акцентный цвет бренда — <strong className="text-[var(--rm-yellow-100)]">#FFCC00</strong>.
+              Категориальные цвета используются для кодировки данных, тегов, карточек.
             </p>
 
-            <Tabs defaultValue="brand" className="w-full">
-              <TabsList className="mb-6">
-                <TabsTrigger value="brand">Брендовые</TabsTrigger>
-                <TabsTrigger value="neutral">Нейтральные</TabsTrigger>
-                <TabsTrigger value="semantic">Семантические</TabsTrigger>
-                <TabsTrigger value="categorical">Категориальные</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="brand">
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
-                  Жёлтый (Accent)
-                </h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <ColorSwatchLive name="Yellow 100" cssVar="--rm-yellow-100" token="--color-yellow-100" lightHex="#FFCC00" darkHex="#FFCC00" twClass="bg-[var(--rm-yellow-100)]" />
-                  <ColorSwatchLive name="Yellow 50" cssVar="--rm-yellow-50" token="--color-yellow-50" lightHex="#FFF0AA" darkHex="#7A6200" twClass="bg-[var(--rm-yellow-50)]" />
-                  <ColorSwatchLive name="Yellow 10" cssVar="--rm-yellow-10" token="--color-yellow-10" lightHex="#FFFEF3" darkHex="#3D3300" twClass="bg-[var(--rm-yellow-10)]" />
+            {/* ── Backgrounds ── */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
+              Фоны
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-3">
+              {[
+                { name: "Background 1", var: "--background",    token: "--background", lhex: "#FAFAFA", dhex: "#121212",
+                  note: "Основной фон страницы. Используй по умолчанию — особенно когда поверх кладёшь цвет." },
+                { name: "Background 2", var: "--card",          token: "--card",       lhex: "#FFFFFF", dhex: "#1A1A1A",
+                  note: "Вторичный фон. Используй редко — только когда нужно выделить поверхность внутри Background 1." },
+                { name: "Muted",        var: "--muted",         token: "--muted",      lhex: "#EBEBEB", dhex: "#242424",
+                  note: "Фон неактивных элементов, hover-состояний, sidebar-секций." },
+                { name: "Popover",      var: "--popover",       token: "--popover",    lhex: "#FFFFFF", dhex: "#1A1A1A",
+                  note: "Фон выпадающих меню, тултипов, модальных окон." },
+              ].map((c) => (
+                <div key={c.token} className="flex flex-col gap-2">
+                  <div className="w-full h-16 rounded-md border border-border" style={{ backgroundColor: `var(${c.var})` }} />
+                  <div>
+                    <p className="text-sm font-medium">{c.name}</p>
+                    <p className="text-[11px] text-muted-foreground font-[family-name:var(--font-mono-family)]">{c.token}</p>
+                    <p className="text-[11px] text-muted-foreground font-[family-name:var(--font-mono-family)]">L: {c.lhex} · D: {c.dhex}</p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed border-t border-border pt-2">{c.note}</p>
                 </div>
-              </TabsContent>
+              ))}
+            </div>
+            <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-10 leading-relaxed">
+              В большинстве случаев используй Background 1 — особенно когда поверх кладётся цвет.
+              Background 2 применяй редко, только для тонкого разделения поверхностей.
+            </div>
 
-              <TabsContent value="neutral">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {[
-                    { name: "Background", var: "--background", token: "--background", lhex: "#FAFAFA", dhex: "#121212", tw: "bg-background" },
-                    { name: "Foreground", var: "--foreground", token: "--foreground", lhex: "#2D2D2D", dhex: "#F0F0F0", tw: "text-foreground" },
-                    { name: "Card", var: "--card", token: "--card", lhex: "#FFFFFF", dhex: "#1A1A1A", tw: "bg-card" },
-                    { name: "Card Foreground", var: "--card-foreground", token: "--card-foreground", lhex: "#2D2D2D", dhex: "#F0F0F0", tw: "text-card-foreground" },
-                    { name: "Muted", var: "--muted", token: "--muted", lhex: "#F0F0F0", dhex: "#1E1E1E", tw: "bg-muted" },
-                    { name: "Muted Foreground", var: "--muted-foreground", token: "--muted-foreground", lhex: "#666666", dhex: "#939393", tw: "text-muted-foreground" },
-                    { name: "Border", var: "--border", token: "--border", lhex: "#CBCBCB", dhex: "#404040", tw: "border-border" },
-                    { name: "Input", var: "--input", token: "--input", lhex: "#CBCBCB", dhex: "#404040", tw: "border-input" },
-                  ].map((c) => (
-                    <ColorSwatchLive key={c.token} name={c.name} cssVar={c.var} token={c.token} lightHex={c.lhex} darkHex={c.dhex} twClass={c.tw} />
-                  ))}
+            {/* ── Gray Scale ── */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
+              Серая шкала
+            </h3>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-3">
+              {[
+                { name: "Gray 1",  var: "--rm-gray-1",  role: "Page bg",        lhex: "#FAFAFA", dhex: "#121212" },
+                { name: "Gray 2",  var: "--rm-gray-2",  role: "Subtle surface", lhex: "#F5F5F5", dhex: "#1A1A1A" },
+                { name: "Gray 3",  var: "--rm-gray-3",  role: "Hover bg",       lhex: "#EBEBEB", dhex: "#242424" },
+                { name: "Gray 4",  var: "--rm-gray-4",  role: "Default border", lhex: "#CBCBCB", dhex: "#404040" },
+                { name: "Gray 5",  var: "--rm-gray-5",  role: "Hover border",   lhex: "#A3A3A3", dhex: "#5C5C5C" },
+                { name: "Gray 6",  var: "--rm-gray-6",  role: "2nd text",       lhex: "#666666", dhex: "#939393" },
+                { name: "Gray fg", var: "--rm-gray-fg", role: "Primary text",   lhex: "#2D2D2D", dhex: "#F0F0F0" },
+              ].map((c) => (
+                <div key={c.var} className="flex flex-col gap-1.5">
+                  <div className="w-full h-10 rounded-md border border-border" style={{ backgroundColor: `var(${c.var})` }} />
+                  <p className="text-[11px] font-medium font-[family-name:var(--font-mono-family)]">{c.name}</p>
+                  <p className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)]">{c.role}</p>
                 </div>
-              </TabsContent>
+              ))}
+            </div>
+            <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-10 leading-relaxed">
+              1–3: фоны компонентов. 4–5: границы. 6: вторичный текст. fg: основной текст.
+              Используй шкалу последовательно — не пропускай уровни без причины.
+            </div>
 
-              <TabsContent value="semantic">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <ColorSwatchLive name="Primary" cssVar="--primary" token="--primary" lightHex="#FFCC00" darkHex="#FFCC00" twClass="bg-primary" />
-                  <ColorSwatchLive name="Primary Foreground" cssVar="--primary-foreground" token="--primary-foreground" lightHex="#121212" darkHex="#121212" twClass="text-primary-foreground" />
-                  <ColorSwatchLive name="Destructive" cssVar="--destructive" token="--destructive" lightHex="#ED4843" darkHex="#FF6B6B" twClass="bg-destructive" />
-                  <ColorSwatchLive name="Ring" cssVar="--ring" token="--ring" lightHex="#FFCC00" darkHex="#FFCC00" twClass="ring-ring" />
+            {/* ── Accent Scale ── */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
+              Акцентная шкала
+            </h3>
+            <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
+              Каждый цвет имеет 5 уровней насыщенности и 2 foreground-токена.
+            </p>
+
+            {/* Scale legend */}
+            <div className="grid grid-cols-5 gap-2 mb-4 text-[10px] font-[family-name:var(--font-mono-family)] text-muted-foreground">
+              {[
+                { level: "100", role: "Solid fill. Кнопка, filled badge, иконка-заливка." },
+                { level: "300", role: "Subtle border. Граница chip/тега в покое." },
+                { level: "500", role: "Component bg active. Нажатое состояние." },
+                { level: "700", role: "Component bg hover. Наведение на chip/row." },
+                { level: "900", role: "Subtle background. Badge ghost, строка таблицы, фон карточки." },
+              ].map((l) => (
+                <div key={l.level} className="border border-border rounded-md px-2 py-2">
+                  <p className="font-bold text-foreground mb-0.5">{l.level}</p>
+                  <p className="leading-snug">{l.role}</p>
                 </div>
-              </TabsContent>
+              ))}
+            </div>
+            <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-6 leading-relaxed">
+              <span className="text-foreground font-medium">fg</span> — текст поверх solid-100 фона (WCAG AA).&nbsp;&nbsp;
+              <span className="text-foreground font-medium">fg-subtle</span> — текст поверх 900/700/500 фона (WCAG AA).
+              Никогда не используй уровень цвета одновременно как фон и как цвет текста поверх него.
+            </div>
 
-              <TabsContent value="categorical">
-                <div className="space-y-6">
-                  {[
-                    { name: "Фиолетовый", token: "violet",      lhex: ["#A172F8","#DCC8FF","#FBFAFE"], dhex: ["#B48DFA","#5A3D99","#20143D"] },
-                    { name: "Терракот",   token: "terracotta",   lhex: ["#FE733A","#FFD6AD","#FFFAF7"], dhex: ["#FF8A5C","#7A2E10","#2A0F05"] },
-                    { name: "Голубой",    token: "sky",          lhex: ["#56CAEA","#C3ECF7","#F7FDFF"], dhex: ["#7AD6EF","#1A5F72","#051A20"] },
-                    { name: "Розовый",    token: "pink",         lhex: ["#FF54AC","#FFB8D9","#FFF8FC"], dhex: ["#FF7EC5","#7A1A55","#25061A"] },
-                    { name: "Синий",      token: "blue",         lhex: ["#4A56DF","#BFC4F3","#F9FAFF"], dhex: ["#7A84F0","#1E2870","#060A24"] },
-                    { name: "Красный",    token: "red",          lhex: ["#ED4843","#FFBCBA","#FFF9F8"], dhex: ["#F47370","#7A1715","#250504"] },
-                    { name: "Зелёный",    token: "green",        lhex: ["#9AF576","#D8F4CD","#F7FEF3"], dhex: ["#B5FA97","#2A6E15","#0A2005"] },
-                  ].map((c) => (
-                    <div key={c.token}>
-                      <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">{c.name}</p>
-                      <div className="grid grid-cols-3 gap-3">
-                        {(["100","50","10"] as const).map((level, i) => (
-                          <ColorSwatchLive
-                            key={level}
-                            name={level}
-                            cssVar={`--rm-${c.token}-${level}`}
-                            token={`--color-${c.token}-${level}`}
-                            lightHex={c.lhex[i]}
-                            darkHex={c.dhex[i]}
-                            twClass={`bg-[var(--rm-${c.token}-${level})]`}
-                          />
-                        ))}
+            {/* Color scales */}
+            <div className="space-y-8">
+              {[
+                { name: "Yellow · Бренд-акцент",  token: "yellow",
+                  lhex: { 100:"#FFCC00", 300:"#FFE066", 500:"#FFF0AA", 700:"#FFF7CC", 900:"#FFFEF3", fg:"#3D2E00", fgs:"#5C4200" },
+                  dhex: { 100:"#FFCC00", 300:"#B38F00", 500:"#7A6200", 700:"#4A3C00", 900:"#3D3300", fg:"#0A0800", fgs:"#FFE566" } },
+                { name: "Violet · Категориальный", token: "violet",
+                  lhex: { 100:"#A172F8", 300:"#C4A0FB", 500:"#DCC8FF", 700:"#EDE0FF", 900:"#FBFAFE", fg:"#FFF", fgs:"#3D1A8A" },
+                  dhex: { 100:"#B48DFA", 300:"#8A5FF5", 500:"#5A3D99", 700:"#2E1F66", 900:"#20143D", fg:"#0A050F", fgs:"#DCC8FF" } },
+                { name: "Sky · Категориальный",    token: "sky",
+                  lhex: { 100:"#56CAEA", 300:"#8ADCF2", 500:"#C3ECF7", 700:"#E0F6FB", 900:"#F7FDFF", fg:"#FFF", fgs:"#0D4D5C" },
+                  dhex: { 100:"#7AD6EF", 300:"#3AAACE", 500:"#1A5F72", 700:"#0A2D38", 900:"#051A20", fg:"#020D10", fgs:"#C3ECF7" } },
+                { name: "Terracotta · Категориальный", token: "terracotta",
+                  lhex: { 100:"#FE733A", 300:"#FFA07A", 500:"#FFD6AD", 700:"#FFECE0", 900:"#FFFAF7", fg:"#FFF", fgs:"#5C1A00" },
+                  dhex: { 100:"#FF8A5C", 300:"#CC5522", 500:"#7A2E10", 700:"#3D1507", 900:"#2A0F05", fg:"#0A0300", fgs:"#FFD6AD" } },
+                { name: "Pink · Категориальный",   token: "pink",
+                  lhex: { 100:"#FF54AC", 300:"#FF8FCA", 500:"#FFB8D9", 700:"#FFE0EF", 900:"#FFF8FC", fg:"#FFF", fgs:"#6B0033" },
+                  dhex: { 100:"#FF7EC5", 300:"#CC3D88", 500:"#7A1A55", 700:"#3D0D2A", 900:"#25061A", fg:"#0A0208", fgs:"#FFB8D9" } },
+                { name: "Blue · Категориальный",   token: "blue",
+                  lhex: { 100:"#4A56DF", 300:"#8A94EC", 500:"#BFC4F3", 700:"#E0E2FA", 900:"#F9FAFF", fg:"#FFF", fgs:"#0D1466" },
+                  dhex: { 100:"#7A84F0", 300:"#3D4ACC", 500:"#1E2870", 700:"#0D1238", 900:"#060A24", fg:"#020310", fgs:"#BFC4F3" } },
+                { name: "Red · Семантика: ошибка", token: "red",
+                  lhex: { 100:"#ED4843", 300:"#F48A87", 500:"#FFBCBA", 700:"#FFE0DF", 900:"#FFF9F8", fg:"#FFF", fgs:"#5C0A08" },
+                  dhex: { 100:"#F47370", 300:"#CC2E2A", 500:"#7A1715", 700:"#3D0908", 900:"#250504", fg:"#0A0202", fgs:"#FFBCBA" } },
+                { name: "Green · Семантика: успех", token: "green",
+                  lhex: { 100:"#9AF576", 300:"#C0F9A8", 500:"#D8F4CD", 700:"#ECFAE6", 900:"#F7FEF3", fg:"#1A4A05", fgs:"#1A4A05" },
+                  dhex: { 100:"#B5FA97", 300:"#6ACC44", 500:"#2A6E15", 700:"#133808", 900:"#0A2005", fg:"#020A01", fgs:"#D8F4CD" } },
+              ].map((c) => (
+                <div key={c.token}>
+                  <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-3">{c.name}</p>
+                  <div className="grid grid-cols-5 gap-2 mb-2">
+                    {(["100","300","500","700","900"] as const).map((level) => (
+                      <div key={level} className="flex flex-col gap-1.5">
+                        <div
+                          className="w-full h-12 rounded-md border border-border/60 flex items-end justify-end p-1"
+                          style={{ backgroundColor: `var(--rm-${c.token}-${level})` }}
+                        >
+                          <span
+                            className="text-[9px] font-[family-name:var(--font-mono-family)] px-1 rounded"
+                            style={{ backgroundColor: "rgba(0,0,0,0.15)", color: "inherit" }}
+                          >{level}</span>
+                        </div>
+                        <p className="text-[10px] font-[family-name:var(--font-mono-family)] text-muted-foreground truncate">--rm-{c.token}-{level}</p>
                       </div>
+                    ))}
+                  </div>
+                  {/* fg tokens */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div
+                      className="rounded-md px-3 py-2 flex items-center justify-between"
+                      style={{ backgroundColor: `var(--rm-${c.token}-100)`, color: `var(--rm-${c.token}-fg)` }}
+                    >
+                      <span className="text-[11px] font-[family-name:var(--font-mono-family)]">fg · текст на solid</span>
+                      <span className="text-[11px] font-[family-name:var(--font-mono-family)]">--rm-{c.token}-fg</span>
                     </div>
-                  ))}
+                    <div
+                      className="rounded-md px-3 py-2 flex items-center justify-between"
+                      style={{ backgroundColor: `var(--rm-${c.token}-900)`, color: `var(--rm-${c.token}-fg-subtle)` }}
+                    >
+                      <span className="text-[11px] font-[family-name:var(--font-mono-family)]">fg-subtle · текст на 900</span>
+                      <span className="text-[11px] font-[family-name:var(--font-mono-family)]">--rm-{c.token}-fg-subtle</span>
+                    </div>
+                  </div>
                 </div>
-              </TabsContent>
-            </Tabs>
+              ))}
+            </div>
+
+            {/* ── On-color surfaces ── */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mt-12 mb-2">
+              Инвертированные поверхности
+            </h3>
+            <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+              Блоки с акцентным фоном. Добавь класс <code className="font-[family-name:var(--font-mono-family)] text-foreground">.on-{"{color}"}</code> на контейнер —
+              все дочерние токены (<code className="font-[family-name:var(--font-mono-family)] text-foreground">--foreground</code>, <code className="font-[family-name:var(--font-mono-family)] text-foreground">--border</code>) автоматически инвертируются.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              {/* Yellow block — главный CTA */}
+              <div className="on-yellow rounded-xl px-8 py-10">
+                <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.1em] mb-3 opacity-60">Брендовый блок</p>
+                <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+                  Готов запустить агента?
+                </h4>
+                <p className="text-[length:var(--text-16)] mb-6 opacity-70">
+                  Попробуй Rocketmind — AI-агенты для твоего бизнеса без написания кода.
+                </p>
+                <button
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-colors"
+                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                >
+                  Попробовать
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+              {/* Violet block */}
+              <div className="on-violet rounded-xl px-8 py-10">
+                <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.1em] mb-3 opacity-60">Категориальный блок</p>
+                <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+                  Анализ экосистем
+                </h4>
+                <p className="text-[length:var(--text-16)] mb-6 opacity-70">
+                  Агент Катя разбирает связи и делает выводы быстрее любой таблицы.
+                </p>
+                <button
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-colors"
+                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                >
+                  Узнать больше
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] leading-relaxed">
+              <span className="text-foreground font-medium">.on-yellow</span> — основной CTA-блок бренда, hero-секции, highlight-полосы.
+              Используй только один такой блок на экране. Остальные .on-* — для категориальной маркировки секций.
+            </div>
           </Section>
 
           <Separator />

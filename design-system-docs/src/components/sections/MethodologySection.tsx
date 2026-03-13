@@ -25,7 +25,7 @@ export function MethodologySection() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
                             <div className="w-12 h-12 rounded-lg border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
-                                <Target size={24} className="text-[#FFCC00]" />
+                                <Target size={24} className="text-[var(--rm-yellow-100)]" />
                             </div>
                             <h4 className="font-heading font-bold text-xl uppercase tracking-[-0.005em] text-foreground">
                                 Канвас приоритетизации проблем
@@ -33,14 +33,14 @@ export function MethodologySection() {
                             <p className="font-body text-base text-muted-foreground leading-[1.618] flex-grow">
                                 Позволяет понять, что действительно беспокоит клиентов, и выбрать задачи, которые стоит решать в первую очередь.
                             </p>
-                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[#A172F8] bg-transparent text-[#A172F8] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[hsl(265_91%_71%/0.08)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[var(--rm-violet-300)] bg-transparent text-[var(--rm-violet-100)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
                                 Получить доступ
                             </button>
                         </div>
 
                         <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
                             <div className="w-12 h-12 rounded-lg border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
-                                <Frame size={24} className="text-[#FFCC00]" />
+                                <Frame size={24} className="text-[var(--rm-yellow-100)]" />
                             </div>
                             <h4 className="font-heading font-bold text-xl uppercase tracking-[-0.005em] text-foreground">
                                 Канвас цифровизации
@@ -48,14 +48,14 @@ export function MethodologySection() {
                             <p className="font-body text-base text-muted-foreground leading-[1.618] flex-grow">
                                 Помогает навести порядок в инициативах и выстроить стратегию трансформации: что менять, зачем и с какими ресурсами.
                             </p>
-                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[#A172F8] bg-transparent text-[#A172F8] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[hsl(265_91%_71%/0.08)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[var(--rm-violet-300)] bg-transparent text-[var(--rm-violet-100)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
                                 Получить доступ
                             </button>
                         </div>
 
                         <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
                             <div className="w-12 h-12 rounded-lg border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
-                                <Grid3X3 size={24} className="text-[#FFCC00]" />
+                                <Grid3X3 size={24} className="text-[var(--rm-yellow-100)]" />
                             </div>
                             <h4 className="font-heading font-bold text-xl uppercase tracking-[-0.005em] text-foreground">
                                 Матрица корпоративного развития
@@ -63,7 +63,7 @@ export function MethodologySection() {
                             <p className="font-body text-base text-muted-foreground leading-[1.618] flex-grow">
                                 Синхронизирует цели и инициативы на всех уровнях управления — от совета директоров до команд.
                             </p>
-                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[#A172F8] bg-transparent text-[#A172F8] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[hsl(265_91%_71%/0.08)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-[var(--rm-violet-300)] bg-transparent text-[var(--rm-violet-100)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
                                 Получить доступ
                             </button>
                         </div>

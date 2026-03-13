@@ -127,17 +127,17 @@ const GlowingEffect = memo(
         )`;
       }
       if (variant === "yellow") {
-        return `radial-gradient(circle, #FFCC00 10%, #FFCC0000 20%),
-          radial-gradient(circle at 40% 40%, #FFB800 5%, #FFB80000 15%),
-          radial-gradient(circle at 60% 60%, #FFE040 10%, #FFE04000 20%),
-          radial-gradient(circle at 40% 60%, #FFA500 10%, #FFA50000 20%),
+        return `radial-gradient(circle, var(--rm-yellow-100) 10%, transparent 20%),
+          radial-gradient(circle at 40% 40%, var(--rm-yellow-300) 5%, transparent 15%),
+          radial-gradient(circle at 60% 60%, var(--rm-yellow-500) 10%, transparent 20%),
+          radial-gradient(circle at 40% 60%, var(--rm-yellow-300) 10%, transparent 20%),
           repeating-conic-gradient(
             from 236.84deg at 50% 50%,
-            #FFCC00 0%,
-            #FFB800 calc(25% / var(--repeating-conic-gradient-times)),
-            #FFE040 calc(50% / var(--repeating-conic-gradient-times)),
-            #FFA500 calc(75% / var(--repeating-conic-gradient-times)),
-            #FFCC00 calc(100% / var(--repeating-conic-gradient-times))
+            var(--rm-yellow-100) 0%,
+            var(--rm-yellow-300) calc(25% / var(--repeating-conic-gradient-times)),
+            var(--rm-yellow-500) calc(50% / var(--repeating-conic-gradient-times)),
+            var(--rm-yellow-300) calc(75% / var(--repeating-conic-gradient-times)),
+            var(--rm-yellow-100) calc(100% / var(--repeating-conic-gradient-times))
           )`;
       }
       return `radial-gradient(circle, #dd7bbb 10%, #dd7bbb00 20%),
@@ -161,7 +161,7 @@ const GlowingEffect = memo(
             "pointer-events-none absolute -inset-px hidden rounded-[inherit] border opacity-0 transition-opacity",
             glow && "opacity-100",
             variant === "white" && "border-white",
-            variant === "yellow" && "border-[#FFCC00]",
+            variant === "yellow" && "border-[var(--rm-yellow-100)]",
             disabled && "!block"
           )}
         />

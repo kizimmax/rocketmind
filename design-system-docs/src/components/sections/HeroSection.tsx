@@ -29,7 +29,7 @@ export function HeroSection() {
                                 Помогаем командам искать, проверять и усиливать бизнес-модели, связывать стратегию с операционными действиями и переходить от продуктовой логики к платформенной и экосистемной архитектуре.
                             </p>
 
-                            <button className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-md bg-[#FFCC00] text-[#121212] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[#FFE040] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[#E6B800] mt-4">
+                            <button className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[var(--rm-yellow-500)] mt-4">
                                 Связаться
                             </button>
                         </div>
