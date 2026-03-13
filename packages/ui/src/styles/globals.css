@@ -1,0 +1,511 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;800&family=Roboto+Mono:wght@400;500;600&family=Roboto:wght@400;500&family=Shantell+Sans:wght@400&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Google Fonts */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-mono-family);
+  --font-heading: var(--font-heading-family);
+  --font-accent: var(--font-accent-family);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* Typography scale tokens */
+  --text-size-12: var(--text-12);
+  --text-size-14: var(--text-14);
+  --text-size-16: var(--text-16);
+  --text-size-19: var(--text-19);
+  --text-size-25: var(--text-25);
+  --text-size-31: var(--text-31);
+  --text-size-48: var(--text-48);
+  --text-size-50: var(--text-50);
+  --text-size-81: var(--text-81);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.25rem;
+  --radius-4xl: 1.5rem;
+
+  /* Rocketmind gray scale */
+  --color-rm-gray-1: var(--rm-gray-1);
+  --color-rm-gray-2: var(--rm-gray-2);
+  --color-rm-gray-3: var(--rm-gray-3);
+  --color-rm-gray-4: var(--rm-gray-4);
+  --color-rm-gray-5: var(--rm-gray-5);
+  --color-rm-gray-6: var(--rm-gray-6);
+  --color-rm-gray-fg: var(--rm-gray-fg);
+
+  /* Rocketmind gray alpha */
+  --color-rm-gray-alpha-100: var(--rm-gray-alpha-100);
+  --color-rm-gray-alpha-200: var(--rm-gray-alpha-200);
+  --color-rm-gray-alpha-400: var(--rm-gray-alpha-400);
+  --color-rm-gray-alpha-600: var(--rm-gray-alpha-600);
+  --color-rm-gray-alpha-800: var(--rm-gray-alpha-800);
+
+  /* Rocketmind brand colors */
+  --color-yellow-100: var(--rm-yellow-100);
+  --color-yellow-50: var(--rm-yellow-50);
+  --color-yellow-10: var(--rm-yellow-10);
+  --color-violet-100: var(--rm-violet-100);
+  --color-violet-50: var(--rm-violet-50);
+  --color-violet-10: var(--rm-violet-10);
+  --color-terracotta-100: var(--rm-terracotta-100);
+  --color-terracotta-50: var(--rm-terracotta-50);
+  --color-terracotta-10: var(--rm-terracotta-10);
+  --color-sky-100: var(--rm-sky-100);
+  --color-sky-50: var(--rm-sky-50);
+  --color-sky-10: var(--rm-sky-10);
+  --color-pink-100: var(--rm-pink-100);
+  --color-pink-50: var(--rm-pink-50);
+  --color-pink-10: var(--rm-pink-10);
+  --color-blue-100: var(--rm-blue-100);
+  --color-blue-50: var(--rm-blue-50);
+  --color-blue-10: var(--rm-blue-10);
+  --color-red-100: var(--rm-red-100);
+  --color-red-50: var(--rm-red-50);
+  --color-red-10: var(--rm-red-10);
+  --color-green-100: var(--rm-green-100);
+  --color-green-50: var(--rm-green-50);
+  --color-green-10: var(--rm-green-10);
+}
+
+:root {
+  /* === Font families === */
+  --font-heading-family: 'Roboto Condensed', sans-serif;
+  --font-mono-family: 'Roboto Mono', monospace;
+  --font-body: 'Roboto', sans-serif;
+  --font-accent-family: 'Shantell Sans', cursive;
+
+  /* === Typography scale (Golden Ratio from 12px) === */
+  --text-12: 0.75rem;      /* copy-12   · micro, copyright */
+  --text-14: 0.875rem;     /* copy-14   · caption, label-sm */
+  --text-16: 1rem;         /* copy-16   · body base, label-16 */
+  --text-19: 1.1875rem;    /* copy-19   · lead, label-19, heading-19 */
+  --text-25: 1.5625rem;    /* copy-25   · marketing copy, label-25, H3 */
+  --text-31: 1.9375rem;    /* heading-31 · H2 secondary */
+  --text-48: 3rem;         /* heading-48 · H1 mobile */
+  --text-50: 3.125rem;     /* heading-50 · H2 hero */
+  --text-81: 5.0625rem;    /* heading-81 · H1 hero */
+
+  /* === Rocketmind Gray Scale (Light) ===
+   * 1 — Page background      (bg-background)
+   * 2 — Subtle surface       (bg-muted, bg-secondary, bg-accent)
+   * 3 — Component hover bg   (hover:bg-accent / hover:bg-muted)
+   * 4 — Default border       (border-border, border-input)
+   * 5 — Hover/active border  (hover:border-*)
+   * 6 — Secondary text       (text-muted-foreground)
+   * fg — Primary text        (text-foreground)
+  */
+  --rm-gray-1:  #FAFAFA;   /* page background */
+  --rm-gray-2:  #F5F5F5;   /* subtle surface */
+  --rm-gray-3:  #EBEBEB;   /* hover bg */
+  --rm-gray-4:  #CBCBCB;   /* default border */
+  --rm-gray-5:  #A3A3A3;   /* hover border */
+  --rm-gray-6:  #666666;   /* secondary text */
+  --rm-gray-fg: #2D2D2D;   /* primary text */
+
+  /* === Gray Alpha (overlay / glass effects) === */
+  --rm-gray-alpha-100: rgba(0, 0, 0, 0.06);   /* subtle tint */
+  --rm-gray-alpha-200: rgba(0, 0, 0, 0.10);   /* dividers on light */
+  --rm-gray-alpha-400: rgba(0, 0, 0, 0.20);   /* overlay light */
+  --rm-gray-alpha-600: rgba(0, 0, 0, 0.40);   /* modal scrim */
+  --rm-gray-alpha-800: rgba(0, 0, 0, 0.70);   /* heavy overlay */
+
+  /* === Rocketmind Neutrals (Light) — mapped to gray scale === */
+  --background: var(--rm-gray-1);
+  --foreground: var(--rm-gray-fg);
+  --muted: var(--rm-gray-3);
+  --muted-foreground: var(--rm-gray-6);
+  --border: var(--rm-gray-4);
+  --input: var(--rm-gray-4);
+  --ring: #FFCC00;
+  --card: #FFFFFF;
+  --card-foreground: var(--rm-gray-fg);
+  --popover: #FFFFFF;
+  --popover-foreground: var(--rm-gray-fg);
+  --secondary: var(--rm-gray-3);
+  --secondary-foreground: var(--rm-gray-fg);
+  --accent: var(--rm-gray-3);
+  --accent-foreground: var(--rm-gray-fg);
+  --destructive: #ED4843;
+  --destructive-foreground: #FFFFFF;
+
+  /* === Primary (yellow accent) === */
+  --primary: #FFCC00;
+  --primary-foreground: #121212;
+
+  /* === Brand accents === */
+  --rm-yellow-100: #FFCC00;
+  --rm-yellow-50: #FFF0AA;
+  --rm-yellow-10: #FFFEF3;
+  --rm-violet-100: #A172F8;
+  --rm-violet-50: #DCC8FF;
+  --rm-violet-10: #FBFAFE;
+
+  /* === Categorical colors === */
+  --rm-terracotta-100: #FE733A;
+  --rm-terracotta-50: #FFD6AD;
+  --rm-terracotta-10: #FFFAF7;
+  --rm-sky-100: #56CAEA;
+  --rm-sky-50: #C3ECF7;
+  --rm-sky-10: #F7FDFF;
+  --rm-pink-100: #FF54AC;
+  --rm-pink-50: #FFB8D9;
+  --rm-pink-10: #FFF8FC;
+  --rm-blue-100: #4A56DF;
+  --rm-blue-50: #BFC4F3;
+  --rm-blue-10: #F9FAFF;
+  --rm-red-100: #ED4843;
+  --rm-red-50: #FFBCBA;
+  --rm-red-10: #FFF9F8;
+  --rm-green-100: #9AF576;
+  --rm-green-50: #D8F4CD;
+  --rm-green-10: #F7FEF3;
+
+  /* === Border on colored backgrounds === */
+  --border-on-colored: #7D61B1;
+
+  /* === Border Radius === */
+  --radius: 0.375rem;
+
+  /* === Shadows (flat) === */
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
+
+  /* === Glow === */
+  --glow-yellow: 0 0 0 1px rgba(255, 204, 0, 0.3),
+    0 0 12px 0 rgba(255, 204, 0, 0.25),
+    0 0 24px 0 rgba(255, 204, 0, 0.1);
+  --glow-violet: 0 0 0 1px rgba(161, 114, 248, 0.3),
+    0 0 12px 0 rgba(161, 114, 248, 0.2),
+    0 0 24px 0 rgba(161, 114, 248, 0.08);
+  --glow-subtle: 0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 0 8px 0 rgba(0, 0, 0, 0.03);
+
+  /* Chart */
+  --chart-1: #FFCC00;
+  --chart-2: #A172F8;
+  --chart-3: #56CAEA;
+  --chart-4: #FE733A;
+  --chart-5: #9AF576;
+
+  /* Sidebar */
+  --sidebar: #FAFAFA;
+  --sidebar-foreground: #2D2D2D;
+  --sidebar-primary: #FFCC00;
+  --sidebar-primary-foreground: #121212;
+  --sidebar-accent: #F0F0F0;
+  --sidebar-accent-foreground: #2D2D2D;
+  --sidebar-border: #CBCBCB;
+  --sidebar-ring: #FFCC00;
+}
+
+.dark {
+  /* === Rocketmind Gray Scale (Dark) ===
+   * 1 — Page background
+   * 2 — Subtle surface
+   * 3 — Component hover bg
+   * 4 — Default border
+   * 5 — Hover/active border
+   * 6 — Secondary text
+   * fg — Primary text
+  */
+  --rm-gray-1:  #121212;
+  --rm-gray-2:  #1A1A1A;
+  --rm-gray-3:  #242424;
+  --rm-gray-4:  #404040;
+  --rm-gray-5:  #5C5C5C;
+  --rm-gray-6:  #939393;
+  --rm-gray-fg: #F0F0F0;
+
+  /* === Gray Alpha (dark) === */
+  --rm-gray-alpha-100: rgba(255, 255, 255, 0.06);
+  --rm-gray-alpha-200: rgba(255, 255, 255, 0.10);
+  --rm-gray-alpha-400: rgba(255, 255, 255, 0.20);
+  --rm-gray-alpha-600: rgba(255, 255, 255, 0.40);
+  --rm-gray-alpha-800: rgba(255, 255, 255, 0.70);
+
+  /* === Rocketmind Neutrals (Dark) — mapped to gray scale === */
+  --background: var(--rm-gray-1);
+  --foreground: var(--rm-gray-fg);
+  --muted: var(--rm-gray-3);
+  --muted-foreground: var(--rm-gray-6);
+  --border: var(--rm-gray-4);
+  --input: var(--rm-gray-4);
+  --ring: #FFCC00;
+  --card: var(--rm-gray-2);
+  --card-foreground: var(--rm-gray-fg);
+  --popover: var(--rm-gray-2);
+  --popover-foreground: var(--rm-gray-fg);
+  --secondary: var(--rm-gray-3);
+  --secondary-foreground: var(--rm-gray-fg);
+  --accent: var(--rm-gray-3);
+  --accent-foreground: var(--rm-gray-fg);
+  --destructive: #FF6B6B;
+  --destructive-foreground: #FFFFFF;
+
+  /* === Primary (yellow) === */
+  --primary: #FFCC00;
+  --primary-foreground: #121212;
+
+  /* === Brand accents dark === */
+  --rm-yellow-100: #FFCC00;
+  --rm-yellow-50: #7A6200;
+  --rm-yellow-10: #3D3300;
+  --rm-violet-100: #B48DFA;
+  --rm-violet-50: #5A3D99;
+  --rm-violet-10: #20143D;
+
+  /* === Categorical colors dark === */
+  --rm-terracotta-100: #FF8A5C;
+  --rm-terracotta-50: #7A2E10;
+  --rm-terracotta-10: #2A0F05;
+  --rm-sky-100: #7AD6EF;
+  --rm-sky-50: #1A5F72;
+  --rm-sky-10: #051A20;
+  --rm-pink-100: #FF7EC5;
+  --rm-pink-50: #7A1A55;
+  --rm-pink-10: #25061A;
+  --rm-blue-100: #7A84F0;
+  --rm-blue-50: #1E2870;
+  --rm-blue-10: #060A24;
+  --rm-red-100: #F47370;
+  --rm-red-50: #7A1715;
+  --rm-red-10: #250504;
+  --rm-green-100: #B5FA97;
+  --rm-green-50: #2A6E15;
+  --rm-green-10: #0A2005;
+
+  /* === Border on colored backgrounds (dark) === */
+  --border-on-colored: #DBC800;
+
+  /* === Glow dark (brighter) === */
+  --glow-yellow: 0 0 0 1px rgba(255, 204, 0, 0.4),
+    0 0 16px 0 rgba(255, 204, 0, 0.3),
+    0 0 32px 0 rgba(255, 204, 0, 0.12);
+  --glow-violet: 0 0 0 1px rgba(180, 141, 250, 0.4),
+    0 0 16px 0 rgba(180, 141, 250, 0.25),
+    0 0 32px 0 rgba(180, 141, 250, 0.1);
+  --glow-subtle: 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 8px 0 rgba(255, 255, 255, 0.04);
+
+  /* Sidebar */
+  --sidebar: #1A1A1A;
+  --sidebar-foreground: #F0F0F0;
+  --sidebar-primary: #FFCC00;
+  --sidebar-primary-foreground: #121212;
+  --sidebar-accent: #1E1E1E;
+  --sidebar-accent-foreground: #F0F0F0;
+  --sidebar-border: #404040;
+  --sidebar-ring: #FFCC00;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Copy notification animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.2s ease-out forwards;
+}
+
+/* Visual Language Elements */
+
+/* 5.1 Corner Brackets */
+.bracket {
+  position: relative;
+}
+
+.bracket::before,
+.bracket::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--border);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.bracket::before {
+  top: -1px;
+  left: -1px;
+  border-width: 1px 0 0 1px;
+}
+
+.bracket::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 1px 1px 0;
+}
+
+/* 5.2 Animated Grid Lines */
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.grid-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.04);
+  transform-origin: left top;
+  animation: line-appear 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.light .grid-line,
+:root:not(.dark) .grid-line {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.grid-line--h {
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+}
+
+.grid-line--v {
+  width: 1px;
+  height: 100%;
+  transform: scaleY(0);
+}
+
+@keyframes line-appear {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 5.3 Ambient Background Glow */
+.ambient-glow-violet::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(265 91% 71% / 0.15) 0%, transparent 70%);
+  top: -200px;
+  left: -100px;
+  pointer-events: none;
+  filter: blur(80px);
+  /* 80-120px depending on design */
+  z-index: 0;
+}
+
+.ambient-glow-yellow::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(54 100% 50% / 0.12) 0%, transparent 70%);
+  bottom: -150px;
+  right: -50px;
+  pointer-events: none;
+  filter: blur(80px);
+  z-index: 0;
+}
+
+/* 5.7 link-cta */
+.link-cta {
+  font-family: var(--font-mono);
+  font-size: var(--text-14);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s ease, gap 0.15s ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.link-cta:hover {
+  color: var(--foreground);
+  gap: 10px;
+}
+
+.link-cta .arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.link-cta:hover .arrow {
+  transform: translateX(4px);
+}
+/* ── Tooltip animations ── */
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.tooltip-enter {
+  animation: tooltip-in 120ms cubic-bezier(0, 0, 0.2, 1) forwards;
+}

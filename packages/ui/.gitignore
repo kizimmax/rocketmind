@@ -1,0 +1,2 @@
+node_modules
+# dist is committed so it can be installed via github: dependency

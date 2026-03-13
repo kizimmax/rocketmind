@@ -1,0 +1,19 @@
+{
+  "name": "rocketmind",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "ui:build": "npm run build --workspace=packages/ui",
+    "ui:dev": "npm run dev --workspace=packages/ui"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4"
+  }
+}
