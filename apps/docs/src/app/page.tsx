@@ -951,7 +951,7 @@ export default function DesignSystemPage() {
               ].map((c) => (
                 <div key={c.token} className="flex flex-col gap-2">
                   <div
-                    className="w-full h-16 rounded-md border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+                    className="w-full h-16 rounded-md border border-border cursor-pointer hover:border-muted-foreground dark:hover:border-white/[0.12] transition-all duration-150"
                     style={{ backgroundColor: `var(${c.var})` }}
                     onClick={(e) => {
                       const bg = getComputedStyle(e.currentTarget).backgroundColor
@@ -995,7 +995,7 @@ export default function DesignSystemPage() {
               ].map((c) => (
                 <div key={c.var} className="flex flex-col gap-1.5">
                   <div
-                    className="w-full h-10 rounded-md border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+                    className="w-full h-10 rounded-md border border-border cursor-pointer hover:border-muted-foreground dark:hover:border-white/[0.12] transition-all duration-150"
                     style={{ backgroundColor: `var(${c.var})` }}
                     onClick={(e) => {
                       const bg = getComputedStyle(e.currentTarget).backgroundColor
@@ -1083,7 +1083,7 @@ export default function DesignSystemPage() {
                     {(["100","300","500","700","900"] as const).map((level) => (
                       <div key={level} className="flex flex-col gap-1.5">
                         <div
-                          className="w-full h-12 rounded-md border border-border/60 flex items-start justify-start p-1 cursor-pointer hover:ring-2 hover:ring-ring transition-all relative group"
+                          className="w-full h-12 rounded-md border border-border/60 flex items-start justify-start p-1 cursor-pointer hover:border-muted-foreground dark:hover:border-white/[0.12] transition-all duration-150 relative group"
                           style={{ backgroundColor: `var(--rm-${c.token}-${level})` }}
                           onClick={(e) => {
                             const bg = getComputedStyle(e.currentTarget).backgroundColor
@@ -1109,7 +1109,7 @@ export default function DesignSystemPage() {
                   {/* fg tokens */}
                   <div className="grid grid-cols-2 gap-2">
                     <div
-                      className="rounded-md border border-border/60 px-3 py-2 flex items-center justify-between cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+                      className="rounded-md border border-border/60 px-3 py-2 flex items-center justify-between cursor-pointer hover:border-muted-foreground dark:hover:border-white/[0.12] transition-all duration-150"
                       style={{ backgroundColor: `var(--rm-${c.token}-100)`, color: `var(--rm-${c.token}-fg)` }}
                       onClick={(e) => {
                         const bg = getComputedStyle(e.currentTarget).backgroundColor
@@ -1124,7 +1124,7 @@ export default function DesignSystemPage() {
                       <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]">--rm-{c.token}-fg</span>
                     </div>
                     <div
-                      className="rounded-md border border-border/60 px-3 py-2 flex items-center justify-between cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+                      className="rounded-md border border-border/60 px-3 py-2 flex items-center justify-between cursor-pointer hover:border-muted-foreground dark:hover:border-white/[0.12] transition-all duration-150"
                       style={{ backgroundColor: `var(--rm-${c.token}-900)`, color: `var(--rm-${c.token}-fg-subtle)` }}
                       onClick={(e) => {
                         const bg = getComputedStyle(e.currentTarget).backgroundColor

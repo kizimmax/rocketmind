@@ -43,7 +43,7 @@ export function ColorSwatch({ name, token, lightHex, darkHex, className }: Color
       <div
         ref={ref}
         onClick={copyHex}
-        className="w-full h-20 rounded-md border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+        className="w-full h-20 rounded-md border border-border cursor-pointer hover:border-muted-foreground dark:hover:border-white/[0.12] transition-all duration-150"
         style={{ backgroundColor: lightHex }}
       />
       <div className="flex items-start justify-between gap-1">
@@ -83,7 +83,7 @@ export function ColorSwatchLive({
       <div
         ref={ref}
         onClick={copyHex}
-        className="w-full h-20 rounded-md border border-border cursor-pointer hover:ring-2 hover:ring-ring transition-all"
+        className="w-full h-20 rounded-md border border-border cursor-pointer hover:border-muted-foreground dark:hover:border-white/[0.12] transition-all duration-150"
         style={{ backgroundColor: `var(${cssVar})` }}
       />
       <div className="flex items-start justify-between gap-1">

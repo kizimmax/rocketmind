@@ -68,10 +68,10 @@ export function ServicesGrid() {
                                     <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground">
                                         <Icon size={20} className="transition-colors duration-150 group-hover:text-foreground" />
                                     </div>
-                                    <h4 className="font-heading font-bold text-xl uppercase tracking-[-0.005em] text-foreground">
+                                    <h4 className="font-heading font-bold text-[length:var(--text-25)] uppercase tracking-[-0.005em] text-foreground">
                                         {service.title}
                                     </h4>
-                                    <p className="font-body text-base text-muted-foreground leading-[1.618]">
+                                    <p className="font-body text-[length:var(--text-16)] text-muted-foreground leading-[1.618]">
                                         {service.description}
                                     </p>
                                     <span className="link-cta mt-auto">

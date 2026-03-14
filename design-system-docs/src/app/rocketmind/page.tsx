@@ -26,7 +26,7 @@ export default function RocketmindPage() {
             {/* Simple Footer */}
             <footer className="py-8 bg-background border-t border-border">
                 <div className="container mx-auto px-5 lg:px-20 flex justify-center text-center">
-                    <p className="text-muted-foreground font-mono text-[13px] tracking-[0.08em] uppercase">
+                    <p className="text-muted-foreground font-mono text-[length:var(--text-12)] tracking-[0.08em] uppercase">
                         © {new Date().getFullYear()} Rocketmind. All rights reserved.
                     </p>
                 </div>

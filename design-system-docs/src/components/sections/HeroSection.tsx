@@ -25,17 +25,17 @@ export function HeroSection() {
                                 <span className="block mt-6 text-[32px] md:text-[40px] lg:text-[56px] tracking-[-0.01em]">Стратегия и бизнес-модели</span>
                             </h1>
 
-                            <p className="font-body text-base lg:text-lg leading-[1.618] text-muted-foreground w-full max-w-[600px]">
+                            <p className="font-body text-[length:var(--text-16)] lg:text-[length:var(--text-19)] leading-[1.618] text-muted-foreground w-full max-w-[600px]">
                                 Помогаем командам искать, проверять и усиливать бизнес-модели, связывать стратегию с операционными действиями и переходить от продуктовой логики к платформенной и экосистемной архитектуре.
                             </p>
 
-                            <button className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[var(--rm-yellow-500)] mt-4">
+                            <button className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-mono text-[length:var(--text-12)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[var(--rm-yellow-500)] mt-4">
                                 Связаться
                             </button>
                         </div>
 
                         <div className="lg:col-span-4 flex flex-col gap-6 lg:border-l lg:border-white/[0.06] lg:pl-10">
-                            <p className="font-heading font-bold text-xl lg:text-2xl uppercase tracking-[-0.005em] text-foreground">
+                            <p className="font-heading font-bold text-[length:var(--text-25)] lg:text-[length:var(--text-25)] uppercase tracking-[-0.005em] text-foreground">
                                 Развиваем методологию бизнес-дизайна, представляем Platform Innovation Kit в России и странах Азии
                             </p>
                         </div>
