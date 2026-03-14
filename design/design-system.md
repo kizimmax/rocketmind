@@ -1201,7 +1201,7 @@ className="
 | Состояние | light | dark |
 |-----------|-------|------|
 | `default` | bg `--card`, border `--border` | bg `--card`, border `rgba(255,255,255,0.06)` |
-| `hover` | border `--muted-foreground` | border `rgba(255,255,255,0.12)` |
+| `hover` | border `--muted-foreground` | border `rgba(255,255,255,0.20)` |
 | `active` / `selected` | border `--ring` | border `--ring` |
 | `loading` | skeleton `--muted` пульсирует | skeleton `--muted` |
 
@@ -1216,7 +1216,7 @@ className="
   transition-all duration-150
   hover:border-muted-foreground
   dark:border-white/[0.06]
-  dark:hover:border-white/[0.12]
+  dark:hover:border-white/[0.20]
   cursor-pointer
 "
 
@@ -1228,6 +1228,7 @@ className="
   transition-all duration-200
   hover:border-muted-foreground
   dark:border-white/[0.06]
+  dark:hover:border-white/[0.20]
   cursor-pointer
 "
 
@@ -1248,7 +1249,7 @@ className="
   bg-card
   border-white/[0.06]
   transition-all duration-200
-  hover:border-white/[0.1]
+  hover:border-white/[0.20]
 "
 ```
 
@@ -1306,7 +1307,7 @@ className="
 
 - **Radius:** `rounded-sm` (`4px`)
 - **Padding:** `p-6` (`24px`) для M/L, `p-5` (`20px`) для S
-- **Hover:** `hover:border-muted-foreground` в светлой, `dark:hover:border-white/[0.12]` в тёмной (единственный вариант для всех bg-card карточек)
+- **Hover:** `hover:border-muted-foreground` в светлой, `dark:hover:border-white/[0.20]` в тёмной (единственный вариант для всех bg-card карточек)
 - **Image-area (S/M):** фото/обложка занимает верхние `38%` карточки (золотое сечение)
 - **Badge:** mono-шрифт, uppercase, `4px` radius, `--muted` фон
 
@@ -1347,7 +1348,7 @@ className="
   rounded-sm border border-border bg-card
   transition-all duration-150
   hover:border-muted-foreground
-  dark:border-white/[0.06] dark:hover:border-white/[0.12]
+  dark:border-white/[0.06] dark:hover:border-white/[0.20]
   cursor-pointer
 ">
   {/* Обложка */}
@@ -1617,7 +1618,7 @@ className="
   flex flex-col gap-4 p-6
   rounded-sm border border-border bg-card
   transition-all duration-150 hover:border-muted-foreground
-  dark:border-white/[0.06] dark:hover:border-white/[0.12]
+  dark:border-white/[0.06] dark:hover:border-white/[0.20]
   cursor-pointer
 ">
   {/* Мета-строка */}
@@ -1692,7 +1693,7 @@ className="
   flex flex-col overflow-hidden
   rounded-sm border border-border bg-card
   transition-all duration-150 hover:border-muted-foreground
-  dark:border-white/[0.06] dark:hover:border-white/[0.12]
+  dark:border-white/[0.06] dark:hover:border-white/[0.20]
   cursor-pointer
 ">
   {/* Обложка */}
@@ -1775,7 +1776,7 @@ className="
   flex flex-col gap-4 p-6
   rounded-sm border border-border bg-card
   transition-all duration-150 hover:border-muted-foreground
-  dark:border-white/[0.06] dark:hover:border-white/[0.12]
+  dark:border-white/[0.06] dark:hover:border-white/[0.20]
   cursor-pointer
 ">
   {/* Логотип */}
@@ -1846,7 +1847,7 @@ className="
   rounded-sm border border-border bg-card
   transition-all duration-150
   hover:border-muted-foreground
-  dark:border-white/[0.06] dark:hover:border-white/[0.12]
+  dark:border-white/[0.06] dark:hover:border-white/[0.20]
   cursor-pointer
 ">
   {/* Иконка */}

@@ -136,7 +136,7 @@ function ServiceCard({
 
     return (
         <CornerBrackets>
-            <Card className="border border-border bg-card hover:border-muted-foreground/30 transition-all duration-300 h-full group/card">
+            <Card className="border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] h-full group/card">
                 <CardContent className="p-6 md:p-8 flex flex-col h-full">
                     <div
                         className="w-10 h-10 rounded-md flex items-center justify-center mb-5 transition-shadow duration-300"
@@ -613,7 +613,7 @@ export default function SitePage() {
                         ].map((c, i) => (
                             <div
                                 key={i}
-                                className="p-6 rounded-md border border-border bg-card hover:border-muted-foreground/30 transition-all duration-300 group cursor-pointer flex flex-col"
+                                className="p-6 rounded-md border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] group cursor-pointer flex flex-col"
                             >
                                 <div className="flex-1">
                                     <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-16)] uppercase tracking-[-0.005em] leading-[1.3] mb-3 group-hover:text-[var(--rm-yellow-100)] transition-colors">

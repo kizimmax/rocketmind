@@ -20,7 +20,7 @@ export function AcademySection() {
                     </div>
 
                     <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
-                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
+                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] dark:hover:shadow-glow-subtle cursor-pointer group">
                             <h4 className="font-heading font-bold text-[length:var(--text-25)] uppercase tracking-[-0.005em] text-foreground">
                                 Практикум по бизнес-дизайну
                             </h4>
@@ -32,7 +32,7 @@ export function AcademySection() {
                             </button>
                         </div>
 
-                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
+                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] dark:hover:shadow-glow-subtle cursor-pointer group">
                             <h4 className="font-heading font-bold text-[length:var(--text-25)] uppercase tracking-[-0.005em] text-foreground">
                                 Бизнес-дизайн. Быстрый старт
                             </h4>

@@ -23,7 +23,7 @@ export function MethodologySection() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
+                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] dark:hover:shadow-glow-subtle cursor-pointer group">
                             <div className="w-12 h-12 rounded-lg border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
                                 <Target size={24} className="text-[var(--rm-yellow-100)]" />
                             </div>
@@ -38,7 +38,7 @@ export function MethodologySection() {
                             </button>
                         </div>
 
-                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
+                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] dark:hover:shadow-glow-subtle cursor-pointer group">
                             <div className="w-12 h-12 rounded-lg border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
                                 <Frame size={24} className="text-[var(--rm-yellow-100)]" />
                             </div>
@@ -53,7 +53,7 @@ export function MethodologySection() {
                             </button>
                         </div>
 
-                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
+                        <div className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] dark:hover:shadow-glow-subtle cursor-pointer group">
                             <div className="w-12 h-12 rounded-lg border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
                                 <Grid3X3 size={24} className="text-[var(--rm-yellow-100)]" />
                             </div>

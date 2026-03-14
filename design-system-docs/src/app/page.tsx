@@ -2085,14 +2085,14 @@ export default function DesignSystemPage() {
                     <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Бордер меняется на <code className="px-1 py-0.5 bg-muted rounded-sm text-[length:var(--text-12)]">muted-foreground</code> — приглушённый, ненавязчивый. Используется в большинстве каталожных карточек.</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {["", "", "", ""].map((_, i) => (
-                        <div key={i} className="h-24 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer" />
+                        <div key={i} className="h-24 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer" />
                       ))}
                     </div>
                     <p className="mt-3 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">
                       <code>hover:border-muted-foreground</code>
                     </p>
                     <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">
-                      dark: <code>dark:hover:border-white/[0.12]</code>
+                      dark: <code>dark:hover:border-white/[0.20]</code>
                     </p>
                   </div>
 
@@ -2150,7 +2150,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">S — Узкая</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
-                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="h-36 bg-muted overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={28}/></div>
                       <div className="flex flex-col gap-3 p-5">
                         <span className="w-fit px-2 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Курс</span>
@@ -2168,7 +2168,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">M — Широкая</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
-                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="h-44 bg-muted overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={36}/></div>
                       <div className="flex flex-col gap-4 p-6">
                         <div className="flex items-center gap-2">
@@ -2196,7 +2196,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">L — Горизонтальная</p>
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
-                    <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-48 flex-shrink-0 bg-muted flex items-center justify-center text-muted-foreground"><Rocket size={36}/></div>
                       <div className="flex flex-1 flex-col gap-3 p-6">
                         <div className="flex items-center gap-2">
@@ -2224,7 +2224,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">S — Узкая</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
-                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer group">
+                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer group">
                       <div className="h-40 bg-muted flex items-center justify-center"><User size={36} className="text-muted-foreground"/></div>
                       <div className="flex flex-col gap-3 p-5">
                         <div>
@@ -2246,7 +2246,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">M — Широкая</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
-                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer group">
+                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer group">
                       <div className="h-52 bg-muted flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
                       <div className="flex flex-col gap-4 p-6">
                         <div>
@@ -2271,7 +2271,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">L — Горизонтальная</p>
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
-                    <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-52 flex-shrink-0 bg-muted flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
                       <div className="flex flex-1 items-center gap-8 p-6">
                         <div className="flex flex-col gap-1 w-48 flex-shrink-0">
@@ -2300,7 +2300,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">S — Узкая</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
-                    <div key={i} className="flex flex-col gap-4 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col gap-4 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="relative w-fit">
                         <div className="w-14 h-14 rounded-full border-2 flex items-center justify-center bg-muted" style={{borderColor:"var(--rm-yellow-50)"}}>
                           <Rocket size={20} className="text-[var(--rm-yellow-100)]"/>
@@ -2324,7 +2324,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">M — Широкая</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
-                    <div key={i} className="flex flex-col gap-5 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col gap-5 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="flex items-center gap-4">
                         <div className="relative flex-shrink-0">
                           <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center bg-muted" style={{borderColor:"var(--rm-yellow-50)"}}>
@@ -2354,7 +2354,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">L — Горизонтальная</p>
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
-                    <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="relative flex-shrink-0">
                         <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center bg-muted" style={{borderColor:"var(--rm-yellow-50)"}}>
                           <Rocket size={28} className="text-[var(--rm-yellow-100)]"/>
@@ -2444,7 +2444,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">S — Узкая</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
-                    <div key={i} className="flex flex-col gap-3 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col gap-3 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="flex items-center justify-between">
                         <span className="px-2 py-0.5 rounded-sm font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]"
                           style={{backgroundColor:"var(--rm-green-900)",color:"var(--rm-green-100)"}}>Активен</span>
@@ -2466,7 +2466,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">M — Широкая</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
-                    <div key={i} className="flex flex-col gap-4 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col gap-4 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="flex items-center justify-between">
                         <span className="px-2 py-0.5 rounded-sm font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]"
                           style={{backgroundColor:"var(--rm-green-900)",color:"var(--rm-green-100)"}}>Активен</span>
@@ -2491,7 +2491,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">L — Горизонтальная</p>
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
-                    <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="flex flex-col gap-1 w-40 flex-shrink-0">
                         <span className="px-2 py-0.5 rounded-sm w-fit font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]"
                           style={{backgroundColor:"var(--rm-green-900)",color:"var(--rm-green-100)"}}>Активен</span>
@@ -2518,7 +2518,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">S — Узкая</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
-                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="relative h-32 bg-muted flex items-center justify-center">
                         <GraduationCap size={28} className="text-muted-foreground"/>
                         <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent"/>
@@ -2543,7 +2543,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">M — Широкая</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
-                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="relative h-44 bg-muted flex items-center justify-center">
                         <GraduationCap size={40} className="text-muted-foreground"/>
                         <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent"/>
@@ -2575,7 +2575,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">L — Горизонтальная</p>
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
-                    <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-52 flex-shrink-0 bg-muted flex items-center justify-center relative">
                         <GraduationCap size={40} className="text-muted-foreground"/>
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card/20"/>
@@ -2612,7 +2612,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">S — Узкая</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
-                    <div key={i} className="flex flex-col gap-3 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col gap-3 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-10 h-10 rounded-sm border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
                         <Wrench size={18}/>
                       </div>
@@ -2633,7 +2633,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">M — Широкая</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
-                    <div key={i} className="flex flex-col gap-4 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col gap-4 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-12 h-12 rounded-sm border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
                         <Wrench size={22}/>
                       </div>
@@ -2654,7 +2654,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">L — Горизонтальная</p>
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
-                    <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-14 h-14 rounded-sm border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
                         <Wrench size={24}/>
                       </div>
@@ -2682,7 +2682,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">S — Узкая</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
-                    <div key={i} className="flex flex-col gap-3 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col gap-3 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{backgroundColor:"var(--rm-yellow-900)"}}>
                         <Gem size={18} className="text-[var(--rm-yellow-100)]"/>
@@ -2704,7 +2704,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">M — Широкая</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
-                    <div key={i} className="flex flex-col gap-4 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex flex-col gap-4 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{backgroundColor:"var(--rm-yellow-900)"}}>
                         <Gem size={22} className="text-[var(--rm-yellow-100)]"/>
@@ -2728,7 +2728,7 @@ export default function DesignSystemPage() {
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2">L — Горизонтальная</p>
                 <div className="flex flex-col gap-3">
                   {[1,2].map(i => (
-                    <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] cursor-pointer">
+                    <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{backgroundColor:"var(--rm-yellow-900)"}}>
                         <Gem size={24} className="text-[var(--rm-yellow-100)]"/>

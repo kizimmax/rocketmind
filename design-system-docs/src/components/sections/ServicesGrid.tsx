@@ -64,7 +64,7 @@ export function ServicesGrid() {
                         {services.map((service, index) => {
                             const Icon = service.icon;
                             return (
-                                <div key={index} className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card text-card-foreground transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.12] dark:hover:shadow-glow-subtle cursor-pointer group">
+                                <div key={index} className="relative flex flex-col gap-4 p-6 rounded-xl border border-border bg-card text-card-foreground transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] dark:hover:shadow-glow-subtle cursor-pointer group">
                                     <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground">
                                         <Icon size={20} className="transition-colors duration-150 group-hover:text-foreground" />
                                     </div>
