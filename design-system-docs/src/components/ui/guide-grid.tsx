@@ -39,7 +39,7 @@ function GridGuides({
     i % 2 === 0 ? "1fr" : "1px"
   ).join(" ")
 
-  const color = guideColor ?? "rgba(0,0,0,0.07)"
+  const color = guideColor ?? "var(--border)"
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: template, rowGap }}>
