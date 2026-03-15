@@ -22,14 +22,14 @@ jobs:
         with:
           node-version: 20
       - name: Install dependencies
-        working-directory: apps/docs
+        working-directory: design-system-docs
         run: npm install --legacy-peer-deps
       - name: Build
-        working-directory: apps/docs
+        working-directory: design-system-docs
         run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/docs/out
+          path: design-system-docs/out
 
   deploy:
     needs: build
