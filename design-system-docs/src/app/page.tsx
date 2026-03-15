@@ -1796,8 +1796,8 @@ export default function DesignSystemPage() {
               <div className="space-y-2">
                 <p className="text-[length:var(--text-12)] font-medium">1. Направляющие без контента</p>
                 <div className="border rounded-[var(--radius-lg)]" style={{ minHeight: 120 }}>
-                  <GridGuides cols={4} guideVisible={true} cellPadding={16} rowGap={0}>
-                    {Array.from({ length: 4 }, (_, i) => (
+                  <GridGuides cols={3} guideVisible={true} cellPadding={16} rowGap={0}>
+                    {Array.from({ length: 3 }, (_, i) => (
                       <div key={i} style={{ height: 88 }} />
                     ))}
                   </GridGuides>
@@ -1808,8 +1808,8 @@ export default function DesignSystemPage() {
               <div className="space-y-2">
                 <p className="text-[length:var(--text-12)] font-medium">2. С контентом, направляющие видны</p>
                 <div className="border rounded-[var(--radius-lg)]">
-                  <GridGuides cols={4} guideVisible={true} cellPadding={8} rowGap={0}>
-                    {["AI", "Авто", "Быстро", "Точно"].map((label) => (
+                  <GridGuides cols={3} guideVisible={true} cellPadding={8} rowGap={0}>
+                    {["AI", "Авто", "Быстро"].map((label) => (
                       <Card key={label} size="sm">
                         <CardHeader>
                           <Badge>{label}</Badge>
@@ -1825,8 +1825,8 @@ export default function DesignSystemPage() {
               <div className="space-y-2">
                 <p className="text-[length:var(--text-12)] font-medium">3. С контентом, направляющие скрыты</p>
                 <div className="border rounded-[var(--radius-lg)]">
-                  <GridGuides cols={4} guideVisible={false} cellPadding={8} rowGap={0}>
-                    {["AI", "Авто", "Быстро", "Точно"].map((label) => (
+                  <GridGuides cols={3} guideVisible={false} cellPadding={8} rowGap={0}>
+                    {["AI", "Авто", "Быстро"].map((label) => (
                       <Card key={label} size="sm">
                         <CardHeader>
                           <Badge>{label}</Badge>
