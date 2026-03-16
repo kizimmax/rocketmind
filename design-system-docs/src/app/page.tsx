@@ -1034,6 +1034,14 @@ export default function DesignSystemPage() {
   const activeId = useActiveSection()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [hoverArrowId, setHoverArrowId] = useState<string | null>(null)
+  const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const startHover = (id: string) => {
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current)
+    setHoverArrowId(id)
+  }
+  const endHover = () => {
+    hoverTimeout.current = setTimeout(() => setHoverArrowId(null), 200)
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -1115,8 +1123,8 @@ export default function DesignSystemPage() {
                     </a>
                     {hasSubs && (
                       <button
-                        onMouseEnter={() => { if (!isClickOpen) setHoverArrowId(s.id) }}
-                        onMouseLeave={() => setHoverArrowId(null)}
+                        onMouseEnter={() => { if (!isClickOpen) startHover(s.id) }}
+                        onMouseLeave={endHover}
                         onClick={() => { setHoverArrowId(null); setExpandedId(expandedId === s.id ? null : s.id) }}
                         className="p-1 pr-2 text-muted-foreground hover:text-foreground transition-colors shrink-0"
                         aria-label={isOpen ? "Скрыть подразделы" : "Показать подразделы"}
@@ -1129,7 +1137,11 @@ export default function DesignSystemPage() {
                     )}
                   </div>
                   {isOpen && hasSubs && (
-                    <div className="ml-[14px] pl-3 border-l border-border space-y-0.5 pb-1">
+                    <div
+                      className="ml-[14px] pl-3 border-l border-border space-y-0.5 pb-1"
+                      onMouseEnter={() => { if (isHoverOpen && !isClickOpen) startHover(s.id) }}
+                      onMouseLeave={endHover}
+                    >
                       {s.subsections.map((sub) => (
                         <a
                           key={sub.id}
@@ -1274,7 +1286,7 @@ export default function DesignSystemPage() {
             </p>
 
             {/* ── Backgrounds ── */}
-            <h3 id="colors-bg" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="colors-bg" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
               Фоны
             </h3>
             <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 sm:grid-cols-4 mb-3">
@@ -1311,7 +1323,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── Gray Scale ── */}
-            <h3 id="colors-gray" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-1">
+            <h3 id="colors-gray" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-1">
               Серая шкала
             </h3>
             <p className="text-[length:var(--text-13)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-3">
@@ -1359,7 +1371,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── Accent Scale ── */}
-            <h3 id="colors-accent" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="colors-accent" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
               Акцентная шкала
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
@@ -1449,7 +1461,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── On-color surfaces ── */}
-            <h3 id="colors-inverted" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mt-12 mb-2">
+            <h3 id="colors-inverted" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mt-12 mb-2">
               Инвертированные поверхности
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
@@ -1507,7 +1519,7 @@ export default function DesignSystemPage() {
             </p>
 
             {/* 2.1 ШРИФТЫ */}
-            <h3 id="typography-fonts" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="typography-fonts" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Шрифты
             </h3>
             <div className="border border-border rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2 mb-10">
@@ -1532,7 +1544,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 2.2 ТИПОГРАФИКА */}
-            <h3 id="typography-scale" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="typography-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Типографика
             </h3>
 
@@ -1805,7 +1817,7 @@ export default function DesignSystemPage() {
               Все отступы кратны 8. Золотое сечение для макетных пропорций.
             </p>
 
-            <h3 id="spacing-scale" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="spacing-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Шкала отступов
             </h3>
             <div className="flex flex-wrap gap-3 mb-8">
@@ -1836,7 +1848,7 @@ export default function DesignSystemPage() {
               ))}
             </div>
 
-            <h3 id="spacing-grid" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="spacing-grid" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Сетка страницы
             </h3>
             <Tabs defaultValue="mobile" className="mb-6">
@@ -1920,7 +1932,7 @@ export default function DesignSystemPage() {
               ))}
             </Tabs>
 
-            <h3 id="spacing-phi" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="spacing-phi" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Макетные пропорции (phi)
             </h3>
             {/* phi bar aligned to 12-col grid: 5/12 ≈ 41.67% / 7/12 ≈ 58.33% — snaps to column boundary */}
@@ -1956,7 +1968,7 @@ export default function DesignSystemPage() {
               Золотое сечение 38/62 — для sidebar/content, text/visual в hero-блоках.
             </p>
 
-            <h3 id="spacing-visual" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-10">
+            <h3 id="spacing-visual" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-10">
               Сетка как визуальный стиль
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6 max-w-[640px]">
@@ -2115,7 +2127,7 @@ export default function DesignSystemPage() {
               Full только как выделительный элемент в самостоятельных блоках.
             </p>
 
-            <h3 id="radius-scale" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="radius-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Border Radius
             </h3>
             <div className="flex flex-wrap gap-6 mb-8">
@@ -2155,7 +2167,7 @@ export default function DesignSystemPage() {
 
             {/* ── Кнопки ── */}
             <div className="mb-12">
-              <h3 id="components-buttons" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Кнопки</h3>
+              <h3 id="components-buttons" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Кнопки</h3>
               <div className="space-y-6">
                 {/* Primary */}
                 <div className="flex flex-wrap items-end gap-4 p-6 rounded-md border border-border">
@@ -2252,7 +2264,7 @@ export default function DesignSystemPage() {
 
             {/* ── Инпуты ── */}
             <div className="mb-12">
-              <h3 id="components-inputs" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Инпуты</h3>
+              <h3 id="components-inputs" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Инпуты</h3>
               <div className="space-y-6">
                 <div className="p-6 rounded-md border border-border space-y-3">
                   <div className="flex items-center justify-between">
@@ -2330,7 +2342,7 @@ export default function DesignSystemPage() {
 
             {/* ── Карточки ── */}
             <div>
-              <h3 id="components-cards" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Карточки</h3>
+              <h3 id="components-cards" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Карточки</h3>
               <Tabs defaultValue="cards" className="w-full">
                 <TabsList className="mb-6">
                   <TabsTrigger value="cards">Каталог карточек</TabsTrigger>
@@ -2339,7 +2351,7 @@ export default function DesignSystemPage() {
 
                 {/* CARDS BASE */}
                 <TabsContent value="cards-base">
-                  <h3 id="tooltips-variants" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+                  <h3 id="tooltips-variants" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
                     Варианты бордера карточки
                   </h3>
                   <p className="text-muted-foreground text-[length:var(--text-14)] mb-8">
@@ -3046,7 +3058,7 @@ export default function DesignSystemPage() {
               Контекстные подсказки при наведении. Появляются поверх контента через <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">position: fixed</code>, не обрезаются родителем. Анимация: 120ms ease-out, fade + translateY.
             </p>
 
-            <h3 id="tooltips-animation" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="tooltips-animation" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Анимация
             </h3>
             <div className="space-y-2 mb-8">
@@ -3108,7 +3120,7 @@ export default function DesignSystemPage() {
               </div>
             </div>
 
-            <h3 id="tooltips-rules" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="tooltips-rules" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Правила применения
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -3140,7 +3152,7 @@ export default function DesignSystemPage() {
               Цвет наследуется через currentColor.
             </p>
 
-            <h3 id="icons-scale" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="icons-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Размерная шкала
             </h3>
             <div className="flex flex-wrap items-end gap-6 mb-8">
@@ -3164,7 +3176,7 @@ export default function DesignSystemPage() {
               ))}
             </div>
 
-            <h3 id="icons-lucide" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="icons-lucide" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Примеры иконок (Lucide)
             </h3>
             <div className="flex flex-wrap gap-3">
@@ -3192,7 +3204,7 @@ export default function DesignSystemPage() {
               ))}
             </div>
 
-            <h3 id="icons-mascots" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-8">
+            <h3 id="icons-mascots" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-8">
               AI-агенты (Маскоты)
             </h3>
             <MascotSection />
@@ -3257,7 +3269,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.2 Timing */}
-            <h3 id="animations-timing" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="animations-timing" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
               8.2 Timing-шкала
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Полоска показывает относительную длину каждого токена.</p>
@@ -3275,7 +3287,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.3 Easing */}
-            <h3 id="animations-easing" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="animations-easing" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
               8.3 Easing-кривые
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Нажми «Play», чтобы увидеть как шарик движется с данной кривой.</p>
@@ -3287,7 +3299,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.4 Микроинтерактивы */}
-            <h3 id="animations-micro" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="animations-micro" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
               8.4 Микроинтерактивы
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Наведи курсор на каждый элемент.</p>
@@ -3404,7 +3416,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.6 Loading */}
-            <h3 id="animations-loading" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="animations-loading" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
               8.6 Loading / Skeleton
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Skeleton занимает место сразу — нет «прыжков» при загрузке. Shimmer движется бесконечно.</p>
@@ -3443,7 +3455,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.7 Page-level */}
-            <h3 id="animations-page" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="animations-page" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               8.7 Page-level правила
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
@@ -3474,7 +3486,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.8 Reduced Motion */}
-            <h3 id="animations-a11y" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="animations-a11y" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               8.8 Доступность (Reduced Motion)
             </h3>
             <div className="p-4 rounded-md border border-border bg-muted/30">
@@ -3593,7 +3605,7 @@ export default function DesignSystemPage() {
             </p>
 
             {/* ── Header ── */}
-            <h3 id="cross-header" className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="cross-header" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Header — Шапка
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
