@@ -136,12 +136,10 @@ const sections = [
   { id: "typography", label: "Типография" },
   { id: "spacing", label: "Спейсинг и сетка" },
   { id: "radius-shadows", label: "Скругления" },
-  { id: "visual-language", label: "Визуальный язык" },
   { id: "components", label: "Компоненты" },
   { id: "icons", label: "Иконки" },
   { id: "animations", label: "Анимации" },
   { id: "tooltips", label: "Тултипы" },
-  { id: "dot-grid", label: "Точечная сетка" },
 ]
 
 function useActiveSection() {
@@ -662,6 +660,66 @@ function DotGridDemo() {
           </span>
         </div>
       </div>
+    </div>
+  )
+}
+
+
+/* ───────── ANIMATED GRID LINES DEMO ───────── */
+function AnimatedGridLinesDemo() {
+  const [key, setKey] = useState(0)
+  const hLines = [0, 1, 2, 3]
+  const vLines = [0, 1, 2, 3, 4]
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={() => setKey((k) => k + 1)}
+        className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider px-3 py-1 rounded border border-border text-muted-foreground hover:border-foreground transition-colors"
+      >
+        ↺ Повторить
+      </button>
+      <div className="relative rounded-md border border-border overflow-hidden h-[200px] bg-background">
+        <style>{`
+          @keyframes line-h {
+            from { opacity: 0; transform: scaleX(0); }
+            to   { opacity: 1; transform: scaleX(1); }
+          }
+          @keyframes line-v {
+            from { opacity: 0; transform: scaleY(0); }
+            to   { opacity: 1; transform: scaleY(1); }
+          }
+        `}</style>
+        {hLines.map((i) => (
+          <div
+            key={`h-${key}-${i}`}
+            className="absolute left-0 right-0 h-px dark:bg-white/[0.04] bg-black/[0.06]"
+            style={{
+              top: `${(i + 1) * 20}%`,
+              transformOrigin: "left",
+              animation: `line-h 0.8s ease-out ${i * 0.05}s both`,
+            }}
+          />
+        ))}
+        {vLines.map((i) => (
+          <div
+            key={`v-${key}-${i}`}
+            className="absolute top-0 bottom-0 w-px dark:bg-white/[0.04] bg-black/[0.06]"
+            style={{
+              left: `${(i + 1) * (100 / (vLines.length + 1))}%`,
+              transformOrigin: "top",
+              animation: `line-v 0.8s ease-out ${(hLines.length + i) * 0.05}s both`,
+            }}
+          />
+        ))}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/40 select-none">
+            Hero background grid
+          </span>
+        </div>
+      </div>
+      <p className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">
+        scaleX/scaleY 0→1 · 800ms ease-out · stagger 0.05s между линиями
+      </p>
     </div>
   )
 }
@@ -1642,10 +1700,10 @@ export default function DesignSystemPage() {
               </TabsList>
 
               {[
-                { value: "mobile", label: "Mobile", bp: "< 768px", cols: 4, gutter: 16, margin: 20, tw: "sm:", color: "var(--rm-yellow-100)" },
-                { value: "tablet", label: "Tablet", bp: "768–1024px", cols: 8, gutter: 20, margin: 40, tw: "md:", color: "var(--rm-yellow-100)" },
-                { value: "desktop", label: "Desktop", bp: "1024–1440px", cols: 12, gutter: 20, margin: 80, tw: "lg:", color: "var(--rm-yellow-100)" },
-                { value: "wide", label: "Wide", bp: "> 1440px", cols: 12, gutter: 24, margin: 120, tw: "2xl:", color: "var(--rm-yellow-100)" },
+                { value: "mobile", label: "Mobile", bp: "< 768px", cols: 4, gutter: 0, margin: 20, tw: "sm:", color: "var(--rm-yellow-100)" },
+                { value: "tablet", label: "Tablet", bp: "768–1024px", cols: 8, gutter: 0, margin: 40, tw: "md:", color: "var(--rm-yellow-100)" },
+                { value: "desktop", label: "Desktop", bp: "1024–1440px", cols: 12, gutter: 0, margin: 80, tw: "lg:", color: "var(--rm-yellow-100)" },
+                { value: "wide", label: "Wide", bp: "> 1440px", cols: 12, gutter: 0, margin: 120, tw: "2xl:", color: "var(--rm-yellow-100)" },
               ].map((g) => (
                 <TabsContent key={g.value} value={g.value}>
                   {/* Specs row */}
@@ -1673,7 +1731,7 @@ export default function DesignSystemPage() {
                   {/* Visual grid demo — margins as % so columns always fit */}
                   {(() => {
                     const marginPct = g.cols <= 4 ? 5 : g.cols <= 8 ? 6 : 8
-                    const gutterPx = Math.max(2, Math.round(g.gutter / 5))
+                    const gutterPx = 0
                     return (
                       <div className="border border-border rounded-md overflow-hidden select-none">
                         {/* Margin labels row */}
@@ -1854,6 +1912,50 @@ export default function DesignSystemPage() {
             <p className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">
               GridGuides cols=3 guideVisible=true cellPadding=12
             </p>
+            {/* 3.8 Bento Grid */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-10">
+              Bento Grid — нерегулярная сетка
+            </h3>
+            <p className="text-[length:var(--text-14)] text-muted-foreground mb-4 max-w-[640px]">
+              Секция Features / «Что умеет сервис» — мозаика карточек разного размера. Минимум 4, максимум 6 ячеек. Ни одна строка не одинакова (принцип асимметрии φ).
+            </p>
+            <div className="grid grid-cols-12 gap-2 mb-2">
+              <div className="col-span-6 border border-border rounded-sm bg-card p-4 flex flex-col gap-1.5 min-h-[100px]">
+                <Badge className="w-fit">AI</Badge>
+                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase">Анализ кейса</p>
+                <p className="text-[length:var(--text-12)] text-muted-foreground">Агент обрабатывает документы и формирует сводку.</p>
+              </div>
+              <div className="col-span-6 border border-border rounded-sm bg-card p-4 flex flex-col gap-1.5 min-h-[100px]">
+                <Badge variant="secondary" className="w-fit">Авто</Badge>
+                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase">Классификация</p>
+                <p className="text-[length:var(--text-12)] text-muted-foreground">Определяет тип дела и маршрутизирует.</p>
+              </div>
+              <div className="col-span-4 border border-border rounded-sm bg-card p-4 flex flex-col gap-1.5 min-h-[80px]">
+                <Badge className="w-fit">Быстро</Badge>
+                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase">Ответ за секунды</p>
+              </div>
+              <div
+                className="col-span-8 border rounded-sm p-5 min-h-[80px] flex items-center"
+                style={{ backgroundColor: "var(--rm-yellow-10)", borderColor: "var(--rm-yellow-50)" }}
+              >
+                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-tight leading-tight">
+                  AI-система для ведения кейсов
+                </p>
+              </div>
+              <div className="col-span-5 border border-border rounded-sm bg-card p-4 flex flex-col gap-1.5 min-h-[80px]">
+                <Badge variant="secondary" className="w-fit">n8n</Badge>
+                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase">Интеграции</p>
+                <p className="text-[length:var(--text-12)] text-muted-foreground">Подключается к любому воркфлоу.</p>
+              </div>
+              <div className="col-span-7 border border-border rounded-sm bg-card p-4 flex flex-col gap-1.5 min-h-[80px]">
+                <Badge className="w-fit">Оплата</Badge>
+                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase">Ссылка на оплату</p>
+                <p className="text-[length:var(--text-12)] text-muted-foreground">Агент формирует ответ со ссылкой автоматически.</p>
+              </div>
+            </div>
+            <p className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">
+              grid-cols-12 → col-span-6+6 / col-span-4+8 / col-span-5+7 — ни одна строка не одинакова
+            </p>
           </Section>
 
           <Separator />
@@ -1892,87 +1994,6 @@ export default function DesignSystemPage() {
               ))}
             </div>
 
-          </Section>
-
-          <Separator />
-
-          {/* ═══════ 5. VISUAL LANGUAGE ═══════ */}
-          <Section id="visual-language" title="5. Визуальный язык" version={DS_VERSION}>
-            <p className="text-muted-foreground mb-6">
-              Технологичная архитектура. Сетка как каркас, линии как структура, свет как энергия.
-            </p>
-
-            <div className="border border-border rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2">
-              {(() => {
-                const items = [
-                  {
-                    title: "Corner Brackets",
-                    desc: "L-образные маркеры в углах блоков. Точность чертежа.",
-                    cls: ".bracket",
-                  },
-                  {
-                    title: "Animated Grid Lines",
-                    desc: "Тонкие линии при загрузке hero. stroke-dashoffset, 0.8s, ease-out.",
-                    cls: ".grid-lines",
-                  },
-                  {
-                    title: "Bento Grid",
-                    desc: "Нерегулярная мозаика карточек разного размера. 4–6 ячеек.",
-                    cls: "grid-cols-[6fr_6fr] / [4fr_8fr]",
-                  },
-                  {
-                    title: "Connection Graph",
-                    desc: "Граф связей агентов. Центральный узел + лучи. SVG, не интерактивный.",
-                    cls: "SVG + absolute positioning",
-                  },
-                  {
-                    title: "Thin Border Cards",
-                    desc: "Карточки сливаются с фоном. Граница — намёк, не рамка.",
-                    cls: "border border-white/[0.06]",
-                  },
-                ]
-                return items.map((item, i) => (
-                  <div key={item.title} className={`p-4 ${i % 2 === 0 ? "md:border-r border-border" : ""} ${i < items.length - 1 ? "border-b border-border" : ""} ${i === items.length - 2 ? "md:border-b-0" : ""}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[length:var(--text-16)] font-[family-name:var(--font-heading-family)] font-medium uppercase">{item.title}</p>
-                      <CopyButton value={item.cls} label={item.title} />
-                    </div>
-                    <p className="text-[length:var(--text-14)] text-muted-foreground">{item.desc}</p>
-                    <code className="block mt-2 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-[var(--rm-yellow-100)] bg-muted/50 px-2 py-1 rounded">
-                      {item.cls}
-                    </code>
-                  </div>
-                ))
-              })()}
-            </div>
-
-            {/* Corner Brackets Demo */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-8">
-              Corner Brackets — Demo
-            </h3>
-            <div className="relative p-8 border border-border rounded-md">
-              <div className="absolute top-3 left-3 w-4 h-4 border-t border-l border-[var(--rm-yellow-100)]" />
-              <div className="absolute top-3 right-3 w-4 h-4 border-t border-r border-[var(--rm-yellow-100)]" />
-              <div className="absolute bottom-3 left-3 w-4 h-4 border-b border-l border-[var(--rm-yellow-100)]" />
-              <div className="absolute bottom-3 right-3 w-4 h-4 border-b border-r border-[var(--rm-yellow-100)]" />
-              <p className="text-center text-muted-foreground text-[length:var(--text-14)]">
-                Блок с угловыми маркерами — технический чертёжный стиль
-              </p>
-            </div>
-
-            {/* Text-link CTA demo */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-8">
-              Text-link CTA
-            </h3>
-            <div className="flex items-center gap-6">
-              <span className="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground cursor-pointer transition-all duration-150 group">
-                See More <ArrowRight size={14} className="transition-transform duration-150 group-hover:translate-x-1" />
-              </span>
-              <CopyButton
-                value={`font-mono text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground`}
-                label="Text-link CTA classes"
-              />
-            </div>
           </Section>
 
           <Separator />
@@ -3227,6 +3248,97 @@ export default function DesignSystemPage() {
                 Все анимации обязаны уважать системные настройки. Исключение — typing-indicator: заменяется на статичный <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">•••</code>.
               </p>
             </div>
+
+            {/* 8.9 Animated Grid Lines */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-8">
+              8.9 Animated Grid Lines
+            </h3>
+            <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
+              Тонкие линии hero-секции материализуют каркас дизайна. Только одноразовая анимация при загрузке — после появления статичны. Используется с токеном <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">--duration-grid</code> (800ms).
+            </p>
+            <AnimatedGridLinesDemo />
+
+            {/* 8.10 Dot Grid Lens */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-10">
+              8.10 Dot Grid Lens
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Фоновый эффект «линзы» на сетке точек: при движении курсора точки вблизи него увеличиваются
+              по квадратичному закону. Используется в hero-секции и CTA лендинга. Реализован через Canvas.
+            </p>
+
+            {/* Tokens */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+              Токены
+            </h3>
+            <div className="space-y-2 mb-8">
+              {[
+                { token: "--dot-size",      value: "3px",     desc: "Базовый диаметр точки" },
+                { token: "--dot-size-max",  value: "10px",    desc: "Максимальный диаметр в центре линзы" },
+                { token: "--dot-gap",       value: "28px",    desc: "Шаг сетки (расстояние между центрами)" },
+                { token: "--lens-radius",   value: "120px",   desc: "Радиус влияния курсора" },
+                { token: "--dot-color",     value: "#CBCBCB / #404040", desc: "Цвет точек (= --border токен)" },
+                { token: "--dot-color-accent", value: "#FFCC00", desc: "Акцентный цвет точек в центре линзы" },
+              ].map((t) => (
+                <TokenRow key={t.token} token={t.token} value={t.value} desc={t.desc} />
+              ))}
+            </div>
+
+            {/* Live Demo */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+              Live Demo
+            </h3>
+            <DotGridDemo />
+
+            {/* Algorithm */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mt-8 mb-4">
+              Алгоритм
+            </h3>
+            <div className="p-4 rounded-md border border-border bg-muted/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
+              <p>distance = sqrt((x − mx)² + (y − my)²)</p>
+              <p>t = clamp(1 − distance / LENS_RADIUS, 0, 1)</p>
+              <p>scale = 1 + (MAX_SCALE − 1) × t²  // квадратичный easing</p>
+              <p>dotRadius = BASE_RADIUS × scale</p>
+            </div>
+
+            {/* Usage table */}
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mt-8 mb-4">
+              Применение
+            </h3>
+            <div className="overflow-auto rounded-md border border-border">
+              <table className="w-full text-[length:var(--text-14)]">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="text-left px-4 py-2 font-medium">Экран</th>
+                    <th className="text-left px-4 py-2 font-medium">Секция</th>
+                    <th className="text-left px-4 py-2 font-medium">Вариант</th>
+                  </tr>
+                </thead>
+                <tbody className="text-muted-foreground">
+                  {[
+                    ["Лендинг — Hero",  "Полный фон hero",    "Акцентный (#FFCC00 в линзе)"],
+                    ["Лендинг — CTA",   "Фон CTA-блока",      "Монохромный"],
+                    ["Auth",            "Фоновый декор",       "Монохромный, opacity: 0.5"],
+                    ["Main App",        "—",                   "Не используется"],
+                  ].map(([screen, section, variant]) => (
+                    <tr key={screen} className="border-b border-border last:border-0">
+                      <td className="px-4 py-2">{screen}</td>
+                      <td className="px-4 py-2">{section}</td>
+                      <td className="px-4 py-2">{variant}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* a11y note */}
+            <div className="mt-6 p-4 rounded-md border border-border bg-muted/30">
+              <p className="text-[length:var(--text-14)] font-medium mb-1">Доступность & Touch</p>
+              <p className="text-[length:var(--text-14)] text-muted-foreground">
+                На touch-устройствах (<code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded">pointer: coarse</code>) линза отключается — сетка остаётся статичным декором.
+                При <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded">prefers-reduced-motion: reduce</code> анимация останавливается, сетка отрисовывается один раз.
+              </p>
+            </div>
           </Section>
 
           <Separator />
@@ -3319,89 +3431,6 @@ export default function DesignSystemPage() {
                   </div>
                 </div>
               ))}
-            </div>
-          </Section>
-
-          <Separator />
-
-          {/* ───── DOT GRID LENS ───── */}
-          <Section id="dot-grid" title="11. Точечная сетка" version={DS_VERSION}>
-            <p className="text-muted-foreground mb-6">
-              Фоновый эффект «линзы» на сетке точек: при движении курсора точки вблизи него увеличиваются
-              по квадратичному закону. Используется в hero-секции и CTA лендинга. Реализован через Canvas.
-            </p>
-
-            {/* Tokens */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
-              Токены
-            </h3>
-            <div className="space-y-2 mb-8">
-              {[
-                { token: "--dot-size",      value: "3px",     desc: "Базовый диаметр точки" },
-                { token: "--dot-size-max",  value: "10px",    desc: "Максимальный диаметр в центре линзы" },
-                { token: "--dot-gap",       value: "28px",    desc: "Шаг сетки (расстояние между центрами)" },
-                { token: "--lens-radius",   value: "120px",   desc: "Радиус влияния курсора" },
-                { token: "--dot-color",     value: "#CBCBCB / #404040", desc: "Цвет точек (= --border токен)" },
-                { token: "--dot-color-accent", value: "#FFCC00", desc: "Акцентный цвет точек в центре линзы" },
-              ].map((t) => (
-                <TokenRow key={t.token} token={t.token} value={t.value} desc={t.desc} />
-              ))}
-            </div>
-
-            {/* Live Demo */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
-              Live Demo
-            </h3>
-            <DotGridDemo />
-
-            {/* Algorithm */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mt-8 mb-4">
-              Алгоритм
-            </h3>
-            <div className="p-4 rounded-md border border-border bg-muted/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
-              <p>distance = sqrt((x − mx)² + (y − my)²)</p>
-              <p>t = clamp(1 − distance / LENS_RADIUS, 0, 1)</p>
-              <p>scale = 1 + (MAX_SCALE − 1) × t²  // квадратичный easing</p>
-              <p>dotRadius = BASE_RADIUS × scale</p>
-            </div>
-
-            {/* Usage table */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mt-8 mb-4">
-              Применение
-            </h3>
-            <div className="overflow-auto rounded-md border border-border">
-              <table className="w-full text-[length:var(--text-14)]">
-                <thead>
-                  <tr className="border-b border-border bg-muted/30">
-                    <th className="text-left px-4 py-2 font-medium">Экран</th>
-                    <th className="text-left px-4 py-2 font-medium">Секция</th>
-                    <th className="text-left px-4 py-2 font-medium">Вариант</th>
-                  </tr>
-                </thead>
-                <tbody className="text-muted-foreground">
-                  {[
-                    ["Лендинг — Hero",  "Полный фон hero",    "Акцентный (#FFCC00 в линзе)"],
-                    ["Лендинг — CTA",   "Фон CTA-блока",      "Монохромный"],
-                    ["Auth",            "Фоновый декор",       "Монохромный, opacity: 0.5"],
-                    ["Main App",        "—",                   "Не используется"],
-                  ].map(([screen, section, variant]) => (
-                    <tr key={screen} className="border-b border-border last:border-0">
-                      <td className="px-4 py-2">{screen}</td>
-                      <td className="px-4 py-2">{section}</td>
-                      <td className="px-4 py-2">{variant}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* a11y note */}
-            <div className="mt-6 p-4 rounded-md border border-border bg-muted/30">
-              <p className="text-[length:var(--text-14)] font-medium mb-1">Доступность & Touch</p>
-              <p className="text-[length:var(--text-14)] text-muted-foreground">
-                На touch-устройствах (<code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded">pointer: coarse</code>) линза отключается — сетка остаётся статичным декором.
-                При <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded">prefers-reduced-motion: reduce</code> анимация останавливается, сетка отрисовывается один раз.
-              </p>
             </div>
           </Section>
 
