@@ -11,13 +11,14 @@ import { Separator } from "@/components/ui/separator"
 import {
   Rocket, Sparkles, Eye, Zap, Search, User, Gem, BookOpen,
   ChevronRight, ChevronDown, ArrowRight, Loader2, Trash2, Menu, X,
-  Wrench, GraduationCap, Coffee
+  Wrench, GraduationCap
 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
 import { GlowingEffect } from "@/components/ui/glowing-effect"
 import { GridGuides } from "@/components/ui/guide-grid"
 import { SiteHeader } from "@/components/ui/site-header"
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button"
 import { Accordion } from "@base-ui/react"
 
 const DS_VERSION = "1.4.0"
@@ -1253,19 +1254,28 @@ export default function DesignSystemPage() {
 
   /* ── Sidebar yellow scroll indicator ── */
   const navRef = useRef<HTMLElement>(null)
-  // refs to trigger rows only (not outer divs) for accurate indicator position
   const triggerRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const subnavInnerRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const trackRef = useRef<HTMLDivElement>(null)
   const [indicator, setIndicator] = useState({ top: 0, height: 0 })
   useEffect(() => {
-    const el = triggerRefs.current.get(activeId)
-    const track = trackRef.current
-    if (!el || !track) return
-    const trackH = track.clientHeight
-    setIndicator({
-      top:    (el.offsetTop    / trackH) * 100,
-      height: (el.offsetHeight / trackH) * 100,
-    })
+    const measure = () => {
+      const trigger = triggerRefs.current.get(activeId)
+      const track = trackRef.current
+      if (!trigger || !track) return
+      const trackH = track.clientHeight
+      const isExpanded = expandedId === activeId
+      const subnavInner = subnavInnerRefs.current.get(activeId)
+      const subnavH = isExpanded && subnavInner ? subnavInner.scrollHeight : 0
+      setIndicator({
+        top:    (trigger.offsetTop / trackH) * 100,
+        height: ((trigger.offsetHeight + subnavH) / trackH) * 100,
+      })
+    }
+    measure()
+    // Re-measure after CSS transition (300ms) to correct position drift from sibling animations
+    const timer = setTimeout(measure, 310)
+    return () => clearTimeout(timer)
   }, [activeId, expandedId])
 
   /* ── Auto-expand active section ── */
@@ -1387,7 +1397,10 @@ export default function DesignSystemPage() {
                       onMouseEnter={() => { if (isHoverOpen && !isClickOpen) startHover(s.id) }}
                       onMouseLeave={endHover}
                     >
-                      <div className="sidebar-subnav-inner ml-3 pl-3 border-l border-border space-y-0.5 pb-1">
+                      <div
+                        className="sidebar-subnav-inner ml-3 pl-3 border-l border-border space-y-0.5 pb-1"
+                        ref={el => { if (el) subnavInnerRefs.current.set(s.id, el); else subnavInnerRefs.current.delete(s.id) }}
+                      >
                         {s.subsections.map((sub) => (
                           <a
                             key={sub.id}
@@ -1720,21 +1733,7 @@ export default function DesignSystemPage() {
                 <p className="text-[length:var(--text-16)] mb-6 opacity-70">
                   Попробуй Rocketmind — AI-агенты для твоего бизнеса без написания кода.
                 </p>
-                <button
-                  className="group relative overflow-hidden inline-flex items-center justify-center px-5 py-2.5 rounded-lg border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider cursor-pointer"
-                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-                >
-                  <span className="transition-all duration-300 group-hover:translate-x-12 group-hover:opacity-0 whitespace-nowrap">
-                    Попробовать
-                  </span>
-                  <div
-                    className="absolute inset-0 flex items-center justify-center gap-2 -translate-x-full group-hover:translate-x-0 transition-all duration-300"
-                    style={{ backgroundColor: "var(--foreground)", color: "var(--background)" }}
-                  >
-                    <Coffee className="w-4 h-4 shrink-0" />
-                    <span className="whitespace-nowrap">Попробовать</span>
-                  </div>
-                </button>
+                <InteractiveHoverButton text="Попробовать" />
               </div>
               {/* Violet block */}
               <div className="on-violet rounded-xl px-8 py-10">
@@ -2617,25 +2616,9 @@ export default function DesignSystemPage() {
                     id: "interactive",
                     label: "Interactive",
                     token: "btn-interactive",
-                    desc: "Брендовый hero-CTA. Иконка + текст выезжают слева при наведении. Один на странице.",
-                    className: `group relative overflow-hidden inline-flex items-center justify-center px-4 py-2 rounded-md border border-border text-foreground font-mono text-[13px] uppercase tracking-[0.08em] cursor-pointer`,
-                    preview: (
-                      <button
-                        className="group relative overflow-hidden inline-flex items-center justify-center px-4 py-2 rounded-md border font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] cursor-pointer"
-                        style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-                      >
-                        <span className="transition-all duration-300 group-hover:translate-x-10 group-hover:opacity-0 whitespace-nowrap">
-                          Попробовать
-                        </span>
-                        <div
-                          className="absolute inset-0 flex items-center justify-center gap-1.5 -translate-x-full group-hover:translate-x-0 transition-all duration-300"
-                          style={{ backgroundColor: "var(--foreground)", color: "var(--background)" }}
-                        >
-                          <Coffee className="w-3.5 h-3.5 shrink-0" />
-                          <span className="whitespace-nowrap">Попробовать</span>
-                        </div>
-                      </button>
-                    ),
+                    desc: "Брендовый hero-CTA. Кружок расширяется на весь button при наведении, открывая иконку + текст. Один на странице.",
+                    className: `InteractiveHoverButton`,
+                    preview: <InteractiveHoverButton text="Попробовать" />,
                   },
                 ]
                 return (

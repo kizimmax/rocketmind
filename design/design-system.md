@@ -984,39 +984,46 @@ className="
 "
 ```
 
-#### Вариант `interactive` (hover slide-in)
+#### Вариант `interactive` (dot-fill hover)
 
-Используется для главного CTA на акцентном фоне (on-yellow). При наведении текст уезжает вправо, слева выезжает div с иконкой + текстом.
+Используется для главного CTA на акцентном фоне (on-yellow). При наведении маленький кружок расширяется и заполняет всю кнопку (`scale-[1.8]`), одновременно текст уезжает вправо, а иконка + текст появляются из правой стороны.
+
+Реализован как переиспользуемый компонент: `components/ui/interactive-hover-button.tsx`.
 
 ```tsx
-// interactive / md — на фоне on-yellow
-className="
-  group relative overflow-hidden
-  inline-flex items-center justify-center
-  px-5 py-2.5
-  rounded-lg border
-  text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)]
-  uppercase tracking-wider
-  cursor-pointer
-"
-style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button"
 
-// внутри — текст по умолчанию
-<span className="transition-all duration-300 group-hover:translate-x-12 group-hover:opacity-0 whitespace-nowrap">
-  {label}
-</span>
+// Использование
+<InteractiveHoverButton text="Попробовать" />
 
-// внутри — hover-слой (иконка + текст)
-<div
-  className="absolute inset-0 flex items-center justify-center gap-2 -translate-x-full group-hover:translate-x-0 transition-all duration-300"
-  style={{ backgroundColor: "var(--foreground)", color: "var(--background)" }}
->
-  <Icon className="w-4 h-4 shrink-0" />
-  <span className="whitespace-nowrap">{label}</span>
-</div>
+// Кастомная иконка
+<InteractiveHoverButton text="Запустить" icon={<Rocket size={14} />} />
 ```
 
-**Правила:** `duration-300` (не 150) — анимация намеренно медленнее для театрального эффекта. Иконка выбирается тематически под контент CTA. Вариант только для одного primary CTA на странице.
+```tsx
+// Внутренняя структура компонента
+<button className="group relative cursor-pointer overflow-hidden rounded-md border border-border bg-transparent font-mono text-[13px] uppercase tracking-[0.08em]">
+  {/* Текст по умолчанию — уезжает вправо */}
+  <span className="... transition-all duration-300 group-hover:translate-x-12 group-hover:opacity-0">
+    {text}
+  </span>
+
+  {/* Иконка + текст — появляются из правой стороны */}
+  <div className="absolute ... translate-x-12 opacity-0 transition-all duration-300 group-hover:-translate-x-1 group-hover:opacity-100"
+    style={{ color: "var(--rm-yellow-100)" }}>
+    {icon}
+    <span>{text}</span>
+  </div>
+
+  {/* Расширяющийся кружок */}
+  <div className="absolute left-[20%] top-[40%] h-2 w-2 rounded-md transition-all duration-300
+    group-hover:left-[0%] group-hover:top-[0%] group-hover:h-full group-hover:w-full group-hover:scale-[1.8]"
+    style={{ backgroundColor: "var(--foreground)" }}
+  />
+</button>
+```
+
+**Правила:** `duration-300` — намеренно медленнее для театрального эффекта. Иконка = тематическая (по умолчанию `Coffee`). Один на странице. Кружок использует `var(--foreground)`, текст внутри — `var(--rm-yellow-100)` (брендовый жёлтый).
 
 ---
 
