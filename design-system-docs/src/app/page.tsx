@@ -1390,7 +1390,7 @@ export default function DesignSystemPage() {
 
               {/* SPECIMENS */}
               <TabsContent value="specimens">
-                <div className="space-y-3">
+                <div className="border border-border rounded-lg overflow-hidden">
                   {[
                     // Heading
                     {
@@ -1551,8 +1551,8 @@ export default function DesignSystemPage() {
                       figmaLineHeight: "140%",
                       twCopy: "text-[length:var(--text-12)] leading-[1.4] tracking-[0.02em]",
                     },
-                  ].map((t) => (
-                    <div key={t.label} className="flex gap-4 py-4 px-4 rounded-md border border-border hover:bg-accent/30 transition-colors group items-start">
+                  ].map((t, i, arr) => (
+                    <div key={t.label} className={`flex gap-4 py-4 px-4 hover:bg-muted/40 transition-colors group items-start ${i < arr.length - 1 ? "border-b border-border" : ""}`}>
                       <Badge variant="secondary" className="w-16 justify-center text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] shrink-0 mt-1">
                         {t.label}
                       </Badge>
