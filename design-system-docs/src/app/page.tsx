@@ -2206,9 +2206,9 @@ export default function DesignSystemPage() {
                   <div className="mb-10">
                     <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-1">Базовая структура</p>
                     <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Фон, скругление, бордер. Без hover-реакции — для статичных блоков и отзывов.</p>
-                    <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 sm:grid-cols-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[0, 1, 2, 3].map((i) => (
-                        <div key={i} className={`h-24 bg-card ${i < 3 ? "border-r border-border" : ""}`} />
+                        <div key={i} className="h-24 rounded-sm border border-border bg-card" />
                       ))}
                     </div>
                     <p className="mt-3 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">
@@ -2223,9 +2223,9 @@ export default function DesignSystemPage() {
                   <div className="mb-10">
                     <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-1">Soft hover</p>
                     <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Бордер меняется на <code className="px-1 py-0.5 bg-muted rounded-sm text-[length:var(--text-12)]">muted-foreground</code> — приглушённый, ненавязчивый. Используется в большинстве каталожных карточек.</p>
-                    <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 sm:grid-cols-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[0, 1, 2, 3].map((i) => (
-                        <div key={i} className={`h-24 bg-card transition-all duration-150 hover:bg-muted/50 cursor-pointer ${i < 3 ? "border-r border-border" : ""}`} />
+                        <div key={i} className="h-24 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer" />
                       ))}
                     </div>
                     <p className="mt-3 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">
@@ -2240,11 +2240,11 @@ export default function DesignSystemPage() {
                   <div className="mb-10">
                     <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-1">Yellow hover</p>
                     <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Жёлтое свечение бордера следует за курсором. Используется для CTA-карточек: партнёрка, выделенные офферы.</p>
-                    <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 sm:grid-cols-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[0, 1, 2, 3].map((i) => (
                         <div
                           key={i}
-                          className={`relative h-24 bg-card cursor-pointer transition-all duration-75 ${i < 3 ? "border-r border-border" : ""}`}
+                          className="relative h-24 rounded-sm bg-card cursor-pointer transition-all duration-75 border border-border active:[border:2px_solid_var(--rm-yellow-100)]"
                         >
                           <GlowingEffect
                             spread={40}
