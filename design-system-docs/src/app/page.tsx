@@ -24,6 +24,17 @@ const DS_VERSION = "1.2.0"
 
 /* ───────── COLOR BLOCK HELPERS ───────── */
 
+/** Возвращает счётчик, который инкрементируется при смене темы (class на <html>) */
+function useThemeKey() {
+  const [key, setKey] = useState(0)
+  useEffect(() => {
+    const observer = new MutationObserver(() => setKey(k => k + 1))
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] })
+    return () => observer.disconnect()
+  }, [])
+  return key
+}
+
 function computeHex(el: HTMLElement): string {
   const bg = getComputedStyle(el).backgroundColor
   const m = bg.match(/(\d+)/g)
@@ -55,12 +66,13 @@ function ColorHexBlock({
   const [hex, setHex] = useState("")
   const [autoColor, setAutoColor] = useState("#000000")
   const [hovered, setHovered] = useState(false)
+  const themeKey = useThemeKey()
 
   useEffect(() => {
     if (!ref.current) return
     const h = computeHex(ref.current)
     if (h) { setHex(h); setAutoColor(computeLumColor(h)) }
-  }, [])
+  }, [themeKey])
 
   return (
     <div
@@ -111,12 +123,14 @@ function FgRow({ token }: { token: string }) {
   const [fgHex, setFgHex] = useState("")
   const [fgsHex, setFgsHex] = useState("")
 
+  const themeKey = useThemeKey()
+
   const readHexes = () => {
     if (fgProbeRef.current) { const h = computeHex(fgProbeRef.current); if (h) setFgHex(h) }
     if (fgsProbeRef.current) { const h = computeHex(fgsProbeRef.current); if (h) setFgsHex(h) }
   }
 
-  useEffect(() => { readHexes() }, [])
+  useEffect(() => { readHexes() }, [themeKey])
 
   return (
     <div className="grid grid-cols-6 border-t border-border relative">
@@ -744,7 +758,7 @@ function AnimatedGridLinesDemo() {
       >
         ↺ Повторить
       </button>
-      <div className="relative rounded-md border border-border overflow-hidden h-[200px] bg-background">
+      <div className="relative rounded-md border border-border overflow-hidden h-[280px] bg-background">
         <style>{`
           @keyframes line-h {
             from { opacity: 0; transform: scaleX(0); }
@@ -758,22 +772,24 @@ function AnimatedGridLinesDemo() {
         {hLines.map((i) => (
           <div
             key={`h-${key}-${i}`}
-            className="absolute left-0 right-0 h-px dark:bg-white/[0.04] bg-black/[0.06]"
+            className="absolute left-0 right-0 h-px"
             style={{
               top: `${(i + 1) * 20}%`,
               transformOrigin: "left",
-              animation: `line-h 0.8s ease-out ${i * 0.05}s both`,
+              backgroundColor: "var(--rm-gray-4)",
+              animation: `line-h 1.6s ease-out ${i * 0.1}s both`,
             }}
           />
         ))}
         {vLines.map((i) => (
           <div
             key={`v-${key}-${i}`}
-            className="absolute top-0 bottom-0 w-px dark:bg-white/[0.04] bg-black/[0.06]"
+            className="absolute top-0 bottom-0 w-px"
             style={{
               left: `${(i + 1) * (100 / (vLines.length + 1))}%`,
               transformOrigin: "top",
-              animation: `line-v 0.8s ease-out ${(hLines.length + i) * 0.05}s both`,
+              backgroundColor: "var(--rm-gray-4)",
+              animation: `line-v 1.6s ease-out ${(hLines.length + i) * 0.1}s both`,
             }}
           />
         ))}
@@ -784,7 +800,7 @@ function AnimatedGridLinesDemo() {
         </div>
       </div>
       <p className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">
-        scaleX/scaleY 0→1 · 800ms ease-out · stagger 0.05s между линиями
+        scaleX/scaleY 0→1 · 1600ms ease-out · stagger 0.1s между линиями
       </p>
     </div>
   )
@@ -845,7 +861,7 @@ function TokenRow({
 
 /* ───────── TIMING ROW WITH BAR ───────── */
 function TimingRow({ token, ms, desc }: { token: string; ms: number; desc: string }) {
-  const maxMs = 800
+  const maxMs = 1600
   const width = Math.round((ms / maxMs) * 100)
   return (
     <div className="py-2.5 px-3 rounded-md hover:bg-accent/50 transition-colors group">
@@ -1356,16 +1372,16 @@ export default function DesignSystemPage() {
                 ))
               })()}
               {/* Group labels row — visible only at md (7-col grid) */}
-              <div className="hidden md:flex md:col-span-3 border-t border-border px-3 py-2 items-center">
+              <div className="hidden md:flex md:col-span-3 border-t border-border border-r px-3 py-2 items-center">
                 <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)]">фоны компонентов</span>
               </div>
-              <div className="hidden md:flex md:col-span-2 border-t border-border border-l px-3 py-2 items-center">
+              <div className="hidden md:flex md:col-span-2 border-t border-border border-r px-3 py-2 items-center">
                 <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)]">границы</span>
               </div>
-              <div className="hidden md:flex md:col-span-1 border-t border-border border-l px-3 py-2 items-center">
+              <div className="hidden md:flex md:col-span-1 border-t border-border border-r px-3 py-2 items-center">
                 <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)]">вторичный текст</span>
               </div>
-              <div className="hidden md:flex md:col-span-1 border-t border-border border-l px-3 py-2 items-center">
+              <div className="hidden md:flex md:col-span-1 border-t border-border px-3 py-2 items-center">
                 <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)]">основной текст</span>
               </div>
             </div>
@@ -3280,7 +3296,7 @@ export default function DesignSystemPage() {
                 { token: "--duration-base",    ms: 200, desc: "Стандарт: переходы состояний (active/disabled/focus)" },
                 { token: "--duration-smooth",  ms: 300, desc: "Появление/скрытие элементов (dropdown, tooltip)" },
                 { token: "--duration-enter",   ms: 400, desc: "Входящие элементы (модал, панель)" },
-                { token: "--duration-grid",    ms: 800, desc: "Animated Grid Lines — единственная длинная анимация" },
+                { token: "--duration-grid",    ms: 1600, desc: "Animated Grid Lines hero reveal — единственная длинная анимация" },
               ].map((t) => (
                 <TimingRow key={t.token} token={t.token} ms={t.ms} desc={t.desc} />
               ))}
@@ -3465,7 +3481,7 @@ export default function DesignSystemPage() {
                 </CardHeader>
                 <CardContent className="text-[length:var(--text-14)] text-muted-foreground space-y-1.5">
                   <p>Fade-in hero-контента: opacity 0→1, 400ms, ease-enter</p>
-                  <p>Grid Lines reveal при загрузке (800ms)</p>
+                  <p>Grid Lines reveal при загрузке (1600ms)</p>
                   <p>Skeleton placeholder до загрузки данных</p>
                   <p>Typing indicator в чате агента</p>
                   <p>Hover-переходы компонентов (100–200ms)</p>
@@ -3507,7 +3523,7 @@ export default function DesignSystemPage() {
               8.9 Animated Grid Lines
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
-              Тонкие линии hero-секции материализуют каркас дизайна. Только одноразовая анимация при загрузке — после появления статичны. Используется с токеном <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">--duration-grid</code> (800ms).
+              Тонкие линии hero-секции материализуют каркас дизайна. Только одноразовая анимация при загрузке — после появления статичны. Используется с токеном <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">--duration-grid</code> (1600ms).
             </p>
             <AnimatedGridLinesDemo />
 

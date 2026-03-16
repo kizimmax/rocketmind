@@ -2139,7 +2139,7 @@ Motion в Rocketmind — функциональный, не декоративн
 | `--duration-base` | `200` | Стандарт: переходы состояний (active/disabled/focus) |
 | `--duration-smooth` | `300` | Появление/скрытие элементов (dropdown, tooltip) |
 | `--duration-enter` | `400` | Входящие элементы (модал, панель) |
-| `--duration-grid` | `800` | Animated Grid Lines (5.2) — единственная длинная анимация |
+| `--duration-grid` | `1600` | Animated Grid Lines hero reveal — единственная длинная анимация |
 
 ---
 
@@ -2353,7 +2353,7 @@ Motion в Rocketmind — функциональный, не декоративн
 
 **Допустимо (одноразово при загрузке):**
 - Fade-in hero-контента: `opacity 0→1`, `400ms`, `ease-enter`, без transform
-- Grid Lines reveal (5.2)
+- Grid Lines reveal (8.9) — 1600ms, `--duration-grid`
 
 ---
 
@@ -2386,7 +2386,7 @@ Motion в Rocketmind — функциональный, не декоративн
 - Только в hero-секциях (лендинг, SaaS-лендинг, страница агента)
 - Линии горизонтальные + вертикальные, совпадают с колонками/строками сетки
 - Цвет: `rgba(0,0,0,0.06)` light / `rgba(255,255,255,0.04)` dark — почти невидимые
-- Анимация появления: `scaleX/scaleY` от 0 до 1, `duration: 0.8s`, `easing: ease-out`, `stagger: 0.05s` между линиями
+- Анимация появления: `scaleX/scaleY` от 0 до 1, `duration: 1.6s`, `easing: ease-out`, `stagger: 0.1s` между линиями
 - После появления — статичные, не мигают, не двигаются
 
 ```css
@@ -2401,7 +2401,7 @@ Motion в Rocketmind — функциональный, не декоративн
   position: absolute;
   background: rgba(255, 255, 255, 0.04);
   transform-origin: left top;
-  animation: line-appear 0.8s ease-out forwards;
+  animation: line-appear 1.6s ease-out forwards;
   opacity: 0;
 }
 .grid-line--h { width: 100%; height: 1px; transform: scaleX(0); }
