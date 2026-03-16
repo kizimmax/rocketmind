@@ -194,17 +194,18 @@
   --rm-gray-alpha-800: rgba(0, 0, 0, 0.70);   /* heavy overlay */
 
   /* === Rocketmind Neutrals (Light) — mapped to gray scale === */
-  --background: #FFFFFF;
+  --background: var(--rm-gray-1);
   --foreground: var(--rm-gray-fg);
-  --muted: var(--rm-gray-2);
   --muted-foreground: var(--rm-gray-6);
   --border: var(--rm-gray-4);
   --input: var(--rm-gray-4);
   --ring: #FFCC00;
-  --card: var(--rm-gray-1);
+  --card: #FFFFFF;
   --card-foreground: var(--rm-gray-fg);
-  --popover: var(--rm-gray-1);
+  --popover: #FFFFFF;
   --popover-foreground: var(--rm-gray-fg);
+  /* shadcn internals — в коде проекта используй --rm-gray-2/3 напрямую */
+  --muted: var(--rm-gray-2);
   --secondary: var(--rm-gray-2);
   --secondary-foreground: var(--rm-gray-fg);
   --accent: var(--rm-gray-3);
@@ -398,7 +399,6 @@
   /* === Rocketmind Neutrals (Dark) — mapped to gray scale === */
   --background: #0A0A0A;
   --foreground: var(--rm-gray-fg);
-  --muted: var(--rm-gray-2);
   --muted-foreground: var(--rm-gray-6);
   --border: var(--rm-gray-4);
   --input: var(--rm-gray-4);
@@ -407,6 +407,8 @@
   --card-foreground: var(--rm-gray-fg);
   --popover: var(--rm-gray-1);
   --popover-foreground: var(--rm-gray-fg);
+  /* shadcn internals — в коде проекта используй --rm-gray-2/3 напрямую */
+  --muted: var(--rm-gray-2);
   --secondary: var(--rm-gray-2);
   --secondary-foreground: var(--rm-gray-fg);
   --accent: var(--rm-gray-3);

@@ -484,7 +484,7 @@ function MascotCard({ mascot, activeState }: { mascot: typeof MASCOTS[0]; active
 
   return (
     <div className="flex flex-col rounded-sm border border-border overflow-hidden">
-      <div className="bg-muted/30 flex items-end justify-center h-44 relative">
+      <div className="bg-rm-gray-2/30 flex items-end justify-center h-44 relative">
         <img
           src={imgPath}
           alt={`${mascot.name} — ${activeState}`}
@@ -847,8 +847,8 @@ function TokenRow({
   desc: string
 }) {
   return (
-    <div className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-accent/50 transition-colors group">
-      <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-muted px-2 py-0.5 rounded min-w-[180px]">
+    <div className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-rm-gray-3/50 transition-colors group">
+      <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-rm-gray-2 px-2 py-0.5 rounded min-w-[180px]">
         {token}
       </code>
       <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] min-w-[100px]">
@@ -865,16 +865,16 @@ function TimingRow({ token, ms, desc }: { token: string; ms: number; desc: strin
   const maxMs = 1600
   const width = Math.round((ms / maxMs) * 100)
   return (
-    <div className="py-2.5 px-3 rounded-md hover:bg-accent/50 transition-colors group">
+    <div className="py-2.5 px-3 rounded-md hover:bg-rm-gray-3/50 transition-colors group">
       <div className="flex items-center gap-3 mb-1.5">
-        <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-muted px-2 py-0.5 rounded min-w-[200px]">
+        <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-rm-gray-2 px-2 py-0.5 rounded min-w-[200px]">
           {token}
         </code>
         <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground min-w-[50px]">{ms}ms</span>
         <span className="text-[length:var(--text-14)] text-muted-foreground flex-1">{desc}</span>
         <CopyButton value={token} label={token} />
       </div>
-      <div className="h-1.5 bg-muted rounded-full overflow-hidden ml-3">
+      <div className="h-1.5 bg-rm-gray-2 rounded-full overflow-hidden ml-3">
         <div className="h-full rounded-full bg-[var(--rm-yellow-100)]" style={{ width: `${width}%` }} />
       </div>
     </div>
@@ -910,7 +910,7 @@ function EasingDemo({ token, curve, desc }: { token: string; curve: string; desc
     <div className="p-4 bg-card">
       <div className="flex items-start justify-between mb-3 gap-2">
         <div>
-          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-muted px-1.5 py-0.5 rounded">{token}</code>
+          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-rm-gray-2 px-1.5 py-0.5 rounded">{token}</code>
           <p className="text-[length:var(--text-12)] text-muted-foreground mt-1 leading-relaxed">{desc}</p>
         </div>
         <button
@@ -921,7 +921,7 @@ function EasingDemo({ token, curve, desc }: { token: string; curve: string; desc
           Play
         </button>
       </div>
-      <div className="h-8 bg-muted/50 rounded-md relative overflow-hidden flex items-center px-2">
+      <div className="h-8 bg-rm-gray-2/50 rounded-md relative overflow-hidden flex items-center px-2">
         <div ref={ballRef} className="w-4 h-4 rounded-full bg-[var(--rm-yellow-100)] shrink-0" style={{ transform: "translateX(0)" }} />
       </div>
       <p className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/60 mt-2 truncate">{curve}</p>
@@ -1152,7 +1152,7 @@ function VersionHistory() {
             <div key={entry.version} className="rounded-md border border-border overflow-hidden">
               <button
                 onClick={() => toggle(entry.version)}
-                className="w-full flex items-center gap-4 p-4 text-left hover:bg-muted/50 transition-colors"
+                className="w-full flex items-center gap-4 p-4 text-left hover:bg-rm-gray-2/50 transition-colors"
               >
                 {entry.current ? (
                   <Badge className="bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] hover:bg-[var(--rm-yellow-100)] shrink-0 h-5">
@@ -1517,7 +1517,7 @@ export default function DesignSystemPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground bg-muted px-2 py-0.5 rounded flex-1 truncate">
+                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground bg-rm-gray-2 px-2 py-0.5 rounded flex-1 truncate">
                             {item.imgClass}
                           </code>
                           <CopyButton value={item.imgClass} label={item.label} />
@@ -1545,13 +1545,13 @@ export default function DesignSystemPage() {
             </h3>
             <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 sm:grid-cols-4 mb-3">
               {[
-                { name: "Background", var: "--background",    token: "--background", lhex: "#FFFFFF", dhex: "#0A0A0A",
+                { name: "Background", var: "--background",    token: "--background", lhex: "#FAFAFA", dhex: "#0A0A0A",
                   note: "Основной фон страницы. Используй по умолчанию — особенно когда поверх кладёшь цвет." },
-                { name: "Card",       var: "--card",          token: "--card",       lhex: "#FAFAFA", dhex: "#121212",
+                { name: "Card",       var: "--card",          token: "--card",       lhex: "#FFFFFF", dhex: "#121212",
                   note: "Поверхность карточек и поповеров. Слой над фоном страницы." },
-                { name: "Muted",      var: "--muted",         token: "--muted",      lhex: "#F5F5F5", dhex: "#1A1A1A",
+                { name: "Muted",      var: "--rm-gray-2",     token: "--rm-gray-2",  lhex: "#F5F5F5", dhex: "#1A1A1A",
                   note: "Тихий фон для badge, инлайн-кода, неактивных зон." },
-                { name: "Accent",     var: "--accent",        token: "--accent",     lhex: "#EBEBEB", dhex: "#242424",
+                { name: "Accent",     var: "--rm-gray-3",     token: "--rm-gray-3",  lhex: "#EBEBEB", dhex: "#242424",
                   note: "Hover-состояния в списках, дропдаунах, nav-пунктах." },
               ].map((c, i) => (
                 <div key={c.token} className={`flex flex-col gap-2 p-3 ${i < 3 ? "border-r border-border" : ""} ${i < 2 ? "sm:border-b-0 border-b border-border" : ""}`}>
@@ -1571,9 +1571,9 @@ export default function DesignSystemPage() {
                 </div>
               ))}
             </div>
-            <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-10 leading-relaxed">
-              Background (#FFFFFF / #0A0A0A) — фон страницы, всегда первый слой.
-              Card (#FAFAFA / #121212) — поверхность карточек и поповеров поверх Background.
+            <div className="rounded-md border border-border bg-rm-gray-2/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-10 leading-relaxed">
+              Background (#FAFAFA / #0A0A0A) — фон страницы, всегда первый слой.
+              Card (#FFFFFF / #121212) — поверхность карточек и поповеров поверх Background.
               Muted — тихий фон. Accent — hover-состояния.
             </div>
 
@@ -1753,7 +1753,7 @@ export default function DesignSystemPage() {
                 </button>
               </div>
             </div>
-            <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] leading-relaxed">
+            <div className="rounded-md border border-border bg-rm-gray-2/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] leading-relaxed">
               <span className="text-foreground font-medium">.on-yellow</span> — основной CTA-блок бренда, hero-секции, highlight-полосы.
               Используй только один такой блок на экране. Остальные .on-* — для категориальной маркировки секций.
             </div>
@@ -1807,7 +1807,7 @@ export default function DesignSystemPage() {
               <TabsContent value="scale">
                 <div className="border border-border rounded-lg overflow-hidden">
                   {/* Header row */}
-                  <div className="flex items-center gap-4 px-4 py-2 border-b border-border bg-muted/40">
+                  <div className="flex items-center gap-4 px-4 py-2 border-b border-border bg-rm-gray-2/40">
                     <span className="w-16 shrink-0" />
                     <span className="flex-1 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] uppercase tracking-wider">Пример</span>
                     <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] hidden sm:flex items-center gap-1 shrink-0 w-28 justify-end">
@@ -1836,7 +1836,7 @@ export default function DesignSystemPage() {
                     { label: "Copy-14",      size: "14px", mobileSize: "14px", weight: "400", cls: "leading-[1.5] tracking-[0.01em]",                                                                             tailwind: "text-[length:var(--text-14)]" },
                     { label: "Copy-12",      size: "12px", mobileSize: "12px", weight: "400", cls: "leading-[1.4] tracking-[0.02em]",                                                                             tailwind: "text-[length:var(--text-12)]" },
                   ].map((t, i, arr) => (
-                    <div key={t.label} className={`flex items-center gap-4 py-3 px-4 hover:bg-muted/40 transition-colors group ${i < arr.length - 1 ? "border-b border-border" : ""}`}>
+                    <div key={t.label} className={`flex items-center gap-4 py-3 px-4 hover:bg-rm-gray-2/40 transition-colors group ${i < arr.length - 1 ? "border-b border-border" : ""}`}>
                       <Badge variant="secondary" className="w-16 justify-center text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] shrink-0">
                         {t.label}
                       </Badge>
@@ -2019,7 +2019,7 @@ export default function DesignSystemPage() {
                       twCopy: "text-[length:var(--text-12)] leading-[1.4] tracking-[0.02em]",
                     },
                   ].map((t, i, arr) => (
-                    <div key={t.label} className={`flex gap-4 py-4 px-4 hover:bg-muted/40 transition-colors group items-start ${i < arr.length - 1 ? "border-b border-border" : ""}`}>
+                    <div key={t.label} className={`flex gap-4 py-4 px-4 hover:bg-rm-gray-2/40 transition-colors group items-start ${i < arr.length - 1 ? "border-b border-border" : ""}`}>
                       <Badge variant="secondary" className="w-16 justify-center text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] shrink-0 mt-1">
                         {t.label}
                       </Badge>
@@ -2031,22 +2031,22 @@ export default function DesignSystemPage() {
                         <div className="flex items-center gap-1.5">
                           <span className="text-[length:var(--text-12)] leading-none">🖥</span>
                           <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">size</span>
-                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-muted px-1.5 py-0.5 rounded">{t.size}</code>
+                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-rm-gray-2 px-1.5 py-0.5 rounded">{t.size}</code>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[length:var(--text-12)] leading-none">📱</span>
                           <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">size</span>
-                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-muted px-1.5 py-0.5 rounded">{t.mobileSize}</code>
+                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-rm-gray-2 px-1.5 py-0.5 rounded">{t.mobileSize}</code>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] uppercase tracking-wider">spacing</span>
-                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-muted px-1.5 py-0.5 rounded">{t.letterSpacing}</code>
-                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{t.figmaSpacing}</code>
+                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-rm-gray-2 px-1.5 py-0.5 rounded">{t.letterSpacing}</code>
+                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground bg-rm-gray-2 px-1.5 py-0.5 rounded">{t.figmaSpacing}</code>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] uppercase tracking-wider">line-h</span>
-                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-muted px-1.5 py-0.5 rounded">{t.lineHeight}</code>
-                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{t.figmaLineHeight}</code>
+                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-foreground bg-rm-gray-2 px-1.5 py-0.5 rounded">{t.lineHeight}</code>
+                          <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground bg-rm-gray-2 px-1.5 py-0.5 rounded">{t.figmaLineHeight}</code>
                         </div>
                         <CopyButton value={t.twCopy} label={`${t.label} classes`} />
                       </div>
@@ -2123,12 +2123,12 @@ export default function DesignSystemPage() {
                       { label: "Gutter", val: `${g.gutter}px` },
                       { label: "Margin", val: `${g.margin}px` },
                     ].map((s) => (
-                      <div key={s.label} className="flex flex-col gap-0.5 bg-muted rounded-md px-3 py-2 min-w-[90px]">
+                      <div key={s.label} className="flex flex-col gap-0.5 bg-rm-gray-2 rounded-md px-3 py-2 min-w-[90px]">
                         <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground">{s.label}</span>
                         <span className="text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] font-medium">{s.val}</span>
                       </div>
                     ))}
-                    <div className="flex flex-col gap-0.5 bg-muted rounded-md px-3 py-2 min-w-[90px]">
+                    <div className="flex flex-col gap-0.5 bg-rm-gray-2 rounded-md px-3 py-2 min-w-[90px]">
                       <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground">Tailwind</span>
                       <div className="flex items-center gap-1">
                         <span className="text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] font-medium">{g.tw}</span>
@@ -2269,7 +2269,7 @@ export default function DesignSystemPage() {
                     className="flex items-center px-3">
                     <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Body copy</span>
                   </div>
-                  <div style={{ gridColumn: "2", gridRow: "1 / 3", background: "var(--muted)" }}
+                  <div style={{ gridColumn: "2", gridRow: "1 / 3", background: "var(--rm-gray-2)" }}
                     className="flex flex-col items-center justify-center gap-0.5">
                     <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/60">Visual</span>
                     <span className="text-[length:var(--text-12)] text-muted-foreground/40 font-[family-name:var(--font-mono-family)]">5 col · 42%</span>
@@ -2364,15 +2364,15 @@ export default function DesignSystemPage() {
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6 max-w-[640px]">
               Сетка — часть дизайн-кода. Направляющие линии между колонками — не декор, а материализация структуры.
-              Реальные 1px CSS-колонки задают ритм и видимый каркас. <code className="bg-muted px-1.5 py-0.5 rounded text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]">guideVisible</code> управляет видимостью без изменения раскладки.
+              Реальные 1px CSS-колонки задают ритм и видимый каркас. <code className="bg-rm-gray-2 px-1.5 py-0.5 rounded text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]">guideVisible</code> управляет видимостью без изменения раскладки.
             </p>
 
             {/* Механика: три состояния */}
             <p className="text-[length:var(--text-12)] font-medium text-muted-foreground mb-3">Механика: от пустой сетки к контенту</p>
             <p className="text-[length:var(--text-12)] text-muted-foreground mb-4">
               Принцип: вместо CSS gap — реальные 1px CSS-колонки.
-              {" "}<code className="bg-muted px-1 rounded font-[family-name:var(--font-mono-family)]">cols=4</code> →
-              {" "}template = <code className="bg-muted px-1 rounded font-[family-name:var(--font-mono-family)]">&quot;1fr 1px 1fr 1px 1fr 1px 1fr&quot;</code>
+              {" "}<code className="bg-rm-gray-2 px-1 rounded font-[family-name:var(--font-mono-family)]">cols=4</code> →
+              {" "}template = <code className="bg-rm-gray-2 px-1 rounded font-[family-name:var(--font-mono-family)]">&quot;1fr 1px 1fr 1px 1fr 1px 1fr&quot;</code>
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
@@ -2425,14 +2425,14 @@ export default function DesignSystemPage() {
 
             {/* Два режима */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-              <div className="space-y-2 bg-muted/30 rounded-[var(--radius-lg)] p-4">
+              <div className="space-y-2 bg-rm-gray-2/30 rounded-[var(--radius-lg)] p-4">
                 <Badge variant="default">Лендинг / маркетинг</Badge>
                 <p className="text-[length:var(--text-14)] font-medium">guideVisible = true</p>
                 <p className="text-[length:var(--text-12)] text-muted-foreground">
                   Направляющие видны как часть визуального языка. Структура читается через линии.
                 </p>
               </div>
-              <div className="space-y-2 bg-muted/30 rounded-[var(--radius-lg)] p-4">
+              <div className="space-y-2 bg-rm-gray-2/30 rounded-[var(--radius-lg)] p-4">
                 <Badge variant="secondary">SaaS-интерфейс</Badge>
                 <p className="text-[length:var(--text-14)] font-medium">guideVisible = false</p>
                 <p className="text-[length:var(--text-12)] text-muted-foreground">
@@ -2581,9 +2581,9 @@ export default function DesignSystemPage() {
                     label: "Secondary",
                     token: "btn-secondary",
                     desc: "Второстепенное действие рядом с primary. Фильтры, переключатели.",
-                    className: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-border bg-transparent text-foreground font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent`,
+                    className: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-border bg-transparent text-foreground font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-rm-gray-3`,
                     preview: (
-                      <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-border bg-transparent text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent cursor-pointer">
+                      <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-border bg-transparent text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-rm-gray-3 cursor-pointer">
                         Подробнее
                       </button>
                     ),
@@ -2593,9 +2593,9 @@ export default function DesignSystemPage() {
                     label: "Ghost",
                     token: "btn-ghost",
                     desc: "Тихое действие без фона. Навигация, вспомогательные inline-действия.",
-                    className: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-transparent text-muted-foreground font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent hover:text-foreground`,
+                    className: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-transparent text-muted-foreground font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-rm-gray-3 hover:text-foreground`,
                     preview: (
-                      <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-transparent text-muted-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent hover:text-foreground cursor-pointer">
+                      <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-transparent text-muted-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-rm-gray-3 hover:text-foreground cursor-pointer">
                         Отмена
                       </button>
                     ),
@@ -2774,7 +2774,7 @@ export default function DesignSystemPage() {
                     Варианты бордера карточки
                   </h3>
                   <p className="text-muted-foreground text-[length:var(--text-14)] mb-8">
-                    Все карточки используют <code className="px-1 py-0.5 bg-muted rounded-sm text-[length:var(--text-12)]">bg-card</code>, <code className="px-1 py-0.5 bg-muted rounded-sm text-[length:var(--text-12)]">rounded-sm</code> и отличаются только поведением бордера при наведении.
+                    Все карточки используют <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-card</code>, <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">rounded-sm</code> и отличаются только поведением бордера при наведении.
                   </p>
 
                   {/* Базовая структура */}
@@ -2797,7 +2797,7 @@ export default function DesignSystemPage() {
                   {/* Soft hover */}
                   <div className="mb-10">
                     <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-1">Soft hover</p>
-                    <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Бордер меняется на <code className="px-1 py-0.5 bg-muted rounded-sm text-[length:var(--text-12)]">muted-foreground</code> — приглушённый, ненавязчивый. Используется в большинстве каталожных карточек.</p>
+                    <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Бордер меняется на <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">muted-foreground</code> — приглушённый, ненавязчивый. Используется в большинстве каталожных карточек.</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {[0, 1, 2, 3].map((i) => (
                         <div key={i} className="h-24 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer" />
@@ -2842,7 +2842,7 @@ export default function DesignSystemPage() {
                 {/* CARDS CATALOG */}
                 <TabsContent value="cards">
                 {/* ── Легенда размеров ── */}
-                <div className="flex flex-wrap gap-3 mb-8 p-4 rounded-lg border border-border bg-muted/40">
+                <div className="flex flex-wrap gap-3 mb-8 p-4 rounded-lg border border-border bg-rm-gray-2/40">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]">S</Badge>
                     <span className="text-[length:var(--text-14)] text-muted-foreground">Узкая — 20–30% экрана. Сетка 3–4 колонки.</span>
@@ -2866,9 +2866,9 @@ export default function DesignSystemPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
                     <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="h-36 bg-muted overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={28}/></div>
+                      <div className="h-36 bg-rm-gray-2 overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={28}/></div>
                       <div className="flex flex-col gap-3 p-5">
-                        <span className="w-fit px-2 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Курс</span>
+                        <span className="w-fit px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Курс</span>
                         <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em] leading-snug">Название продукта</h4>
                         <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Краткое описание продукта или услуги.</p>
                         <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
@@ -2884,10 +2884,10 @@ export default function DesignSystemPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
                     <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="h-44 bg-muted overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={36}/></div>
+                      <div className="h-44 bg-rm-gray-2 overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={36}/></div>
                       <div className="flex flex-col gap-4 p-6">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Курс</span>
+                          <span className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Курс</span>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">· 12 уроков</span>
                         </div>
                         <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Название продукта</h4>
@@ -2912,10 +2912,10 @@ export default function DesignSystemPage() {
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
                     <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="w-48 flex-shrink-0 bg-muted flex items-center justify-center text-muted-foreground"><Rocket size={36}/></div>
+                      <div className="w-48 flex-shrink-0 bg-rm-gray-2 flex items-center justify-center text-muted-foreground"><Rocket size={36}/></div>
                       <div className="flex flex-1 flex-col gap-3 p-6">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Услуга</span>
+                          <span className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Услуга</span>
                         </div>
                         <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Название продукта</h4>
                         <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Описание продукта. В горизонтальном варианте текст читается слева направо.</p>
@@ -2940,7 +2940,7 @@ export default function DesignSystemPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
                     <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer group">
-                      <div className="h-40 bg-muted flex items-center justify-center"><User size={36} className="text-muted-foreground"/></div>
+                      <div className="h-40 bg-rm-gray-2 flex items-center justify-center"><User size={36} className="text-muted-foreground"/></div>
                       <div className="flex flex-col gap-3 p-5">
                         <div>
                           <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Иван Петров</h4>
@@ -2948,7 +2948,7 @@ export default function DesignSystemPage() {
                         </div>
                         <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">10 лет в консалтинге, помог 200+ компаниям.</p>
                         <div className="flex flex-wrap gap-1">
-                          {["Стратегия","EdTech"].map(t=><span key={t} className="px-1.5 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">{t}</span>)}
+                          {["Стратегия","EdTech"].map(t=><span key={t} className="px-1.5 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">{t}</span>)}
                         </div>
                         <span className="inline-flex items-center gap-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-auto group/cta">
                           Подробнее <ArrowRight size={12} className="transition-transform group-hover/cta:translate-x-1"/>
@@ -2962,7 +2962,7 @@ export default function DesignSystemPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
                     <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer group">
-                      <div className="h-52 bg-muted flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
+                      <div className="h-52 bg-rm-gray-2 flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
                       <div className="flex flex-col gap-4 p-6">
                         <div>
                           <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Иван Петров</h4>
@@ -2970,7 +2970,7 @@ export default function DesignSystemPage() {
                         </div>
                         <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">10 лет в консалтинге, помог 200+ компаниям выйти на новые рынки. Специализация — стратегия роста.</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {["Стратегия","EdTech","SaaS"].map(t=><span key={t} className="px-2 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">{t}</span>)}
+                          {["Стратегия","EdTech","SaaS"].map(t=><span key={t} className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">{t}</span>)}
                         </div>
                         <div className="flex items-center justify-between mt-auto">
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Кейсов: 48</span>
@@ -2987,7 +2987,7 @@ export default function DesignSystemPage() {
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
                     <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="w-52 flex-shrink-0 bg-muted flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
+                      <div className="w-52 flex-shrink-0 bg-rm-gray-2 flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
                       <div className="flex flex-1 items-center gap-8 p-6">
                         <div className="flex flex-col gap-1 w-48 flex-shrink-0">
                           <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Иван Петров</h4>
@@ -2996,7 +2996,7 @@ export default function DesignSystemPage() {
                         <p className="flex-1 text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">10 лет в консалтинге, помог 200+ компаниям выйти на новые рынки. Специализация — стратегия роста для tech-стартапов.</p>
                         <div className="flex flex-col gap-3 items-end flex-shrink-0">
                           <div className="flex flex-wrap gap-1.5 justify-end">
-                            {["Стратегия","EdTech","SaaS"].map(t=><span key={t} className="px-2 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">{t}</span>)}
+                            {["Стратегия","EdTech","SaaS"].map(t=><span key={t} className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">{t}</span>)}
                           </div>
                           <span className="inline-flex items-center gap-1.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground group/cta">
                             Подробнее <ArrowRight size={14} className="transition-transform group-hover/cta:translate-x-1"/>
@@ -3017,7 +3017,7 @@ export default function DesignSystemPage() {
                   {[1,2,3].map(i => (
                     <div key={i} className="flex flex-col gap-4 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="relative w-fit">
-                        <div className="w-14 h-14 rounded-full border-2 flex items-center justify-center bg-muted" style={{borderColor:"var(--rm-yellow-50)"}}>
+                        <div className="w-14 h-14 rounded-full border-2 flex items-center justify-center bg-rm-gray-2" style={{borderColor:"var(--rm-yellow-50)"}}>
                           <Rocket size={20} className="text-[var(--rm-yellow-100)]"/>
                         </div>
                         <span className="absolute -bottom-0.5 -right-0.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-card border border-border">
@@ -3042,7 +3042,7 @@ export default function DesignSystemPage() {
                     <div key={i} className="flex flex-col gap-5 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="flex items-center gap-4">
                         <div className="relative flex-shrink-0">
-                          <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center bg-muted" style={{borderColor:"var(--rm-yellow-50)"}}>
+                          <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center bg-rm-gray-2" style={{borderColor:"var(--rm-yellow-50)"}}>
                             <Rocket size={28} className="text-[var(--rm-yellow-100)]"/>
                           </div>
                           <span className="absolute bottom-0.5 right-0.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card border border-border">
@@ -3071,7 +3071,7 @@ export default function DesignSystemPage() {
                   {[1,2].map(i => (
                     <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
                       <div className="relative flex-shrink-0">
-                        <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center bg-muted" style={{borderColor:"var(--rm-yellow-50)"}}>
+                        <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center bg-rm-gray-2" style={{borderColor:"var(--rm-yellow-50)"}}>
                           <Rocket size={28} className="text-[var(--rm-yellow-100)]"/>
                         </div>
                         <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-[var(--rm-green-100)] border-2 border-card"/>
@@ -3101,7 +3101,7 @@ export default function DesignSystemPage() {
                       <div className="flex gap-0.5 text-[var(--rm-yellow-100)]">{"★★★★★".split("").map((s,j)=><span key={j} className="text-[length:var(--text-14)]">{s}</span>)}</div>
                       <blockquote className="text-[length:var(--text-14)] italic leading-[1.5] text-foreground line-clamp-4">«Агент помог за 2 дня разобраться в структуре рынка, на что раньше уходило 2 недели.»</blockquote>
                       <div className="flex items-center gap-2.5 pt-3 border-t border-border mt-auto">
-                        <div className="w-8 h-8 rounded-full bg-muted border border-border flex-shrink-0 flex items-center justify-center text-muted-foreground"><User size={14}/></div>
+                        <div className="w-8 h-8 rounded-full bg-rm-gray-2 border border-border flex-shrink-0 flex items-center justify-center text-muted-foreground"><User size={14}/></div>
                         <div>
                           <div className="text-[length:var(--text-14)] font-medium leading-none">Анна Смирнова</div>
                           <div className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-0.5">CEO, TechStartup</div>
@@ -3118,7 +3118,7 @@ export default function DesignSystemPage() {
                       <div className="flex gap-0.5 text-[var(--rm-yellow-100)]">{"★★★★★".split("").map((s,j)=><span key={j} className="text-[length:var(--text-16)]">{s}</span>)}</div>
                       <blockquote className="text-[length:var(--text-16)] italic leading-[1.618] text-foreground">«Агент помог мне за 2 дня разобраться в структуре рынка, на что раньше уходило целых 2 недели работы аналитика.»</blockquote>
                       <div className="flex items-center gap-3 pt-4 border-t border-border">
-                        <div className="w-10 h-10 rounded-full bg-muted border border-border flex-shrink-0 flex items-center justify-center text-muted-foreground"><User size={16}/></div>
+                        <div className="w-10 h-10 rounded-full bg-rm-gray-2 border border-border flex-shrink-0 flex items-center justify-center text-muted-foreground"><User size={16}/></div>
                         <div className="flex-1">
                           <div className="text-[length:var(--text-14)] font-medium">Анна Смирнова</div>
                           <div className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">CEO, TechStartup</div>
@@ -3134,7 +3134,7 @@ export default function DesignSystemPage() {
                   {[1,2].map(i => (
                     <div key={i} className="flex gap-8 p-6 rounded-sm border border-border bg-card dark:border-white/[0.06]">
                       <div className="flex flex-col items-center gap-3 flex-shrink-0 w-36">
-                        <div className="w-16 h-16 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground"><User size={24}/></div>
+                        <div className="w-16 h-16 rounded-full bg-rm-gray-2 border border-border flex items-center justify-center text-muted-foreground"><User size={24}/></div>
                         <div className="text-center">
                           <div className="text-[length:var(--text-14)] font-medium">Анна Смирнова</div>
                           <div className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">CEO, TechStartup</div>
@@ -3171,7 +3171,7 @@ export default function DesignSystemPage() {
                       </div>
                       <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Агент завершил анализ конкурентов...</p>
                       <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
-                        <div className="w-5 h-5 rounded-full bg-muted border border-border"/>
+                        <div className="w-5 h-5 rounded-full bg-rm-gray-2 border border-border"/>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">3 сообщ.</span>
                       </div>
                     </div>
@@ -3194,7 +3194,7 @@ export default function DesignSystemPage() {
                       <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Агент завершил анализ конкурентов и подготовил сводный отчёт по основным игрокам рынка.</p>
                       <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-muted border border-border"/>
+                          <div className="w-6 h-6 rounded-full bg-rm-gray-2 border border-border"/>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Маркетолог</span>
                         </div>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">3 сообщения</span>
@@ -3218,7 +3218,7 @@ export default function DesignSystemPage() {
                       </div>
                       <p className="flex-1 text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Агент завершил анализ конкурентов и подготовил сводный отчёт по основным игрокам рынка EdTech за 2025–2026 год.</p>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-6 h-6 rounded-full bg-muted border border-border"/>
+                        <div className="w-6 h-6 rounded-full bg-rm-gray-2 border border-border"/>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">3 сообщ.</span>
                       </div>
                     </div>
@@ -3234,7 +3234,7 @@ export default function DesignSystemPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
                     <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="relative h-32 bg-muted flex items-center justify-center">
+                      <div className="relative h-32 bg-rm-gray-2 flex items-center justify-center">
                         <GraduationCap size={28} className="text-muted-foreground"/>
                         <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent"/>
                       </div>
@@ -3242,7 +3242,7 @@ export default function DesignSystemPage() {
                         <div className="flex gap-1.5">
                           <span className="px-1.5 py-0.5 rounded-sm font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]"
                             style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
-                          <span className="px-1.5 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
+                          <span className="px-1.5 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
                         </div>
                         <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em] leading-snug">Маркетинг для стартапов</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">12 уроков</span>
@@ -3259,7 +3259,7 @@ export default function DesignSystemPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
                     <div key={i} className="flex flex-col overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="relative h-44 bg-muted flex items-center justify-center">
+                      <div className="relative h-44 bg-rm-gray-2 flex items-center justify-center">
                         <GraduationCap size={40} className="text-muted-foreground"/>
                         <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent"/>
                       </div>
@@ -3267,7 +3267,7 @@ export default function DesignSystemPage() {
                         <div className="flex gap-2">
                           <span className="px-2 py-0.5 rounded-sm font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]"
                             style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
-                          <span className="px-2 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
+                          <span className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
                         </div>
                         <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Маркетинг для стартапов</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">Иван Петров · 12 уроков</span>
@@ -3291,7 +3291,7 @@ export default function DesignSystemPage() {
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
                     <div key={i} className="flex overflow-hidden rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="w-52 flex-shrink-0 bg-muted flex items-center justify-center relative">
+                      <div className="w-52 flex-shrink-0 bg-rm-gray-2 flex items-center justify-center relative">
                         <GraduationCap size={40} className="text-muted-foreground"/>
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card/20"/>
                       </div>
@@ -3300,7 +3300,7 @@ export default function DesignSystemPage() {
                           <div className="flex gap-2">
                             <span className="px-2 py-0.5 rounded-sm font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]"
                               style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
-                            <span className="px-2 py-0.5 rounded-sm bg-muted font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
+                            <span className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
                           </div>
                           <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Маркетинг для стартапов</h4>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">Иван Петров · 12 уроков</span>
@@ -3328,7 +3328,7 @@ export default function DesignSystemPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {[1,2,3].map(i => (
                     <div key={i} className="flex flex-col gap-3 p-5 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="w-10 h-10 rounded-sm border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
+                      <div className="w-10 h-10 rounded-sm border border-border bg-rm-gray-2 flex items-center justify-center text-muted-foreground flex-shrink-0">
                         <Wrench size={18}/>
                       </div>
                       <div>
@@ -3349,7 +3349,7 @@ export default function DesignSystemPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {[1,2].map(i => (
                     <div key={i} className="flex flex-col gap-4 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="w-12 h-12 rounded-sm border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
+                      <div className="w-12 h-12 rounded-sm border border-border bg-rm-gray-2 flex items-center justify-center text-muted-foreground flex-shrink-0">
                         <Wrench size={22}/>
                       </div>
                       <div>
@@ -3370,7 +3370,7 @@ export default function DesignSystemPage() {
                 <div className="flex flex-col gap-3 mb-10">
                   {[1,2].map(i => (
                     <div key={i} className="flex items-center gap-6 p-6 rounded-sm border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                      <div className="w-14 h-14 rounded-sm border border-border bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
+                      <div className="w-14 h-14 rounded-sm border border-border bg-rm-gray-2 flex items-center justify-center text-muted-foreground flex-shrink-0">
                         <Wrench size={24}/>
                       </div>
                       <div className="flex flex-col gap-0.5 w-40 flex-shrink-0">
@@ -3474,7 +3474,7 @@ export default function DesignSystemPage() {
           {/* ═══════ 10. TOOLTIPS ═══════ */}
           <Section id="tooltips" title="10. Тултипы" version={DS_VERSION}>
             <p className="text-muted-foreground mb-6">
-              Контекстные подсказки при наведении. Появляются поверх контента через <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">position: fixed</code>, не обрезаются родителем. Анимация: 120ms ease-out, fade + translateY.
+              Контекстные подсказки при наведении. Появляются поверх контента через <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">position: fixed</code>, не обрезаются родителем. Анимация: 120ms ease-out, fade + translateY.
             </p>
 
             <h3 id="tooltips-animation" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
@@ -3611,7 +3611,7 @@ export default function DesignSystemPage() {
                 { icon: <ChevronRight size={20} />, name: "ChevronRight" },
                 { icon: <Loader2 size={20} className="animate-spin" />, name: "Loader2" },
               ].map((item) => (
-                <div key={item.name} className="flex flex-col items-center gap-1.5 p-3 rounded-md border border-border hover:bg-accent transition-colors cursor-pointer group">
+                <div key={item.name} className="flex flex-col items-center gap-1.5 p-3 rounded-md border border-border hover:bg-rm-gray-3 transition-colors cursor-pointer group">
                   <div className="text-muted-foreground group-hover:text-foreground transition-colors">
                     {item.icon}
                   </div>
@@ -3659,7 +3659,7 @@ export default function DesignSystemPage() {
                 to   { opacity: 1; transform: translateY(0); }
               }
               .skeleton-shimmer {
-                background: linear-gradient(90deg, var(--muted) 0%, color-mix(in srgb, var(--muted) 80%, white) 50%, var(--muted) 100%);
+                background: linear-gradient(90deg, var(--rm-gray-2) 0%, color-mix(in srgb, var(--rm-gray-2) 80%, white) 50%, var(--rm-gray-2) 100%);
                 background-size: 200% 100%;
                 animation: shimmer-anim 1.5s ease-in-out infinite;
                 border-radius: var(--radius);
@@ -3739,7 +3739,7 @@ export default function DesignSystemPage() {
                 <button
                   className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-md border border-border text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] cursor-pointer select-none"
                   style={{ transition: "background-color 100ms cubic-bezier(0.4,0,0.2,1)", backgroundColor: "transparent" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--muted)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--rm-gray-2)" }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent" }}
                 >
                   Ghost button
@@ -3787,7 +3787,7 @@ export default function DesignSystemPage() {
                       key={i}
                       className="p-2 rounded-md cursor-pointer"
                       style={{ color: "var(--muted-foreground)", transition: "color 100ms cubic-bezier(0.4,0,0.2,1), background-color 100ms cubic-bezier(0.4,0,0.2,1)" }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--foreground)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--muted)" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--foreground)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--rm-gray-2)" }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--muted-foreground)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent" }}
                     >
                       <Icon className="w-5 h-5" />
@@ -3827,7 +3827,7 @@ export default function DesignSystemPage() {
                 </div>
               </ToggleAnimCard>
               <ToggleAnimCard label="Сообщение в чате" desc="Fade + slide 8px снизу. 300ms ease-enter." animClass="bubble-enter" animDuration="300ms" animEasing="cubic-bezier(0,0,0.2,1)">
-                <div className="w-full px-3 py-2 rounded-xl rounded-tl-none bg-muted border border-border/50">
+                <div className="w-full px-3 py-2 rounded-xl rounded-tl-none bg-rm-gray-2 border border-border/50">
                   <p className="text-[length:var(--text-12)] text-muted-foreground mb-0.5">AI-агент</p>
                   <p className="text-[length:var(--text-12)]">Привет! Чем могу помочь?</p>
                 </div>
@@ -3859,11 +3859,11 @@ export default function DesignSystemPage() {
                   <div className="w-8 h-8 rounded-full bg-[var(--rm-violet-100)]/20 flex items-center justify-center shrink-0">
                     <Sparkles className="w-3.5 h-3.5 text-[var(--rm-violet-100)]" />
                   </div>
-                  <div className="px-4 py-2.5 rounded-xl rounded-tl-none bg-muted flex gap-1.5 items-center">
+                  <div className="px-4 py-2.5 rounded-xl rounded-tl-none bg-rm-gray-2 flex gap-1.5 items-center">
                     {[0, 1, 2].map((i) => (
                       <div
                         key={i}
-                        className="w-1.5 h-1.5 rounded-full bg-muted-foreground"
+                        className="w-1.5 h-1.5 rounded-full bg-rm-gray-2-foreground"
                         style={{ animation: "typing-pulse 1.2s ease-in-out infinite", animationDelay: `${i * 0.2}s` }}
                       />
                     ))}
@@ -3908,7 +3908,7 @@ export default function DesignSystemPage() {
             <h3 id="animations-a11y" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               8.8 Доступность (Reduced Motion)
             </h3>
-            <div className="p-4 rounded-md border border-border bg-muted/30">
+            <div className="p-4 rounded-md border border-border bg-rm-gray-2/30">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[length:var(--text-14)] font-medium">prefers-reduced-motion: reduce</p>
                 <CopyButton
@@ -3917,7 +3917,7 @@ export default function DesignSystemPage() {
                 />
               </div>
               <p className="text-[length:var(--text-14)] text-muted-foreground">
-                Все анимации обязаны уважать системные настройки. Исключение — typing-indicator: заменяется на статичный <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">•••</code>.
+                Все анимации обязаны уважать системные настройки. Исключение — typing-indicator: заменяется на статичный <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">•••</code>.
               </p>
             </div>
 
@@ -3926,7 +3926,7 @@ export default function DesignSystemPage() {
               8.9 Animated Grid Lines
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
-              Тонкие линии hero-секции материализуют каркас дизайна. Только одноразовая анимация при загрузке — после появления статичны. Используется с токеном <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">--duration-grid</code> (1600ms).
+              Тонкие линии hero-секции материализуют каркас дизайна. Только одноразовая анимация при загрузке — после появления статичны. Используется с токеном <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">--duration-grid</code> (1600ms).
             </p>
             <AnimatedGridLinesDemo />
 
@@ -3966,7 +3966,7 @@ export default function DesignSystemPage() {
             <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mt-8 mb-4">
               Алгоритм
             </h3>
-            <div className="p-4 rounded-md border border-border bg-muted/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
+            <div className="p-4 rounded-md border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
               <p>distance = sqrt((x − mx)² + (y − my)²)</p>
               <p>t = clamp(1 − distance / LENS_RADIUS, 0, 1)</p>
               <p>scale = 1 + (MAX_SCALE − 1) × t²  // квадратичный easing</p>
@@ -3980,7 +3980,7 @@ export default function DesignSystemPage() {
             <div className="overflow-auto rounded-md border border-border">
               <table className="w-full text-[length:var(--text-14)]">
                 <thead>
-                  <tr className="border-b border-border bg-muted/30">
+                  <tr className="border-b border-border bg-rm-gray-2/30">
                     <th className="text-left px-4 py-2 font-medium">Экран</th>
                     <th className="text-left px-4 py-2 font-medium">Секция</th>
                     <th className="text-left px-4 py-2 font-medium">Вариант</th>
@@ -4004,11 +4004,11 @@ export default function DesignSystemPage() {
             </div>
 
             {/* a11y note */}
-            <div className="mt-6 p-4 rounded-md border border-border bg-muted/30">
+            <div className="mt-6 p-4 rounded-md border border-border bg-rm-gray-2/30">
               <p className="text-[length:var(--text-14)] font-medium mb-1">Доступность & Touch</p>
               <p className="text-[length:var(--text-14)] text-muted-foreground">
-                На touch-устройствах (<code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded">pointer: coarse</code>) линза отключается — сетка остаётся статичным декором.
-                При <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded">prefers-reduced-motion: reduce</code> анимация останавливается, сетка отрисовывается один раз.
+                На touch-устройствах (<code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">pointer: coarse</code>) линза отключается — сетка остаётся статичным декором.
+                При <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">prefers-reduced-motion: reduce</code> анимация останавливается, сетка отрисовывается один раз.
               </p>
             </div>
           </Section>
@@ -4034,12 +4034,12 @@ export default function DesignSystemPage() {
 
             {/* ── Live preview ── */}
             <div className="-mx-5 md:-mx-10 mb-8 border-y border-border overflow-hidden">
-              <div className="bg-muted/20">
+              <div className="bg-rm-gray-2/20">
                 <SiteHeader basePath={BASE_PATH} preview />
                 {/* Fake page content to simulate context */}
                 <div className="px-8 py-10 space-y-3">
                   {[100, 75, 88, 60].map((w, i) => (
-                    <div key={i} className="h-3 rounded-sm bg-muted" style={{ width: `${w}%` }} />
+                    <div key={i} className="h-3 rounded-sm bg-rm-gray-2" style={{ width: `${w}%` }} />
                   ))}
                 </div>
               </div>
@@ -4052,7 +4052,7 @@ export default function DesignSystemPage() {
             <div className="overflow-auto rounded-md border border-border mb-8">
               <table className="w-full text-[length:var(--text-14)]">
                 <thead>
-                  <tr className="border-b border-border bg-muted/30">
+                  <tr className="border-b border-border bg-rm-gray-2/30">
                     <th className="text-left px-4 py-2 font-medium">Свойство</th>
                     <th className="text-left px-4 py-2 font-medium">Токен</th>
                     <th className="text-left px-4 py-2 font-medium">Значение</th>
@@ -4067,8 +4067,8 @@ export default function DesignSystemPage() {
                     ["z-index",          "z-50",                       "Всегда поверх контента"],
                     ["Логотип",          "text_logo_*.svg",            "dark/light вариант автоматически"],
                     ["Навигация",        "--font-mono-family",         "12px, uppercase, tracking 0.08em"],
-                    ["Цвет nav",         "--muted-foreground",         "hover → --foreground + --accent bg"],
-                    ["Кнопка «Войти»",   "--border / --accent",        "Outline, hover: bg-accent"],
+                    ["Цвет nav",         "--muted-foreground",         "hover → --foreground + bg-rm-gray-3"],
+                    ["Кнопка «Войти»",   "--border / --rm-gray-3",     "Outline, hover: bg-rm-gray-3"],
                     ["CTA «Попробовать»","--rm-yellow-100",             "hover: --rm-yellow-300"],
                     ["Мобайл гамбургер", "Lucide Menu / X",            "18px, stroke 1.5px"],
                     ["Мобайл меню",      "React portal + fixed",       "top-16, backdrop-blur-lg"],
@@ -4089,7 +4089,7 @@ export default function DesignSystemPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <div className="rounded-md border border-border overflow-hidden">
-                <div className="px-4 py-2 border-b border-border bg-muted/30">
+                <div className="px-4 py-2 border-b border-border bg-rm-gray-2/30">
                   <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Default — top of page</span>
                 </div>
                 <div className="bg-transparent p-0">
@@ -4109,13 +4109,13 @@ export default function DesignSystemPage() {
                     </div>
                   </nav>
                 </div>
-                <div className="px-4 py-2 bg-muted/10">
+                <div className="px-4 py-2 bg-rm-gray-2/10">
                   <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">border-transparent · bg-transparent</span>
                 </div>
               </div>
 
               <div className="rounded-md border border-border overflow-hidden">
-                <div className="px-4 py-2 border-b border-border bg-muted/30">
+                <div className="px-4 py-2 border-b border-border bg-rm-gray-2/30">
                   <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Scrolled — after 10px</span>
                 </div>
                 <div className="bg-background/95 backdrop-blur-lg p-0">
@@ -4135,7 +4135,7 @@ export default function DesignSystemPage() {
                     </div>
                   </nav>
                 </div>
-                <div className="px-4 py-2 bg-muted/10">
+                <div className="px-4 py-2 bg-rm-gray-2/10">
                   <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">border-border · bg-background/95 · backdrop-blur-lg</span>
                 </div>
               </div>
@@ -4145,7 +4145,7 @@ export default function DesignSystemPage() {
             <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
               Применение
             </h3>
-            <div className="p-4 rounded-md border border-border bg-muted/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">
+            <div className="p-4 rounded-md border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">
               <p className="mb-1">{'<SiteHeader basePath={BASE_PATH} />'}</p>
               <p className="text-[length:var(--text-12)] text-muted-foreground/60">{'// basePath — для корректных путей к SVG-логотипам в prod'}</p>
             </div>
@@ -4164,7 +4164,7 @@ export default function DesignSystemPage() {
               Аккордион — FAQ
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
-              Аккордион для секций FAQ и «Часто задаваемые вопросы». Числа слева — порядковые метки. Заголовок раскрытого пункта подсвечивается акцентным жёлтым. Плавное открытие через <code className="text-[length:var(--text-12)] bg-muted px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">grid-template-rows</code> (200ms, ease-standard).
+              Аккордион для секций FAQ и «Часто задаваемые вопросы». Числа слева — порядковые метки. Заголовок раскрытого пункта подсвечивается акцентным жёлтым. Плавное открытие через <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">grid-template-rows</code> (200ms, ease-standard).
             </p>
 
             <div className="-mx-5 md:-mx-10 border-y border-border py-10 px-5 md:px-10 mb-8">
@@ -4178,7 +4178,7 @@ export default function DesignSystemPage() {
             <div className="overflow-auto rounded-md border border-border mb-8">
               <table className="w-full text-[length:var(--text-14)]">
                 <thead>
-                  <tr className="border-b border-border bg-muted/30">
+                  <tr className="border-b border-border bg-rm-gray-2/30">
                     <th className="text-left px-4 py-2 font-medium">Свойство</th>
                     <th className="text-left px-4 py-2 font-medium">Токен / значение</th>
                     <th className="text-left px-4 py-2 font-medium">Описание</th>
