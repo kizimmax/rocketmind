@@ -2351,7 +2351,7 @@ export default function DesignSystemPage() {
 
                 {/* CARDS BASE */}
                 <TabsContent value="cards-base">
-                  <h3 id="tooltips-variants" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+                  <h3 id="tooltips-variants" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-2">
                     Варианты бордера карточки
                   </h3>
                   <p className="text-muted-foreground text-[length:var(--text-14)] mb-8">
@@ -2439,7 +2439,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 {/* ════════ 1. ПРОДУКТ / УСЛУГА ════════ */}
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">
                   1. Продукт / Услуга
                 </h3>
                 {/* S */}
@@ -2513,7 +2513,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 {/* ════════ 2. ЭКСПЕРТ ════════ */}
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">
                   2. Эксперт
                 </h3>
                 {/* S */}
@@ -2589,7 +2589,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 {/* ════════ 3. ИИ-АГЕНТ ════════ */}
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">
                   3. ИИ-Агент
                 </h3>
                 {/* S */}
@@ -2671,7 +2671,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 {/* ════════ 4. ОТЗЫВ ════════ */}
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">
                   4. Отзыв
                 </h3>
                 {/* S */}
@@ -2733,7 +2733,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 {/* ════════ 5. КЕЙС ════════ */}
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">
                   5. Кейс
                 </h3>
                 {/* S */}
@@ -2807,7 +2807,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 {/* ════════ 6. КУРС ════════ */}
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">
                   6. Курс
                 </h3>
                 {/* S */}
