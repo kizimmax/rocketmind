@@ -20,7 +20,7 @@ import { GridGuides } from "@/components/ui/guide-grid"
 import { SiteHeader } from "@/components/ui/site-header"
 import { Accordion } from "@base-ui/react"
 
-const DS_VERSION = "1.2.0"
+const DS_VERSION = "1.4.0"
 
 /* ───────── COLOR BLOCK HELPERS ───────── */
 
@@ -165,7 +165,7 @@ function FgRow({ token }: { token: string }) {
   )
 }
 
-const DS_DATE = "2026-03-12"
+const DS_DATE = "2026-03-16"
 const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind-design-system" : ""
 
 /* ───────── NAV DATA ───────── */
@@ -1044,6 +1044,198 @@ function Accordion05Demo() {
   )
 }
 
+/* ═══════════════════════════════════ VERSION HISTORY ═══════════════════════════════════ */
+
+type VersionEntry = {
+  version: string
+  date: string
+  title: string
+  current?: boolean
+  added?: string[]
+  improved?: string[]
+  fixed?: string[]
+  removed?: string[]
+}
+
+const VERSION_HISTORY: VersionEntry[] = [
+  {
+    version: "1.4.0",
+    date: "2026-03-16",
+    title: "Typography Refactor & Sidebar Accordion",
+    current: true,
+    added: [
+      "Аккордеон в сайдбаре — раскрытие подразделов по клику и hover-стрелка",
+      "Типография: табличный лейаут шкалы и вкладка Specimens",
+      "Подраздел «Specimens» со всеми сочетаниями шрифт/стиль",
+    ],
+    improved: [
+      "Серая шкала — групповые подписи (Neutrals, Overlay, Text)",
+      "Колонка 100 стала шире; hex отображается в строках fg / fg-subtle",
+      "Раздел «Тултипы» перемещён в конец раздела «Компоненты»",
+      "Задокументированы: Gutter 0px, Bento Grid, скрипты обновления ДС",
+    ],
+    fixed: [
+      "Hover-зона стрелки nav — больше не перекрывает ссылку раздела",
+      "scroll-mt добавлен для всех подзаголовков",
+      "Иерархия заголовков в разделе «Компоненты» (H2→H3→H4)",
+      "Бордеры серой шкалы — корректная ширина для всех ячеек",
+      "Hex в цветовых карточках обновляется при смене темы",
+    ],
+  },
+  {
+    version: "1.3.0",
+    date: "2026-03-15",
+    title: "Grid Visual Language & Click-to-copy",
+    added: [
+      "GridGuides — компонент визуальных направляющих сетки с документацией",
+      "Hex overlay on hover для всех цветовых карточек",
+      "Click-to-copy hex и токен во всех секциях цветов",
+    ],
+    improved: [
+      "Табличные лейауты во всех секциях (вместо карточек-сеток)",
+      "Цветовые карточки: badge с токеном сверху-слева, click-to-copy",
+      "Sidebar: активный пункт — жёлтая вертикальная полоска",
+      "Card hover — унифицирован border-цвет для всех тем",
+    ],
+    fixed: [
+      "guideColor по умолчанию теперь var(--border), корректно в тёмной теме",
+      "GridGuides demo: уменьшен до 3 колонок, карточки не обрезаются",
+      "CopyButton: корректный hover-фон на цветных и прозрачных фонах",
+      "Hover-бордер карточек убран, заменён на ДС-hover стейт",
+    ],
+  },
+  {
+    version: "1.2.0",
+    date: "2026-03-10",
+    title: "Dot Grid Lens",
+    added: [
+      "Раздел 9: Dot Grid Lens — фоновый эффект линзы на сетке точек",
+      "Токены эффекта, алгоритм работы, live demo (монохромный / акцентный)",
+      "Таблица применения по контекстам",
+    ],
+  },
+  {
+    version: "1.0.0",
+    date: "2026-03-09",
+    title: "Начальная версия",
+    added: [
+      "Цветовая палитра: акцентная шкала, серая шкала, семантические токены",
+      "Типография: 4 шрифта, 4 категории стилей, размерная шкала на φ",
+      "Spacing и сетка: 4pt grid, 12-колоночная сетка, breakpoints",
+      "Скругления и тени",
+      "Компоненты: кнопки, формы, карточки, тултипы, аккордеон и др.",
+      "Иконки (Lucide), анимации, сквозные и маркетинг-блоки",
+      "Поддержка light / dark тем",
+    ],
+  },
+]
+
+function VersionHistory() {
+  const [openVersions, setOpenVersions] = React.useState<string[]>(["1.4.0"])
+
+  function toggle(version: string) {
+    setOpenVersions(prev =>
+      prev.includes(version) ? prev.filter(v => v !== version) : [...prev, version]
+    )
+  }
+
+  return (
+    <section id="version-history" className="scroll-mt-20 pb-16">
+      <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-50)] uppercase tracking-[-0.01em] leading-[1.2] mb-6">
+        История версий
+      </h2>
+      <div className="space-y-2">
+        {VERSION_HISTORY.map((entry) => {
+          const isOpen = openVersions.includes(entry.version)
+          return (
+            <div key={entry.version} className="rounded-md border border-border overflow-hidden">
+              <button
+                onClick={() => toggle(entry.version)}
+                className="w-full flex items-center gap-4 p-4 text-left hover:bg-muted/50 transition-colors"
+              >
+                {entry.current ? (
+                  <Badge className="bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] hover:bg-[var(--rm-yellow-100)] shrink-0 h-5">
+                    v{entry.version}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] hover:bg-transparent shrink-0 h-5">
+                    v{entry.version}
+                  </Badge>
+                )}
+                <div className="flex-1 min-w-0">
+                  <span className="text-[length:var(--text-14)] font-medium">{entry.date} — {entry.title}</span>
+                </div>
+                <ChevronDown
+                  size={16}
+                  className={`shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {isOpen && (
+                <div className="px-4 pb-4 border-t border-border">
+                  <div className="pt-4 grid sm:grid-cols-2 gap-x-8 gap-y-4">
+                    {entry.added && (
+                      <div>
+                        <p className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground mb-2">Добавлено</p>
+                        <ul className="space-y-1">
+                          {entry.added.map((item, i) => (
+                            <li key={i} className="flex gap-2 text-[length:var(--text-14)] text-muted-foreground">
+                              <span className="text-[var(--rm-yellow-100)] shrink-0 mt-0.5">+</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {entry.improved && (
+                      <div>
+                        <p className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground mb-2">Улучшено</p>
+                        <ul className="space-y-1">
+                          {entry.improved.map((item, i) => (
+                            <li key={i} className="flex gap-2 text-[length:var(--text-14)] text-muted-foreground">
+                              <span className="text-foreground shrink-0 mt-0.5">↑</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {entry.fixed && (
+                      <div>
+                        <p className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground mb-2">Исправлено</p>
+                        <ul className="space-y-1">
+                          {entry.fixed.map((item, i) => (
+                            <li key={i} className="flex gap-2 text-[length:var(--text-14)] text-muted-foreground">
+                              <span className="text-muted-foreground shrink-0 mt-0.5">·</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {entry.removed && (
+                      <div>
+                        <p className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground mb-2">Удалено</p>
+                        <ul className="space-y-1">
+                          {entry.removed.map((item, i) => (
+                            <li key={i} className="flex gap-2 text-[length:var(--text-14)] text-muted-foreground">
+                              <span className="text-destructive shrink-0 mt-0.5">−</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
 /* ═══════════════════════════════════ MAIN PAGE ═══════════════════════════════════ */
 export default function DesignSystemPage() {
   const [mobileNav, setMobileNav] = useState(false)
@@ -1059,11 +1251,25 @@ export default function DesignSystemPage() {
     hoverTimeout.current = setTimeout(() => setHoverArrowId(null), 200)
   }
 
+  /* ── Sidebar yellow scroll indicator ── */
+  const navRef = useRef<HTMLElement>(null)
+  const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const [indicator, setIndicator] = useState({ top: 0, height: 0 })
+  useEffect(() => {
+    const el = itemRefs.current.get(activeId)
+    const nav = navRef.current
+    if (!el || !nav) return
+    setIndicator({
+      top:    (el.offsetTop    / nav.scrollHeight) * 100,
+      height: (el.offsetHeight / nav.scrollHeight) * 100,
+    })
+  }, [activeId, expandedId])
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ───── HEADER ───── */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
-        <div className="max-w-[1280px] mx-auto px-5 md:px-10 flex items-center justify-between h-14">
+        <div className="max-w-[1280px] mx-auto px-5 flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <button
               className="md:hidden p-1 text-muted-foreground"
@@ -1114,8 +1320,17 @@ export default function DesignSystemPage() {
 
       <div className="max-w-[1280px] mx-auto flex">
         {/* ───── SIDEBAR NAV ───── */}
-        <aside className="hidden md:block w-[220px] shrink-0 sticky top-14 self-start h-[calc(100vh-56px)] overflow-y-auto py-8 pl-10 pr-0 border-r border-border">
-          <nav className="space-y-0.5">
+        <aside className="relative hidden md:flex flex-col w-[220px] shrink-0 sticky top-14 self-start h-[calc(100vh-56px)] border-r border-border">
+          {/* ── Yellow scroll position indicator ── */}
+          <div className="absolute right-0 top-8 bottom-[60px] w-0.5 pointer-events-none z-10" aria-hidden>
+            <div
+              className="sidebar-indicator absolute left-0 right-0 bg-[var(--rm-yellow-100)]"
+              style={{ top: `${indicator.top}%`, height: `${indicator.height}%` }}
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto py-8 pl-5 pr-0">
+          <nav ref={navRef} className="relative space-y-0.5">
             {sections.map((s) => {
               const isActive = activeId === s.id
               const isClickOpen = expandedId === s.id
@@ -1123,16 +1338,19 @@ export default function DesignSystemPage() {
               const isOpen = isClickOpen || isHoverOpen
               const hasSubs = s.subsections.length > 0
               return (
-                <div key={s.id}>
+                <div
+                  key={s.id}
+                  ref={el => { if (el) itemRefs.current.set(s.id, el); else itemRefs.current.delete(s.id) }}
+                >
                   <div className="flex items-center">
                     <a
                       href={`#${s.id}`}
                       onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
-                      className={`flex-1 py-1.5 text-[length:var(--text-12)] transition-colors
+                      className={`flex-1 py-1.5 pl-3 text-[length:var(--text-12)] transition-colors
                                  font-[family-name:var(--font-mono-family)] uppercase tracking-wider
                                  ${isActive
-                                   ? "text-foreground font-medium border-l-2 border-[var(--rm-yellow-100)] pl-3"
-                                   : "text-muted-foreground hover:text-foreground pl-[14px]"
+                                   ? "text-foreground font-medium"
+                                   : "text-muted-foreground hover:text-foreground"
                                  }`}
                     >
                       {s.label}
@@ -1142,50 +1360,46 @@ export default function DesignSystemPage() {
                         onMouseEnter={() => { if (!isClickOpen) startHover(s.id) }}
                         onMouseLeave={endHover}
                         onClick={() => { setHoverArrowId(null); setExpandedId(expandedId === s.id ? null : s.id) }}
-                        className="p-1 pr-2 text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                        className="p-1.5 mr-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
                         aria-label={isOpen ? "Скрыть подразделы" : "Показать подразделы"}
                       >
                         <ChevronDown
                           size={12}
-                          className={`transition-transform duration-150 ${isClickOpen ? "rotate-180" : ""}`}
+                          className={`transition-transform duration-200 ${isClickOpen ? "rotate-180" : ""}`}
                         />
                       </button>
                     )}
                   </div>
-                  {isOpen && hasSubs && (
+                  {hasSubs && (
                     <div
-                      className="ml-[14px] pl-3 border-l border-border space-y-0.5 pb-1"
+                      className={`sidebar-subnav${isOpen ? " is-open" : ""}`}
                       onMouseEnter={() => { if (isHoverOpen && !isClickOpen) startHover(s.id) }}
                       onMouseLeave={endHover}
                     >
-                      {s.subsections.map((sub) => (
-                        <a
-                          key={sub.id}
-                          href={`#${sub.id}`}
-                          className="block py-0.5 text-[length:var(--text-12)] text-muted-foreground hover:text-foreground transition-colors font-[family-name:var(--font-mono-family)] uppercase tracking-wider opacity-80"
-                        >
-                          {sub.label}
-                        </a>
-                      ))}
+                      <div className="sidebar-subnav-inner ml-3 pl-3 border-l border-border space-y-0.5 pb-1">
+                        {s.subsections.map((sub) => (
+                          <a
+                            key={sub.id}
+                            href={`#${sub.id}`}
+                            className="block py-0.5 text-[length:var(--text-12)] text-muted-foreground hover:text-foreground transition-colors font-[family-name:var(--font-mono-family)] uppercase tracking-wider opacity-80"
+                          >
+                            {sub.label}
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
               )
             })}
           </nav>
+          </div>
 
-          <Separator className="my-6" />
-
-          <div className="space-y-2">
-            <p className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] uppercase tracking-wider">
-              Версия
-            </p>
-            <div className="flex items-center gap-2">
-              <Badge className="bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] hover:bg-[var(--rm-yellow-100)]">
-                {DS_VERSION}
-              </Badge>
-            </div>
-            <p className="text-[length:var(--text-12)] text-muted-foreground">{DS_DATE}</p>
+          <div className="shrink-0 px-5 py-4 border-t border-border">
+            <Badge className="bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] hover:bg-[var(--rm-yellow-100)]">
+              v{DS_VERSION}
+            </Badge>
+            <p className="text-[length:var(--text-12)] text-muted-foreground mt-1">{DS_DATE}</p>
           </div>
         </aside>
 
@@ -1904,14 +2118,16 @@ export default function DesignSystemPage() {
                     </div>
                   </div>
 
-                  {/* Visual grid demo — margins as % so columns always fit */}
+                  {/* Visual grid demo — line-only style */}
                   {(() => {
                     const marginPct = g.cols <= 4 ? 5 : g.cols <= 8 ? 6 : 8
-                    const gutterPx = 0
+                    const colTemplate = Array.from({ length: g.cols * 2 - 1 }, (_, i) =>
+                      i % 2 === 0 ? "1fr" : "1px"
+                    ).join(" ")
                     return (
                       <div className="border border-border rounded-md overflow-hidden select-none">
                         {/* Margin labels row */}
-                        <div className="flex h-6 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/70">
+                        <div className="flex h-6 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/70 border-b border-dashed border-border/40">
                           <div className="flex items-center justify-center border-r border-dashed border-muted-foreground/30"
                             style={{ width: `${marginPct}%` }}>
                             {g.margin}px
@@ -1922,23 +2138,36 @@ export default function DesignSystemPage() {
                             {g.margin}px
                           </div>
                         </div>
-                        {/* Columns row */}
-                        <div className="flex h-14" style={{ padding: `0 ${marginPct}%`, gap: `${gutterPx}px` }}>
+                        {/* Columns row — 1px guide lines, no fill */}
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: colTemplate,
+                            height: 56,
+                            padding: `0 ${marginPct}%`,
+                          }}
+                        >
                           {Array.from({ length: g.cols }).map((_, i) => (
                             <div
                               key={i}
-                              className="flex-1 flex items-center justify-center rounded-sm text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]"
-                              style={{
-                                backgroundColor: `color-mix(in srgb, var(--rm-yellow-100) ${i % 2 === 0 ? "30%" : "15%"}, transparent)`,
-                                color: "color-mix(in srgb, var(--rm-yellow-100) 80%, var(--foreground))",
-                              }}
+                              style={{ gridColumn: i * 2 + 1 }}
+                              className="flex items-end justify-center pb-2 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/40"
                             >
                               {i + 1}
                             </div>
                           ))}
+                          {Array.from({ length: g.cols - 1 }, (_, i) => (
+                            <div
+                              key={`g${i}`}
+                              style={{
+                                gridColumn: i * 2 + 2,
+                                background: "var(--border)",
+                              }}
+                            />
+                          ))}
                         </div>
                         {/* Gutter label */}
-                        <div className="flex items-center justify-center h-5 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/60">
+                        <div className="flex items-center justify-center h-5 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/60 border-t border-dashed border-border/40">
                           gutter {g.gutter}px
                         </div>
                       </div>
@@ -1948,40 +2177,167 @@ export default function DesignSystemPage() {
               ))}
             </Tabs>
 
-            <h3 id="spacing-phi" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="spacing-phi" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
               Макетные пропорции (phi)
             </h3>
-            {/* phi bar aligned to 12-col grid: 5/12 ≈ 41.67% / 7/12 ≈ 58.33% — snaps to column boundary */}
-            <div className="rounded-md border border-border overflow-hidden mb-1">
-              {/* Grid overlay */}
-              <div className="flex h-24" style={{ padding: "0 8%", gap: "3px" }}>
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 flex items-end justify-center pb-1 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]"
-                    style={{
-                      backgroundColor: `color-mix(in srgb, var(--rm-yellow-100) ${i % 2 === 0 ? "35%" : "20%"}, transparent)`,
-                      color: "color-mix(in srgb, var(--rm-yellow-100) 80%, var(--foreground))",
-                    }}
-                  >
-                    {i + 1}
+            <p className="text-[length:var(--text-14)] text-muted-foreground mb-6 max-w-[640px]">
+              Алгоритм: <strong>1 → контент</strong> диктует ширину зоны, <strong>2 → колонки</strong> привязывают к сетке, <strong>3 → φ (≈ 38/62)</strong> используется как ориентир, не жёсткое правило.
+            </p>
+
+            {/* 4 bento layout examples */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+
+              {/* 1. App: sidebar + content */}
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[length:var(--text-12)] font-medium">1. App: навигация + контент</span>
+                  <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">3 + 9 col</span>
+                </div>
+                <div
+                  className="rounded-md overflow-hidden border border-border"
+                  style={{
+                    display: "grid",
+                    gap: "1px",
+                    background: "var(--border)",
+                    gridTemplateColumns: "3fr 9fr",
+                    gridTemplateRows: "28px 1fr 1fr",
+                    height: 100,
+                  }}
+                >
+                  <div style={{ gridColumn: "1", gridRow: "1 / 4", background: "var(--background)" }}
+                    className="flex flex-col items-center justify-center gap-0.5">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/60">Nav</span>
+                    <span className="text-[length:var(--text-12)] text-muted-foreground/35 font-[family-name:var(--font-mono-family)]">3 col · 25%</span>
                   </div>
-                ))}
-              </div>
-              {/* Labels */}
-              <div className="flex h-7 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]">
-                <div className="flex items-center justify-center text-muted-foreground"
-                  style={{ width: "calc(8% + (5/12) * 84%)" }}>
-                  5 col — 38%
+                  <div style={{ gridColumn: "2", gridRow: "1", background: "var(--background)" }}
+                    className="flex items-center px-3">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Header</span>
+                  </div>
+                  <div style={{ gridColumn: "2", gridRow: "2", background: "var(--background)" }}
+                    className="flex items-center px-3">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Content · 9 col · 75%</span>
+                  </div>
+                  <div style={{ gridColumn: "2", gridRow: "3", background: "var(--background)" }}
+                    className="flex items-center px-3">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Content</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center text-muted-foreground"
-                  style={{ width: "calc(8% + (7/12) * 84%)" }}>
-                  7 col — 62%
-                </div>
+                <p className="text-[length:var(--text-12)] text-muted-foreground/60">Контент: список nav → 3 col. Остаток → 9 col. Не φ, но контент-первый.</p>
               </div>
+
+              {/* 2. Hero: text + visual — closest to phi */}
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[length:var(--text-12)] font-medium">2. Hero: текст + визуал</span>
+                  <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">7 + 5 col · ≈ φ</span>
+                </div>
+                <div
+                  className="rounded-md overflow-hidden border border-border"
+                  style={{
+                    display: "grid",
+                    gap: "1px",
+                    background: "var(--border)",
+                    gridTemplateColumns: "7fr 5fr",
+                    gridTemplateRows: "1fr 1fr",
+                    height: 100,
+                  }}
+                >
+                  <div style={{ gridColumn: "1", gridRow: "1", background: "var(--background)" }}
+                    className="flex items-center px-3">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Headline + CTA · 7 col · 58%</span>
+                  </div>
+                  <div style={{ gridColumn: "1", gridRow: "2", background: "var(--background)" }}
+                    className="flex items-center px-3">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Body copy</span>
+                  </div>
+                  <div style={{ gridColumn: "2", gridRow: "1 / 3", background: "var(--muted)" }}
+                    className="flex flex-col items-center justify-center gap-0.5">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/60">Visual</span>
+                    <span className="text-[length:var(--text-12)] text-muted-foreground/40 font-[family-name:var(--font-mono-family)]">5 col · 42%</span>
+                  </div>
+                </div>
+                <p className="text-[length:var(--text-12)] text-muted-foreground/60">Текст → 7 col (≈ 58%). Изображение заполняет → 5 col (≈ 42%). Ближайшее к φ.</p>
+              </div>
+
+              {/* 3. Feature bento: asymmetric rows */}
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[length:var(--text-12)] font-medium">3. Feature bento</span>
+                  <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">7+5 / 4+4+4</span>
+                </div>
+                <div
+                  className="rounded-md overflow-hidden border border-border"
+                  style={{
+                    display: "grid",
+                    gap: "1px",
+                    background: "var(--border)",
+                    gridTemplateColumns: "repeat(12, 1fr)",
+                    gridTemplateRows: "1fr 1fr",
+                    height: 100,
+                  }}
+                >
+                  <div style={{ gridColumn: "1 / 8", gridRow: "1", background: "var(--background)" }}
+                    className="flex items-center px-3">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Feature A · 7 col</span>
+                  </div>
+                  <div style={{ gridColumn: "8 / 13", gridRow: "1", background: "var(--background)" }}
+                    className="flex items-center justify-center">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">B · 5 col</span>
+                  </div>
+                  <div style={{ gridColumn: "1 / 5", gridRow: "2", background: "var(--background)" }}
+                    className="flex items-center justify-center">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">C · 4</span>
+                  </div>
+                  <div style={{ gridColumn: "5 / 9", gridRow: "2", background: "var(--background)" }}
+                    className="flex items-center justify-center">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">D · 4</span>
+                  </div>
+                  <div style={{ gridColumn: "9 / 13", gridRow: "2", background: "var(--background)" }}
+                    className="flex items-center justify-center">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">E · 4</span>
+                  </div>
+                </div>
+                <p className="text-[length:var(--text-12)] text-muted-foreground/60">Ряд 1: крупный блок → 7, доп. → 5. Ряд 2: три равных → 4+4+4. Колонки фиксируют.</p>
+              </div>
+
+              {/* 4. Dashboard: metrics + chart + sidebar */}
+              <div className="space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[length:var(--text-12)] font-medium">4. Dashboard</span>
+                  <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">12 / 8+4</span>
+                </div>
+                <div
+                  className="rounded-md overflow-hidden border border-border"
+                  style={{
+                    display: "grid",
+                    gap: "1px",
+                    background: "var(--border)",
+                    gridTemplateColumns: "repeat(12, 1fr)",
+                    gridTemplateRows: "28px 1fr 1fr",
+                    height: 100,
+                  }}
+                >
+                  <div style={{ gridColumn: "1 / 13", gridRow: "1", background: "var(--background)" }}
+                    className="flex items-center px-3">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Metrics strip · 12 col</span>
+                  </div>
+                  <div style={{ gridColumn: "1 / 9", gridRow: "2 / 4", background: "var(--background)" }}
+                    className="flex flex-col items-center justify-center gap-0.5">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Chart</span>
+                    <span className="text-[length:var(--text-12)] text-muted-foreground/35 font-[family-name:var(--font-mono-family)]">8 col · 67%</span>
+                  </div>
+                  <div style={{ gridColumn: "9 / 13", gridRow: "2 / 4", background: "var(--background)" }}
+                    className="flex flex-col items-center justify-center gap-0.5">
+                    <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Sidebar</span>
+                    <span className="text-[length:var(--text-12)] text-muted-foreground/35 font-[family-name:var(--font-mono-family)]">4 col · 33%</span>
+                  </div>
+                </div>
+                <p className="text-[length:var(--text-12)] text-muted-foreground/60">График требует широкой зоны → 8 col. Панель метрик → 4 col. Контент первый.</p>
+              </div>
+
             </div>
             <p className="text-[length:var(--text-14)] text-muted-foreground">
-              Золотое сечение 38/62 — для sidebar/content, text/visual в hero-блоках.
+              Золотое сечение 38/62 — ориентир для пар sidebar/content, text/visual в hero-блоках.
             </p>
 
             <h3 id="spacing-visual" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-10">
@@ -2183,7 +2539,7 @@ export default function DesignSystemPage() {
 
             {/* ── Кнопки ── */}
             <div className="mb-12">
-              <h3 id="components-buttons" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Кнопки</h3>
+              <h3 id="components-buttons" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">Кнопки</h3>
               <div className="space-y-6">
                 {/* Primary */}
                 <div className="flex flex-wrap items-end gap-4 p-6 rounded-md border border-border">
@@ -2280,7 +2636,7 @@ export default function DesignSystemPage() {
 
             {/* ── Инпуты ── */}
             <div className="mb-12">
-              <h3 id="components-inputs" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Инпуты</h3>
+              <h3 id="components-inputs" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">Инпуты</h3>
               <div className="space-y-6">
                 <div className="p-6 rounded-md border border-border space-y-3">
                   <div className="flex items-center justify-between">
@@ -2358,7 +2714,7 @@ export default function DesignSystemPage() {
 
             {/* ── Карточки ── */}
             <div>
-              <h3 id="components-cards" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[0.04em] text-muted-foreground mb-6 pb-2 border-b border-border">Карточки</h3>
+              <h3 id="components-cards" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">Карточки</h3>
               <Tabs defaultValue="cards" className="w-full">
                 <TabsList className="mb-6">
                   <TabsTrigger value="cards">Каталог карточек</TabsTrigger>
@@ -3806,37 +4162,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ───── VERSION HISTORY ───── */}
-          <section id="version-history" className="scroll-mt-20 pb-16">
-            <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-50)] uppercase tracking-[-0.01em] leading-[1.2] mb-6">
-              История версий
-            </h2>
-            <div className="space-y-4">
-              <div className="flex gap-4 p-4 rounded-md border border-border">
-                <Badge className="bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] hover:bg-[var(--rm-yellow-100)] shrink-0 h-5">
-                  v{DS_VERSION}
-                </Badge>
-                <div>
-                  <p className="text-[length:var(--text-14)] font-medium">2026-03-10 — Dot Grid Lens</p>
-                  <p className="text-[length:var(--text-14)] text-muted-foreground mt-1">
-                    Добавлен раздел 9: Dot Grid Lens — фоновый эффект линзы на сетке точек.
-                    Токены, алгоритм, live demo (монохромный / акцентный), таблица применения.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-4 p-4 rounded-md border border-border">
-                <Badge variant="outline" className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] hover:bg-transparent shrink-0 h-5">
-                  v1.0.0
-                </Badge>
-                <div>
-                  <p className="text-[length:var(--text-14)] font-medium">2026-03-09 — Начальная версия</p>
-                  <p className="text-[length:var(--text-14)] text-muted-foreground mt-1">
-                    Полная дизайн-система: цвета, типография, spacing, radius, visual language, компоненты, иконки, анимации.
-                    Поддержка light/dark тем. 8 секций документации.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
+          <VersionHistory />
 
           {/* FOOTER */}
           <footer className="border-t border-border pt-6 pb-10">
