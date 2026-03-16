@@ -18,7 +18,6 @@ import { toast } from "sonner"
 import { GlowingEffect } from "@/components/ui/glowing-effect"
 import { GridGuides } from "@/components/ui/guide-grid"
 import { SiteHeader } from "@/components/ui/site-header"
-import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button"
 import { Accordion } from "@base-ui/react"
 
 const DS_VERSION = "1.4.0"
@@ -1733,7 +1732,13 @@ export default function DesignSystemPage() {
                 <p className="text-[length:var(--text-16)] mb-6 opacity-70">
                   Попробуй Rocketmind — AI-агенты для твоего бизнеса без написания кода.
                 </p>
-                <InteractiveHoverButton text="Попробовать" />
+                <button
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-all duration-150"
+                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
+                >
+                  Попробовать
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
               {/* Violet block */}
               <div className="on-violet rounded-xl px-8 py-10">
@@ -1831,8 +1836,8 @@ export default function DesignSystemPage() {
                     { label: "Label-12",     size: "12px", mobileSize: "12px", weight: "500", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.06em] leading-none",             tailwind: "text-[length:var(--text-12)]" },
                     // Copy
                     { label: "Copy-25",      size: "25px", mobileSize: "19px", weight: "400", cls: "leading-[1.4] tracking-[-0.01em]",                                                                       tailwind: "text-[length:var(--text-19)] md:text-[length:var(--text-25)]" },
-                    { label: "Copy-19",      size: "19px", mobileSize: "17px", weight: "400", cls: "leading-[1.5]",                                                                                               tailwind: "text-[length:var(--text-16)] md:text-[length:var(--text-19)]" },
-                    { label: "Copy-16",      size: "16px", mobileSize: "16px", weight: "400", cls: "leading-[1.618]",                                                                                             tailwind: "text-[length:var(--text-16)]" },
+                    { label: "Copy-19",      size: "19px", mobileSize: "17px", weight: "400", cls: "leading-[1.4]",                                                                                                tailwind: "text-[length:var(--text-16)] md:text-[length:var(--text-19)]" },
+                    { label: "Copy-16",      size: "16px", mobileSize: "16px", weight: "400", cls: "leading-[1.4]",                                                                                               tailwind: "text-[length:var(--text-16)]" },
                     { label: "Copy-14",      size: "14px", mobileSize: "14px", weight: "400", cls: "leading-[1.5] tracking-[0.01em]",                                                                             tailwind: "text-[length:var(--text-14)]" },
                     { label: "Copy-12",      size: "12px", mobileSize: "12px", weight: "400", cls: "leading-[1.4] tracking-[0.02em]",                                                                             tailwind: "text-[length:var(--text-12)]" },
                   ].map((t, i, arr) => (
@@ -1973,26 +1978,26 @@ export default function DesignSystemPage() {
                     {
                       label: "Copy-19",
                       text: "Платформа AI-агентов, которая помогает малому бизнесу запускать проекты без найма специалистов.",
-                      cls: "leading-[1.5]",
+                      cls: "leading-[1.4]",
                       size: "19px",
                       mobileSize: "17px",
                       letterSpacing: "0",
                       figmaSpacing: "0%",
-                      lineHeight: "1.5",
-                      figmaLineHeight: "150%",
-                      twCopy: "text-[length:var(--text-16)] md:text-[length:var(--text-19)] leading-[1.5]",
+                      lineHeight: "1.4",
+                      figmaLineHeight: "140%",
+                      twCopy: "text-[length:var(--text-16)] md:text-[length:var(--text-19)] leading-[1.4]",
                     },
                     {
                       label: "Copy-16",
                       text: "Rocketmind — сервис AI-агентов для ведения кейсов. Подключите нужного агента, опишите задачу и получите результат прямо в чате.",
-                      cls: "leading-[1.618]",
+                      cls: "leading-[1.4]",
                       size: "16px",
                       mobileSize: "16px",
                       letterSpacing: "0",
                       figmaSpacing: "0%",
-                      lineHeight: "1.618",
-                      figmaLineHeight: "161.8%",
-                      twCopy: "text-[length:var(--text-16)] leading-[1.618]",
+                      lineHeight: "1.4",
+                      figmaLineHeight: "140%",
+                      twCopy: "text-[length:var(--text-16)] leading-[1.4]",
                     },
                     {
                       label: "Copy-14",
@@ -2559,107 +2564,103 @@ export default function DesignSystemPage() {
             {/* ── Кнопки ── */}
             <div className="mb-12">
               <h3 id="components-buttons" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">Кнопки</h3>
-              <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">Roboto Mono, uppercase, tracking-[0.08em]. Три размера: lg (48px) / md (40px, default) / sm (32px).</p>
+              <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">Roboto Mono, uppercase, tracking-[0.08em]. Три размера: LG (48px) / MD (40px, default) / SM (32px).</p>
 
-              {/* Variants grid */}
+              {/* Variants × Sizes table */}
               {(() => {
-                const variants = [
+                const mono = "font-[family-name:var(--font-mono-family)]"
+                const sizes = [
+                  { id: "lg", label: "LG / 48px", h: "h-12", px: "px-6", fs: "text-[length:var(--text-14)]" },
+                  { id: "md", label: "MD / 40px", h: "h-10", px: "px-4", fs: "text-[length:var(--text-13)]" },
+                  { id: "sm", label: "SM / 32px", h: "h-8",  px: "px-3", fs: "text-[length:var(--text-12)]" },
+                ]
+                const variants: {
+                  id: string
+                  name: string
+                  desc: string
+                  token: string
+                  render: (h: string, px: string, fs: string) => React.ReactNode
+                }[] = [
                   {
                     id: "primary",
-                    label: "Primary",
-                    token: "btn-primary",
+                    name: "Primary",
                     desc: "Главное действие на экране. Hero CTA, финальный шаг формы. Один на странице.",
-                    className: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)]`,
-                    preview: (
-                      <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] cursor-pointer">
-                        Запустить
+                    token: "btn-primary",
+                    render: (h, px, fs) => (
+                      <button className={`group relative overflow-hidden inline-flex items-center gap-2 ${h} ${px} rounded-md bg-[var(--rm-yellow-100)] ${mono} ${fs} uppercase tracking-[0.08em] cursor-pointer`}>
+                        <span className="shrink-0 w-2 h-2 rounded-full bg-[var(--rm-yellow-fg)] transition-all duration-300 group-hover:scale-[50] group-hover:bg-black" />
+                        <span className={`relative z-10 text-[var(--rm-yellow-fg)] whitespace-nowrap transition-colors duration-300 group-hover:text-white`}>Запустить</span>
                       </button>
                     ),
                   },
                   {
                     id: "secondary",
-                    label: "Secondary",
-                    token: "btn-secondary",
+                    name: "Secondary",
                     desc: "Второстепенное действие рядом с primary. Фильтры, переключатели.",
-                    className: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-border bg-transparent text-foreground font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-rm-gray-3`,
-                    preview: (
-                      <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-border bg-transparent text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-rm-gray-3 cursor-pointer">
+                    token: "btn-secondary",
+                    render: (h, px, fs) => (
+                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-md border border-border bg-transparent text-foreground ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent cursor-pointer`}>
                         Подробнее
                       </button>
                     ),
                   },
                   {
                     id: "ghost",
-                    label: "Ghost",
-                    token: "btn-ghost",
+                    name: "Ghost",
                     desc: "Тихое действие без фона. Навигация, вспомогательные inline-действия.",
-                    className: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-transparent text-muted-foreground font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-rm-gray-3 hover:text-foreground`,
-                    preview: (
-                      <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-transparent text-muted-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-rm-gray-3 hover:text-foreground cursor-pointer">
+                    token: "btn-ghost",
+                    render: (h, px, fs) => (
+                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-md bg-transparent text-muted-foreground ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent hover:text-foreground cursor-pointer`}>
                         Отмена
                       </button>
                     ),
                   },
                   {
                     id: "destructive",
-                    label: "Destructive",
-                    token: "btn-destructive",
+                    name: "Destructive",
                     desc: "Необратимые действия. Удаление, архивация. Требует диалог подтверждения.",
-                    className: `inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-destructive text-white font-mono text-[13px] uppercase tracking-[0.08em] transition-all duration-150 hover:opacity-90`,
-                    preview: (
-                      <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-destructive text-white font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] transition-all duration-150 hover:opacity-90 cursor-pointer">
+                    token: "btn-destructive",
+                    render: (h, px, fs) => (
+                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-md bg-destructive text-white ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:opacity-90 cursor-pointer`}>
                         <Trash2 size={13} /> Удалить
                       </button>
                     ),
                   },
-                  {
-                    id: "interactive",
-                    label: "Interactive",
-                    token: "btn-interactive",
-                    desc: "Брендовый hero-CTA. Кружок расширяется на весь button при наведении, открывая иконку + текст. Один на странице.",
-                    className: `InteractiveHoverButton`,
-                    preview: <InteractiveHoverButton text="Попробовать" />,
-                  },
                 ]
                 return (
-                  <div className="border border-border rounded-lg overflow-hidden bg-border mb-4">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-[1px]">
-                      {variants.map((v) => (
-                        <div key={v.id} className="flex flex-col gap-2 p-4 bg-background">
-                          <div className="flex items-center justify-center min-h-[56px]">
-                            {v.preview}
-                          </div>
-                          <p className="text-[length:var(--text-12)] font-medium font-[family-name:var(--font-mono-family)] uppercase tracking-wider">{v.label}</p>
-                          <div className="flex items-center gap-0.5">
-                            <p className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)] flex-1 truncate">{v.token}</p>
-                            <CopyButton value={v.className} label={`Токен: ${v.token}`} />
-                          </div>
-                          <p className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)] leading-relaxed">{v.desc}</p>
+                  <div className="border border-border rounded-lg overflow-hidden bg-border mb-6">
+                    <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-[1px]">
+                      {/* Header row */}
+                      <div className="bg-muted/60 px-4 py-3" />
+                      {sizes.map((s) => (
+                        <div key={s.id} className="bg-muted/60 px-4 py-3 flex items-center justify-center">
+                          <span className={`text-[10px] text-muted-foreground ${mono} uppercase tracking-wider`}>{s.label}</span>
                         </div>
+                      ))}
+                      {/* Data rows */}
+                      {variants.map((v) => (
+                        <React.Fragment key={v.id}>
+                          {/* Name + description */}
+                          <div className="bg-background px-4 py-4 flex flex-col justify-center gap-1">
+                            <p className={`${mono} font-medium text-[length:var(--text-13)] uppercase tracking-wider`}>{v.name}</p>
+                            <p className={`text-[10px] text-muted-foreground ${mono} leading-relaxed`}>{v.desc}</p>
+                          </div>
+                          {/* Button + token per size */}
+                          {sizes.map((s) => (
+                            <div key={s.id} className="bg-background px-4 py-4 flex flex-col items-center justify-center gap-2">
+                              {v.render(s.h, s.px, s.fs)}
+                              <div className="flex items-center gap-0.5 mt-0.5">
+                                <span className={`text-[10px] text-muted-foreground ${mono}`}>{v.token}</span>
+                                <CopyButton value={v.token} label={`Скопировать: ${v.token}`} />
+                              </div>
+                            </div>
+                          ))}
+                        </React.Fragment>
                       ))}
                     </div>
                   </div>
                 )
               })()}
-
-              {/* Sizes */}
-              <div className="border border-border rounded-lg overflow-hidden mb-4">
-                <p className="px-4 pt-4 pb-3 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground">Размеры</p>
-                <div className="flex flex-wrap items-end gap-4 px-4 pb-4">
-                  {[
-                    { label: "LG / 48px", h: "h-12", px: "px-6", text: "text-[length:var(--text-14)]", meta: "h-12 px-6 text-14" },
-                    { label: "MD / 40px", h: "h-10", px: "px-4", text: "text-[length:var(--text-13)]", meta: "h-10 px-4 text-13 (default)" },
-                    { label: "SM / 32px", h: "h-8",  px: "px-3", text: "text-[length:var(--text-12)]", meta: "h-8 px-3 text-12" },
-                  ].map((s) => (
-                    <div key={s.label} className="flex flex-col items-start gap-1.5">
-                      <button className={`inline-flex items-center justify-center ${s.h} ${s.px} rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-[family-name:var(--font-mono-family)] ${s.text} uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] cursor-pointer`}>
-                        {s.label}
-                      </button>
-                      <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)]">{s.meta}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               {/* States */}
               <div className="border border-border rounded-lg overflow-hidden">

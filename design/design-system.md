@@ -410,8 +410,8 @@ Roboto, normal case. Описания, body, captions. Повышенный line
 | Токен | px | Вес | Line-height | Letter-spacing | Применение |
 |-------|----|-----|------------|---------------|-----------|
 | `copy-25` | 25 | 400 Regular | 1.4 | -0.01em | Маркетинговый крупный текст, hero-субтайтл |
-| `copy-19` | 19 | 400 Regular | 1.5 | 0 | Lead / intro paragraph |
-| `copy-16` | 16 | 400 Regular | 1.618 | 0 | **Body** — основной текст |
+| `copy-19` | 19 | 400 Regular | 1.4 | 0 | Lead / intro paragraph |
+| `copy-16` | 16 | 400 Regular | 1.4 | 0 | **Body** — основной текст |
 | `copy-16-strong` | 16 | 500 Medium | 1.618 | 0 | Body strong, акцент в тексте |
 | `copy-14` | 14 | 400 Regular | 1.5 | 0.01em | Small, caption, подпись |
 | `copy-14-mono` | 14 | 400 Regular | 1.5 | 0.02em | Inline code, технические строки |
