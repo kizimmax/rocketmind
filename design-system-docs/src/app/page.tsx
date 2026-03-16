@@ -1351,10 +1351,27 @@ export default function DesignSystemPage() {
                     className="flex items-center"
                     ref={el => { if (el) triggerRefs.current.set(s.id, el); else triggerRefs.current.delete(s.id) }}
                   >
+                    {/* Arrow OR spacer — w-6=24px matches ml-3+pl-3 of subnav */}
+                    {hasSubs ? (
+                      <button
+                        onMouseEnter={() => { if (!isClickOpen) startHover(s.id) }}
+                        onMouseLeave={endHover}
+                        onClick={() => { setHoverArrowId(null); setExpandedId(isActive ? s.id : (expandedId === s.id ? null : s.id)) }}
+                        className="shrink-0 w-6 self-stretch flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                        aria-label={isOpen ? "Скрыть подразделы" : "Показать подразделы"}
+                      >
+                        <ChevronRight
+                          size={12}
+                          className={`transition-transform duration-200 ${isClickOpen ? "rotate-90" : ""}`}
+                        />
+                      </button>
+                    ) : (
+                      <span className="shrink-0 w-6" aria-hidden />
+                    )}
                     <a
                       href={`#${s.id}`}
                       onClick={() => setExpandedId(s.id)}
-                      className={`flex-1 py-1.5 pl-0 text-[length:var(--text-12)] transition-colors
+                      className={`flex-1 py-1.5 text-[length:var(--text-12)] transition-colors
                                  font-[family-name:var(--font-mono-family)] uppercase tracking-wider
                                  ${isActive
                                    ? "text-foreground font-medium"
@@ -1363,20 +1380,6 @@ export default function DesignSystemPage() {
                     >
                       {s.label}
                     </a>
-                    {hasSubs && (
-                      <button
-                        onMouseEnter={() => { if (!isClickOpen) startHover(s.id) }}
-                        onMouseLeave={endHover}
-                        onClick={() => { setHoverArrowId(null); setExpandedId(expandedId === s.id ? null : s.id) }}
-                        className="p-1.5 mr-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
-                        aria-label={isOpen ? "Скрыть подразделы" : "Показать подразделы"}
-                      >
-                        <ChevronDown
-                          size={12}
-                          className={`transition-transform duration-200 ${isClickOpen ? "rotate-180" : ""}`}
-                        />
-                      </button>
-                    )}
                   </div>
                   {hasSubs && (
                     <div
