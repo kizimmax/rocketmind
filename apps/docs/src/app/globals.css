@@ -32,9 +32,9 @@
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--rm-gray-3);
+  --color-accent: var(--rm-gray-2);
   --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--rm-gray-2);
+  --color-muted: var(--rm-gray-1);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
@@ -63,12 +63,12 @@
   --radius-4xl: 1.5rem;
 
   /* Rocketmind gray scale */
+  --color-rm-gray-1: var(--rm-gray-1);
   --color-rm-gray-2: var(--rm-gray-2);
   --color-rm-gray-3: var(--rm-gray-3);
   --color-rm-gray-4: var(--rm-gray-4);
-  --color-rm-gray-5: var(--rm-gray-5);
-  --color-rm-gray-6: var(--rm-gray-6);
-  --color-rm-gray-fg: var(--rm-gray-fg);
+  --color-rm-gray-fg-sub: var(--rm-gray-fg-sub);
+  --color-rm-gray-fg-main: var(--rm-gray-fg-main);
 
   /* Rocketmind gray alpha */
   --color-rm-gray-alpha-100: var(--rm-gray-alpha-100);
@@ -170,19 +170,19 @@
 
   /* === Rocketmind Gray Scale (Light) ===
    * 1 — Page background      (bg-background)
-   * 2 — Subtle surface       (bg-muted, bg-secondary, bg-accent)
-   * 3 — Component hover bg   (hover:bg-accent / hover:bg-muted)
-   * 4 — Default border       (border-border, border-input)
-   * 5 — Hover/active border  (hover:border-*)
-   * 6 — Secondary text       (text-muted-foreground)
-   * fg — Primary text        (text-foreground)
+   * 1 — Subtle surface       (bg-muted, bg-secondary, bg-accent)
+   * 2 — Component hover bg   (hover:bg-accent / hover:bg-muted)
+   * 3 — Default border       (border-border, border-input)
+   * 4 — Hover/active border  (hover:border-*)
+   * fg-sub — Secondary text       (text-muted-foreground)
+   * fg-main — Primary text        (text-foreground)
   */
-  --rm-gray-2:  #F5F5F5;   /* subtle surface */
-  --rm-gray-3:  #EBEBEB;   /* hover bg */
-  --rm-gray-4:  #CBCBCB;   /* default border */
-  --rm-gray-5:  #A3A3A3;   /* hover border */
-  --rm-gray-6:  #666666;   /* secondary text */
-  --rm-gray-fg: #2D2D2D;   /* primary text */
+  --rm-gray-1:  #F5F5F5;   /* subtle surface */
+  --rm-gray-2:  #EBEBEB;   /* hover bg */
+  --rm-gray-3:  #CBCBCB;   /* default border */
+  --rm-gray-4:  #A3A3A3;   /* hover border */
+  --rm-gray-fg-sub:  #666666;   /* secondary text */
+  --rm-gray-fg-main: #2D2D2D;   /* primary text */
 
   /* === Gray Alpha (overlay / glass effects) === */
   --rm-gray-alpha-100: rgba(0, 0, 0, 0.06);   /* subtle tint */
@@ -193,18 +193,18 @@
 
   /* === Rocketmind Neutrals (Light) — mapped to gray scale === */
   --background: #FAFAFA;
-  --foreground: var(--rm-gray-fg);
-  --muted-foreground: var(--rm-gray-6);
-  --border: var(--rm-gray-4);
-  --input: var(--rm-gray-4);
+  --foreground: var(--rm-gray-fg-main);
+  --muted-foreground: var(--rm-gray-fg-sub);
+  --border: var(--rm-gray-3);
+  --input: var(--rm-gray-3);
   --ring: #FFCC00;
   --card: #FFFFFF;
-  --card-foreground: var(--rm-gray-fg);
+  --card-foreground: var(--rm-gray-fg-main);
   --popover: #FFFFFF;
-  --popover-foreground: var(--rm-gray-fg);
-  --secondary: var(--rm-gray-2);
-  --secondary-foreground: var(--rm-gray-fg);
-  --accent-foreground: var(--rm-gray-fg);
+  --popover-foreground: var(--rm-gray-fg-main);
+  --secondary: var(--rm-gray-1);
+  --secondary-foreground: var(--rm-gray-fg-main);
+  --accent-foreground: var(--rm-gray-fg-main);
   --destructive: #ED4843;
   --destructive-foreground: #FFFFFF;
 
@@ -357,19 +357,19 @@
 .dark {
   /* === Rocketmind Gray Scale (Dark) ===
    * 1 — Page background
-   * 2 — Subtle surface
-   * 3 — Component hover bg
-   * 4 — Default border
-   * 5 — Hover/active border
-   * 6 — Secondary text
-   * fg — Primary text
+   * 1 — Subtle surface
+   * 2 — Component hover bg
+   * 3 — Default border
+   * 4 — Hover/active border
+   * fg-sub — Secondary text
+   * fg-main — Primary text
   */
-  --rm-gray-2:  #1A1A1A;
-  --rm-gray-3:  #242424;
-  --rm-gray-4:  #404040;
-  --rm-gray-5:  #5C5C5C;
-  --rm-gray-6:  #939393;
-  --rm-gray-fg: #F0F0F0;
+  --rm-gray-1:  #1A1A1A;
+  --rm-gray-2:  #242424;
+  --rm-gray-3:  #404040;
+  --rm-gray-4:  #5C5C5C;
+  --rm-gray-fg-sub:  #939393;
+  --rm-gray-fg-main: #F0F0F0;
 
   /* === Gray Alpha (dark) === */
   --rm-gray-alpha-100: rgba(255, 255, 255, 0.06);
@@ -380,18 +380,18 @@
 
   /* === Rocketmind Neutrals (Dark) — mapped to gray scale === */
   --background: #0A0A0A;
-  --foreground: var(--rm-gray-fg);
-  --muted-foreground: var(--rm-gray-6);
-  --border: var(--rm-gray-4);
-  --input: var(--rm-gray-4);
+  --foreground: var(--rm-gray-fg-main);
+  --muted-foreground: var(--rm-gray-fg-sub);
+  --border: var(--rm-gray-3);
+  --input: var(--rm-gray-3);
   --ring: #FFCC00;
-  --card: var(--rm-gray-2);
-  --card-foreground: var(--rm-gray-fg);
-  --popover: var(--rm-gray-2);
-  --popover-foreground: var(--rm-gray-fg);
-  --secondary: var(--rm-gray-2);
-  --secondary-foreground: var(--rm-gray-fg);
-  --accent-foreground: var(--rm-gray-fg);
+  --card: var(--rm-gray-1);
+  --card-foreground: var(--rm-gray-fg-main);
+  --popover: var(--rm-gray-1);
+  --popover-foreground: var(--rm-gray-fg-main);
+  --secondary: var(--rm-gray-1);
+  --secondary-foreground: var(--rm-gray-fg-main);
+  --accent-foreground: var(--rm-gray-fg-main);
   --destructive: #FF6B6B;
   --destructive-foreground: #FFFFFF;
 

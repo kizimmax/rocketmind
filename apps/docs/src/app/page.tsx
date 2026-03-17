@@ -550,7 +550,7 @@ function DotGridDemo() {
       const h = container.clientHeight
       ctx.clearRect(0, 0, w, h)
       const isDark = document.documentElement.classList.contains("dark")
-      // --rm-gray-4: #CBCBCB (light) / #404040 (dark)
+      // --rm-gray-3: #CBCBCB (light) / #404040 (dark)
       const baseColor = isDark ? [64, 64, 64] : [203, 203, 203]
       // --rm-yellow-100: #FFCC00
       const accentColor = [255, 204, 0]
@@ -1084,12 +1084,12 @@ export default function DesignSystemPage() {
             </h3>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-3">
               {[
-                { name: "Gray 2",  var: "--rm-gray-2",  role: "Subtle surface", lhex: "#F5F5F5", dhex: "#1A1A1A" },
-                { name: "Gray 3",  var: "--rm-gray-3",  role: "Hover bg",       lhex: "#EBEBEB", dhex: "#242424" },
-                { name: "Gray 4",  var: "--rm-gray-4",  role: "Default border", lhex: "#CBCBCB", dhex: "#404040" },
-                { name: "Gray 5",  var: "--rm-gray-5",  role: "Hover border",   lhex: "#A3A3A3", dhex: "#5C5C5C" },
-                { name: "Gray 6",  var: "--rm-gray-6",  role: "2nd text",       lhex: "#666666", dhex: "#939393" },
-                { name: "Gray fg", var: "--rm-gray-fg", role: "Primary text",   lhex: "#2D2D2D", dhex: "#F0F0F0" },
+                { name: "Gray 1",  var: "--rm-gray-1",  role: "Subtle surface", lhex: "#F5F5F5", dhex: "#1A1A1A" },
+                { name: "Gray 2",  var: "--rm-gray-2",  role: "Hover bg",       lhex: "#EBEBEB", dhex: "#242424" },
+                { name: "Gray 3",  var: "--rm-gray-3",  role: "Default border", lhex: "#CBCBCB", dhex: "#404040" },
+                { name: "Gray 4",  var: "--rm-gray-4",  role: "Hover border",   lhex: "#A3A3A3", dhex: "#5C5C5C" },
+                { name: "Gray fg-sub",  var: "--rm-gray-fg-sub",  role: "2nd text",       lhex: "#666666", dhex: "#939393" },
+                { name: "Gray fg-main", var: "--rm-gray-fg-main", role: "Primary text",   lhex: "#2D2D2D", dhex: "#F0F0F0" },
               ].map((c) => (
                 <div key={c.var} className="flex flex-col gap-1.5">
                   <ColorHexBlock

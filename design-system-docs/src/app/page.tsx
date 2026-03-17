@@ -656,7 +656,7 @@ function DotGridDemo() {
       const h = container.clientHeight
       ctx.clearRect(0, 0, w, h)
       const isDark = document.documentElement.classList.contains("dark")
-      // --rm-gray-4: #CBCBCB (light) / #404040 (dark)
+      // --rm-gray-3: #CBCBCB (light) / #404040 (dark)
       const baseColor = isDark ? [64, 64, 64] : [203, 203, 203]
       // --rm-yellow-100: #FFCC00
       const accentColor = [255, 204, 0]
@@ -785,7 +785,7 @@ function AnimatedGridLinesDemo() {
             style={{
               top: `${(i + 1) * 20}%`,
               transformOrigin: "left",
-              backgroundColor: "var(--rm-gray-4)",
+              backgroundColor: "var(--rm-gray-3)",
               animation: `line-h 1.6s ease-out ${i * 0.1}s both`,
             }}
           />
@@ -797,7 +797,7 @@ function AnimatedGridLinesDemo() {
             style={{
               left: `${(i + 1) * (100 / (vLines.length + 1))}%`,
               transformOrigin: "top",
-              backgroundColor: "var(--rm-gray-4)",
+              backgroundColor: "var(--rm-gray-3)",
               animation: `line-v 1.6s ease-out ${(hLines.length + i) * 0.1}s both`,
             }}
           />
@@ -1590,12 +1590,12 @@ export default function DesignSystemPage() {
             <div className="border border-border rounded-lg overflow-hidden grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 mb-10">
               {(() => {
                 const grays = [
-                  { name: "Gray 2",  var: "--rm-gray-2",  role: "Subtle surface", lhex: "#F5F5F5", dhex: "#1A1A1A" },
-                  { name: "Gray 3",  var: "--rm-gray-3",  role: "Hover bg",       lhex: "#EBEBEB", dhex: "#242424" },
-                  { name: "Gray 4",  var: "--rm-gray-4",  role: "Default border", lhex: "#CBCBCB", dhex: "#404040" },
-                  { name: "Gray 5",  var: "--rm-gray-5",  role: "Hover border",   lhex: "#A3A3A3", dhex: "#5C5C5C" },
-                  { name: "Gray 6",  var: "--rm-gray-6",  role: "2nd text",       lhex: "#666666", dhex: "#939393" },
-                  { name: "Gray fg", var: "--rm-gray-fg", role: "Primary text",   lhex: "#2D2D2D", dhex: "#F0F0F0" },
+                  { name: "Gray 1",  var: "--rm-gray-1",  role: "Subtle surface", lhex: "#F5F5F5", dhex: "#1A1A1A" },
+                  { name: "Gray 2",  var: "--rm-gray-2",  role: "Hover bg",       lhex: "#EBEBEB", dhex: "#242424" },
+                  { name: "Gray 3",  var: "--rm-gray-3",  role: "Default border", lhex: "#CBCBCB", dhex: "#404040" },
+                  { name: "Gray 4",  var: "--rm-gray-4",  role: "Hover border",   lhex: "#A3A3A3", dhex: "#5C5C5C" },
+                  { name: "Gray fg-sub",  var: "--rm-gray-fg-sub",  role: "2nd text",       lhex: "#666666", dhex: "#939393" },
+                  { name: "Gray fg-main", var: "--rm-gray-fg-main", role: "Primary text",   lhex: "#2D2D2D", dhex: "#F0F0F0" },
                 ]
                 return grays.map((c, i) => (
                   <div key={c.var} className={`flex flex-col gap-1.5 p-3 ${i < grays.length - 1 ? "border-r border-border" : ""}`}>
@@ -1725,38 +1725,23 @@ export default function DesignSystemPage() {
               Блоки с акцентным фоном. Добавь класс <code className="font-[family-name:var(--font-mono-family)] text-foreground">.on-{"{color}"}</code> на контейнер —
               все дочерние токены (<code className="font-[family-name:var(--font-mono-family)] text-foreground">--foreground</code>, <code className="font-[family-name:var(--font-mono-family)] text-foreground">--border</code>) автоматически инвертируются.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              {/* Yellow block — главный CTA */}
-              <div className="on-yellow rounded-xl px-8 py-10">
-                <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.1em] mb-3 opacity-60">Брендовый блок</p>
-                <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            {/* Yellow block — главный CTA, на всю ширину */}
+            <div className="on-yellow rounded-xl px-10 py-14 mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+              <div className="flex-1">
+                <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.1em] mb-4 opacity-60">Брендовый блок · .on-yellow</p>
+                <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-3 leading-tight">
                   Готов запустить агента?
                 </h4>
-                <p className="text-[length:var(--text-16)] mb-6 opacity-70">
+                <p className="text-[length:var(--text-16)] opacity-70 max-w-md">
                   Попробуй Rocketmind — AI-агенты для твоего бизнеса без написания кода.
                 </p>
+              </div>
+              <div className="flex-shrink-0">
                 <button
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-all duration-150"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-sm border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-all duration-150"
                   style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                 >
                   Попробовать
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-              {/* Violet block */}
-              <div className="on-violet rounded-xl px-8 py-10">
-                <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.1em] mb-3 opacity-60">Категориальный блок</p>
-                <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
-                  Анализ экосистем
-                </h4>
-                <p className="text-[length:var(--text-16)] mb-6 opacity-70">
-                  Агент Катя разбирает связи и делает выводы быстрее любой таблицы.
-                </p>
-                <button
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-colors"
-                  style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
-                >
-                  Узнать больше
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -2277,7 +2262,7 @@ export default function DesignSystemPage() {
                     className="flex items-center px-3">
                     <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/50">Body copy</span>
                   </div>
-                  <div style={{ gridColumn: "2", gridRow: "1 / 3", background: "var(--rm-gray-2)" }}
+                  <div style={{ gridColumn: "2", gridRow: "1 / 3", background: "var(--rm-gray-1)" }}
                     className="flex flex-col items-center justify-center gap-0.5">
                     <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] text-muted-foreground/60">Visual</span>
                     <span className="text-[length:var(--text-12)] text-muted-foreground/40 font-[family-name:var(--font-mono-family)]">5 col · 42%</span>
@@ -3664,7 +3649,7 @@ export default function DesignSystemPage() {
                 to   { opacity: 1; transform: translateY(0); }
               }
               .skeleton-shimmer {
-                background: linear-gradient(90deg, var(--rm-gray-2) 0%, color-mix(in srgb, var(--rm-gray-2) 80%, white) 50%, var(--rm-gray-2) 100%);
+                background: linear-gradient(90deg, var(--rm-gray-1) 0%, color-mix(in srgb, var(--rm-gray-1) 80%, white) 50%, var(--rm-gray-1) 100%);
                 background-size: 200% 100%;
                 animation: shimmer-anim 1.5s ease-in-out infinite;
                 border-radius: var(--radius);
@@ -3744,7 +3729,7 @@ export default function DesignSystemPage() {
                 <button
                   className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-sm border border-border text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] cursor-pointer select-none"
                   style={{ transition: "background-color 100ms cubic-bezier(0.4,0,0.2,1)", backgroundColor: "transparent" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--rm-gray-2)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--rm-gray-1)" }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent" }}
                 >
                   Ghost button
@@ -3792,7 +3777,7 @@ export default function DesignSystemPage() {
                       key={i}
                       className="p-2 rounded-sm cursor-pointer"
                       style={{ color: "var(--muted-foreground)", transition: "color 100ms cubic-bezier(0.4,0,0.2,1), background-color 100ms cubic-bezier(0.4,0,0.2,1)" }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--foreground)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--rm-gray-2)" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--foreground)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--rm-gray-1)" }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--muted-foreground)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent" }}
                     >
                       <Icon className="w-5 h-5" />
@@ -4073,7 +4058,7 @@ export default function DesignSystemPage() {
                     ["Логотип",          "text_logo_*.svg",            "dark/light вариант автоматически"],
                     ["Навигация",        "--font-mono-family",         "12px, uppercase, tracking 0.08em"],
                     ["Цвет nav",         "--muted-foreground",         "hover → --foreground + bg-rm-gray-3"],
-                    ["Кнопка «Войти»",   "--border / --rm-gray-3",     "Outline, hover: bg-rm-gray-3"],
+                    ["Кнопка «Войти»",   "--border / --rm-gray-2",     "Outline, hover: bg-rm-gray-3"],
                     ["CTA «Попробовать»","--rm-yellow-100",             "hover: --rm-yellow-300"],
                     ["Мобайл гамбургер", "Lucide Menu / X",            "18px, stroke 1.5px"],
                     ["Мобайл меню",      "React portal + fixed",       "top-16, backdrop-blur-lg"],

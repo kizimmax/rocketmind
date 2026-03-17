@@ -38,7 +38,7 @@ function HeroDotGrid() {
             const w = container.clientWidth, h = container.clientHeight
             ctx.clearRect(0, 0, w, h)
             const isDark = document.documentElement.classList.contains("dark")
-            // --rm-gray-4: light ≈ [220,220,220], dark ≈ [40,40,40]
+            // --rm-gray-3: light ≈ [220,220,220], dark ≈ [40,40,40]
             const base = isDark ? [40, 40, 40] : [220, 220, 220]
             // --rm-violet-100: #A172F8
             const accent = [161, 114, 248]

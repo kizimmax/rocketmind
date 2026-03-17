@@ -397,7 +397,7 @@ function LockModal({ onClose, onUnlock }: { onClose: () => void; onUnlock: () =>
 
 function SyncDot({ status }: { status: 'synced' | 'saving' | 'error' | 'loading' }) {
   const map = {
-    loading: { color: 'var(--rm-gray-5)', label: 'Загрузка…' },
+    loading: { color: 'var(--rm-gray-4)', label: 'Загрузка…' },
     saving:  { color: 'var(--rm-yellow-100)', label: 'Сохранение…' },
     synced:  { color: 'var(--rm-green-100)', label: 'Синхронизировано' },
     error:   { color: 'var(--rm-red-100)', label: 'Ошибка синхронизации' },
