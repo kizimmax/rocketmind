@@ -20,7 +20,7 @@ import { GridGuides } from "@/components/ui/guide-grid"
 import { SiteHeader } from "@/components/ui/site-header"
 import { Accordion } from "@base-ui/react"
 
-const DS_VERSION = "1.4.0"
+const DS_VERSION = "1.5.0"
 
 /* ───────── COLOR BLOCK HELPERS ───────── */
 
@@ -174,7 +174,7 @@ function FgRow({ token }: { token: string }) {
   )
 }
 
-const DS_DATE = "2026-03-16"
+const DS_DATE = "2026-03-17"
 const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind-design-system" : ""
 
 /* ───────── NAV DATA ───────── */
@@ -820,25 +820,18 @@ function AnimatedGridLinesDemo() {
 function Section({
   id,
   title,
-  version,
   children,
 }: {
   id: string
   title: string
-  version?: string
   children: React.ReactNode
 }) {
   return (
     <section id={id} className="scroll-mt-20">
-      <div className="flex items-center gap-3 mb-6">
+      <div className="mb-6">
         <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-30)] md:text-[length:var(--text-52)] uppercase tracking-[-0.015em] leading-[1.05]">
           {title}
         </h2>
-        {version && (
-          <Badge variant="outline" className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider h-5">
-            v{version}
-          </Badge>
-        )}
       </div>
       {children}
     </section>
@@ -1069,10 +1062,28 @@ type VersionEntry = {
 
 const VERSION_HISTORY: VersionEntry[] = [
   {
+    version: "1.5.0",
+    date: "2026-03-17",
+    title: "Loos Condensed & Badge System Cleanup",
+    current: true,
+    added: [
+      "Полный summary версии 1.5.0 добавлен в конец страницы дизайн-системы",
+      "Сайдбарный бейдж версии приведён к общему стилю Badge-компонента",
+    ],
+    improved: [
+      "Шрифт label-типографики переключён с Roboto Mono на Loos Condensed",
+      "Токен --font-mono-family теперь используется консистентно в кнопках, навигации, тегах и badge",
+      "Badge-система упрощена: neutral + цветные subtle-варианты без отдельного solid-набора",
+    ],
+    removed: [
+      "Бейдж версии из шапки страницы",
+      "Бейджи версии у заголовков всех разделов дизайн-системы",
+    ],
+  },
+  {
     version: "1.4.0",
     date: "2026-03-16",
     title: "Typography Refactor & Sidebar Accordion",
-    current: true,
     added: [
       "Аккордеон в сайдбаре — раскрытие подразделов по клику и hover-стрелка",
       "Типография: табличный лейаут шкалы и вкладка Specimens",
@@ -1141,7 +1152,7 @@ const VERSION_HISTORY: VersionEntry[] = [
 ]
 
 function VersionHistory() {
-  const [openVersions, setOpenVersions] = React.useState<string[]>(["1.4.0"])
+  const [openVersions, setOpenVersions] = React.useState<string[]>(["1.5.0"])
 
   function toggle(version: string) {
     setOpenVersions(prev =>
@@ -1316,9 +1327,6 @@ export default function DesignSystemPage() {
                 className="h-7 dark:hidden"
               />
             </div>
-            <Badge variant="outline" className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-widest h-5 hidden sm:flex">
-              Design System v{DS_VERSION}
-            </Badge>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] hidden sm:block">
@@ -1429,7 +1437,7 @@ export default function DesignSystemPage() {
           </div>
 
           <div className="shrink-0 pl-10 pr-5 py-4 border-t border-border">
-            <Badge className="bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] hover:bg-[var(--rm-yellow-100)]">
+            <Badge variant="neutral" size="md">
               v{DS_VERSION}
             </Badge>
             <p className="text-[length:var(--text-12)] text-muted-foreground mt-1">{DS_DATE}</p>
@@ -1458,7 +1466,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 0. LOGOS ═══════ */}
-          <Section id="logos" title="0. Логотипы" version={DS_VERSION}>
+          <Section id="logos" title="0. Логотипы">
             <p className="text-muted-foreground mb-8">
               Полный набор логотипов Rocketmind. Используйте вариант на тёмном фоне для тёмных поверхностей,
               на светлом — для белых/серых. Доступны форматы <strong>SVG</strong> (векторный) и <strong>PNG</strong>.
@@ -1542,7 +1550,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 1. COLORS ═══════ */}
-          <Section id="colors" title="1. Цветовая палитра" version={DS_VERSION}>
+          <Section id="colors" title="1. Цветовая палитра">
             <p className="text-muted-foreground mb-8">
               Все цвета — CSS-переменные. Акцентный цвет бренда — <strong className="text-[var(--rm-yellow-100)]">#FFCC00</strong>.
               Категориальные цвета используются для кодировки данных, тегов, карточек.
@@ -1756,7 +1764,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 2. TYPOGRAPHY ═══════ */}
-          <Section id="typography" title="2. Типография" version={DS_VERSION}>
+          <Section id="typography" title="2. Типография">
             <p className="text-muted-foreground mb-8">
               4 шрифта с чёткими ролями. 4 категории стилей: Heading, Label, Copy, Accent. Размерная шкала на золотом сечении (phi = 1.618) от минимального размера 12px.
             </p>
@@ -2054,7 +2062,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 3. SPACING & GRID ═══════ */}
-          <Section id="spacing" title="3. Спейсинг и Сетка" version={DS_VERSION}>
+          <Section id="spacing" title="3. Спейсинг и Сетка">
             <p className="text-muted-foreground mb-6">
               Базовый модуль — <strong>8px</strong>. Модуль сетки страницы — <strong>20px</strong>.
               Все отступы кратны 8. Золотое сечение для макетных пропорций.
@@ -2506,7 +2514,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 4. RADIUS & SHADOWS ═══════ */}
-          <Section id="radius-shadows" title="4. Скругления" version={DS_VERSION}>
+          <Section id="radius-shadows" title="4. Скругления">
             <p className="text-muted-foreground mb-6">
               <strong>Flat стиль.</strong> Никаких box-shadow. Лёгкое скругление — 3 токена по вложенности и размеру объекта.
               Full только как выделительный элемент в самостоятельных блоках.
@@ -2544,7 +2552,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 6. COMPONENTS ═══════ */}
-          <Section id="components" title="6. Компоненты" version={DS_VERSION}>
+          <Section id="components" title="6. Компоненты">
             <p className="text-muted-foreground mb-6">
               Все компоненты — надстройка над shadcn/ui. Шрифт интерактивных элементов — Loos Condensed, uppercase.
               Flat-стиль, без glow-эффектов.
@@ -2756,23 +2764,23 @@ export default function DesignSystemPage() {
               <h3 id="components-badges" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Бейджи</h3>
               <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
                 Лейблы для статусов, категорий и тегов. Шрифт — Loos Latin, Cyrillic Condensed-Medium, uppercase.
-                Три размера: SM (20px) / MD (24px, default) / LG (28px). Два типа: solid (акцент) и subtle (фон).
+                Три размера: SM (20px) / MD (24px, default) / LG (28px). `Neutral` остаётся отдельным нейтральным стилем, все цветные бейджи показываем в `Subtle`.
               </p>
 
               {/* Variant × Size grid */}
               {(() => {
                 const mono = "font-[family-name:var(--font-mono-family)]"
 
-                const colors: { label: string; solid: string; subtle: string }[] = [
-                  { label: "Neutral",     solid: "neutral",          subtle: "neutral" },
-                  { label: "Yellow",      solid: "yellow-solid",     subtle: "yellow-subtle" },
-                  { label: "Violet",      solid: "violet-solid",     subtle: "violet-subtle" },
-                  { label: "Sky",         solid: "sky-solid",        subtle: "sky-subtle" },
-                  { label: "Terracotta",  solid: "terracotta-solid", subtle: "terracotta-subtle" },
-                  { label: "Pink",        solid: "pink-solid",       subtle: "pink-subtle" },
-                  { label: "Blue",        solid: "blue-solid",       subtle: "blue-subtle" },
-                  { label: "Red",         solid: "red-solid",        subtle: "red-subtle" },
-                  { label: "Green",       solid: "green-solid",      subtle: "green-subtle" },
+                const colors: { label: string; variant: string }[] = [
+                  { label: "Neutral",     variant: "neutral" },
+                  { label: "Yellow",      variant: "yellow-subtle" },
+                  { label: "Violet",      variant: "violet-subtle" },
+                  { label: "Sky",         variant: "sky-subtle" },
+                  { label: "Terracotta",  variant: "terracotta-subtle" },
+                  { label: "Pink",        variant: "pink-subtle" },
+                  { label: "Blue",        variant: "blue-subtle" },
+                  { label: "Red",         variant: "red-subtle" },
+                  { label: "Green",       variant: "green-subtle" },
                 ]
 
                 const sizes: { label: string; size: "sm" | "md" | "lg" }[] = [
@@ -2784,18 +2792,14 @@ export default function DesignSystemPage() {
                 return (
                   <div className="border border-border rounded-sm overflow-hidden">
                     {/* Header row */}
-                    <div className="grid border-b border-border" style={{ gridTemplateColumns: "120px 1fr 1fr 1fr 1fr 1fr 1fr" }}>
+                    <div className="grid border-b border-border" style={{ gridTemplateColumns: "120px 1fr 1fr 1fr" }}>
                       <div className={`px-3 py-2 bg-[var(--rm-gray-1)] text-[10px] ${mono} uppercase tracking-wider text-muted-foreground border-r border-border`}>Цвет</div>
-                      <div className={`px-3 py-2 bg-[var(--rm-gray-1)] text-[10px] ${mono} uppercase tracking-wider text-muted-foreground border-r border-border col-span-3`}>Solid</div>
-                      <div className={`px-3 py-2 bg-[var(--rm-gray-1)] text-[10px] ${mono} uppercase tracking-wider text-muted-foreground col-span-3`}>Subtle</div>
+                      <div className={`px-3 py-2 bg-[var(--rm-gray-1)] text-[10px] ${mono} uppercase tracking-wider text-muted-foreground col-span-3`}>Variant</div>
                     </div>
-                    <div className="grid border-b border-border" style={{ gridTemplateColumns: "120px 1fr 1fr 1fr 1fr 1fr 1fr" }}>
+                    <div className="grid border-b border-border" style={{ gridTemplateColumns: "120px 1fr 1fr 1fr" }}>
                       <div className="border-r border-border" />
-                      {sizes.map(s => (
-                        <div key={`sh-solid-${s.size}`} className={`px-3 py-1.5 text-[10px] ${mono} uppercase tracking-wider text-muted-foreground border-r border-border`}>{s.label}</div>
-                      ))}
                       {sizes.map((s, i) => (
-                        <div key={`sh-subtle-${s.size}`} className={`px-3 py-1.5 text-[10px] ${mono} uppercase tracking-wider text-muted-foreground ${i < sizes.length - 1 ? "border-r border-border" : ""}`}>{s.label}</div>
+                        <div key={`sh-${s.size}`} className={`px-3 py-1.5 text-[10px] ${mono} uppercase tracking-wider text-muted-foreground ${i < sizes.length - 1 ? "border-r border-border" : ""}`}>{s.label}</div>
                       ))}
                     </div>
 
@@ -2804,26 +2808,13 @@ export default function DesignSystemPage() {
                       <div
                         key={c.label}
                         className="grid items-center"
-                        style={{ gridTemplateColumns: "120px 1fr 1fr 1fr 1fr 1fr 1fr", borderBottom: ri < colors.length - 1 ? "1px solid var(--border)" : undefined }}
+                        style={{ gridTemplateColumns: "120px 1fr 1fr 1fr", borderBottom: ri < colors.length - 1 ? "1px solid var(--border)" : undefined }}
                       >
                         <div className={`px-3 py-3 text-[10px] ${mono} uppercase tracking-wider text-muted-foreground border-r border-border`}>{c.label}</div>
-                        {/* Solid sizes */}
-                        {sizes.map(s => (
-                          <div key={`${c.label}-solid-${s.size}`} className="px-3 py-3 border-r border-border flex items-center">
-                            {/* @ts-expect-error variant union */}
-                            <Badge variant={c.solid} size={s.size}>{s.size === "lg" ? "Статус" : s.size === "md" ? "Тег" : "Мета"}</Badge>
-                          </div>
-                        ))}
-                        {/* Subtle sizes */}
                         {sizes.map((s, i) => (
-                          <div key={`${c.label}-subtle-${s.size}`} className={`px-3 py-3 flex items-center ${i < sizes.length - 1 ? "border-r border-border" : ""}`}>
-                            {c.label === "Neutral"
-                              ? <span className={`text-[10px] ${mono} text-muted-foreground/50 italic`}>—</span>
-                              : (
-                                  // @ts-expect-error variant union
-                                  <Badge variant={c.subtle} size={s.size}>{s.size === "lg" ? "Статус" : s.size === "md" ? "Тег" : "Мета"}</Badge>
-                                )
-                            }
+                          <div key={`${c.label}-${s.size}`} className={`px-3 py-3 flex items-center ${i < sizes.length - 1 ? "border-r border-border" : ""}`}>
+                            {/* @ts-expect-error variant union */}
+                            <Badge variant={c.variant} size={s.size}>{s.size === "lg" ? "Статус" : s.size === "md" ? "Тег" : "Мета"}</Badge>
                           </div>
                         ))}
                       </div>
@@ -2850,9 +2841,9 @@ export default function DesignSystemPage() {
                   {/* Status row */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">Статусы:</span>
-                    <Badge variant="green-solid" size="md">Активен</Badge>
-                    <Badge variant="yellow-solid" size="md">Ожидание</Badge>
-                    <Badge variant="red-solid" size="md">Ошибка</Badge>
+                    <Badge variant="green-subtle" size="md">Активен</Badge>
+                    <Badge variant="yellow-subtle" size="md">Ожидание</Badge>
+                    <Badge variant="red-subtle" size="md">Ошибка</Badge>
                     <Badge variant="neutral" size="md">Архив</Badge>
                   </div>
                   {/* Category tags */}
@@ -2866,7 +2857,7 @@ export default function DesignSystemPage() {
                   {/* Hero badge lg */}
                   <div className="flex items-center gap-3">
                     <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">Hero-акцент LG:</span>
-                    <Badge variant="yellow-solid" size="lg">MVP 1.1</Badge>
+                    <Badge variant="neutral" size="lg">MVP 1.1</Badge>
                     <Badge variant="violet-subtle" size="lg">AI-агент</Badge>
                   </div>
                 </div>
@@ -2878,7 +2869,6 @@ export default function DesignSystemPage() {
                 <div className="px-4 py-3 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                   {[
                     ["neutral", "bg: --rm-gray-1 + border: --border · text: --rm-gray-fg-sub"],
-                    ["{color}-solid", "bg: --rm-{color}-100 · text: --rm-{color}-fg"],
                     ["{color}-subtle", "bg: --rm-{color}-900 · text: --rm-{color}-fg-subtle"],
                     ["SM 20px", "h-5 · label-12 · tracking-[0.04em]"],
                     ["MD 24px", "h-6 · label-12 · tracking-[0.04em]"],
@@ -3751,7 +3741,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 10. TOOLTIPS ═══════ */}
-          <Section id="tooltips" title="10. Тултипы" version={DS_VERSION}>
+          <Section id="tooltips" title="10. Тултипы">
             <p className="text-muted-foreground mb-6">
               Контекстные подсказки при наведении. Появляются поверх контента через <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">position: fixed</code>, не обрезаются родителем. Анимация: 120ms ease-out, fade + translateY.
             </p>
@@ -3844,7 +3834,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 7. ICONS ═══════ */}
-          <Section id="icons" title="7. Иконки" version={DS_VERSION}>
+          <Section id="icons" title="7. Иконки">
             <p className="text-muted-foreground mb-6">
               Основная библиотека — <strong>Lucide Icons</strong>. Outline, 24px viewbox, stroke 2px (фиксированный).
               Цвет наследуется через currentColor. Толщина не масштабируется с размером:{" "}
@@ -3912,7 +3902,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ 8. ANIMATIONS ═══════ */}
-          <Section id="animations" title="8. Анимации и Движение" version={DS_VERSION}>
+          <Section id="animations" title="8. Анимации и Движение">
             <style>{`
               @keyframes typing-pulse {
                 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
@@ -4297,7 +4287,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ CROSS-CUTTING BLOCKS ═══════ */}
-          <Section id="cross-blocks" title="Сквозные блоки" version={DS_VERSION}>
+          <Section id="cross-blocks" title="Сквозные блоки">
             <p className="text-muted-foreground mb-8">
               Блоки, которые появляются на нескольких страницах: лендинг, авторизация, main app.
               Их стиль должен быть абсолютно единым — один компонент, ноль дублирования.
@@ -4434,7 +4424,7 @@ export default function DesignSystemPage() {
           <Separator />
 
           {/* ═══════ MARKETING BLOCKS ═══════ */}
-          <Section id="marketing-blocks" title="Маркетинг блоки" version={DS_VERSION}>
+          <Section id="marketing-blocks" title="Маркетинг блоки">
             <p className="text-muted-foreground mb-8">
               Готовые блоки для лендинга и маркетинговых страниц. Используют токены дизайн-системы — стиль единый с основным приложением.
             </p>
@@ -4490,6 +4480,41 @@ export default function DesignSystemPage() {
 
           {/* ───── VERSION HISTORY ───── */}
           <VersionHistory />
+
+          <section id="version-summary-150" className="scroll-mt-20 pb-16">
+            <div className="mb-6">
+              <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-30)] md:text-[length:var(--text-52)] uppercase tracking-[-0.015em] leading-[1.05]">
+                Summary v1.5.0
+              </h2>
+            </div>
+            <div className="rounded-md border border-border overflow-hidden">
+              <div className="border-b border-border bg-rm-gray-2/30 px-5 py-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[length:var(--text-14)] font-medium">Loos Condensed, cleanup бейджей и обновлённая подача версии</p>
+                  <p className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] mt-1">{DS_DATE}</p>
+                </div>
+                <Badge variant="neutral" size="md">v{DS_VERSION}</Badge>
+              </div>
+              <div className="grid gap-0 md:grid-cols-2">
+                <div className="px-5 py-5 border-b md:border-b-0 md:border-r border-border">
+                  <p className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground mb-3">Что обновили</p>
+                  <ul className="space-y-2 text-[length:var(--text-14)] text-muted-foreground">
+                    <li className="flex gap-2"><span className="text-[var(--rm-yellow-100)] shrink-0">+</span><span>Шрифт label-типографики заменён: Roboto Mono → Loos Condensed.</span></li>
+                    <li className="flex gap-2"><span className="text-[var(--rm-yellow-100)] shrink-0">+</span><span>Токен <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">--font-mono-family</code> обновлён и используется по всей системе.</span></li>
+                    <li className="flex gap-2"><span className="text-[var(--rm-yellow-100)] shrink-0">+</span><span>Badge-система упрощена до <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">neutral</code> и цветных <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">subtle</code>-вариантов.</span></li>
+                  </ul>
+                </div>
+                <div className="px-5 py-5">
+                  <p className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground mb-3">Что почистили</p>
+                  <ul className="space-y-2 text-[length:var(--text-14)] text-muted-foreground">
+                    <li className="flex gap-2"><span className="text-foreground shrink-0">-</span><span>Убран бейдж версии из шапки страницы.</span></li>
+                    <li className="flex gap-2"><span className="text-foreground shrink-0">-</span><span>Убраны бейджи версии у заголовков всех разделов.</span></li>
+                    <li className="flex gap-2"><span className="text-foreground shrink-0">-</span><span>Сайдбарный бейдж версии приведён к стандартному стилю всех badge-компонентов.</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* FOOTER */}
           <footer className="border-t border-border pt-6 pb-10">

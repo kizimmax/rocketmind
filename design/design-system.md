@@ -150,21 +150,21 @@ shadcn требует `primary` и `primary-foreground` — маппим на г
 
 | Цвет | 100 | 300 | 500 | 700 | 900 | fg | fg-subtle |
 |------|-----|-----|-----|-----|-----|----|-----------|
-| **Yellow** L | `#FFCC00` | `#FFE066` | `#FFF0AA` | `#FFF7CC` | `#FFFEF3` | `#3D2E00` | `#5C4200` |
+| **Yellow** L | `#FFCC00` | `#FFE066` | `#FFF0AA` | `#FFF7CC` | `#FFF9D9` | `#3D2E00` | `#5C4200` |
 | **Yellow** D | `#FFCC00` | `#B38F00` | `#7A6200` | `#4A3C00` | `#3D3300` | `#0A0800` | `#FFE566` |
-| **Violet** L | `#A172F8` | `#C4A0FB` | `#DCC8FF` | `#EDE0FF` | `#FBFAFE` | `#fff` | `#3D1A8A` |
+| **Violet** L | `#A172F8` | `#C4A0FB` | `#DCC8FF` | `#EDE0FF` | `#F7F2FE` | `#fff` | `#3D1A8A` |
 | **Violet** D | `#B48DFA` | `#8A5FF5` | `#5A3D99` | `#2E1F66` | `#20143D` | `#0A050F` | `#DCC8FF` |
-| **Sky** L | `#56CAEA` | `#8ADCF2` | `#C3ECF7` | `#E0F6FB` | `#F7FDFF` | `#fff` | `#0D4D5C` |
+| **Sky** L | `#56CAEA` | `#8ADCF2` | `#C3ECF7` | `#E0F6FB` | `#EBF9FD` | `#fff` | `#0D4D5C` |
 | **Sky** D | `#7AD6EF` | `#3AAACE` | `#1A5F72` | `#0A2D38` | `#051A20` | `#020D10` | `#C3ECF7` |
-| **Terracotta** L | `#FE733A` | `#FFA07A` | `#FFD6AD` | `#FFECE0` | `#FFFAF7` | `#fff` | `#5C1A00` |
+| **Terracotta** L | `#FE733A` | `#FFA07A` | `#FFD6AD` | `#FFECE0` | `#FFF3EB` | `#fff` | `#5C1A00` |
 | **Terracotta** D | `#FF8A5C` | `#CC5522` | `#7A2E10` | `#3D1507` | `#2A0F05` | `#0A0300` | `#FFD6AD` |
-| **Pink** L | `#FF54AC` | `#FF8FCA` | `#FFB8D9` | `#FFE0EF` | `#FFF8FC` | `#fff` | `#6B0033` |
+| **Pink** L | `#FF54AC` | `#FF8FCA` | `#FFB8D9` | `#FFE0EF` | `#FFECF5` | `#fff` | `#6B0033` |
 | **Pink** D | `#FF7EC5` | `#CC3D88` | `#7A1A55` | `#3D0D2A` | `#25061A` | `#0A0208` | `#FFB8D9` |
-| **Blue** L | `#4A56DF` | `#8A94EC` | `#BFC4F3` | `#E0E2FA` | `#F9FAFF` | `#fff` | `#0D1466` |
+| **Blue** L | `#4A56DF` | `#8A94EC` | `#BFC4F3` | `#E0E2FA` | `#F2F3FE` | `#fff` | `#0D1466` |
 | **Blue** D | `#7A84F0` | `#3D4ACC` | `#1E2870` | `#0D1238` | `#060A24` | `#020310` | `#BFC4F3` |
-| **Red** L | `#ED4843` | `#F48A87` | `#FFBCBA` | `#FFE0DF` | `#FFF9F8` | `#fff` | `#5C0A08` |
+| **Red** L | `#ED4843` | `#F48A87` | `#FFBCBA` | `#FFE0DF` | `#FFECEB` | `#fff` | `#5C0A08` |
 | **Red** D | `#F47370` | `#CC2E2A` | `#7A1715` | `#3D0908` | `#250504` | `#0A0202` | `#FFBCBA` |
-| **Green** L | `#9AF576` | `#C0F9A8` | `#D8F4CD` | `#ECFAE6` | `#F7FEF3` | `#1A4A05` | `#1A4A05` |
+| **Green** L | `#9AF576` | `#C0F9A8` | `#D8F4CD` | `#ECFAE6` | `#F0FBEA` | `#1A4A05` | `#1A4A05` |
 | **Green** D | `#B5FA97` | `#6ACC44` | `#2A6E15` | `#133808` | `#0A2005` | `#020A01` | `#D8F4CD` |
 
 ---
@@ -1040,12 +1040,11 @@ import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button
 | Вариант | Фон | Цвет текста | Применение |
 |---------|-----|------------|-----------|
 | `neutral` | `--rm-gray-1` + `border: --border` | `--rm-gray-fg-sub` | Статус по умолчанию, нейтральная метка |
-| `{color}-solid` | `--rm-{color}-100` | `--rm-{color}-fg` | Акцентный статус, выделение категории |
-| `{color}-subtle` | `--rm-{color}-900` | `--rm-{color}-fg-subtle` | Тихая категоризация, фоновые теги |
+| `{color}-subtle` | `--rm-{color}-900` | `--rm-{color}-fg-subtle` | Цветовая категоризация, статусные акценты без перегруза, фоновые теги |
 
-Доступные цвета: `yellow`, `violet`, `sky`, `terracotta`, `pink`, `blue`, `red`, `green`.
+Доступные цвета для `{color}-subtle`: `yellow`, `violet`, `sky`, `terracotta`, `pink`, `blue`, `red`, `green`.
 
-> **Правило выбора:** `solid` — для статусов, требующих внимания (новый, активный, ошибка). `subtle` — для категорий и тегов, которые не должны отвлекать. `neutral` — для вспомогательной мета-информации.
+> **Правило выбора:** `neutral` — единственный нейтральный filled-стиль для вспомогательной мета-информации и архивных состояний. Все цветные бейджи использовать в стиле `subtle`, без отдельного `solid`-набора в дизайн-системе.
 
 #### Размеры
 
@@ -1061,12 +1060,10 @@ import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button
 // neutral / md
 <Badge variant="neutral">статус</Badge>
 
-// solid / md
-<Badge variant="yellow-solid">новый</Badge>
-<Badge variant="red-solid">ошибка</Badge>
-<Badge variant="green-solid">активен</Badge>
-
 // subtle / md
+<Badge variant="green-subtle">активен</Badge>
+<Badge variant="yellow-subtle">новый</Badge>
+<Badge variant="red-subtle">ошибка</Badge>
 <Badge variant="violet-subtle">категория</Badge>
 
 // lg
@@ -1079,7 +1076,7 @@ import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button
   inline-flex items-center gap-1
   h-6 px-2
   rounded-sm
-  bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)]
+  bg-[var(--rm-violet-900)] text-[var(--rm-violet-fg-subtle)]
   font-[family-name:var(--font-mono-family)] text-[12px] uppercase tracking-[0.04em]
   whitespace-nowrap transition-all
 ">
@@ -2879,8 +2876,6 @@ Accordion.Root
 
 - `--rm-gray-2..6/fg` → `--rm-gray-1..4/fg-sub/fg-main` — упрощённая линейная нумерация.
 
----
-
 ### v1.3.0 · 2026-03-17
 
 **Цветовая палитра — унификация solid-цветов**
@@ -2900,3 +2895,19 @@ Accordion.Root
 - 5-уровневая шкала (`-100` / `-300` / `-500` / `-700` / `-900`) + токены `fg` / `fg-subtle`
 - CSS-утилиты `.on-yellow`, `.on-violet` и др. для блоков с акцентным фоном
 - Компонент `InteractiveHoverButton` (dot-fill анимация) для CTA на `on-yellow`
+
+---
+
+## Summary v1.5.0
+
+### Что обновили
+
+- Шрифт `label`-типографики заменён: `Roboto Mono` → `Loos Condensed`.
+- Токен `--font-mono-family` обновлён и используется консистентно в кнопках, навигации, тегах и badges.
+- Badge-система упрощена: в системе остаются `neutral` и цветные `{color}-subtle` варианты без отдельного `solid`-набора.
+
+### Что почистили
+
+- Удалён бейдж версии в шапке веб-страницы дизайн-системы.
+- Удалены бейджи версии у каждого раздела дизайн-системы.
+- Бейдж версии в боковом меню приведён к общему стилю всех badge-компонентов.
