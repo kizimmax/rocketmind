@@ -1549,7 +1549,7 @@ export default function DesignSystemPage() {
             </p>
 
             {/* ── Backgrounds ── */}
-            <h3 id="colors-bg" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="colors-bg" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               Фоны
             </h3>
             <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 mb-3">
@@ -1582,7 +1582,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── Gray Scale ── */}
-            <h3 id="colors-gray" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-1">
+            <h3 id="colors-gray" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-1">
               Серая шкала
             </h3>
             <p className="text-[length:var(--text-13)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-3">
@@ -1629,7 +1629,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── Accent Scale ── */}
-            <h3 id="colors-accent" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="colors-accent" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               Акцентная шкала
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
@@ -1719,7 +1719,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── On-color surfaces ── */}
-            <h3 id="colors-inverted" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mt-12 mb-2">
+            <h3 id="colors-inverted" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mt-12 mb-2">
               Инвертированные поверхности
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
@@ -1762,7 +1762,7 @@ export default function DesignSystemPage() {
             </p>
 
             {/* 2.1 ШРИФТЫ */}
-            <h3 id="typography-fonts" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="typography-fonts" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Шрифты
             </h3>
             <div className="border border-border rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2 mb-10">
@@ -1787,7 +1787,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 2.2 ТИПОГРАФИКА */}
-            <h3 id="typography-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="typography-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Типографика
             </h3>
 
@@ -1814,12 +1814,12 @@ export default function DesignSystemPage() {
                   </div>
                   {[
                     // Heading
-                    { label: "H1",           size: "81px", mobileSize: "48px", weight: "800", cls: "font-[family-name:var(--font-heading-family)] font-extrabold uppercase tracking-[-0.02em] leading-[1.0]",    tailwind: "text-[length:var(--text-48)] md:text-[length:var(--text-81)]" },
-                    { label: "H2",           size: "50px", mobileSize: "31px", weight: "700", cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.02em] leading-[1.05]",         tailwind: "text-[length:var(--text-31)] md:text-[length:var(--text-50)]" },
-                    { label: "H3",           size: "31px", mobileSize: "25px", weight: "700", cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.015em] leading-[1.1]",         tailwind: "text-[length:var(--text-25)] md:text-[length:var(--text-31)]" },
-                    { label: "H4",           size: "25px", mobileSize: "19px", weight: "700", cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.01em] leading-[1.2]",          tailwind: "text-[length:var(--text-19)] md:text-[length:var(--text-25)]" },
+                    { label: "H1",           size: "80px", mobileSize: "40px", weight: "800", cls: "font-[family-name:var(--font-heading-family)] font-extrabold uppercase tracking-[-0.02em] leading-[1.0]",    tailwind: "text-[length:var(--text-40)] md:text-[length:var(--text-80)]" },
+                    { label: "H2",           size: "52px", mobileSize: "30px", weight: "700", cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.02em] leading-[1.05]",         tailwind: "text-[length:var(--text-30)] md:text-[length:var(--text-52)]" },
+                    { label: "H3",           size: "32px", mobileSize: "24px", weight: "700", cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.015em] leading-[1.1]",         tailwind: "text-[length:var(--text-24)] md:text-[length:var(--text-32)]" },
+                    { label: "H4",           size: "24px", mobileSize: "18px", weight: "700", cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.01em] leading-[1.2]",          tailwind: "text-[length:var(--text-18)] md:text-[length:var(--text-24)]" },
                     // Label
-                    { label: "Label-19",     size: "19px", mobileSize: "19px", weight: "600", cls: "font-[family-name:var(--font-mono-family)] font-semibold uppercase tracking-[0.03em] leading-[1.2]",           tailwind: "text-[length:var(--text-19)]" },
+                    { label: "Label-18",     size: "18px", mobileSize: "18px", weight: "500", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.03em] leading-[1.2]",            tailwind: "text-[length:var(--text-18)]" },
                     { label: "Label-16",     size: "16px", mobileSize: "16px", weight: "500", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.28]",             tailwind: "text-[length:var(--text-16)]" },
                     { label: "Label-14",     size: "14px", mobileSize: "14px", weight: "500", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.24]",             tailwind: "text-[length:var(--text-14)]" },
                     { label: "Label-12",     size: "12px", mobileSize: "12px", weight: "500", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.2]",             tailwind: "text-[length:var(--text-12)]" },
@@ -1858,62 +1858,62 @@ export default function DesignSystemPage() {
                       label: "H1",
                       text: "Запускайте AI-агентов быстро",
                       cls: "font-[family-name:var(--font-heading-family)] font-extrabold uppercase tracking-[-0.02em] leading-[1.0]",
-                      size: "81px",
-                      mobileSize: "48px",
+                      size: "80px",
+                      mobileSize: "40px",
                       letterSpacing: "-0.02em",
                       figmaSpacing: "-2%",
                       lineHeight: "1.0",
                       figmaLineHeight: "100%",
-                      twCopy: "text-[length:var(--text-48)] md:text-[length:var(--text-81)] font-[family-name:var(--font-heading-family)] font-extrabold uppercase tracking-[-0.02em] leading-[1.0]",
+                      twCopy: "text-[length:var(--text-40)] md:text-[length:var(--text-80)] font-[family-name:var(--font-heading-family)] font-extrabold uppercase tracking-[-0.02em] leading-[1.0]",
                     },
                     {
                       label: "H2",
                       text: "AI-агенты для вашего бизнеса",
                       cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.02em] leading-[1.05]",
-                      size: "50px",
-                      mobileSize: "31px",
+                      size: "52px",
+                      mobileSize: "30px",
                       letterSpacing: "-0.02em",
                       figmaSpacing: "-2%",
                       lineHeight: "1.05",
                       figmaLineHeight: "105%",
-                      twCopy: "text-[length:var(--text-31)] md:text-[length:var(--text-50)] font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.02em] leading-[1.05]",
+                      twCopy: "text-[length:var(--text-30)] md:text-[length:var(--text-52)] font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.02em] leading-[1.05]",
                     },
                     {
                       label: "H3",
                       text: "Аналитика и маркетинг без команды",
                       cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.015em] leading-[1.1]",
-                      size: "31px",
-                      mobileSize: "25px",
+                      size: "32px",
+                      mobileSize: "24px",
                       letterSpacing: "-0.015em",
                       figmaSpacing: "-1.5%",
                       lineHeight: "1.1",
                       figmaLineHeight: "110%",
-                      twCopy: "text-[length:var(--text-25)] md:text-[length:var(--text-31)] font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.015em] leading-[1.1]",
+                      twCopy: "text-[length:var(--text-24)] md:text-[length:var(--text-32)] font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.015em] leading-[1.1]",
                     },
                     {
                       label: "H4",
                       text: "Выберите агента под задачу",
                       cls: "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.01em] leading-[1.2]",
-                      size: "25px",
-                      mobileSize: "19px",
+                      size: "24px",
+                      mobileSize: "18px",
                       letterSpacing: "-0.01em",
                       figmaSpacing: "-1%",
                       lineHeight: "1.2",
                       figmaLineHeight: "120%",
-                      twCopy: "text-[length:var(--text-19)] md:text-[length:var(--text-25)] font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.01em] leading-[1.2]",
+                      twCopy: "text-[length:var(--text-18)] md:text-[length:var(--text-24)] font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.01em] leading-[1.2]",
                     },
                     // Label
                     {
-                      label: "Label-19",
+                      label: "Label-18",
                       text: "AI-POWERED · БЕСПЛАТНО",
-                      cls: "font-[family-name:var(--font-mono-family)] font-semibold uppercase tracking-[0.03em] leading-[1.2]",
-                      size: "19px",
-                      mobileSize: "19px",
+                      cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.03em] leading-[1.2]",
+                      size: "18px",
+                      mobileSize: "18px",
                       letterSpacing: "0.03em",
                       figmaSpacing: "3%",
                       lineHeight: "1.2",
                       figmaLineHeight: "120%",
-                      twCopy: "text-[length:var(--text-19)] font-[family-name:var(--font-mono-family)] font-semibold uppercase tracking-[0.03em] leading-[1.2]",
+                      twCopy: "text-[length:var(--text-18)] font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.03em] leading-[1.2]",
                     },
                     {
                       label: "Label-16",
@@ -2060,7 +2060,7 @@ export default function DesignSystemPage() {
               Все отступы кратны 8. Золотое сечение для макетных пропорций.
             </p>
 
-            <h3 id="spacing-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="spacing-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Шкала отступов
             </h3>
             <div className="flex flex-wrap gap-3 mb-8">
@@ -2091,7 +2091,7 @@ export default function DesignSystemPage() {
               ))}
             </div>
 
-            <h3 id="spacing-grid" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="spacing-grid" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Сетка страницы
             </h3>
             <Tabs defaultValue="mobile" className="mb-6">
@@ -2190,7 +2190,7 @@ export default function DesignSystemPage() {
               ))}
             </Tabs>
 
-            <h3 id="spacing-phi" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="spacing-phi" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               Макетные пропорции (phi)
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6 max-w-[640px]">
@@ -2353,7 +2353,7 @@ export default function DesignSystemPage() {
               Золотое сечение 38/62 — ориентир для пар sidebar/content, text/visual в hero-блоках.
             </p>
 
-            <h3 id="spacing-visual" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-10">
+            <h3 id="spacing-visual" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4 mt-10">
               Сетка как визуальный стиль
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6 max-w-[640px]">
@@ -2458,7 +2458,7 @@ export default function DesignSystemPage() {
               GridGuides cols=3 guideVisible=true cellPadding=12
             </p>
             {/* 3.8 Bento Grid */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-10">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4 mt-10">
               Bento Grid — нерегулярная сетка
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4 max-w-[640px]">
@@ -2483,7 +2483,7 @@ export default function DesignSystemPage() {
                 className="col-span-8 border rounded-sm p-5 min-h-[80px] flex items-center"
                 style={{ backgroundColor: "var(--rm-yellow-10)", borderColor: "var(--rm-yellow-50)" }}
               >
-                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-tight leading-tight">
+                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-tight leading-tight">
                   AI-система для ведения кейсов
                 </p>
               </div>
@@ -2512,7 +2512,7 @@ export default function DesignSystemPage() {
               Full только как выделительный элемент в самостоятельных блоках.
             </p>
 
-            <h3 id="radius-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="radius-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Border Radius
             </h3>
             <div className="flex flex-wrap gap-6 mb-8">
@@ -2552,7 +2552,7 @@ export default function DesignSystemPage() {
 
             {/* ── Кнопки ── */}
             <div className="mb-12">
-              <h3 id="components-buttons" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">Кнопки</h3>
+              <h3 id="components-buttons" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Кнопки</h3>
               <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">Loos Condensed, uppercase, tracking-[0.08em]. Четыре размера: LG (48px) / MD (40px, default) / SM (32px) / XS (28px).</p>
 
               {/* Variants × Sizes table */}
@@ -2753,7 +2753,7 @@ export default function DesignSystemPage() {
 
             {/* ── Бейджи ── */}
             <div className="mb-12">
-              <h3 id="components-badges" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">Бейджи</h3>
+              <h3 id="components-badges" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Бейджи</h3>
               <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
                 Лейблы для статусов, категорий и тегов. Шрифт — Loos Latin, Cyrillic Condensed-Medium, uppercase.
                 Три размера: SM (20px) / MD (24px, default) / LG (28px). Два типа: solid (акцент) и subtle (фон).
@@ -2895,7 +2895,7 @@ export default function DesignSystemPage() {
 
             {/* ── Инпуты ── */}
             <div className="mb-12">
-              <h3 id="components-inputs" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">Инпуты</h3>
+              <h3 id="components-inputs" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Инпуты</h3>
               <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">Четыре размера идентичны кнопкам по высоте и padding: LG (48px) / MD (40px, default) / SM (32px) / XS (28px). Инпуты и кнопки одного размера выстраиваются в одну строку без подгонки.</p>
 
               {/* Sizes × States table */}
@@ -3040,7 +3040,7 @@ export default function DesignSystemPage() {
 
             {/* ── Карточки ── */}
             <div>
-              <h3 id="components-cards" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">Карточки</h3>
+              <h3 id="components-cards" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">Карточки</h3>
               <Tabs defaultValue="cards" className="w-full">
                 <TabsList className="mb-6">
                   <TabsTrigger value="cards">Каталог карточек</TabsTrigger>
@@ -3148,7 +3148,7 @@ export default function DesignSystemPage() {
                       <div className="h-36 bg-rm-gray-2 overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={28}/></div>
                       <div className="flex flex-col gap-3 p-5">
                         <span className="w-fit px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Курс</span>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em] leading-snug">Название продукта</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em] leading-snug">Название продукта</h4>
                         <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Краткое описание продукта или услуги.</p>
                         <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
                           <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-16)]">9 900 ₽</span>
@@ -3169,7 +3169,7 @@ export default function DesignSystemPage() {
                           <span className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Курс</span>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">· 12 уроков</span>
                         </div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Название продукта</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Название продукта</h4>
                         <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">Подробное описание продукта — здесь можно разместить больше текста, поскольку карточка шире.</p>
                         <div className="flex items-center gap-2 text-[var(--rm-yellow-100)]">
                           {"★★★★★".split("").map((s,j)=><span key={j} className="text-[length:var(--text-14)]">{s}</span>)}
@@ -3177,7 +3177,7 @@ export default function DesignSystemPage() {
                         </div>
                         <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
                           <div className="flex items-baseline gap-2">
-                            <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-19)]">9 900 ₽</span>
+                            <span className="font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-18)] md:text-[length:var(--text-24)]">9 900 ₽</span>
                             <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] text-muted-foreground line-through">14 900 ₽</span>
                           </div>
                           <button className="h-8 px-4 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">Купить →</button>
@@ -3196,11 +3196,11 @@ export default function DesignSystemPage() {
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Услуга</span>
                         </div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Название продукта</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Название продукта</h4>
                         <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Описание продукта. В горизонтальном варианте текст читается слева направо.</p>
                         <div className="flex items-center justify-between mt-auto">
                           <div className="flex items-baseline gap-2">
-                            <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-19)]">9 900 ₽</span>
+                            <span className="font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-18)] md:text-[length:var(--text-24)]">9 900 ₽</span>
                             <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] text-muted-foreground line-through">14 900 ₽</span>
                           </div>
                           <button className="h-8 px-4 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">Купить →</button>
@@ -3222,7 +3222,7 @@ export default function DesignSystemPage() {
                       <div className="h-40 bg-rm-gray-2 flex items-center justify-center"><User size={36} className="text-muted-foreground"/></div>
                       <div className="flex flex-col gap-3 p-5">
                         <div>
-                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Иван Петров</h4>
+                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Иван Петров</h4>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Бизнес-аналитик</span>
                         </div>
                         <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">10 лет в консалтинге, помог 200+ компаниям.</p>
@@ -3244,7 +3244,7 @@ export default function DesignSystemPage() {
                       <div className="h-52 bg-rm-gray-2 flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
                       <div className="flex flex-col gap-4 p-6">
                         <div>
-                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Иван Петров</h4>
+                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Иван Петров</h4>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">Бизнес-аналитик</span>
                         </div>
                         <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">10 лет в консалтинге, помог 200+ компаниям выйти на новые рынки. Специализация — стратегия роста.</p>
@@ -3269,7 +3269,7 @@ export default function DesignSystemPage() {
                       <div className="w-52 flex-shrink-0 bg-rm-gray-2 flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
                       <div className="flex flex-1 items-center gap-8 p-6">
                         <div className="flex flex-col gap-1 w-48 flex-shrink-0">
-                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Иван Петров</h4>
+                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Иван Петров</h4>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">Бизнес-аналитик</span>
                         </div>
                         <p className="flex-1 text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">10 лет в консалтинге, помог 200+ компаниям выйти на новые рынки. Специализация — стратегия роста для tech-стартапов.</p>
@@ -3304,7 +3304,7 @@ export default function DesignSystemPage() {
                         </span>
                       </div>
                       <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Маркетолог</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетолог</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">@maks</span>
                       </div>
                       <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-3">Анализирует рынок, разрабатывает стратегии роста.</p>
@@ -3330,7 +3330,7 @@ export default function DesignSystemPage() {
                           </span>
                         </div>
                         <div>
-                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Маркетолог</h4>
+                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетолог</h4>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] text-muted-foreground">@maks</span>
                         </div>
                       </div>
@@ -3356,7 +3356,7 @@ export default function DesignSystemPage() {
                         <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-[var(--rm-green-100)] border-2 border-card"/>
                       </div>
                       <div className="flex flex-col gap-0.5 w-40 flex-shrink-0">
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Маркетолог</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетолог</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] text-muted-foreground">@maks</span>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-1">Кейсов: 124</span>
                       </div>
@@ -3445,7 +3445,7 @@ export default function DesignSystemPage() {
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">@maks</span>
                       </div>
                       <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em] line-clamp-2">Анализ рынка EdTech</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em] line-clamp-2">Анализ рынка EdTech</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">2 часа назад</span>
                       </div>
                       <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Агент завершил анализ конкурентов...</p>
@@ -3467,7 +3467,7 @@ export default function DesignSystemPage() {
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">@maks</span>
                       </div>
                       <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Анализ рынка EdTech</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Анализ рынка EdTech</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Обновлён 2 часа назад</span>
                       </div>
                       <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Агент завершил анализ конкурентов и подготовил сводный отчёт по основным игрокам рынка.</p>
@@ -3492,7 +3492,7 @@ export default function DesignSystemPage() {
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-1">2 часа назад</span>
                       </div>
                       <div className="flex flex-col gap-1 w-56 flex-shrink-0">
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Анализ рынка EdTech</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Анализ рынка EdTech</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">@maks</span>
                       </div>
                       <p className="flex-1 text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Агент завершил анализ конкурентов и подготовил сводный отчёт по основным игрокам рынка EdTech за 2025–2026 год.</p>
@@ -3523,7 +3523,7 @@ export default function DesignSystemPage() {
                             style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
                           <span className="px-1.5 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
                         </div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em] leading-snug">Маркетинг для стартапов</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em] leading-snug">Маркетинг для стартапов</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">12 уроков</span>
                         <div className="flex items-center justify-between pt-2.5 border-t border-border mt-auto">
                           <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-16)]">4 900 ₽</span>
@@ -3548,7 +3548,7 @@ export default function DesignSystemPage() {
                             style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
                           <span className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
                         </div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Маркетинг для стартапов</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетинг для стартапов</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">Иван Петров · 12 уроков</span>
                         <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Практический курс по привлечению первых клиентов без большого бюджета.</p>
                         <div className="flex items-center gap-2">
@@ -3557,7 +3557,7 @@ export default function DesignSystemPage() {
                         </div>
                         <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
                           <div className="flex items-baseline gap-2">
-                            <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-19)]">4 900 ₽</span>
+                            <span className="font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-18)] md:text-[length:var(--text-24)]">4 900 ₽</span>
                           </div>
                           <button className="h-8 px-4 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">Начать →</button>
                         </div>
@@ -3581,7 +3581,7 @@ export default function DesignSystemPage() {
                               style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
                             <span className="px-2 py-0.5 rounded-sm bg-rm-gray-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Видео</span>
                           </div>
-                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Маркетинг для стартапов</h4>
+                          <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетинг для стартапов</h4>
                           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">Иван Петров · 12 уроков</span>
                           <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Практический курс по привлечению первых клиентов без большого бюджета.</p>
                           <div className="flex items-center gap-1">
@@ -3590,7 +3590,7 @@ export default function DesignSystemPage() {
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                          <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-19)]">4 900 ₽</span>
+                          <span className="font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-18)] md:text-[length:var(--text-24)]">4 900 ₽</span>
                           <button className="h-8 px-4 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">Начать →</button>
                         </div>
                       </div>
@@ -3599,7 +3599,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 {/* ════════ 7. ИНСТРУМЕНТ ════════ */}
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
                   7. Инструмент
                 </h3>
                 {/* S */}
@@ -3611,7 +3611,7 @@ export default function DesignSystemPage() {
                         <Wrench size={18}/>
                       </div>
                       <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Notion</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Notion</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">База знаний</span>
                       </div>
                       <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Синхронизирует кейсы с базой знаний автоматически.</p>
@@ -3632,7 +3632,7 @@ export default function DesignSystemPage() {
                         <Wrench size={22}/>
                       </div>
                       <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Notion</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Notion</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">База знаний</span>
                       </div>
                       <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Синхронизирует кейсы с вашей базой знаний Notion автоматически через n8n.</p>
@@ -3653,7 +3653,7 @@ export default function DesignSystemPage() {
                         <Wrench size={24}/>
                       </div>
                       <div className="flex flex-col gap-0.5 w-40 flex-shrink-0">
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Notion</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Notion</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">База знаний</span>
                       </div>
                       <p className="flex-1 text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Синхронизирует кейсы с вашей базой знаний Notion автоматически через n8n вебхуки.</p>
@@ -3669,7 +3669,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 {/* ════════ 8. ПАРТНЁРСКАЯ ПРОГРАММА ════════ */}
-                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+                <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
                   8. Партнёрская программа
                 </h3>
                 {/* S */}
@@ -3682,7 +3682,7 @@ export default function DesignSystemPage() {
                         <Gem size={18} className="text-[var(--rm-yellow-100)]"/>
                       </div>
                       <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Реферальная</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Реферальная</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">До 30% · Пожизненно</span>
                       </div>
                       <div className="pt-2 border-t border-border">
@@ -3704,7 +3704,7 @@ export default function DesignSystemPage() {
                         <Gem size={22} className="text-[var(--rm-yellow-100)]"/>
                       </div>
                       <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Реферальная программа</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Реферальная программа</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">Доход: до 30% · Пожизненно</span>
                       </div>
                       <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618]">Приглашайте клиентов и получайте процент от каждой их оплаты навсегда.</p>
@@ -3728,7 +3728,7 @@ export default function DesignSystemPage() {
                         <Gem size={24} className="text-[var(--rm-yellow-100)]"/>
                       </div>
                       <div className="flex flex-col gap-0.5 w-48 flex-shrink-0">
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.005em]">Реферальная программа</h4>
+                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Реферальная программа</h4>
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground">Пожизненно</span>
                       </div>
                       <p className="flex-1 text-[length:var(--text-16)] text-muted-foreground leading-[1.618]">Приглашайте клиентов и получайте процент от каждой их оплаты навсегда. Без ограничений по времени.</p>
@@ -3756,7 +3756,7 @@ export default function DesignSystemPage() {
               Контекстные подсказки при наведении. Появляются поверх контента через <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-mono-family)]">position: fixed</code>, не обрезаются родителем. Анимация: 120ms ease-out, fade + translateY.
             </p>
 
-            <h3 id="tooltips-animation" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="tooltips-animation" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Анимация
             </h3>
             <div className="space-y-2 mb-8">
@@ -3770,7 +3770,7 @@ export default function DesignSystemPage() {
               ))}
             </div>
 
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Варианты
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -3818,7 +3818,7 @@ export default function DesignSystemPage() {
               </div>
             </div>
 
-            <h3 id="tooltips-rules" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="tooltips-rules" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Правила применения
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -3851,7 +3851,7 @@ export default function DesignSystemPage() {
               <code className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] bg-rm-gray-3 px-1 py-0.5 rounded">strokeWidth={"{48/size}"}</code>.
             </p>
 
-            <h3 id="icons-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="icons-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Размерная шкала
             </h3>
             <div className="flex flex-wrap items-end gap-6 mb-8">
@@ -3875,7 +3875,7 @@ export default function DesignSystemPage() {
               ))}
             </div>
 
-            <h3 id="icons-lucide" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="icons-lucide" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Примеры иконок (Lucide)
             </h3>
             <div className="flex flex-wrap gap-3">
@@ -3903,7 +3903,7 @@ export default function DesignSystemPage() {
               ))}
             </div>
 
-            <h3 id="icons-mascots" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-8">
+            <h3 id="icons-mascots" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4 mt-8">
               AI-агенты (Маскоты)
             </h3>
             <MascotSection />
@@ -3968,7 +3968,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.2 Timing */}
-            <h3 id="animations-timing" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="animations-timing" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               8.2 Timing-шкала
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Полоска показывает относительную длину каждого токена.</p>
@@ -3986,7 +3986,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.3 Easing */}
-            <h3 id="animations-easing" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="animations-easing" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               8.3 Easing-кривые
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Нажми «Play», чтобы увидеть как шарик движется с данной кривой.</p>
@@ -3998,7 +3998,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.4 Микроинтерактивы */}
-            <h3 id="animations-micro" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="animations-micro" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               8.4 Микроинтерактивы
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Наведи курсор на каждый элемент.</p>
@@ -4078,7 +4078,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.5 Screen transitions */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               8.5 Переходы между состояниями экрана
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Нажми кнопку, чтобы воспроизвести анимацию появления элемента.</p>
@@ -4115,7 +4115,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.6 Loading */}
-            <h3 id="animations-loading" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 id="animations-loading" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               8.6 Loading / Skeleton
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">Skeleton занимает место сразу — нет «прыжков» при загрузке. Shimmer движется бесконечно.</p>
@@ -4154,7 +4154,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.7 Page-level */}
-            <h3 id="animations-page" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="animations-page" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               8.7 Page-level правила
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
@@ -4185,7 +4185,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.8 Reduced Motion */}
-            <h3 id="animations-a11y" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="animations-a11y" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               8.8 Доступность (Reduced Motion)
             </h3>
             <div className="p-4 rounded-md border border-border bg-rm-gray-2/30">
@@ -4202,7 +4202,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* 8.9 Animated Grid Lines */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-8">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4 mt-8">
               8.9 Animated Grid Lines
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
@@ -4211,7 +4211,7 @@ export default function DesignSystemPage() {
             <AnimatedGridLinesDemo />
 
             {/* 8.10 Dot Grid Lens */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4 mt-10">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4 mt-10">
               8.10 Dot Grid Lens
             </h3>
             <p className="text-muted-foreground mb-6">
@@ -4220,7 +4220,7 @@ export default function DesignSystemPage() {
             </p>
 
             {/* Tokens */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Токены
             </h3>
             <div className="space-y-2 mb-8">
@@ -4237,13 +4237,13 @@ export default function DesignSystemPage() {
             </div>
 
             {/* Live Demo */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Live Demo
             </h3>
             <DotGridDemo />
 
             {/* Algorithm */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mt-8 mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mt-8 mb-4">
               Алгоритм
             </h3>
             <div className="p-4 rounded-md border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
@@ -4254,7 +4254,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* Usage table */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mt-8 mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mt-8 mb-4">
               Применение
             </h3>
             <div className="overflow-auto rounded-md border border-border">
@@ -4304,7 +4304,7 @@ export default function DesignSystemPage() {
             </p>
 
             {/* ── Header ── */}
-            <h3 id="cross-header" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 id="cross-header" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Header — Шапка
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
@@ -4326,7 +4326,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── Token spec ── */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Токены
             </h3>
             <div className="overflow-auto rounded-md border border-border mb-8">
@@ -4364,7 +4364,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── States ── */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Состояния
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -4422,7 +4422,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* ── Usage ── */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Применение
             </h3>
             <div className="p-4 rounded-md border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">
@@ -4440,7 +4440,7 @@ export default function DesignSystemPage() {
             </p>
 
             {/* ── Accordion 05 ── */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
               Аккордион — FAQ
             </h3>
             <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
@@ -4452,7 +4452,7 @@ export default function DesignSystemPage() {
             </div>
 
             {/* Token spec */}
-            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-4">
+            <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
               Токены
             </h3>
             <div className="overflow-auto rounded-md border border-border mb-8">
