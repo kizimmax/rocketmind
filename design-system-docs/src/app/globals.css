@@ -32,9 +32,9 @@
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
+  --color-accent: var(--rm-gray-3);
   --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
+  --color-muted: var(--rm-gray-2);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
@@ -201,11 +201,8 @@
   --card-foreground: var(--rm-gray-fg);
   --popover: #FFFFFF;
   --popover-foreground: var(--rm-gray-fg);
-  /* shadcn internals — в коде проекта используй --rm-gray-2/3 напрямую */
-  --muted: var(--rm-gray-2);
   --secondary: var(--rm-gray-2);
   --secondary-foreground: var(--rm-gray-fg);
-  --accent: var(--rm-gray-3);
   --accent-foreground: var(--rm-gray-fg);
   --destructive: #ED4843;
   --destructive-foreground: #FFFFFF;
@@ -402,11 +399,8 @@
   --card-foreground: var(--rm-gray-fg);
   --popover: #121212;
   --popover-foreground: var(--rm-gray-fg);
-  /* shadcn internals — в коде проекта используй --rm-gray-2/3 напрямую */
-  --muted: var(--rm-gray-2);
   --secondary: var(--rm-gray-2);
   --secondary-foreground: var(--rm-gray-fg);
-  --accent: var(--rm-gray-3);
   --accent-foreground: var(--rm-gray-fg);
   --destructive: #FF6B6B;
   --destructive-foreground: #FFFFFF;

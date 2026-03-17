@@ -25,7 +25,7 @@ export function ContactForm() {
                                     <input
                                         type="text"
                                         id="name"
-                                        className="w-full h-10 px-4 rounded-md border border-border bg-background text-foreground font-body text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring focus:shadow-glow-yellow disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-muted"
+                                        className="w-full h-10 px-4 rounded-sm border border-border bg-background text-foreground font-body text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring focus:shadow-glow-yellow disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-muted"
                                         placeholder="Ваше имя"
                                     />
                                 </div>
@@ -34,7 +34,7 @@ export function ContactForm() {
                                     <input
                                         type="tel"
                                         id="phone"
-                                        className="w-full h-10 px-4 rounded-md border border-border bg-background text-foreground font-body text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring focus:shadow-glow-yellow disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-muted"
+                                        className="w-full h-10 px-4 rounded-sm border border-border bg-background text-foreground font-body text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring focus:shadow-glow-yellow disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-muted"
                                         placeholder="+7 (999) 000-00-00"
                                     />
                                 </div>
@@ -45,7 +45,7 @@ export function ContactForm() {
                                 <input
                                     type="email"
                                     id="email"
-                                    className="w-full h-10 px-4 rounded-md border border-border bg-background text-foreground font-body text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring focus:shadow-glow-yellow disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-muted"
+                                    className="w-full h-10 px-4 rounded-sm border border-border bg-background text-foreground font-body text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring focus:shadow-glow-yellow disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-muted"
                                     placeholder="mail@example.com"
                                 />
                             </div>
@@ -58,7 +58,7 @@ export function ContactForm() {
                                     </span>
                                 </label>
 
-                                <button type="submit" className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-mono text-[length:var(--text-12)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[var(--rm-yellow-500)] w-full sm:w-auto">
+                                <button type="submit" className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-mono text-[length:var(--text-12)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-yellow-300)] hover:shadow-glow-yellow focus-visible:outline-none focus-visible:shadow-glow-yellow active:bg-[var(--rm-yellow-500)] w-full sm:w-auto">
                                     Отправить
                                 </button>
                             </div>

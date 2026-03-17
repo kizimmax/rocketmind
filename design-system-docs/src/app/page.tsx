@@ -125,6 +125,9 @@ function FgRow({ token }: { token: string }) {
 
   const themeKey = useThemeKey()
 
+  const fgToken = `--rm-${token}-fg`
+  const fgsToken = `--rm-${token}-fg-subtle`
+
   const readHexes = () => {
     if (fgProbeRef.current) { const h = computeHex(fgProbeRef.current); if (h) setFgHex(h) }
     if (fgsProbeRef.current) { const h = computeHex(fgsProbeRef.current); if (h) setFgsHex(h) }
@@ -135,30 +138,36 @@ function FgRow({ token }: { token: string }) {
   return (
     <div className="grid grid-cols-6 border-t border-border relative">
       {/* Invisible probes to read fg/fg-subtle hex values */}
-      <div ref={fgProbeRef}  className="sr-only" style={{ backgroundColor: `var(--rm-${token}-fg)` }} />
-      <div ref={fgsProbeRef} className="sr-only" style={{ backgroundColor: `var(--rm-${token}-fg-subtle)` }} />
+      <div ref={fgProbeRef}  className="sr-only" style={{ backgroundColor: `var(${fgToken})` }} />
+      <div ref={fgsProbeRef} className="sr-only" style={{ backgroundColor: `var(${fgsToken})` }} />
       {/* fg cell */}
       <div
         className="col-span-2 px-3 py-2 flex items-center justify-between border-r border-border cursor-pointer"
-        style={{ backgroundColor: `var(--rm-${token}-100)`, color: `var(--rm-${token}-fg)` }}
+        style={{ backgroundColor: `var(--rm-${token}-100)`, color: `var(${fgToken})` }}
         onMouseEnter={readHexes}
-        onClick={() => { if (fgHex) { navigator.clipboard.writeText(fgHex); toast.success("Скопировано в буфер обмена", { description: `HEX: ${fgHex}`, duration: 2000 }) } }}
+        onClick={() => { navigator.clipboard.writeText(fgToken); toast.success("Скопировано в буфер обмена", { description: fgToken, duration: 2000 }) }}
       >
-        <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]">fg · {fgHex}</span>
-        <div onClick={e => e.stopPropagation()}>
-          <CopyButton value={fgHex} label={`HEX: ${fgHex}`} iconColor={`var(--rm-${token}-fg)`} />
+        <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] shrink-0">fg · {fgHex}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-[10px] font-[family-name:var(--font-mono-family)] opacity-50 truncate">{fgToken}</span>
+          <div className="shrink-0" onClick={e => e.stopPropagation()}>
+            <CopyButton value={fgToken} label={fgToken} iconColor={`var(${fgToken})`} />
+          </div>
         </div>
       </div>
       {/* fg-subtle cell */}
       <div
         className="col-span-4 px-3 py-2 flex items-center justify-between cursor-pointer"
-        style={{ backgroundColor: `var(--rm-${token}-900)`, color: `var(--rm-${token}-fg-subtle)` }}
+        style={{ backgroundColor: `var(--rm-${token}-900)`, color: `var(${fgsToken})` }}
         onMouseEnter={readHexes}
-        onClick={() => { if (fgsHex) { navigator.clipboard.writeText(fgsHex); toast.success("Скопировано в буфер обмена", { description: `HEX: ${fgsHex}`, duration: 2000 }) } }}
+        onClick={() => { navigator.clipboard.writeText(fgsToken); toast.success("Скопировано в буфер обмена", { description: fgsToken, duration: 2000 }) }}
       >
-        <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)]">fg-subtle · {fgsHex}</span>
-        <div onClick={e => e.stopPropagation()}>
-          <CopyButton value={fgsHex} label={`HEX: ${fgsHex}`} iconColor={`var(--rm-${token}-fg-subtle)`} />
+        <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] shrink-0">fg-subtle · {fgsHex}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-[10px] font-[family-name:var(--font-mono-family)] opacity-50 truncate">{fgsToken}</span>
+          <div className="shrink-0" onClick={e => e.stopPropagation()}>
+            <CopyButton value={fgsToken} label={fgsToken} iconColor={`var(${fgsToken})`} />
+          </div>
         </div>
       </div>
     </div>
@@ -443,7 +452,7 @@ function TooltipDemo({ label, content }: { label: string; content: React.ReactNo
         ref={ref}
         onMouseEnter={show}
         onMouseLeave={() => setPos(null)}
-        className="px-3 py-1.5 rounded-md border border-border text-[length:var(--text-12)] text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+        className="px-3 py-1.5 rounded-sm border border-border text-[length:var(--text-12)] text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
       >
         {label}
       </button>
@@ -592,7 +601,7 @@ function MascotSection() {
           <button
             key={tab.key}
             onClick={() => setActiveState(tab.key)}
-            className={`px-3 py-1.5 rounded-md text-[length:var(--text-12)] font-medium border transition-colors ${
+            className={`px-3 py-1.5 rounded-sm text-[length:var(--text-12)] font-medium border transition-colors ${
               activeState === tab.key
                 ? "bg-[var(--rm-yellow-100)] text-black border-[var(--rm-yellow-100)]"
                 : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
@@ -1542,18 +1551,14 @@ export default function DesignSystemPage() {
             <h3 id="colors-bg" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] uppercase tracking-[-0.01em] mb-2">
               Фоны
             </h3>
-            <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 sm:grid-cols-4 mb-3">
+            <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 mb-3">
               {[
                 { name: "Background", var: "--background",    token: "--background", lhex: "#FAFAFA", dhex: "#0A0A0A",
                   note: "Основной фон страницы. Используй по умолчанию — особенно когда поверх кладёшь цвет." },
                 { name: "Card",       var: "--card",          token: "--card",       lhex: "#FFFFFF", dhex: "#121212",
                   note: "Поверхность карточек и поповеров. Слой над фоном страницы." },
-                { name: "Muted",      var: "--rm-gray-2",     token: "--rm-gray-2",  lhex: "#F5F5F5", dhex: "#1A1A1A",
-                  note: "Тихий фон для badge, инлайн-кода, неактивных зон." },
-                { name: "Accent",     var: "--rm-gray-3",     token: "--rm-gray-3",  lhex: "#EBEBEB", dhex: "#242424",
-                  note: "Hover-состояния в списках, дропдаунах, nav-пунктах." },
               ].map((c, i) => (
-                <div key={c.token} className={`flex flex-col gap-2 p-3 ${i < 3 ? "border-r border-border" : ""} ${i < 2 ? "sm:border-b-0 border-b border-border" : ""}`}>
+                <div key={c.token} className={`flex flex-col gap-2 p-3 ${i < 1 ? "border-r border-border" : ""}`}>
                   <ColorHexBlock
                     className="w-full h-16 rounded-sm"
                     style={{ backgroundColor: `var(${c.var})` }}
@@ -1573,7 +1578,6 @@ export default function DesignSystemPage() {
             <div className="rounded-md border border-border bg-rm-gray-2/40 px-4 py-3 text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-10 leading-relaxed">
               Background (#FAFAFA / #0A0A0A) — фон страницы, всегда первый слой.
               Card (#FFFFFF / #121212) — поверхность карточек и поповеров поверх Background.
-              Muted — тихий фон. Accent — hover-состояния.
             </div>
 
             {/* ── Gray Scale ── */}
@@ -1732,7 +1736,7 @@ export default function DesignSystemPage() {
                   Попробуй Rocketmind — AI-агенты для твоего бизнеса без написания кода.
                 </p>
                 <button
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-all duration-150"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-all duration-150"
                   style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                 >
                   Попробовать
@@ -1749,7 +1753,7 @@ export default function DesignSystemPage() {
                   Агент Катя разбирает связи и делает выводы быстрее любой таблицы.
                 </p>
                 <button
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-sm border text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider transition-colors"
                   style={{ borderColor: "var(--border)", color: "var(--foreground)" }}
                 >
                   Узнать больше
@@ -1838,7 +1842,7 @@ export default function DesignSystemPage() {
                     { label: "Copy-19",      size: "19px", mobileSize: "17px", weight: "400", cls: "leading-[1.4]",                                                                                                tailwind: "text-[length:var(--text-16)] md:text-[length:var(--text-19)]" },
                     { label: "Copy-16",      size: "16px", mobileSize: "16px", weight: "400", cls: "leading-[1.4]",                                                                                               tailwind: "text-[length:var(--text-16)]" },
                     { label: "Copy-14",      size: "14px", mobileSize: "14px", weight: "400", cls: "leading-[1.5] tracking-[0.01em]",                                                                             tailwind: "text-[length:var(--text-14)]" },
-                    { label: "Copy-12",      size: "12px", mobileSize: "12px", weight: "400", cls: "leading-[1.4] tracking-[0.02em]",                                                                             tailwind: "text-[length:var(--text-12)]" },
+                    { label: "Copy-12",      size: "12px", mobileSize: "12px", weight: "400", cls: "leading-[1.5] tracking-[0.02em]",                                                                             tailwind: "text-[length:var(--text-12)]" },
                   ].map((t, i, arr) => (
                     <div key={t.label} className={`flex items-center gap-4 py-3 px-4 hover:bg-rm-gray-2/40 transition-colors group ${i < arr.length - 1 ? "border-b border-border" : ""}`}>
                       <Badge variant="secondary" className="w-16 justify-center text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] shrink-0">
@@ -2013,14 +2017,14 @@ export default function DesignSystemPage() {
                     {
                       label: "Copy-12",
                       text: "Последнее обновление: сегодня в 14:32. Версия агента 2.1.4. © 2026 Rocketmind",
-                      cls: "leading-[1.4] tracking-[0.02em]",
+                      cls: "leading-[1.5] tracking-[0.02em]",
                       size: "12px",
                       mobileSize: "12px",
                       letterSpacing: "0.02em",
                       figmaSpacing: "2%",
-                      lineHeight: "1.4",
-                      figmaLineHeight: "140%",
-                      twCopy: "text-[length:var(--text-12)] leading-[1.4] tracking-[0.02em]",
+                      lineHeight: "1.5",
+                      figmaLineHeight: "150%",
+                      twCopy: "text-[length:var(--text-12)] leading-[1.5] tracking-[0.02em]",
                     },
                   ].map((t, i, arr) => (
                     <div key={t.label} className={`flex gap-4 py-4 px-4 hover:bg-rm-gray-2/40 transition-colors group items-start ${i < arr.length - 1 ? "border-b border-border" : ""}`}>
@@ -2527,8 +2531,8 @@ export default function DesignSystemPage() {
             </h3>
             <div className="flex flex-wrap gap-6 mb-8">
               {[
-                { label: "sm", value: "4px", tw: "rounded-sm", usage: "Внутренние элементы: Badge, Tag, Chip, Input, маленькие кнопки" },
-                { label: "md", value: "6px", tw: "rounded-md", usage: "Средние компоненты: Button, Select, Tooltip, Dropdown" },
+                { label: "sm", value: "4px", tw: "rounded-sm", usage: "Button, Input, Badge, Tag, Chip, Tooltip, kbd" },
+                { label: "md", value: "6px", tw: "rounded-md", usage: "Card, Select, Dropdown" },
                 { label: "lg", value: "8px", tw: "rounded-lg", usage: "Крупные блоки: Card, Modal, Panel, Sidebar, Toast" },
                 { label: "full", value: "9999px", tw: "rounded-full", usage: "Акцентный элемент: Avatar, счётчик, pill-label в standalone-блоках" },
               ].map((r) => (
@@ -2563,7 +2567,7 @@ export default function DesignSystemPage() {
             {/* ── Кнопки ── */}
             <div className="mb-12">
               <h3 id="components-buttons" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-19)] md:text-[length:var(--text-25)] uppercase tracking-[-0.01em] mb-2">Кнопки</h3>
-              <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">Roboto Mono, uppercase, tracking-[0.08em]. Три размера: LG (48px) / MD (40px, default) / SM (32px).</p>
+              <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">Roboto Mono, uppercase, tracking-[0.08em]. Четыре размера: LG (48px) / MD (40px, default) / SM (32px) / XS (28px).</p>
 
               {/* Variants × Sizes table */}
               {(() => {
@@ -2572,6 +2576,7 @@ export default function DesignSystemPage() {
                   { id: "lg", label: "LG / 48px", h: "h-12", px: "px-6", fs: "text-[length:var(--text-16)]" },
                   { id: "md", label: "MD / 40px", h: "h-10", px: "px-4", fs: "text-[length:var(--text-14)]" },
                   { id: "sm", label: "SM / 32px", h: "h-8",  px: "px-3", fs: "text-[length:var(--text-12)]" },
+                  { id: "xs", label: "XS / 28px", h: "h-7",  px: "px-3", fs: "text-[length:var(--text-12)]" },
                 ]
                 const variants: {
                   id: string
@@ -2586,7 +2591,7 @@ export default function DesignSystemPage() {
                     desc: "Главное действие на экране. Hero CTA, финальный шаг формы. Один на странице.",
                     token: "btn-primary",
                     render: (h, px, fs) => (
-                      <button className={`group relative overflow-hidden inline-flex items-center gap-2 ${h} ${px} rounded-md bg-[var(--rm-yellow-100)] ${mono} ${fs} uppercase tracking-[0.08em] cursor-pointer`}>
+                      <button className={`group relative overflow-hidden inline-flex items-center gap-2 ${h} ${px} rounded-sm bg-[var(--rm-yellow-100)] ${mono} ${fs} uppercase tracking-[0.08em] cursor-pointer`}>
                         <span className="shrink-0 w-2 h-2 rounded-full bg-[var(--rm-yellow-fg)] transition-all duration-300 group-hover:scale-[50] group-hover:bg-black" />
                         <span className={`relative z-10 text-[var(--rm-yellow-fg)] whitespace-nowrap transition-colors duration-300 group-hover:text-white`}>Запустить</span>
                       </button>
@@ -2598,7 +2603,7 @@ export default function DesignSystemPage() {
                     desc: "Второстепенное действие рядом с primary. Фильтры, переключатели.",
                     token: "btn-secondary",
                     render: (h, px, fs) => (
-                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-md border border-border bg-transparent text-foreground ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent cursor-pointer`}>
+                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-sm border border-border bg-transparent text-foreground ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent cursor-pointer`}>
                         Подробнее
                       </button>
                     ),
@@ -2609,7 +2614,7 @@ export default function DesignSystemPage() {
                     desc: "Тихое действие без фона. Навигация, вспомогательные inline-действия.",
                     token: "btn-ghost",
                     render: (h, px, fs) => (
-                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-md bg-transparent text-muted-foreground ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent hover:text-foreground cursor-pointer`}>
+                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-sm bg-transparent text-muted-foreground ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:bg-accent hover:text-foreground cursor-pointer`}>
                         Отмена
                       </button>
                     ),
@@ -2620,7 +2625,7 @@ export default function DesignSystemPage() {
                     desc: "Необратимые действия. Удаление, архивация. Требует диалог подтверждения.",
                     token: "btn-destructive",
                     render: (h, px, fs) => (
-                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-md bg-destructive text-white ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:opacity-90 cursor-pointer`}>
+                      <button className={`inline-flex items-center justify-center gap-2 ${h} ${px} rounded-sm bg-destructive text-white ${mono} ${fs} uppercase tracking-[0.08em] transition-all duration-150 hover:opacity-90 cursor-pointer`}>
                         <Trash2 size={13} /> Удалить
                       </button>
                     ),
@@ -2628,7 +2633,7 @@ export default function DesignSystemPage() {
                 ]
                 return (
                   <div className="border border-border rounded-lg overflow-hidden bg-border mb-6">
-                    <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-[1px]">
+                    <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-[1px]">
                       {/* Header row */}
                       <div className="bg-muted/60 px-4 py-3" />
                       {sizes.map((s) => (
@@ -2666,13 +2671,13 @@ export default function DesignSystemPage() {
                 <p className="px-4 pt-4 pb-3 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground">Состояния</p>
                 <div className="flex flex-wrap items-end gap-4 px-4 pb-4">
                   <div className="flex flex-col items-start gap-1.5">
-                    <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] opacity-40 cursor-not-allowed">
+                    <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] opacity-40 cursor-not-allowed">
                       Disabled
                     </button>
                     <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)]">opacity-40 pointer-events-none</span>
                   </div>
                   <div className="flex flex-col items-start gap-1.5">
-                    <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] opacity-80 cursor-wait">
+                    <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-[family-name:var(--font-mono-family)] text-[length:var(--text-13)] uppercase tracking-[0.08em] opacity-80 cursor-wait">
                       <Loader2 size={13} className="animate-spin" /> Loading
                     </button>
                     <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-mono-family)]">opacity-80 + Loader2 spinner</span>
@@ -2689,7 +2694,7 @@ export default function DesignSystemPage() {
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="text-[length:var(--text-12)]">DEFAULT</Badge>
                     <CopyButton
-                      value={`w-full h-10 px-4 rounded-md border border-border bg-background text-foreground text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring`}
+                      value={`w-full h-10 px-4 rounded-sm border border-border bg-background text-foreground text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring`}
                       label="Default Input"
                     />
                   </div>
@@ -2700,7 +2705,7 @@ export default function DesignSystemPage() {
                     <input
                       type="email"
                       placeholder="example@rocketmind.ai"
-                      className="w-full h-10 px-4 rounded-md border border-border bg-background text-foreground text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring"
+                      className="w-full h-10 px-4 rounded-sm border border-border bg-background text-foreground text-[length:var(--text-16)] placeholder:text-muted-foreground transition-all duration-150 focus:outline-none focus:border-ring"
                     />
                   </div>
                 </div>
@@ -2709,14 +2714,14 @@ export default function DesignSystemPage() {
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="text-[length:var(--text-12)]">CHAT</Badge>
                     <CopyButton
-                      value={`w-full min-h-[48px] max-h-[200px] px-4 py-3 rounded-lg border border-border bg-background text-foreground text-[length:var(--text-16)] leading-[1.618] placeholder:text-muted-foreground resize-none overflow-auto transition-all duration-150 focus:outline-none focus:border-ring`}
+                      value={`w-full min-h-[48px] max-h-[200px] px-4 py-3 rounded-sm border border-border bg-background text-foreground text-[length:var(--text-16)] leading-[1.618] placeholder:text-muted-foreground resize-none overflow-auto transition-all duration-150 focus:outline-none focus:border-ring`}
                       label="Chat Input"
                     />
                   </div>
                   <textarea
                     placeholder="Напишите сообщение..."
                     rows={2}
-                    className="w-full min-h-[48px] max-h-[200px] px-4 py-3 rounded-lg border border-border bg-background text-foreground text-[length:var(--text-16)] leading-[1.618] placeholder:text-muted-foreground resize-none overflow-auto transition-all duration-150 focus:outline-none focus:border-ring max-w-md"
+                    className="w-full min-h-[48px] max-h-[200px] px-4 py-3 rounded-sm border border-border bg-background text-foreground text-[length:var(--text-16)] leading-[1.618] placeholder:text-muted-foreground resize-none overflow-auto transition-all duration-150 focus:outline-none focus:border-ring max-w-md"
                   />
                 </div>
 
@@ -2724,7 +2729,7 @@ export default function DesignSystemPage() {
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="text-[length:var(--text-12)]">CODE (OTP)</Badge>
                     <CopyButton
-                      value={`w-14 h-14 text-center rounded-md border border-border bg-background text-foreground font-mono text-[length:var(--text-25)] tracking-[0.08em] transition-all duration-150 focus:outline-none focus:border-ring`}
+                      value={`w-14 h-14 text-center rounded-sm border border-border bg-background text-foreground font-mono text-[length:var(--text-25)] tracking-[0.08em] transition-all duration-150 focus:outline-none focus:border-ring`}
                       label="Code Input"
                     />
                   </div>
@@ -2733,7 +2738,7 @@ export default function DesignSystemPage() {
                       <input
                         key={i}
                         maxLength={1}
-                        className="w-14 h-14 text-center rounded-md border border-border bg-background text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-25)] tracking-[0.08em] transition-all duration-150 focus:outline-none focus:border-ring"
+                        className="w-14 h-14 text-center rounded-sm border border-border bg-background text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-25)] tracking-[0.08em] transition-all duration-150 focus:outline-none focus:border-ring"
                         defaultValue={i <= 3 ? String(i) : ""}
                       />
                     ))}
@@ -2749,7 +2754,7 @@ export default function DesignSystemPage() {
                     <input
                       type="email"
                       defaultValue="invalid-email"
-                      className="w-full h-10 px-4 rounded-md border border-destructive bg-background text-foreground text-[length:var(--text-16)] transition-all duration-150 focus:outline-none"
+                      className="w-full h-10 px-4 rounded-sm border border-destructive bg-background text-foreground text-[length:var(--text-16)] transition-all duration-150 focus:outline-none"
                     />
                     <span className="text-[length:var(--text-14)] text-destructive">
                       Введите корректный email
@@ -2901,7 +2906,7 @@ export default function DesignSystemPage() {
                             <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-19)]">9 900 ₽</span>
                             <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] text-muted-foreground line-through">14 900 ₽</span>
                           </div>
-                          <button className="h-8 px-4 rounded-smpx] uppercase tracking-[0.08em]">Купить →</button>
+                          <button className="h-8 px-4 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">Купить →</button>
                         </div>
                       </div>
                     </div>
@@ -2924,7 +2929,7 @@ export default function DesignSystemPage() {
                             <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-19)]">9 900 ₽</span>
                             <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] text-muted-foreground line-through">14 900 ₽</span>
                           </div>
-                          <button className="h-8 px-4 rounded-smpx] uppercase tracking-[0.08em]">Купить →</button>
+                          <button className="h-8 px-4 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">Купить →</button>
                         </div>
                       </div>
                     </div>
@@ -3280,7 +3285,7 @@ export default function DesignSystemPage() {
                           <div className="flex items-baseline gap-2">
                             <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-19)]">4 900 ₽</span>
                           </div>
-                          <button className="h-8 px-4 rounded-smpx] uppercase tracking-[0.08em]">Начать →</button>
+                          <button className="h-8 px-4 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">Начать →</button>
                         </div>
                       </div>
                     </div>
@@ -3312,7 +3317,7 @@ export default function DesignSystemPage() {
                         </div>
                         <div className="flex flex-col items-end gap-3 flex-shrink-0">
                           <span className="font-[family-name:var(--font-mono-family)] font-semibold text-[length:var(--text-19)]">4 900 ₽</span>
-                          <button className="h-8 px-4 rounded-smpx] uppercase tracking-[0.08em]">Начать →</button>
+                          <button className="h-8 px-4 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">Начать →</button>
                         </div>
                       </div>
                     </div>
@@ -3433,7 +3438,7 @@ export default function DesignSystemPage() {
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Комиссия</span>
                         <span className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-25)] uppercase tracking-tight leading-none text-[var(--rm-yellow-100)]">30%</span>
                       </div>
-                      <button className="h-8 px-3 rounded-smpx] uppercase tracking-[0.08em] w-full mt-auto">
+                      <button className="h-8 px-3 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] w-full mt-auto">
                         Стать партнёром
                       </button>
                     </div>
@@ -3457,7 +3462,7 @@ export default function DesignSystemPage() {
                         <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">Комиссия</span>
                         <span className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-31)] uppercase tracking-tight leading-none text-[var(--rm-yellow-100)]">30%</span>
                       </div>
-                      <button className="h-9 px-5 rounded-smpx] uppercase tracking-[0.08em] flex-shrink-0">
+                      <button className="h-8 px-5 rounded-sm bg-primary text-primary-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] flex-shrink-0">
                         Стать партнёром
                       </button>
                     </div>
@@ -3726,7 +3731,7 @@ export default function DesignSystemPage() {
 
               <AnimDemoCard label="Button hover" desc="Primary button: hover меняет цвет. 100ms ease-standard.">
                 <button
-                  className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] cursor-pointer select-none"
+                  className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] cursor-pointer select-none"
                   style={{ transition: "background-color 100ms cubic-bezier(0.4,0,0.2,1)" }}
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--rm-yellow-300)" }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "var(--rm-yellow-100)" }}
@@ -3737,7 +3742,7 @@ export default function DesignSystemPage() {
 
               <AnimDemoCard label="Ghost button hover" desc="Ghost button: hover заполняет фон muted. 100ms ease-standard.">
                 <button
-                  className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-md border border-border text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] cursor-pointer select-none"
+                  className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-sm border border-border text-foreground font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em] cursor-pointer select-none"
                   style={{ transition: "background-color 100ms cubic-bezier(0.4,0,0.2,1)", backgroundColor: "transparent" }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--rm-gray-2)" }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent" }}
@@ -3750,7 +3755,7 @@ export default function DesignSystemPage() {
                 <input
                   type="text"
                   placeholder="Кликни сюда..."
-                  className="w-full h-10 px-3 rounded-md border bg-background text-foreground text-[length:var(--text-14)] outline-none"
+                  className="w-full h-10 px-3 rounded-sm border bg-background text-foreground text-[length:var(--text-14)] outline-none"
                   style={{ borderColor: "var(--border)", transition: "border-color 200ms cubic-bezier(0.4,0,0.2,1)" }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = "var(--rm-yellow-100)" }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border)" }}
@@ -3785,7 +3790,7 @@ export default function DesignSystemPage() {
                   {[Sparkles, Eye, Zap, Search].map((Icon, i) => (
                     <button
                       key={i}
-                      className="p-2 rounded-md cursor-pointer"
+                      className="p-2 rounded-sm cursor-pointer"
                       style={{ color: "var(--muted-foreground)", transition: "color 100ms cubic-bezier(0.4,0,0.2,1), background-color 100ms cubic-bezier(0.4,0,0.2,1)" }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--foreground)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--rm-gray-2)" }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "var(--muted-foreground)"; (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent" }}
@@ -4104,8 +4109,8 @@ export default function DesignSystemPage() {
                       ))}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline-flex items-center justify-center h-8 px-3 rounded-md border border-border text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] text-foreground">Войти</span>
-                      <span className="inline-flex items-center justify-center h-8 px-3 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Попробовать</span>
+                      <span className="hidden sm:inline-flex items-center justify-center h-8 px-3 rounded-sm border border-border text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] text-foreground">Войти</span>
+                      <span className="inline-flex items-center justify-center h-8 px-3 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Попробовать</span>
                     </div>
                   </nav>
                 </div>
@@ -4130,8 +4135,8 @@ export default function DesignSystemPage() {
                       ))}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline-flex items-center justify-center h-8 px-3 rounded-md border border-border text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] text-foreground">Войти</span>
-                      <span className="inline-flex items-center justify-center h-8 px-3 rounded-md bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Попробовать</span>
+                      <span className="hidden sm:inline-flex items-center justify-center h-8 px-3 rounded-sm border border-border text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] text-foreground">Войти</span>
+                      <span className="inline-flex items-center justify-center h-8 px-3 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Попробовать</span>
                     </div>
                   </nav>
                 </div>
