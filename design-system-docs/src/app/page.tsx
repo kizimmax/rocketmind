@@ -831,7 +831,7 @@ function Section({
   return (
     <section id={id} className="scroll-mt-20">
       <div className="flex items-center gap-3 mb-6">
-        <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-31)] md:text-[length:var(--text-50)] uppercase tracking-[-0.015em] leading-[1.05]">
+        <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-30)] md:text-[length:var(--text-52)] uppercase tracking-[-0.015em] leading-[1.05]">
           {title}
         </h2>
         {version && (
@@ -1035,7 +1035,7 @@ function Accordion05Demo() {
                 <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] mt-2 shrink-0 tabular-nums">
                   {item.id}
                 </span>
-                <span className="font-[family-name:var(--font-heading-family)] font-bold uppercase text-3xl md:text-[length:var(--text-50)] leading-none tracking-[-0.02em]">
+                <span className="font-[family-name:var(--font-heading-family)] font-bold uppercase text-3xl md:text-[length:var(--text-52)] leading-none tracking-[-0.02em]">
                   {item.q}
                 </span>
               </Accordion.Trigger>
@@ -1151,7 +1151,7 @@ function VersionHistory() {
 
   return (
     <section id="version-history" className="scroll-mt-20 pb-16">
-      <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-50)] uppercase tracking-[-0.01em] leading-[1.2] mb-6">
+      <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-52)] uppercase tracking-[-0.01em] leading-[1.2] mb-6">
         История версий
       </h2>
       <div className="space-y-2">
@@ -1440,7 +1440,7 @@ export default function DesignSystemPage() {
         <main className="flex-1 min-w-0 px-5 md:px-10 py-10 space-y-16">
           {/* HERO */}
           <div className="space-y-4">
-            <h1 className="font-[family-name:var(--font-heading-family)] font-extrabold text-[length:var(--text-48)] md:text-[length:var(--text-81)] uppercase tracking-[-0.02em] leading-[1.0]">
+            <h1 className="font-[family-name:var(--font-heading-family)] font-extrabold text-[length:var(--text-40)] md:text-[length:var(--text-80)] uppercase tracking-[-0.02em] leading-[1.0]">
               Design System
             </h1>
             <p className="text-[length:var(--text-19)] text-muted-foreground leading-relaxed max-w-[640px]">
