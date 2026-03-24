@@ -42,13 +42,28 @@ const ROUND_GLASS_FRAGMENT_SHADER = `
     }
 
     float normalized = clamp(distanceToCenter / radius, 0.0, 1.0);
-    vec2 sceneUv = (uLensCenter + localOffset) / uHeroSize;
+    vec2 direction = distanceToCenter > 0.0001
+      ? localOffset / distanceToCenter
+      : vec2(0.0, 0.0);
+
+    float edgeBand = smoothstep(0.72, 0.98, normalized);
+    float edgeDistortion = edgeBand * edgeBand;
+    vec2 sampleOffset =
+      localOffset - (direction * radius * 0.06 * edgeDistortion);
+    vec2 sceneUv = (uLensCenter + sampleOffset) / uHeroSize;
     sceneUv = clamp(sceneUv, vec2(0.0), vec2(1.0));
 
     vec4 color = texture2D(uSceneTexture, sceneUv);
     float alpha = 1.0 - smoothstep(0.985, 1.0, normalized);
+    float outerHighlight = smoothstep(0.72, 0.96, normalized) *
+      (1.0 - smoothstep(0.96, 1.0, normalized));
+    float innerHighlight = smoothstep(0.14, 0.42, normalized) *
+      (1.0 - smoothstep(0.42, 0.56, normalized));
+    float highlight =
+      (outerHighlight * 0.08 + innerHighlight * 0.025) *
+      smoothstep(0.0, 0.65, 1.0 - distance(pixel / uCanvasSize, vec2(0.28, 0.24)));
 
-    gl_FragColor = vec4(color.rgb, color.a * alpha);
+    gl_FragColor = vec4(min(color.rgb + highlight, vec3(1.0)), color.a * alpha);
   }
 `;
 
@@ -59,6 +74,9 @@ const HERO_ROTATING_LINE_HEIGHT_EM = 1.08;
 const LENS_CAPTURE_INTERVAL_MS = 180;
 const LENS_CAPTURE_THROTTLE_MS = 90;
 const LENS_MAX_CAPTURE_SCALE = 1.5;
+const PRIMARY_LENS_OFFSET_X = 120;
+const PRIMARY_LENS_OFFSET_Y = 72;
+const STATIC_LENS_VERTICAL_OFFSET = 84;
 
 const logoSizes: Record<string, { width: number; height: number }> = {
   "beeline.svg": { width: 125, height: 24 },
@@ -174,81 +192,22 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    const getLensOffsets = (heroWidth: number, wordmarkWidth: number) => {
-      if (heroWidth < 1400) {
-        return {
-          preferredStaticOffsetX: 40,
-          preferredStaticOffsetY: 0,
-        };
-      }
-
-      return {
-        preferredStaticOffsetX: 40,
-        preferredStaticOffsetY: 0,
-      };
-    };
-
-    const getStaticLensPosition = ({
-      heroWidth,
-      primaryX,
-      primaryY,
-      smallDiameter,
-      largeDiameter,
-      preferredOffsetX,
-      preferredOffsetY,
-    }: {
-      heroWidth: number;
-      primaryX: number;
-      primaryY: number;
-      smallDiameter: number;
-      largeDiameter: number;
-      preferredOffsetX: number;
-      preferredOffsetY: number;
-    }) => {
-      const requiredDistance =
-        (smallDiameter + largeDiameter) / 2 + preferredOffsetX;
-      const maxStaticX = heroWidth - largeDiameter / 2 - 24;
-      const desiredX = Math.min(primaryX + requiredDistance, maxStaticX);
-      const staticY = primaryY + preferredOffsetY;
-
-      return {
-        x: desiredX,
-        y: staticY,
-      };
-    };
-
     const cleanupStaticLens = () => {
       const heroRect = hero.getBoundingClientRect();
       const wordmarkImage =
         wordmark.querySelector("img") ?? wordmark.querySelector("svg");
       const wordmarkRect =
         wordmarkImage?.getBoundingClientRect() ?? wordmark.getBoundingClientRect();
-      const lensOffsets = getLensOffsets(heroRect.width, wordmarkRect.width);
-      const smallDiameter = glass.clientWidth || glass.getBoundingClientRect().width;
-      const largeDiameter =
-        staticGlass.clientWidth || staticGlass.getBoundingClientRect().width;
-      const primaryLensLeft =
-        wordmarkRect.left -
-        heroRect.left +
-        wordmarkRect.width / 2;
+      const primaryLensLeft = heroRect.width / 2 + PRIMARY_LENS_OFFSET_X;
       const primaryLensTop =
-        wordmarkRect.top - heroRect.top + wordmarkRect.height / 2;
-      const staticLensPosition = getStaticLensPosition({
-        heroWidth: heroRect.width,
-        primaryX: primaryLensLeft,
-        primaryY: primaryLensTop,
-        smallDiameter,
-        largeDiameter,
-        preferredOffsetX: lensOffsets.preferredStaticOffsetX,
-        preferredOffsetY: lensOffsets.preferredStaticOffsetY,
-      });
+        wordmarkRect.top - heroRect.top + wordmarkRect.height / 2 + PRIMARY_LENS_OFFSET_Y;
       const parentRect = (glass.parentElement ?? hero).getBoundingClientRect();
       const offsetX = parentRect.left - heroRect.left;
       const offsetY = parentRect.top - heroRect.top;
       glass.style.left = `${primaryLensLeft - offsetX}px`;
       glass.style.top = `${primaryLensTop - offsetY}px`;
-      staticGlass.style.left = `${staticLensPosition.x - offsetX}px`;
-      staticGlass.style.top = `${staticLensPosition.y - offsetY}px`;
+      staticGlass.style.left = `${heroRect.width + 136 - offsetX}px`;
+      staticGlass.style.top = `${primaryLensTop + STATIC_LENS_VERTICAL_OFFSET - offsetY}px`;
       glass.style.transform = "translate3d(-50%, -50%, 0)";
       staticGlass.style.transform = "translate3d(-50%, -50%, 0)";
     };
@@ -389,29 +348,13 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
         wordmark.querySelector("img") ?? wordmark.querySelector("svg");
       const wordmarkRect =
         wordmarkImage?.getBoundingClientRect() ?? wordmark.getBoundingClientRect();
-      const lensOffsets = getLensOffsets(heroRect.width, wordmarkRect.width);
-      const smallDiameter = glass.clientWidth || glass.getBoundingClientRect().width;
-      const largeDiameter =
-        staticGlass.clientWidth || staticGlass.getBoundingClientRect().width;
-      const primaryLensLeft =
-        wordmarkRect.left -
-        heroRect.left +
-        wordmarkRect.width / 2;
+      const primaryLensLeft = heroRect.width / 2 + PRIMARY_LENS_OFFSET_X;
       const primaryLensTop =
-        wordmarkRect.top - heroRect.top + wordmarkRect.height / 2;
-      const staticLensPosition = getStaticLensPosition({
-        heroWidth: heroRect.width,
-        primaryX: primaryLensLeft,
-        primaryY: primaryLensTop,
-        smallDiameter,
-        largeDiameter,
-        preferredOffsetX: lensOffsets.preferredStaticOffsetX,
-        preferredOffsetY: lensOffsets.preferredStaticOffsetY,
-      });
+        wordmarkRect.top - heroRect.top + wordmarkRect.height / 2 + PRIMARY_LENS_OFFSET_Y;
       base.x = primaryLensLeft;
       base.y = primaryLensTop;
-      staticBase.x = staticLensPosition.x;
-      staticBase.y = staticLensPosition.y;
+      staticBase.x = heroRect.width + 136;
+      staticBase.y = primaryLensTop + STATIC_LENS_VERTICAL_OFFSET;
       heroSize.width = heroRect.width;
       heroSize.height = heroRect.height;
       const parentRect = (glass.parentElement ?? hero).getBoundingClientRect();
@@ -424,8 +367,10 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
     };
 
     const syncLensCenter = () => {
-      lensCenter.x = base.x + current.x;
-      lensCenter.y = base.y + current.y;
+      const heroRect = hero.getBoundingClientRect();
+      const glassRect = glass.getBoundingClientRect();
+      lensCenter.x = glassRect.left - heroRect.left + glassRect.width / 2;
+      lensCenter.y = glassRect.top - heroRect.top + glassRect.height / 2;
     };
 
     const resizeCanvas = () => {
@@ -529,6 +474,12 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
           },
           scale: captureScale,
           useCORS: true,
+          x: 0,
+          y: 0,
+          scrollX: 0,
+          scrollY: 0,
+          width: hero.offsetWidth,
+          height: hero.offsetHeight,
           ignoreElements: (element) =>
             element instanceof HTMLElement &&
             element.dataset.lensIgnore === "true",
