@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;800&family=Roboto:wght@400;500&family=Shantell+Sans:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;800&family=Roboto:wght@400;500&family=Roboto+Mono:wght@400&family=Shantell+Sans:wght@400&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -67,7 +67,7 @@
   --text-size-80: var(--text-80);
 
   --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
+  --radius-md: 0.25rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
@@ -89,37 +89,84 @@
   --color-rm-gray-alpha-600: var(--rm-gray-alpha-600);
   --color-rm-gray-alpha-800: var(--rm-gray-alpha-800);
 
-  /* Rocketmind brand colors */
+  /* Rocketmind brand colors — 5-level scale */
+  /* Level 100 = solid fill / high-contrast */
+  /* Level 300 = subtle border              */
+  /* Level 500 = component bg active        */
+  /* Level 700 = component bg hover         */
+  /* Level 900 = subtle background (badge)  */
+  /* fg        = text ON solid-100 bg       */
+  /* fg-subtle = text ON 900/700/500 bg     */
   --color-yellow-100: var(--rm-yellow-100);
-  --color-yellow-50: var(--rm-yellow-50);
-  --color-yellow-10: var(--rm-yellow-10);
+  --color-yellow-300: var(--rm-yellow-300);
+  --color-yellow-500: var(--rm-yellow-500);
+  --color-yellow-700: var(--rm-yellow-700);
+  --color-yellow-900: var(--rm-yellow-900);
+  --color-yellow-fg: var(--rm-yellow-fg);
+  --color-yellow-fg-subtle: var(--rm-yellow-fg-subtle);
+
   --color-violet-100: var(--rm-violet-100);
-  --color-violet-50: var(--rm-violet-50);
-  --color-violet-10: var(--rm-violet-10);
+  --color-violet-300: var(--rm-violet-300);
+  --color-violet-500: var(--rm-violet-500);
+  --color-violet-700: var(--rm-violet-700);
+  --color-violet-900: var(--rm-violet-900);
+  --color-violet-fg: var(--rm-violet-fg);
+  --color-violet-fg-subtle: var(--rm-violet-fg-subtle);
+
   --color-terracotta-100: var(--rm-terracotta-100);
-  --color-terracotta-50: var(--rm-terracotta-50);
-  --color-terracotta-10: var(--rm-terracotta-10);
+  --color-terracotta-300: var(--rm-terracotta-300);
+  --color-terracotta-500: var(--rm-terracotta-500);
+  --color-terracotta-700: var(--rm-terracotta-700);
+  --color-terracotta-900: var(--rm-terracotta-900);
+  --color-terracotta-fg: var(--rm-terracotta-fg);
+  --color-terracotta-fg-subtle: var(--rm-terracotta-fg-subtle);
+
   --color-sky-100: var(--rm-sky-100);
-  --color-sky-50: var(--rm-sky-50);
-  --color-sky-10: var(--rm-sky-10);
+  --color-sky-300: var(--rm-sky-300);
+  --color-sky-500: var(--rm-sky-500);
+  --color-sky-700: var(--rm-sky-700);
+  --color-sky-900: var(--rm-sky-900);
+  --color-sky-fg: var(--rm-sky-fg);
+  --color-sky-fg-subtle: var(--rm-sky-fg-subtle);
+
   --color-pink-100: var(--rm-pink-100);
-  --color-pink-50: var(--rm-pink-50);
-  --color-pink-10: var(--rm-pink-10);
+  --color-pink-300: var(--rm-pink-300);
+  --color-pink-500: var(--rm-pink-500);
+  --color-pink-700: var(--rm-pink-700);
+  --color-pink-900: var(--rm-pink-900);
+  --color-pink-fg: var(--rm-pink-fg);
+  --color-pink-fg-subtle: var(--rm-pink-fg-subtle);
+
   --color-blue-100: var(--rm-blue-100);
-  --color-blue-50: var(--rm-blue-50);
-  --color-blue-10: var(--rm-blue-10);
+  --color-blue-300: var(--rm-blue-300);
+  --color-blue-500: var(--rm-blue-500);
+  --color-blue-700: var(--rm-blue-700);
+  --color-blue-900: var(--rm-blue-900);
+  --color-blue-fg: var(--rm-blue-fg);
+  --color-blue-fg-subtle: var(--rm-blue-fg-subtle);
+
   --color-red-100: var(--rm-red-100);
-  --color-red-50: var(--rm-red-50);
-  --color-red-10: var(--rm-red-10);
+  --color-red-300: var(--rm-red-300);
+  --color-red-500: var(--rm-red-500);
+  --color-red-700: var(--rm-red-700);
+  --color-red-900: var(--rm-red-900);
+  --color-red-fg: var(--rm-red-fg);
+  --color-red-fg-subtle: var(--rm-red-fg-subtle);
+
   --color-green-100: var(--rm-green-100);
-  --color-green-50: var(--rm-green-50);
-  --color-green-10: var(--rm-green-10);
+  --color-green-300: var(--rm-green-300);
+  --color-green-500: var(--rm-green-500);
+  --color-green-700: var(--rm-green-700);
+  --color-green-900: var(--rm-green-900);
+  --color-green-fg: var(--rm-green-fg);
+  --color-green-fg-subtle: var(--rm-green-fg-subtle);
 }
 
 :root {
   /* === Font families === */
   --font-heading-family: 'Roboto Condensed', sans-serif;
   --font-mono-family: 'Loos Condensed', sans-serif;
+  --font-caption-family: 'Roboto Mono', monospace;
   --font-body: 'Roboto', sans-serif;
   --font-accent-family: 'Shantell Sans', cursive;
 
@@ -138,13 +185,12 @@
   --text-80: 5rem;         /* heading-80 · H1 hero */
 
   /* === Rocketmind Gray Scale (Light) ===
-   * 1 — Page background      (bg-background)
-   * 1 — Subtle surface       (bg-muted, bg-secondary, bg-accent)
-   * 2 — Component hover bg   (hover:bg-accent / hover:bg-muted)
-   * 3 — Default border       (border-border, border-input)
-   * 4 — Hover/active border  (hover:border-*)
-   * fg-sub — Secondary text       (text-muted-foreground)
-   * fg-main — Primary text        (text-foreground)
+   * 1 — Subtle surface          (bg-rm-gray-1)
+   * 2 — Component hover bg      (bg-rm-gray-2)
+   * 3 — Default border          (border-border, border-input)
+   * 4 — Hover/active border     (hover:border-*)
+   * fg-sub — Secondary text          (text-muted-foreground)
+   * fg-main — Primary text           (text-foreground)
   */
   --rm-gray-1:  #F5F5F5;   /* subtle surface */
   --rm-gray-2:  #EBEBEB;   /* hover bg */
@@ -171,8 +217,8 @@
   --card-foreground: var(--rm-gray-fg-main);
   --popover: #FFFFFF;
   --popover-foreground: var(--rm-gray-fg-main);
-  --secondary: var(--rm-gray-1);
-  --secondary-foreground: var(--rm-gray-fg-main);
+  --secondary: #121212;
+  --secondary-foreground: #FFFFFF;
   --accent-foreground: var(--rm-gray-fg-main);
   --destructive: #ED4843;
   --destructive-foreground: #FFFFFF;
@@ -181,39 +227,123 @@
   --primary: #FFCC00;
   --primary-foreground: #121212;
 
-  /* === Brand accents === */
-  --rm-yellow-100: #FFCC00;
-  --rm-yellow-50: #FFF0AA;
-  --rm-yellow-10: #FFFEF3;
-  --rm-violet-100: #A172F8;
-  --rm-violet-50: #DCC8FF;
-  --rm-violet-10: #FBFAFE;
+  /* ═══════════════════════════════════════════════════════════════
+   * ACCENT COLOR SCALES — 5 levels + 2 foreground tokens
+   *
+   * Как использовать:
+   *
+   * 100  Solid fill — кнопка, badge filled, иконка-заливка.
+   *      Текст поверх: var(--rm-*-fg)
+   *
+   * 300  Subtle border — граница badge/тега/чипа в покое.
+   *      Hover-граница: переход к 100.
+   *
+   * 500  Component bg active — нажатое состояние chip/tab.
+   *      Текст поверх: var(--rm-*-fg-subtle)
+   *
+   * 700  Component bg hover — наведение на chip/tab/row.
+   *      Текст поверх: var(--rm-*-fg-subtle)
+   *
+   * 900  Subtle background — badge ghost, тег, строка таблицы,
+   *      фон карточки с цветовой кодировкой.
+   *      Текст поверх: var(--rm-*-fg-subtle)
+   *
+   * fg         Текст поверх solid-100 фона (проверен WCAG AA).
+   * fg-subtle  Текст поверх 900/700/500 фона (проверен WCAG AA).
+   *
+   * Никогда не используй уровень цвета одновременно как фон
+   * и как цвет текста поверх него — всегда бери fg или fg-subtle.
+   * ═══════════════════════════════════════════════════════════════ */
 
-  /* === Categorical colors === */
+  /* Yellow */
+  --rm-yellow-100: #FFCC00;
+  --rm-yellow-300: #FFE066;
+  --rm-yellow-500: #FFF0AA;
+  --rm-yellow-700: #FFF4BE;
+  --rm-yellow-900: #FFF9D9;
+  --rm-yellow-fg: #3D2E00;        /* тёмно-коричневый — на solid #FFCC00 */
+  --rm-yellow-fg-subtle: #5C4200; /* на 900/700/500 фоне */
+
+  /* Violet */
+  --rm-violet-100: #A172F8;
+  --rm-violet-300: #C4A0FB;
+  --rm-violet-500: #DCC8FF;
+  --rm-violet-700: #EDE0FF;
+  --rm-violet-900: #F7F2FE;
+  --rm-violet-fg: #FFFFFF;
+  --rm-violet-fg-subtle: #3D1A8A;
+
+  /* Terracotta */
   --rm-terracotta-100: #FE733A;
-  --rm-terracotta-50: #FFD6AD;
-  --rm-terracotta-10: #FFFAF7;
+  --rm-terracotta-300: #FFA07A;
+  --rm-terracotta-500: #FFD6AD;
+  --rm-terracotta-700: #FFECE0;
+  --rm-terracotta-900: #FFF3EB;
+  --rm-terracotta-fg: #FFFFFF;
+  --rm-terracotta-fg-subtle: #5C1A00;
+
+  /* Sky */
   --rm-sky-100: #56CAEA;
-  --rm-sky-50: #C3ECF7;
-  --rm-sky-10: #F7FDFF;
+  --rm-sky-300: #8ADCF2;
+  --rm-sky-500: #C3ECF7;
+  --rm-sky-700: #E0F6FB;
+  --rm-sky-900: #EBF9FD;
+  --rm-sky-fg: #FFFFFF;
+  --rm-sky-fg-subtle: #0D4D5C;
+
+  /* Pink */
   --rm-pink-100: #FF54AC;
-  --rm-pink-50: #FFB8D9;
-  --rm-pink-10: #FFF8FC;
+  --rm-pink-300: #FF8FCA;
+  --rm-pink-500: #FFB8D9;
+  --rm-pink-700: #FFE0EF;
+  --rm-pink-900: #FFECF5;
+  --rm-pink-fg: #FFFFFF;
+  --rm-pink-fg-subtle: #6B0033;
+
+  /* Blue */
   --rm-blue-100: #4A56DF;
-  --rm-blue-50: #BFC4F3;
-  --rm-blue-10: #F9FAFF;
+  --rm-blue-300: #8A94EC;
+  --rm-blue-500: #BFC4F3;
+  --rm-blue-700: #E0E2FA;
+  --rm-blue-900: #F2F3FE;
+  --rm-blue-fg: #FFFFFF;
+  --rm-blue-fg-subtle: #0D1466;
+
+  /* Red */
   --rm-red-100: #ED4843;
-  --rm-red-50: #FFBCBA;
-  --rm-red-10: #FFF9F8;
+  --rm-red-300: #F48A87;
+  --rm-red-500: #FFBCBA;
+  --rm-red-700: #FFE0DF;
+  --rm-red-900: #FFECEB;
+  --rm-red-fg: #FFFFFF;
+  --rm-red-fg-subtle: #5C0A08;
+
+  /* Green */
   --rm-green-100: #9AF576;
-  --rm-green-50: #D8F4CD;
-  --rm-green-10: #F7FEF3;
+  --rm-green-300: #C0F9A8;
+  --rm-green-500: #D8F4CD;
+  --rm-green-700: #E4F8DC;
+  --rm-green-900: #F0FBEA;
+  --rm-green-fg: #1A4A05;        /* зелёный светлый — тёмный текст */
+  --rm-green-fg-subtle: #1A4A05;
+
+  /* === Animation tokens === */
+  --duration-instant: 50ms;
+  --duration-fast:    100ms;
+  --duration-base:    200ms;
+  --duration-smooth:  300ms;
+  --duration-enter:   400ms;
+  --duration-grid:    1600ms;
+  --ease-standard:    cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-enter:       cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit:        cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* === Border on colored backgrounds === */
   --border-on-colored: #7D61B1;
 
   /* === Border Radius === */
-  --radius: 0.375rem;
+  --radius: 0.25rem;
 
   /* === Shadows (flat) === */
   --shadow-sm: none;
@@ -251,15 +381,24 @@
   --sidebar-ring: #FFCC00;
 }
 
+code {
+  font-family: var(--font-caption-family);
+  font-weight: 400;
+}
+
+[class*="text-[length:var(--text-12)]"][class*="text-muted-foreground"]:not([class*="uppercase"]) {
+  font-family: var(--font-caption-family) !important;
+  font-weight: 400;
+}
+
 .dark {
   /* === Rocketmind Gray Scale (Dark) ===
-   * 1 — Page background
-   * 1 — Subtle surface
-   * 2 — Component hover bg
-   * 3 — Default border
-   * 4 — Hover/active border
-   * fg-sub — Secondary text
-   * fg-main — Primary text
+   * 1 — Subtle surface          (bg-rm-gray-1)
+   * 2 — Component hover bg      (bg-rm-gray-2)
+   * 3 — Default border          (border-border, border-input)
+   * 4 — Hover/active border     (hover:border-*)
+   * fg-sub — Secondary text          (text-muted-foreground)
+   * fg-main — Primary text           (text-foreground)
   */
   --rm-gray-1:  #1A1A1A;
   --rm-gray-2:  #242424;
@@ -282,12 +421,12 @@
   --border: var(--rm-gray-3);
   --input: var(--rm-gray-3);
   --ring: #FFCC00;
-  --card: var(--rm-gray-1);
+  --card: #121212;
   --card-foreground: var(--rm-gray-fg-main);
-  --popover: var(--rm-gray-1);
+  --popover: #121212;
   --popover-foreground: var(--rm-gray-fg-main);
-  --secondary: var(--rm-gray-1);
-  --secondary-foreground: var(--rm-gray-fg-main);
+  --secondary: #FFFFFF;
+  --secondary-foreground: #121212;
   --accent-foreground: var(--rm-gray-fg-main);
   --destructive: #FF6B6B;
   --destructive-foreground: #FFFFFF;
@@ -296,33 +435,79 @@
   --primary: #FFCC00;
   --primary-foreground: #121212;
 
-  /* === Brand accents dark === */
-  --rm-yellow-100: #FFCC00;
-  --rm-yellow-50: #7A6200;
-  --rm-yellow-10: #3D3300;
-  --rm-violet-100: #B48DFA;
-  --rm-violet-50: #5A3D99;
-  --rm-violet-10: #20143D;
+  /* === Accent color scales (dark) === */
 
-  /* === Categorical colors dark === */
-  --rm-terracotta-100: #FF8A5C;
-  --rm-terracotta-50: #7A2E10;
-  --rm-terracotta-10: #2A0F05;
-  --rm-sky-100: #7AD6EF;
-  --rm-sky-50: #1A5F72;
-  --rm-sky-10: #051A20;
-  --rm-pink-100: #FF7EC5;
-  --rm-pink-50: #7A1A55;
-  --rm-pink-10: #25061A;
-  --rm-blue-100: #7A84F0;
-  --rm-blue-50: #1E2870;
-  --rm-blue-10: #060A24;
-  --rm-red-100: #F47370;
-  --rm-red-50: #7A1715;
-  --rm-red-10: #250504;
-  --rm-green-100: #B5FA97;
-  --rm-green-50: #2A6E15;
-  --rm-green-10: #0A2005;
+  /* Yellow */
+  --rm-yellow-100: #FFCC00;
+  --rm-yellow-300: #B38F00;
+  --rm-yellow-500: #7A6200;
+  --rm-yellow-700: #4A3C00;
+  --rm-yellow-900: #3D3300;
+  --rm-yellow-fg: #3D2E00;
+  --rm-yellow-fg-subtle: #FFE566;
+
+  /* Violet */
+  --rm-violet-100: #A172F8;
+  --rm-violet-300: #8A5FF5;
+  --rm-violet-500: #5A3D99;
+  --rm-violet-700: #2E1F66;
+  --rm-violet-900: #20143D;
+  --rm-violet-fg: #FFFFFF;
+  --rm-violet-fg-subtle: #DCC8FF;
+
+  /* Terracotta */
+  --rm-terracotta-100: #FE733A;
+  --rm-terracotta-300: #CC5522;
+  --rm-terracotta-500: #7A2E10;
+  --rm-terracotta-700: #3D1507;
+  --rm-terracotta-900: #2A0F05;
+  --rm-terracotta-fg: #FFFFFF;
+  --rm-terracotta-fg-subtle: #FFD6AD;
+
+  /* Sky */
+  --rm-sky-100: #56CAEA;
+  --rm-sky-300: #3AAACE;
+  --rm-sky-500: #1A5F72;
+  --rm-sky-700: #0A2D38;
+  --rm-sky-900: #051A20;
+  --rm-sky-fg: #FFFFFF;
+  --rm-sky-fg-subtle: #C3ECF7;
+
+  /* Pink */
+  --rm-pink-100: #FF54AC;
+  --rm-pink-300: #CC3D88;
+  --rm-pink-500: #7A1A55;
+  --rm-pink-700: #3D0D2A;
+  --rm-pink-900: #25061A;
+  --rm-pink-fg: #FFFFFF;
+  --rm-pink-fg-subtle: #FFB8D9;
+
+  /* Blue */
+  --rm-blue-100: #4A56DF;
+  --rm-blue-300: #3D4ACC;
+  --rm-blue-500: #1E2870;
+  --rm-blue-700: #0D1238;
+  --rm-blue-900: #060A24;
+  --rm-blue-fg: #FFFFFF;
+  --rm-blue-fg-subtle: #BFC4F3;
+
+  /* Red */
+  --rm-red-100: #ED4843;
+  --rm-red-300: #CC2E2A;
+  --rm-red-500: #7A1715;
+  --rm-red-700: #3D0908;
+  --rm-red-900: #250504;
+  --rm-red-fg: #FFFFFF;
+  --rm-red-fg-subtle: #FFBCBA;
+
+  /* Green */
+  --rm-green-100: #9AF576;
+  --rm-green-300: #6ACC44;
+  --rm-green-500: #2A6E15;
+  --rm-green-700: #133808;
+  --rm-green-900: #0A2005;
+  --rm-green-fg: #1A4A05;
+  --rm-green-fg-subtle: #D8F4CD;
 
   /* === Border on colored backgrounds (dark) === */
   --border-on-colored: #DBC800;
@@ -331,9 +516,9 @@
   --glow-yellow: 0 0 0 1px rgba(255, 204, 0, 0.4),
     0 0 16px 0 rgba(255, 204, 0, 0.3),
     0 0 32px 0 rgba(255, 204, 0, 0.12);
-  --glow-violet: 0 0 0 1px rgba(180, 141, 250, 0.4),
-    0 0 16px 0 rgba(180, 141, 250, 0.25),
-    0 0 32px 0 rgba(180, 141, 250, 0.1);
+  --glow-violet: 0 0 0 1px rgba(161, 114, 248, 0.4),
+    0 0 16px 0 rgba(161, 114, 248, 0.25),
+    0 0 32px 0 rgba(161, 114, 248, 0.1);
   --glow-subtle: 0 0 0 1px rgba(255, 255, 255, 0.08),
     0 0 8px 0 rgba(255, 255, 255, 0.04);
 
@@ -462,7 +647,6 @@
   left: -100px;
   pointer-events: none;
   filter: blur(80px);
-  /* 80-120px depending on design */
   z-index: 0;
 }
 
@@ -508,6 +692,88 @@
 .link-cta:hover .arrow {
   transform: translateX(4px);
 }
+
+/* ─────────────────────────────────────────────────────────────────
+ * INVERTED / ON-COLOR SURFACE UTILITIES
+ *
+ * Применяй на контейнер с акцентным фоном.
+ * Все дочерние элементы автоматически получат правильные цвета.
+ *
+ * Использование:
+ *   <section class="on-yellow">
+ *     <h2>…</h2>          ← цвет: --rm-yellow-fg
+ *     <p>…</p>            ← цвет: --rm-yellow-fg / 80%
+ *     <button>…</button>  ← граница: --rm-yellow-fg / 30%
+ *   </section>
+ *
+ * НЕ используй класс on-* без соответствующего фона —
+ * токены переопределяют foreground для всего поддерева.
+ * ───────────────────────────────────────────────────────────────── */
+
+.on-yellow {
+  background-color: var(--rm-yellow-100);
+  --foreground: var(--rm-yellow-fg);
+  --muted-foreground: color-mix(in srgb, var(--rm-yellow-fg) 65%, transparent);
+  --border: color-mix(in srgb, var(--rm-yellow-fg) 25%, transparent);
+  color: var(--rm-yellow-fg);
+}
+
+.on-violet {
+  background-color: var(--rm-violet-100);
+  --foreground: var(--rm-violet-fg);
+  --muted-foreground: color-mix(in srgb, var(--rm-violet-fg) 65%, transparent);
+  --border: color-mix(in srgb, var(--rm-violet-fg) 25%, transparent);
+  color: var(--rm-violet-fg);
+}
+
+.on-sky {
+  background-color: var(--rm-sky-100);
+  --foreground: var(--rm-sky-fg);
+  --muted-foreground: color-mix(in srgb, var(--rm-sky-fg) 65%, transparent);
+  --border: color-mix(in srgb, var(--rm-sky-fg) 25%, transparent);
+  color: var(--rm-sky-fg);
+}
+
+.on-terracotta {
+  background-color: var(--rm-terracotta-100);
+  --foreground: var(--rm-terracotta-fg);
+  --muted-foreground: color-mix(in srgb, var(--rm-terracotta-fg) 65%, transparent);
+  --border: color-mix(in srgb, var(--rm-terracotta-fg) 25%, transparent);
+  color: var(--rm-terracotta-fg);
+}
+
+.on-pink {
+  background-color: var(--rm-pink-100);
+  --foreground: var(--rm-pink-fg);
+  --muted-foreground: color-mix(in srgb, var(--rm-pink-fg) 65%, transparent);
+  --border: color-mix(in srgb, var(--rm-pink-fg) 25%, transparent);
+  color: var(--rm-pink-fg);
+}
+
+.on-blue {
+  background-color: var(--rm-blue-100);
+  --foreground: var(--rm-blue-fg);
+  --muted-foreground: color-mix(in srgb, var(--rm-blue-fg) 65%, transparent);
+  --border: color-mix(in srgb, var(--rm-blue-fg) 25%, transparent);
+  color: var(--rm-blue-fg);
+}
+
+.on-red {
+  background-color: var(--rm-red-100);
+  --foreground: var(--rm-red-fg);
+  --muted-foreground: color-mix(in srgb, var(--rm-red-fg) 65%, transparent);
+  --border: color-mix(in srgb, var(--rm-red-fg) 25%, transparent);
+  color: var(--rm-red-fg);
+}
+
+.on-green {
+  background-color: var(--rm-green-100);
+  --foreground: var(--rm-green-fg);
+  --muted-foreground: color-mix(in srgb, var(--rm-green-fg) 65%, transparent);
+  --border: color-mix(in srgb, var(--rm-green-fg) 25%, transparent);
+  color: var(--rm-green-fg);
+}
+
 /* ── Tooltip animations ── */
 @keyframes tooltip-in {
   from { opacity: 0; transform: translateY(-4px) scale(0.97); }

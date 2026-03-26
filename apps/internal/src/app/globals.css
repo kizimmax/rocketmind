@@ -1,0 +1,82 @@
+@import "@rocketmind/ui/styles";
+
+/* ── Round Glass Lens (for lens-demo) ── */
+.round-glass-lens {
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 9999px;
+}
+
+.round-glass-lens::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(
+    var(--lens-gradient-angle, 205deg),
+    rgba(255, 233, 0, 1) 1%,
+    rgba(166, 166, 166, 1) 40%,
+    rgba(64, 64, 64, 0) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.round-glass-lens--static {
+  background:
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.12) 58%, rgba(0, 0, 0, 0.18) 100%);
+}
+
+.round-glass-lens-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* ── Lens Controls ── */
+.lens-controls-panel {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  width: min(calc(100% - 40px), 420px);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--background);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.16);
+  padding: 16px;
+  color: var(--foreground);
+}
+
+.lens-controls-panel__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.lens-controls-panel__title { font-family: var(--font-heading-family); font-size: var(--text-16, 16px); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; text-transform: uppercase; }
+.lens-controls-panel__meta { font-family: var(--font-mono-family); font-size: var(--text-11, 11px); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); margin-top: 2px; opacity: 0.5; }
+.lens-controls-panel__actions { display: flex; gap: 6px; flex-shrink: 0; }
+.lens-controls-panel__btn { height: 28px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius); background: transparent; color: var(--muted-foreground); font-family: var(--font-mono-family); font-size: var(--text-11, 11px); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; transition: border-color 150ms, color 150ms; }
+.lens-controls-panel__btn:hover { border-color: var(--foreground); color: var(--foreground); }
+
+.lens-controls-tabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+.lens-controls-tab { padding: 6px 10px 8px; border: none; border-bottom: 2px solid transparent; background: transparent; color: var(--muted-foreground); font-family: var(--font-mono-family); font-size: var(--text-11, 11px); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; transition: color 150ms, border-color 150ms; margin-bottom: -1px; }
+.lens-controls-tab:hover { color: var(--foreground); }
+.lens-controls-tab.is-active { color: var(--foreground); border-bottom-color: var(--foreground); }
+
+.lens-controls-group { display: grid; gap: 14px; }
+.lens-controls-row { display: grid; gap: 6px; }
+.lens-controls-row.is-disabled { opacity: 0.35; pointer-events: none; }
+.lens-controls-row__header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-family: var(--font-mono-family); font-size: var(--text-11, 11px); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); }
+.lens-controls-row__header span:last-child { font-variant-numeric: tabular-nums; color: var(--foreground); }
+.lens-controls-row input[type="range"] { width: 100%; height: 3px; accent-color: var(--foreground); cursor: pointer; }
+
+@media (max-width: 768px) {
+  .lens-controls-panel { left: 12px; right: 12px; bottom: 12px; width: auto; }
+}

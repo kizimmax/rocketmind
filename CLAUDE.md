@@ -1,67 +1,91 @@
 # Claude Code Context for Rocketmind
 
-## 🎯 Project Overview
+## Project Overview
 **Rocketmind** — SaaS платформа AI-агентов для ведения кейсов с чат-интерфейсом. MVP 1.1, web-only, n8n интеграция.
 **PRD:** `docs/PRD Rocketmind AI Agent MVP 1.1 - от 20 февр. 2026.md`
 
 ---
 
-## 📂 Key Files & Structure
+## Monorepo Structure
 ```
 /Rocketmind/
+├── packages/ui/              # @rocketmind/ui — shared UI components & tokens (tsup)
+├── apps/
+│   ├── design-system/        # DS documentation (Next.js, port 3000)
+│   ├── site/                 # Marketing site (Next.js, port 3001)
+│   ├── saas/                 # SaaS app shell (Next.js, port 3002)
+│   └── internal/             # Internal tools: gantt, lens-demo (Next.js, port 3003)
 ├── design/
-│   ├── design-system.md        # Источник правды дизайн-системы
+│   ├── design-system.md      # Source of truth — design system spec
 │   ├── system.pen / landing.pen / auth.pen / app.pen
-├── design-system-docs/         # Веб-версия (Next.js, localhost:3000)
-└── src/                        # Исходный код (структура TBD)
+├── docs/                     # Product documentation
+├── assets/                   # Shared assets
+└── scripts/                  # Utility scripts
 ```
 
+### Key Packages
+- **`@rocketmind/ui`** (`packages/ui`) — 16 components, full token set, ThemeProvider. All apps import from here.
+- **`@rocketmind/design-system`** (`apps/design-system`) — DS web docs
+- **`@rocketmind/site`** (`apps/site`) — Marketing landing
+- **`@rocketmind/saas`** (`apps/saas`) — SaaS product (login, agents, cases)
+- **`@rocketmind/internal`** (`apps/internal`) — Internal tools (gantt + firebase, lens-demo)
+
 ---
 
-## 🎨 Дизайн-Система — Правила
+## Design System Rules
 
-### 🚫 ЗАПРЕТ: никакой стиль без проверки в ДС
+### No style without DS check
 
-**Алгоритм при любом визуальном/интерактивном решении:**
-1. **Найди паттерн** в `design/design-system.md` (hover, focus, transition, spacing, цвет, тень)
-2. **Нашёл** → использовать дословно
-3. **Не нашёл → СТОП.** Написать в чат: «Нужен стиль для [ситуация]. Предлагаю: [вариант с токенами]. Добавить в раздел [N]?» — ждать подтверждения
-4. **После подтверждения:** сначала обновить ДС МД + ДС Вэб, потом реализовать в коде
+**Algorithm for any visual/interactive decision:**
+1. **Find pattern** in `design/design-system.md` (hover, focus, transition, spacing, color, shadow)
+2. **Found** → use verbatim
+3. **Not found → STOP.** Write in chat: "Need style for [situation]. Propose: [variant with tokens]. Add to section [N]?" — wait for confirmation
+4. **After confirmation:** update DS MD + DS Web first, then implement in code
 
-**Запрещено без проверки:** `hover:*` не из ДС, `ring-*`, `shadow-*`, `animate-*`, Tailwind-цвета (`bg-blue-*`), нестандартные `rounded/gap/p`, `outline/border` в нестандартных комбинациях.
+**Forbidden without check:** `hover:*` not from DS, `ring-*`, `shadow-*`, `animate-*`, Tailwind colors (`bg-blue-*`), non-standard `rounded/gap/p`, `outline/border` in non-standard combos.
 
-### ⚠️ Синхронизация — ВСЕГДА оба файла
-- `design/design-system.md` — Markdown-источник правды
-- `design-system-docs/` — веб-версия (Next.js, localhost:3000)
+### Sync Rule — ALWAYS both files
+- `design/design-system.md` — Markdown source of truth
+- `apps/design-system/` — web version (Next.js, port 3000)
 
-Никогда не обновлять только один из них.
+Never update only one of them.
 
 ### Workflow
-- **Экран:** дизайн в .pen → скриншот/согласование → код
-- **Компонент:** проверить ДС → добавить в system.pen как reusable → ref везде
-- **Изменение ДС:** обновить ДС МД → обновить ДС Вэб → реализовать
+- **Screen:** design in .pen → screenshot/approval → code
+- **Component:** check DS → add to system.pen as reusable → ref everywhere
+- **DS change:** update DS MD → update DS Web → implement
 
 ---
 
-## 💻 Stack
-- **UI:** shadcn/ui + Tailwind CSS (только CSS-переменные, не Tailwind-утилиты цветов)
-- **Backend:** n8n вебхуки
+## Stack
+- **UI:** @rocketmind/ui (shadcn/ui patterns + Tailwind CSS v4, CSS variables only)
+- **Backend:** n8n webhooks
 - **Data:** users, cases, agents, conversations, messages
 
 ---
 
-## ✅ Scope MVP 1.1
-- Авторизация email + code
-- Автобутстрап по URL `/a/{agent_slug}`
-- Диалог в чате с ИИ-агентом
-- Результат/ссылка на оплату в системном сообщении
+## Scope MVP 1.1
+- Auth email + code
+- Auto-bootstrap via URL `/a/{agent_slug}`
+- Chat dialog with AI agent
+- Result/payment link in system message
 
 ---
 
-## 🛠️ Commands
+## Commands
 ```bash
-cd design-system-docs && npm run dev  # localhost:3000
-npm run release                        # bump version + commit + push
+# Dev servers
+npm run dev:ds         # apps/design-system → localhost:3000
+npm run dev:site       # apps/site → localhost:3001
+npm run dev:saas       # apps/saas → localhost:3002
+npm run dev:internal   # apps/internal → localhost:3003
+
+# Build
+npm run ui:build       # Build packages/ui
+npm run build          # Build all (turbo)
+
+# Release
+npm run release        # bump version + commit + push
 ```
 
-**Last updated:** 2026-03-17 | **Version:** 1.5.0
+**Last updated:** 2026-03-26 | **Version:** 2.0.0

@@ -1,0 +1,454 @@
+/* ══════════════════════════════════════════════════════════════
+ * Rocketmind Design System — App-specific styles
+ *
+ * Base tokens, color scales, semantic variables, @theme inline,
+ * .on-* utilities, @layer base — all imported from packages/ui.
+ * ══════════════════════════════════════════════════════════════ */
+@import "@rocketmind/ui/styles";
+
+/* ── DS Documentation utility classes ── */
+@layer components {
+  .ds-token-chip {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: center;
+    gap: 0.25rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--rm-gray-1);
+    padding: 0.125rem 0.5rem;
+    font-family: var(--font-caption-family);
+    font-size: var(--text-12);
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    color: var(--foreground);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+
+  .ds-token-caption {
+    font-family: var(--font-caption-family);
+    font-size: var(--text-12);
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+
+  .ds-token-copy {
+    font-family: var(--font-body);
+    font-size: var(--text-14);
+    line-height: 1.4;
+    color: var(--muted-foreground);
+  }
+}
+
+/* ── Copy notification animation ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.2s ease-out forwards;
+}
+
+/* ── Hero marquee ── */
+@keyframes hero-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes hero-logo-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+.partner-logo-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: hero-logo-marquee var(--hero-marquee-duration, 18s) linear infinite;
+  will-change: transform;
+}
+
+/* ── Visual Language: Corner Brackets ── */
+.bracket {
+  position: relative;
+}
+
+.bracket::before,
+.bracket::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--border);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.bracket::before {
+  top: -1px;
+  left: -1px;
+  border-width: 1px 0 0 1px;
+}
+
+.bracket::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 1px 1px 0;
+}
+
+/* ── Visual Language: Animated Grid Lines ── */
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.grid-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.04);
+  transform-origin: left top;
+  animation: line-appear 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.light .grid-line,
+:root:not(.dark) .grid-line {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.grid-line--h {
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+}
+
+.grid-line--v {
+  width: 1px;
+  height: 100%;
+  transform: scaleY(0);
+}
+
+@keyframes line-appear {
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── Visual Language: Ambient Background Glow ── */
+.ambient-glow-violet::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(265 91% 71% / 0.15) 0%, transparent 70%);
+  top: -200px;
+  left: -100px;
+  pointer-events: none;
+  filter: blur(80px);
+  z-index: 0;
+}
+
+.ambient-glow-yellow::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(54 100% 50% / 0.12) 0%, transparent 70%);
+  bottom: -150px;
+  right: -50px;
+  pointer-events: none;
+  filter: blur(80px);
+  z-index: 0;
+}
+
+/* ── Visual Language: link-cta ── */
+.link-cta {
+  font-family: var(--font-mono);
+  font-size: var(--text-14);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s ease, gap 0.15s ease;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.link-cta:hover {
+  color: var(--foreground);
+  gap: 10px;
+}
+
+.link-cta .arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.link-cta:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ── Tooltip animations ── */
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.tooltip-enter {
+  animation: tooltip-in 120ms cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+/* ── Hero background effects ── */
+.hero-background-noise {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.045) 0, transparent 42%),
+    radial-gradient(circle at 80% 70%, rgba(255, 233, 0, 0.08) 0, transparent 28%),
+    radial-gradient(circle at 70% 85%, rgba(161, 114, 248, 0.08) 0, transparent 24%);
+  mix-blend-mode: screen;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.hero-background-fade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, transparent 22%, transparent 76%, rgba(0, 0, 0, 0.28) 100%),
+    radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.12) 100%);
+  pointer-events: none;
+}
+
+/* ── Round Glass Lens (WebGL component) ── */
+.round-glass-lens {
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 9999px;
+}
+
+.round-glass-lens::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(
+    var(--lens-gradient-angle, 205deg),
+    rgba(255, 233, 0, 1) 1%,
+    rgba(166, 166, 166, 1) 40%,
+    rgba(64, 64, 64, 0) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.round-glass-lens--static {
+  background:
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.12) 58%, rgba(0, 0, 0, 0.18) 100%);
+}
+
+.round-glass-lens-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* ── Lens Controls Panel ── */
+.lens-controls-panel {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  width: min(calc(100% - 40px), 420px);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--background);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.16);
+  padding: 16px;
+  color: var(--foreground);
+}
+
+.lens-controls-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.lens-controls-panel__title {
+  font-family: var(--font-heading-family);
+  font-size: var(--text-16, 16px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.lens-controls-panel__meta {
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  margin-top: 2px;
+  opacity: 0.5;
+}
+
+.lens-controls-panel__actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.lens-controls-panel__btn {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms;
+}
+
+.lens-controls-panel__btn:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.lens-controls-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.lens-controls-tab {
+  padding: 6px 10px 8px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms;
+  margin-bottom: -1px;
+}
+
+.lens-controls-tab:hover {
+  color: var(--foreground);
+}
+
+.lens-controls-tab.is-active {
+  color: var(--foreground);
+  border-bottom-color: var(--foreground);
+}
+
+.lens-controls-group {
+  display: grid;
+  gap: 14px;
+}
+
+.lens-controls-row {
+  display: grid;
+  gap: 6px;
+}
+
+.lens-controls-row.is-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.lens-controls-row__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+
+.lens-controls-row__header span:last-child {
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.lens-controls-row input[type="range"] {
+  width: 100%;
+  height: 3px;
+  accent-color: var(--foreground);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .lens-controls-panel {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+  }
+}
+
+/* ── Sidebar nav accordion ── */
+.sidebar-subnav {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-smooth) var(--ease-standard);
+}
+.sidebar-subnav.is-open {
+  grid-template-rows: 1fr;
+}
+.sidebar-subnav-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Sidebar scroll indicator ── */
+.sidebar-indicator {
+  transition:
+    top    var(--duration-smooth) var(--ease-standard),
+    height var(--duration-smooth) var(--ease-standard);
+}
+
+/* ── Accordion-05 (Marketing Blocks) ── */
+.accordion-05-panel {
+  display: grid;
+  transition: grid-template-rows 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.accordion-05-panel[data-open] {
+  grid-template-rows: 1fr;
+}
+.accordion-05-panel[data-closed] {
+  grid-template-rows: 0fr;
+}

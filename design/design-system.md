@@ -4022,3 +4022,72 @@ Accordion.Root
 
 Применение: Заменяет статичные блоки логотипов; устанавливается в HeroBlock или в любых других "сквозных" секциях, где требуется social proof.
 
+---
+
+### 10.2 RoundGlassLens (WebGL-линза)
+
+Круглая стеклянная линза с оптическим преломлением, хроматической дисперсией и радиальным блуром. Реализована через WebGL + html2canvas: захватывает сцену под собой и рендерит её с эффектами.
+
+**Компонент:** `RoundGlassLens`
+**Путь:** `src/components/ui/round-glass-lens.tsx`
+**Демо:** `/lens-demo`
+
+#### Применение
+
+Линза позиционируется **абсолютно** внутри родителя с `position: relative`. Сцена захвата (`sceneRef`) — любой DOM-элемент, обычно тот же контейнер.
+
+```tsx
+const sceneRef  = useRef<HTMLDivElement>(null);
+const anchorRef = useRef<HTMLImageElement>(null);
+
+<div ref={sceneRef} className="relative overflow-hidden">
+  <img ref={anchorRef} src="/logo.svg" />
+
+  <RoundGlassLens
+    sceneRef={sceneRef}
+    anchorRef={anchorRef}   // линза центрируется на этом элементе
+    xOffset={60}            // смещение от центра анкора (px)
+    yOffset={18}
+    size={280}              // диаметр (px)
+    motionParallax          // следит за курсором
+  />
+</div>
+```
+
+#### Dev-воркфлоу (настройка под место)
+
+1. Добавить `showControls storageKey="page-name:lens"` — откроется плавающая панель.
+2. Настроить параметры; нажать **COPY** — в буфере JSX-пропсы с текущими значениями.
+3. Вставить пропсы, убрать `showControls storageKey`.
+
+#### Props (оптика)
+
+| Prop | Range | Default | Описание |
+|---|---|---|---|
+| `refraction` | 0–0.12 | 0.03 | Сила преломления |
+| `depth` | 0–0.5 | 0.18 | Глубина кривизны (кажущаяся толщина стекла) |
+| `dispersion` | 0–5 | 0.36 | Хроматическая дисперсия (радужное кольцо) |
+| `distortionRadius` | 0.2–1.5 | 1.08 | Ширина зоны искажения |
+| `shadowRadius` | 0.2–1.5 | 0.98 | Радиус краевого затемнения |
+| `blur` | 0–2 | 0.18 | Радиальный блур |
+| `gradientAngle` | 0–360° | 205 | Угол градиента ободка |
+| `shadowEnabled` | bool | true | Краевое затемнение вкл/выкл |
+
+#### Props (позиция)
+
+| Prop | Default | Описание |
+|---|---|---|
+| `size` | 320 | Диаметр линзы (px) |
+| `x` / `y` | центр сцены | Явные координаты в пространстве `sceneRef` |
+| `anchorRef` | — | Привязка к элементу (приоритет над x/y) |
+| `xOffset` / `yOffset` | 0 | Смещение от анкора или центра сцены (px) |
+
+#### Ободок линзы (CSS)
+
+Стили `.round-glass-lens`, `.round-glass-lens--static` и `.round-glass-lens-canvas` находятся в `globals.css`. CSS-переменная `--lens-gradient-angle` управляет углом градиента ободка.
+
+#### Примечания
+
+- Требует `html2canvas` (динамический импорт, не влияет на бандл).
+- Автоматически переключается в статичный режим при `prefers-reduced-motion: reduce`.
+- Параллакс активируется только на устройствах с `pointer: fine`.
