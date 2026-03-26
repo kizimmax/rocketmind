@@ -1,170 +1,461 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
+import React, { useRef, useState, useEffect } from "react";
 import { Canvas3DCarousel } from "@/components/blocks/Canvas3DCarousel";
+import { MascotCarousel } from "@/components/blocks/MascotCarousel";
+
+/* ─────────────────────────────────────────────────────────────
+   Figma source of truth:
+     Desktop — node 259:985  (1400 × 867, 2 cols: 536 + 864)
+     Tablet  — node 296:1102 (715 × 1321, col01 715×443 + col02 713×878)
+     Mobile  — node 278:1150 (443 wide, stacked)
+
+   Breakpoints:
+     Mobile  — < md  (< 768px)
+     Tablet  — md–xl (768–1279px)
+     Desktop — xl+   (≥ 1280px)
+   ─────────────────────────────────────────────────────────── */
 
 export function PlatformOverview() {
+  /* Carousel auto-scale via ResizeObserver */
+  const carouselDesktopRef = useRef<HTMLDivElement>(null);
+  const carouselTabletRef = useRef<HTMLDivElement>(null);
+  const carouselMobileRef = useRef<HTMLDivElement>(null);
+  const [dScale, setDScale] = useState(1);
+  const [tScale, setTScale] = useState(1);
+  const [mScale, setMScale] = useState(0.55);
+
+  useEffect(() => {
+    function observe(
+      ref: React.RefObject<HTMLDivElement | null>,
+      set: React.Dispatch<React.SetStateAction<number>>,
+    ) {
+      const el = ref.current;
+      if (!el) return;
+      const ro = new ResizeObserver((entries) => {
+        const w = entries[0].contentRect.width;
+        set(Math.min(w / 768, 1));
+      });
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+    const d1 = observe(carouselDesktopRef, setDScale);
+    const d2 = observe(carouselTabletRef, setTScale);
+    const d3 = observe(carouselMobileRef, setMScale);
+    return () => {
+      d1?.();
+      d2?.();
+      d3?.();
+    };
+  }, []);
+
   return (
-    <section className="relative w-full bg-background py-16 lg:py-24" id="platform-overview">
-      <div className="relative z-10 mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14">
-        <div className="relative flex w-full flex-col lg:flex-row items-stretch">
-          
-          {/* Background Golden Line Pulse */}
-          <div className="pointer-events-none absolute inset-0 z-0 hidden lg:flex items-center justify-center -ml-[1px]">
-            <div className="relative h-[865px] w-[1398px] max-w-none rotate-180 opacity-40 lg:opacity-100">
-              <Image
-                src="/images/platform-block/golden-line-pulse.svg"
-                alt=""
-                fill
-                className="object-contain"
+    <section className="relative w-full bg-background" id="platform-overview">
+      <div className="mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14">
+        {/* ═══════════════ DESKTOP (xl+) ═══════════════ */}
+        <div
+          className="relative hidden w-full xl:block"
+          style={{ aspectRatio: "1400 / 867" }}
+        >
+          {/* SVG background — Fibonacci spiral + grid borders */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/platform-block/methodology-bg-desktop.svg"
+            alt=""
+            className="pointer-events-none absolute inset-0 h-full w-full select-none"
+            aria-hidden="true"
+            draggable={false}
+          />
+
+          {/* ── Div 01: Методология ──────────────────── */}
+          <div
+            className="absolute overflow-hidden"
+            style={{ top: 0, left: 0, width: "38.286%", height: "38.293%" }}
+          >
+            <div
+              className="absolute flex flex-col gap-4"
+              style={{ left: "8.955%", top: "14.458%", width: "82.09%" }}
+            >
+              <Heading label="Методология" title="бизнес-дизайн" />
+              <BodyText>
+                Методология, которая помогает проектировать бизнес как
+                систему: от&nbsp;ценности для клиента и&nbsp;модели дохода
+                до&nbsp;логики роста, развития новых направлений
+                и&nbsp;принятия стратегических решений.
+              </BodyText>
+            </div>
+          </div>
+
+          {/* ── Div 02: Синергия ─────────────────────── */}
+          <div
+            className="absolute overflow-hidden"
+            style={{
+              top: "38.293%",
+              left: 0,
+              width: "38.286%",
+              height: "61.707%",
+            }}
+          >
+            <div
+              className="absolute flex flex-col gap-4"
+              style={{ left: "8.955%", top: "8.972%", width: "82.09%" }}
+            >
+              <Heading
+                label="AI-продукты и опыт экспертов"
+                title="Синергия ОПЫТА с ИИ"
               />
-              {/* Animated Glow overlay */}
+              <BodyText>
+                В&nbsp;работе с&nbsp;клиентами мы соединяем искусственный
+                и&nbsp;естественный интеллект: ИИ&nbsp;ускоряет анализ
+                и&nbsp;проработку решений, а&nbsp;эксперты добавляют
+                стратегическое мышление и&nbsp;практику внедрения.
+                Методология даёт путь к&nbsp;росту и&nbsp;запуску новых
+                моделей развития.
+              </BodyText>
+            </div>
+
+            {/* Animated mascot carousel */}
+            <div
+              className="absolute"
+              style={{
+                left: "8.955%",
+                bottom: "6%",
+                width: "82.09%",
+              }}
+            >
+              <MascotCarousel />
+            </div>
+          </div>
+
+          {/* ── Div 03: Канвасы ──────────────────────── */}
+          <div
+            className="absolute overflow-hidden"
+            style={{
+              top: 0,
+              left: "38.286%",
+              width: "61.714%",
+              height: "100%",
+            }}
+          >
+            <div
+              className="absolute z-10 flex flex-col gap-4"
+              style={{ left: "5.556%", top: "5.536%", width: "88.889%" }}
+            >
+              <Heading
+                label="Канвасы"
+                title="цифровые платформы и&nbsp;экосистемы"
+              />
+              <BodyText>
+                Особый фокус Rocketmind&nbsp;— цифровые платформы
+                и&nbsp;бизнес-экосистемы. Мы&nbsp;используем
+                и&nbsp;развиваем международную методологию Platform
+                Innovation Kit, а&nbsp;также представляем её в&nbsp;России
+                и&nbsp;странах Азии, помогая компаниям проектировать
+                платформенные модели, находить новые точки роста
+                и&nbsp;выстраивать более сильную архитектуру бизнеса.
+              </BodyText>
+            </div>
+
+            {/* Carousel — (48,242) in div03 864×867 */}
+            <div
+              ref={carouselDesktopRef}
+              className="absolute overflow-hidden"
+              style={{
+                left: "5.556%",
+                top: "27.913%",
+                width: "88.889%",
+                height: "71.856%",
+              }}
+            >
               <div
-                className="absolute inset-0 opacity-80"
                 style={{
-                  maskImage: `url(/images/platform-block/golden-line-pulse.svg)`,
-                  WebkitMaskImage: `url(/images/platform-block/golden-line-pulse.svg)`,
-                  maskSize: "100% 100%",
-                  WebkitMaskSize: "100% 100%",
-                  maskRepeat: "no-repeat",
-                  WebkitMaskRepeat: "no-repeat",
+                  width: 768,
+                  transformOrigin: "top left",
+                  transform: `scale(${dScale})`,
                 }}
               >
-                <div className="animate-golden-sweep absolute -left-[200%] top-0 h-full w-[200%] bg-gradient-to-r from-transparent via-[#fc0] to-transparent xl:w-[200px]" />
-              </div>
-            </div>
-          </div>
-
-          {/* Left Column */}
-          <div className="relative z-10 flex w-full flex-col shrink-0 lg:w-[536px]">
-            {/* Grey line 01 Background */}
-            <div className="pointer-events-none absolute inset-[0_0.5px_2px_0] hidden items-center justify-center lg:flex">
-              <div className="h-[865px] w-[536px] flex-none rotate-180">
-                <Image src="/images/platform-block/grey-line-01.svg" alt="" fill className="object-cover opacity-60" />
-              </div>
-            </div>
-
-          {/* Div 01: Methodology */}
-          <div className="relative w-full overflow-hidden border border-[var(--border,#404040)] p-8 lg:h-[332px] lg:p-12">
-            <div className="absolute inset-[-0.15%_-0.24%] opacity-50">
-              <Image src="/images/platform-block/dop-line-bg.svg" alt="" fill className="object-cover" />
-            </div>
-            <div className="relative flex flex-col gap-4">
-              <div className="flex flex-col gap-2 uppercase">
-                <p className="font-['Loos_Condensed',sans-serif] text-[18px] font-medium leading-[1.16] tracking-[0.36px] text-[var(--accent,#fc0)]">
-                  Методология
-                </p>
-                <p className="font-['Roboto_Condensed',sans-serif] text-[32px] font-bold leading-[1.16] tracking-[-0.32px] text-[var(--primary-text,#f0f0f0)]">
-                  бизнес-дизайн
-                </p>
-              </div>
-              <p className="font-['Roboto',sans-serif] text-[18px] font-normal leading-[1.2] text-[var(--primary-text,#f0f0f0)] pt-2 max-w-[400px]">
-                Методология, которая помогает проектировать бизнес как систему: от ценности для клиента и модели дохода до логики роста,
-                развития новых направлений и принятия стратегических решений.
-              </p>
-            </div>
-          </div>
-
-          {/* Div 02: AI Products */}
-          <div className="relative flex w-full flex-col overflow-hidden border border-t-0 border-[var(--border,#404040)] p-8 lg:min-h-[535px] lg:p-12 pb-32">
-            <div className="relative flex flex-col gap-4 z-10 w-full">
-              <div className="flex flex-col gap-2 uppercase">
-                <p className="font-['Loos_Condensed',sans-serif] text-[18px] font-medium leading-[1.16] tracking-[0.36px] text-[var(--accent,#fc0)]">
-                  AI-продукты и опыт экспертов
-                </p>
-                <p className="font-['Roboto_Condensed',sans-serif] text-[32px] font-bold leading-[1.16] tracking-[-0.32px] text-[var(--primary-text,#f0f0f0)]">
-                  Синергия ОПЫТА с ИИ
-                </p>
-              </div>
-              <p className="font-['Roboto',sans-serif] text-[18px] font-normal leading-[1.2] text-[var(--primary-text,#f0f0f0)] pt-2 max-w-[420px]">
-                В работе с клиентами мы соединяем искусственный и естественный интеллект: ИИ ускоряет анализ и проработку решений, а эксперты добавляют стратегическое мышление и практику внедрения. Методология даёт путь к росту и запуску новых моделей развития.
-              </p>
-            </div>
-
-            {/* Mascot Cards */}
-            <div className="relative mt-12 flex flex-col gap-4 lg:absolute lg:top-[280px] lg:mt-0 lg:-ml-12 lg:h-[200px] lg:w-full">
-              {/* Mascot 1 */}
-              <div className="relative flex h-[80px] w-full max-w-[275px] items-center rounded-[3.5px] border border-[rgba(64,64,64,0.8)] bg-[#121212]">
-                <div className="absolute -top-1 -left-1 h-full w-[100px] overflow-visible">
-                  {/* Radial Gradient BG for Mascot */}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,204,0,0.5)_0%,transparent_70%)] opacity-30 mix-blend-screen" />
-                  <Image src="/images/platform-block/mascot-1.png" alt="Маскот" fill className="object-contain" />
-                </div>
-                <div className="relative ml-[90px] pr-2">
-                  <Image src="/images/platform-block/rectangle-bg.svg" alt="" fill className="absolute inset-0 -z-10 object-cover opacity-80" />
-                  <p className="font-['Roboto',sans-serif] text-[12px] leading-[1.36] tracking-[0.24px] text-[#e0e0e0] py-2">
-                    Предложи бизнес-модель для моего продукта
-                  </p>
-                </div>
-              </div>
-
-              {/* Mascot 2 */}
-              <div className="relative flex h-[76px] w-full max-w-[244px] items-center rounded-[3.5px] border border-[rgba(64,64,64,0.8)] bg-[#121212] lg:ml-[128px]">
-                <div className="absolute -top-[12px] -left-[10px] h-full w-[100px] overflow-visible">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,204,0,0.5)_0%,transparent_70%)] opacity-30 mix-blend-screen" />
-                  <Image src="/images/platform-block/mascot-2.png" alt="Маскот 2" fill className="object-contain" />
-                </div>
-                <div className="relative ml-[85px] mr-2 flex items-center pr-2 py-2">
-                  <p className="font-['Roboto',sans-serif] text-[12px] leading-[1.36] tracking-[0.24px] text-[#e0e0e0]">
-                    Привет!<br />Я Лида, тестировщик гипотез. С чего начнём?
-                  </p>
-                  <Image src="/images/platform-block/mascot-icon.png" alt="" width={16} height={16} className="ml-2 h-4 w-4 shrink-0 object-contain" />
-                </div>
-              </div>
-            </div>
-            </div>
-          </div>
-
-        {/* Right Column (Canvas animation) */}
-        <div className="relative flex w-full flex-col items-center justify-center shrink-0 lg:w-[864px]">
-          {/* Grey Line 02 (Hidden on Mobile) */}
-          <div className="pointer-events-none absolute inset-[1.25px_0_1.25px_2px] hidden items-center justify-center lg:flex">
-            <div className="h-[864px] w-[862px] flex-none rotate-180">
-              <Image src="/images/platform-block/grey-line-02.svg" alt="" fill className="object-contain" />
-            </div>
-          </div>
-
-          <div className="relative flex w-full flex-col overflow-hidden border border-[var(--border,#404040)] lg:border-l-0 lg:h-[867px] lg:w-[864px]">
-            {/* Header copy */}
-            <div className="relative flex flex-col gap-4 p-8 lg:p-12 pb-0 z-20">
-              <div className="flex flex-col gap-2 uppercase">
-                <p className="font-['Loos_Condensed',sans-serif] text-[18px] font-medium leading-[1.16] tracking-[0.36px] text-[var(--accent,#fc0)]">
-                  Канвасы
-                </p>
-                <p className="font-['Roboto_Condensed',sans-serif] text-[32px] font-bold leading-[1.16] tracking-[-0.32px] text-[var(--primary-text,#f0f0f0)] max-w-[400px]">
-                  цифровые платформы и экосистемы
-                </p>
-              </div>
-              <p className="font-['Roboto',sans-serif] text-[18px] font-normal leading-[1.2] text-[var(--primary-text,#f0f0f0)] mt-2 max-w-[650px]">
-                Особый фокус Rocketmind — цифровые платформы и бизнес-экосистемы. Мы используем и развиваем международную методологию Platform Innovation Kit, а также представляем её в России и странах Азии, помогая компаниям проектировать платформенные модели, находить новые точки роста и выстраивать более сильную архитектуру бизнеса.
-              </p>
-            </div>
-
-            {/* Carousel Container */}
-            <div className="relative mt-12 flex h-[500px] w-full items-center justify-center lg:absolute lg:top-[241px] lg:left-[47px] lg:mt-0 lg:h-[623px] lg:w-[768px] lg:justify-start">
-              <div className="transform scale-[0.6] sm:scale-75 lg:scale-100 lg:origin-top-left -ml-16 sm:ml-0 lg:-ml-0 relative w-[768px]">
                 <Canvas3DCarousel />
               </div>
             </div>
           </div>
         </div>
+
+        {/* ═══════════════ TABLET (md – xl) ═══════════════ */}
+        <div className="hidden flex-col md:flex xl:hidden">
+          {/* ── Column 01 (715×443) — div 01 + div 02 side by side ── */}
+          <div
+            className="relative w-full"
+            style={{ aspectRatio: "715 / 443" }}
+          >
+            {/* SVG background — tablet Fibonacci spiral + grid */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/platform-block/methodology-bg-tablet.svg"
+              alt=""
+              className="pointer-events-none absolute inset-0 h-full w-full select-none"
+              aria-hidden="true"
+              draggable={false}
+            />
+
+            {/* Div 01 (left cell ≈ 274 / 715 = 38.322%) */}
+            <div
+              className="absolute overflow-hidden"
+              style={{ top: 0, left: 0, width: "38.322%", height: "100%" }}
+            >
+              {/* content at (24,24) in 274×443 cell */}
+              <div
+                className="absolute flex flex-col gap-4"
+                style={{
+                  left: "8.759%",
+                  top: "5.418%",
+                  width: "82.482%",
+                }}
+              >
+                <Heading label="Методология" title="бизнес-дизайн" />
+                <BodyText>
+                  Методология, которая помогает проектировать бизнес как
+                  систему: от&nbsp;ценности для клиента и&nbsp;модели дохода
+                  до&nbsp;логики роста, развития новых направлений
+                  и&nbsp;принятия стратегических решений.
+                </BodyText>
+              </div>
+            </div>
+
+            {/* Div 02 (right cell ≈ 441 / 715 = 61.678%) */}
+            <div
+              className="absolute overflow-hidden"
+              style={{
+                top: 0,
+                left: "38.322%",
+                width: "61.678%",
+                height: "100%",
+              }}
+            >
+              {/* content at (24,24) in 441×443 cell */}
+              <div
+                className="absolute flex flex-col gap-4"
+                style={{
+                  left: "5.442%",
+                  top: "5.418%",
+                  width: "89.116%",
+                }}
+              >
+                <Heading
+                  label="AI-продукты и опыт экспертов"
+                  title="Синергия ОПЫТА с ИИ"
+                />
+                <BodyText>
+                  В&nbsp;работе с&nbsp;клиентами мы соединяем искусственный
+                  и&nbsp;естественный интеллект: ИИ&nbsp;ускоряет анализ
+                  и&nbsp;проработку решений, а&nbsp;эксперты добавляют
+                  стратегическое мышление и&nbsp;практику внедрения.
+                  Методология даёт путь к&nbsp;росту и&nbsp;запуску новых
+                  моделей развития.
+                </BodyText>
+              </div>
+
+              {/* Animated mascot carousel */}
+              <div
+                className="absolute overflow-hidden"
+                style={{
+                  left: "5.442%",
+                  top: "70.203%",
+                  width: "89.116%",
+                }}
+              >
+                <MascotCarousel size="compact" />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Column 02 / Div 03 — Канвасы ── */}
+          <div className="relative border border-t-0 border-[#404040] p-6 md:p-8">
+            <div className="relative z-10 flex flex-col gap-4">
+              <Heading
+                label="Канвасы"
+                title="цифровые платформы и&nbsp;экосистемы"
+              />
+              <BodyText>
+                Особый фокус Rocketmind&nbsp;— цифровые платформы
+                и&nbsp;бизнес-экосистемы. Мы&nbsp;используем
+                и&nbsp;развиваем международную методологию Platform
+                Innovation Kit, а&nbsp;также представляем её в&nbsp;России
+                и&nbsp;странах Азии, помогая компаниям проектировать
+                платформенные модели, находить новые точки роста
+                и&nbsp;выстраивать более сильную архитектуру бизнеса.
+              </BodyText>
+            </div>
+
+            {/* Carousel */}
+            <div
+              ref={carouselTabletRef}
+              className="relative mt-8 overflow-hidden"
+              style={{ height: `${Math.round(623 * tScale)}px` }}
+            >
+              <div
+                style={{
+                  width: 768,
+                  transformOrigin: "top left",
+                  transform: `scale(${tScale})`,
+                }}
+              >
+                <Canvas3DCarousel />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════ MOBILE (< md) ═══════════════ */}
+        <div className="flex flex-col md:hidden">
+          {/* Column 01 (444×716) — div01 + div02, SVG bg */}
+          <div
+            className="relative w-full"
+            style={{ aspectRatio: "444 / 716" }}
+          >
+            {/* SVG background — mobile Fibonacci spiral + grid */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/platform-block/methodology-bg-mobile.svg"
+              alt=""
+              className="pointer-events-none absolute inset-0 h-full w-full select-none"
+              aria-hidden="true"
+              draggable={false}
+            />
+
+            {/* Div 01 (top 38.41% = 275/716) */}
+            <div
+              className="absolute overflow-hidden"
+              style={{ top: 0, left: 0, width: "100%", height: "38.408%" }}
+            >
+              {/* content at (24,24) in 444×275 cell */}
+              <div
+                className="absolute flex flex-col gap-3"
+                style={{
+                  left: "5.405%",
+                  top: "8.727%",
+                  width: "89.189%",
+                }}
+              >
+                <Heading label="Методология" title="бизнес-дизайн" />
+                <BodyText>
+                  Методология, которая помогает проектировать бизнес как
+                  систему: от&nbsp;ценности для клиента и&nbsp;модели дохода
+                  до&nbsp;логики роста, развития новых направлений
+                  и&nbsp;принятия стратегических решений.
+                </BodyText>
+              </div>
+            </div>
+
+            {/* Div 02 (bottom 61.59% = 441/716) */}
+            <div
+              className="absolute overflow-hidden"
+              style={{
+                top: "38.408%",
+                left: 0,
+                width: "100%",
+                height: "61.592%",
+              }}
+            >
+              {/* content at (24,24) in 444×441 cell */}
+              <div
+                className="absolute flex flex-col gap-3"
+                style={{
+                  left: "5.405%",
+                  top: "5.442%",
+                  width: "89.189%",
+                }}
+              >
+                <Heading
+                  label="AI-продукты и опыт экспертов"
+                  title="Синергия ОПЫТА с ИИ"
+                />
+                <BodyText>
+                  В&nbsp;работе с&nbsp;клиентами мы соединяем искусственный
+                  и&nbsp;естественный интеллект: ИИ&nbsp;ускоряет анализ
+                  и&nbsp;проработку решений, а&nbsp;эксперты добавляют
+                  стратегическое мышление и&nbsp;практику внедрения.
+                  Методология даёт путь к&nbsp;росту и&nbsp;запуску новых
+                  моделей развития.
+                </BodyText>
+              </div>
+
+              {/* Animated mascot carousel — at (24,308) in 444×441 → top 69.84% */}
+              <div
+                className="absolute"
+                style={{
+                  left: "5.405%",
+                  bottom: "5%",
+                  width: "89.189%",
+                }}
+              >
+                <MascotCarousel size="compact" />
+              </div>
+            </div>
+          </div>
+
+          {/* Column 02 / Div 03 — Канвасы */}
+          <div className="relative border border-t-0 border-[#404040] p-6">
+            <div className="relative z-10 flex flex-col gap-3">
+              <Heading
+                label="Канвасы"
+                title="цифровые платформы и&nbsp;экосистемы"
+              />
+              <BodyText>
+                Особый фокус Rocketmind&nbsp;— цифровые платформы
+                и&nbsp;бизнес-экосистемы. Мы&nbsp;используем
+                и&nbsp;развиваем международную методологию Platform
+                Innovation Kit, а&nbsp;также представляем её в&nbsp;России
+                и&nbsp;странах Азии, помогая компаниям проектировать
+                платформенные модели, находить новые точки роста
+                и&nbsp;выстраивать более сильную архитектуру бизнеса.
+              </BodyText>
+            </div>
+
+            {/* Carousel */}
+            <div
+              ref={carouselMobileRef}
+              className="relative mt-6 overflow-hidden"
+              style={{ height: `${Math.round(623 * mScale)}px` }}
+            >
+              <div
+                style={{
+                  width: 768,
+                  transformOrigin: "top left",
+                  transform: `scale(${mScale})`,
+                }}
+              >
+                <Canvas3DCarousel />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        @keyframes sweep {
-          0% { left: -100%; opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { left: 100%; opacity: 0; }
-        }
-        .animate-golden-sweep {
-          animation: sweep 6s ease-in-out infinite;
-        }
-      `}} />
     </section>
   );
 }
+
+/* ── Sub-components ──────────────────────────────────────── */
+
+function Heading({ label, title }: { label: string; title: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p
+        className="font-['Loos_Condensed',sans-serif] text-[18px] font-medium uppercase leading-[1.16] tracking-[0.02em] text-[#FFCC00]"
+        dangerouslySetInnerHTML={{ __html: label }}
+      />
+      <p
+        className="font-['Roboto_Condensed',sans-serif] text-[32px] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]"
+        dangerouslySetInnerHTML={{ __html: title }}
+      />
+    </div>
+  );
+}
+
+function BodyText({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-['Roboto',sans-serif] text-[18px] font-normal leading-[1.2] text-[#F0F0F0]">
+      {children}
+    </p>
+  );
+}
+

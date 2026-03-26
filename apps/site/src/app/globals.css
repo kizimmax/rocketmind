@@ -122,3 +122,12 @@
 .accordion-05-panel[data-closed] {
   grid-template-rows: 0fr;
 }
+
+/* ── Mascot Carousel — blinking cursor ── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-blink {
+  animation: blink 0.7s step-end infinite;
+}
