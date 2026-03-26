@@ -13,7 +13,6 @@ export const metadata = {
     "Помогаем командам искать, проверять и усиливать бизнес-модели, связывать стратегию с операционными действиями и переходить от продуктовой логики к платформенной и экосистемной архитектуре.",
 };
 
-export const dynamic = "force-dynamic";
 
 export default function RocketmindPage() {
   return (
