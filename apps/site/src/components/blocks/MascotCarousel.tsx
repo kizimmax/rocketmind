@@ -134,17 +134,17 @@ export function MascotCarousel({
   const clearTimers = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (typingRef.current) clearInterval(typingRef.current);
-    if (fadeRef.current) clearTimeout(fadeRef.current);
   }, []);
 
   /* ── Text fade-in after mascot slide ──
      We keep textVisible=false during the slide, then flip it on
      one frame AFTER React has committed the new (empty) text.
-     This ensures the CSS transition from opacity 0→1 fires. */
+     This ensures the CSS transition from opacity 0→1 fires.
+     Separate ref so clearTimers() doesn't cancel this. */
   useLayoutEffect(() => {
     if (phase === "typing" && !textVisible) {
-      // Wait one frame so the browser sees opacity:0 first
       fadeRef.current = setTimeout(() => setTextVisible(true), 30);
+      return () => clearTimeout(fadeRef.current);
     }
   }, [phase, textVisible]);
 
