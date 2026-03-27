@@ -13,7 +13,7 @@ import {
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 
-import { InfiniteLogoMarquee } from "@/components/blocks/InfiniteLogoMarquee";
+import { InfiniteLogoMarquee } from "@rocketmind/ui";
 import { RoundGlassLens } from "@/components/ui/round-glass-lens";
 import { rocketmindHeroRotatingLines } from "@/content/rocketmind-hero";
 import type { PartnerLogo } from "@/lib/partner-logos";
@@ -27,7 +27,7 @@ const HERO_ROTATION_TRANSITION_MS = 640;
 const HERO_ROTATION_ENTRY_DELAY_MS = 220;
 const HERO_ROTATING_LINE_HEIGHT_EM = 1.08;
 const LENS_STORAGE_KEY = "rocketmind:lens-controls:v2";
-const SHOW_LENS_CONTROLS = false;
+const SHOW_LENS_CONTROLS = true;
 
 const platformTextStyle = {
   textShadow: "0 4px 4px rgba(0, 0, 0, 0.25)",

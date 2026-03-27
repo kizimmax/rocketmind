@@ -13,7 +13,7 @@ import {
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 
-import { InfiniteLogoMarquee } from "@/components/blocks/InfiniteLogoMarquee";
+import { InfiniteLogoMarquee } from "@rocketmind/ui";
 import { RoundGlassLens } from "@/components/ui/round-glass-lens";
 import { rocketmindHeroRotatingLines } from "@/content/rocketmind-hero";
 import type { PartnerLogo } from "@/lib/partner-logos";
@@ -27,7 +27,7 @@ const HERO_ROTATION_TRANSITION_MS = 640;
 const HERO_ROTATION_ENTRY_DELAY_MS = 220;
 const HERO_ROTATING_LINE_HEIGHT_EM = 1.08;
 const LENS_STORAGE_KEY = "rocketmind:lens-controls:v2";
-const SHOW_LENS_CONTROLS = false;
+const SHOW_LENS_CONTROLS = true;
 
 const platformTextStyle = {
   textShadow: "0 4px 4px rgba(0, 0, 0, 0.25)",
@@ -50,7 +50,7 @@ type HeroSectionClientProps = {
 };
 
 type BreakpointKey = "mobile" | "tablet" | "desktop" | "wide";
-type LensTab = "position" | "size";
+type LensTab = "position" | "size" | "optical";
 
 type LensControlSettings = {
   smallLensXOffset: number;
@@ -240,10 +240,16 @@ function ControlSlider({
   onChange: (value: number) => void;
 }) {
   return (
-    <label className={`lens-controls-row${disabled ? " is-disabled" : ""}`}>
-      <div className="lens-controls-row__header">
+    <label style={{ display: "grid", gap: 6, opacity: disabled ? 0.35 : 1, pointerEvents: disabled ? "none" : undefined }}>
+      <div style={{
+        display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8,
+        fontFamily: "var(--font-mono-family, monospace)", fontSize: 11, fontWeight: 500,
+        textTransform: "uppercase", letterSpacing: "0.06em", color: "#939393",
+      }}>
         <span>{label}</span>
-        <span>{format ? format(value) : value.toFixed(3)}</span>
+        <span style={{ fontVariantNumeric: "tabular-nums", color: "#F0F0F0" }}>
+          {format ? format(value) : value.toFixed(3)}
+        </span>
       </div>
       <input
         type="range"
@@ -253,6 +259,7 @@ function ControlSlider({
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(Number(event.currentTarget.value))}
+        style={{ width: "100%", height: 3, accentColor: "#F0F0F0", cursor: "pointer" }}
       />
     </label>
   );
@@ -455,101 +462,164 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
   }, []);
 
   // ── Dev controls panel save ───────────────────────────────────────────────
+  const [saveFlash, setSaveFlash] = useState(false);
   const handleSave = () => {
     const stored = readStoredLensSettings();
     stored[breakpointKey] = settings;
     saveStoredLensSettings(stored);
+    setSaveFlash(true);
+    setTimeout(() => setSaveFlash(false), 800);
   };
+
+  const panelStyle: CSSProperties = {
+    position: "fixed",
+    left: 20,
+    bottom: 20,
+    zIndex: 9999,
+    width: "min(calc(100% - 40px), 420px)",
+    border: "1px solid rgba(64,64,64,1)",
+    borderRadius: 12,
+    background: "#0A0A0A",
+    boxShadow: "0 8px 40px rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.16)",
+    padding: 16,
+    color: "#F0F0F0",
+    fontFamily: "var(--font-mono-family, monospace)",
+  };
+
+  const labelStyle: CSSProperties = {
+    fontSize: 11,
+    fontWeight: 500,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    color: "#939393",
+  };
+
+  const valueStyle: CSSProperties = {
+    fontVariantNumeric: "tabular-nums",
+    color: "#F0F0F0",
+  };
+
+  const tabBaseStyle = (isActive: boolean): CSSProperties => ({
+    padding: "6px 10px 8px",
+    border: "none",
+    borderBottom: `2px solid ${isActive ? "#F0F0F0" : "transparent"}`,
+    background: "transparent",
+    color: isActive ? "#F0F0F0" : "#939393",
+    fontSize: 11,
+    fontWeight: 500,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    marginBottom: -1,
+  });
 
   const controls =
     mounted && SHOW_LENS_CONTROLS
       ? createPortal(
-          <div className="lens-controls-panel" data-lens-hide="true">
-            <div className="lens-controls-panel__header">
+          <div style={panelStyle} data-lens-hide="true">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
               <div>
-                <div className="lens-controls-panel__title">LENS CONTROLS</div>
-                <div className="lens-controls-panel__meta">
+                <div style={{ fontFamily: "var(--font-heading-family, sans-serif)", fontSize: 16, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.02em", textTransform: "uppercase" as const }}>
+                  LENS CONTROLS
+                </div>
+                <div style={{ ...labelStyle, marginTop: 2, opacity: 0.5 }}>
                   {breakpointPreset.label} · {viewport.width}px × {viewport.height}px
                 </div>
               </div>
               <button
                 type="button"
-                className="lens-controls-panel__save"
                 onClick={handleSave}
+                style={{
+                  height: 28,
+                  padding: "0 10px",
+                  border: `1px solid ${saveFlash ? "#FFCC00" : "rgba(64,64,64,1)"}`,
+                  borderRadius: 6,
+                  background: saveFlash ? "rgba(255,204,0,0.12)" : "transparent",
+                  color: saveFlash ? "#FFCC00" : "#939393",
+                  fontSize: 11,
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  transition: "all 150ms",
+                }}
               >
-                СОХРАНИТЬ
+                {saveFlash ? "SAVED ✓" : "СОХРАНИТЬ"}
               </button>
             </div>
 
-            <div className="lens-controls-tabs">
-              {[
+            <div style={{ display: "flex", gap: 4, marginBottom: 14, borderBottom: "1px solid rgba(64,64,64,1)", paddingBottom: 0 }}>
+              {([
                 { id: "position", label: "ПОЗИЦИЯ" },
                 { id: "size", label: "РАЗМЕР" },
-              ].map((tab) => (
+                { id: "optical", label: "ИСКАЖЕНИЕ" },
+              ] as const).map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
-                  className={`lens-controls-tab${activeTab === tab.id ? " is-active" : ""}`}
-                  onClick={() => setActiveTab(tab.id as LensTab)}
+                  style={tabBaseStyle(activeTab === tab.id)}
+                  onClick={() => setActiveTab(tab.id)}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
 
-            {activeTab === "position" ? (
-              <div className="lens-controls-group">
-                <ControlSlider
-                  label="МАЛАЯ ЛИНЗА X"
-                  value={settings.smallLensXOffset}
-                  min={-400} max={400} step={1}
-                  format={(v) => `${Math.round(v)}PX`}
-                  onChange={(v) => setSettings((p) => ({ ...p, smallLensXOffset: v }))}
-                />
-                <ControlSlider
-                  label="МАЛАЯ ЛИНЗА Y"
-                  value={settings.smallLensYOffset}
-                  min={-240} max={420} step={1}
-                  format={(v) => `${Math.round(v)}PX`}
-                  onChange={(v) => setSettings((p) => ({ ...p, smallLensYOffset: v }))}
-                />
-                <ControlSlider
-                  label="БОЛЬШАЯ ЛИНЗА X"
-                  value={settings.largeLensXOffset}
-                  min={-1200} max={1200} step={1}
-                  format={(v) => `${Math.round(v)}PX`}
-                  onChange={(v) => setSettings((p) => ({ ...p, largeLensXOffset: v }))}
-                />
-                <ControlSlider
-                  label="БОЛЬШАЯ ЛИНЗА Y"
-                  value={settings.largeLensYOffset}
-                  min={-600} max={600} step={1}
-                  format={(v) => `${Math.round(v)}PX`}
-                  onChange={(v) => setSettings((p) => ({ ...p, largeLensYOffset: v }))}
-                />
-              </div>
-            ) : null}
+            <div style={{ display: "grid", gap: 14 }}>
+              {activeTab === "position" && (
+                <>
+                  <ControlSlider label="МАЛАЯ ЛИНЗА X" value={settings.smallLensXOffset}
+                    min={-400} max={400} step={1} format={(v) => `${Math.round(v)}PX`}
+                    onChange={(v) => setSettings((p) => ({ ...p, smallLensXOffset: v }))} />
+                  <ControlSlider label="МАЛАЯ ЛИНЗА Y" value={settings.smallLensYOffset}
+                    min={-240} max={420} step={1} format={(v) => `${Math.round(v)}PX`}
+                    onChange={(v) => setSettings((p) => ({ ...p, smallLensYOffset: v }))} />
+                  <ControlSlider label="БОЛЬШАЯ ЛИНЗА X" value={settings.largeLensXOffset}
+                    min={-1200} max={1200} step={1} format={(v) => `${Math.round(v)}PX`}
+                    onChange={(v) => setSettings((p) => ({ ...p, largeLensXOffset: v }))} />
+                  <ControlSlider label="БОЛЬШАЯ ЛИНЗА Y" value={settings.largeLensYOffset}
+                    min={-600} max={600} step={1} format={(v) => `${Math.round(v)}PX`}
+                    onChange={(v) => setSettings((p) => ({ ...p, largeLensYOffset: v }))} />
+                </>
+              )}
+              {activeTab === "size" && (
+                <>
+                  <ControlSlider label="МАЛАЯ ЛИНЗА" value={settings.smallLensSize}
+                    min={180} max={900} step={1} format={(v) => `${Math.round(v)}PX`}
+                    onChange={(v) => setSettings((p) => ({ ...p, smallLensSize: v }))} />
+                  <ControlSlider label="БОЛЬШАЯ ЛИНЗА" value={settings.largeLensSize}
+                    min={240} max={2000} step={1} format={(v) => `${Math.round(v)}PX`}
+                    onChange={(v) => setSettings((p) => ({ ...p, largeLensSize: v }))} />
+                </>
+              )}
+              {activeTab === "optical" && (
+                <>
+                  <ControlSlider label="REFRACTION" value={settings.refraction}
+                    min={0} max={0.12} step={0.001}
+                    onChange={(v) => setSettings((p) => ({ ...p, refraction: v }))} />
+                  <ControlSlider label="DEPTH" value={settings.depth}
+                    min={0} max={0.5} step={0.001}
+                    onChange={(v) => setSettings((p) => ({ ...p, depth: v }))} />
+                  <ControlSlider label="DISPERSION" value={settings.dispersion}
+                    min={0} max={5} step={0.01}
+                    onChange={(v) => setSettings((p) => ({ ...p, dispersion: v }))} />
+                  <ControlSlider label="DISTORTION RADIUS" value={settings.distortionRadius}
+                    min={0.2} max={1.5} step={0.001}
+                    onChange={(v) => setSettings((p) => ({ ...p, distortionRadius: v }))} />
+                  <ControlSlider label="BLUR" value={settings.blur}
+                    min={0} max={2} step={0.001}
+                    onChange={(v) => setSettings((p) => ({ ...p, blur: v }))} />
+                  <ControlSlider label="GRADIENT ANGLE" value={settings.gradientAngle}
+                    min={0} max={360} step={1}
+                    format={(v) => `${Math.round(v)}°`}
+                    onChange={(v) => setSettings((p) => ({ ...p, gradientAngle: v }))} />
+                </>
+              )}
+            </div>
 
-            {activeTab === "size" ? (
-              <div className="lens-controls-group">
-                <ControlSlider
-                  label="МАЛАЯ ЛИНЗА"
-                  value={settings.smallLensSize}
-                  min={180} max={900} step={1}
-                  format={(v) => `${Math.round(v)}PX`}
-                  onChange={(v) => setSettings((p) => ({ ...p, smallLensSize: v }))}
-                />
-                <ControlSlider
-                  label="БОЛЬШАЯ ЛИНЗА"
-                  value={settings.largeLensSize}
-                  min={240} max={2000} step={1}
-                  format={(v) => `${Math.round(v)}PX`}
-                  onChange={(v) => setSettings((p) => ({ ...p, largeLensSize: v }))}
-                />
-              </div>
-            ) : null}
-
-            <div className="lens-controls-panel__hint">
+            <div style={{ ...labelStyle, marginTop: 14, opacity: 0.5, lineHeight: 1.4 }}>
               Сохраняется отдельно для текущего адаптива.
               Параметры искажения — в панели линзы (showControls).
             </div>
@@ -581,12 +651,12 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1512px] flex-col px-5 pb-10 pt-10 md:px-8 xl:px-14">
-          <div className="relative z-20 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+          <div className="hero-top-bar relative z-20 flex flex-col gap-6">
             <InfiniteLogoMarquee logos={logos} />
 
             <div
               data-lens-hide="true"
-              className="w-full max-w-[312px] text-left xl:pt-0.5 xl:text-right"
+              className="hero-top-bar-stats w-full max-w-[312px] text-left"
             >
               <p className="font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground">
                 <span className="text-muted-foreground">120+ клиентов </span>

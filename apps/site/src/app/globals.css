@@ -4,19 +4,6 @@
  * ══════════════════════════════════════════════════════════════ */
 @import "@rocketmind/ui/styles";
 
-/* ── Hero marquee ── */
-@keyframes hero-logo-marquee {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-50%, 0, 0); }
-}
-
-.partner-logo-marquee-track {
-  display: flex;
-  width: max-content;
-  animation: hero-logo-marquee var(--hero-marquee-duration, 18s) linear infinite;
-  will-change: transform;
-}
-
 /* ── Hero background effects ── */
 .hero-background-noise {
   position: absolute;
@@ -82,6 +69,188 @@
   border-radius: inherit;
 }
 
+/* ── Lens Controls Panel ── */
+.lens-controls-panel {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 9999;
+  width: min(calc(100% - 40px), 420px);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--background);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.16);
+  padding: 16px;
+  color: var(--foreground);
+}
+
+.lens-controls-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.lens-controls-panel__title {
+  font-family: var(--font-heading-family);
+  font-size: var(--text-16, 16px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.lens-controls-panel__meta {
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  margin-top: 2px;
+  opacity: 0.5;
+}
+
+.lens-controls-panel__actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.lens-controls-panel__btn {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms;
+}
+
+.lens-controls-panel__btn:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.lens-controls-panel__save {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color 150ms, color 150ms;
+}
+
+.lens-controls-panel__save:hover {
+  border-color: var(--foreground);
+  color: var(--foreground);
+}
+
+.lens-controls-panel__hint {
+  margin-top: 14px;
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+  opacity: 0.5;
+  line-height: 1.4;
+}
+
+.lens-controls-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.lens-controls-tab {
+  padding: 6px 10px 8px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms;
+  margin-bottom: -1px;
+}
+
+.lens-controls-tab:hover {
+  color: var(--foreground);
+}
+
+.lens-controls-tab.is-active {
+  color: var(--foreground);
+  border-bottom-color: var(--foreground);
+}
+
+.lens-controls-group {
+  display: grid;
+  gap: 14px;
+}
+
+.lens-controls-row {
+  display: grid;
+  gap: 6px;
+}
+
+.lens-controls-row.is-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.lens-controls-row__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono-family);
+  font-size: var(--text-11, 11px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+
+.lens-controls-row__header span:last-child {
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.lens-controls-row input[type="range"] {
+  width: 100%;
+  height: 3px;
+  accent-color: var(--foreground);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .lens-controls-panel {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+  }
+}
+
 /* ── Visual Language ── */
 .link-cta {
   font-family: var(--font-mono);
@@ -121,6 +290,38 @@
 }
 .accordion-05-panel[data-closed] {
   grid-template-rows: 0fr;
+}
+
+/* ── PlatformOverview — breakpoint visibility ── */
+.platform-desktop { display: none; }
+.platform-tablet  { display: none; }
+
+@media (min-width: 1100px) {
+  .platform-desktop { display: block; }
+}
+@media (min-width: 768px) and (max-width: 1099px) {
+  .platform-tablet { display: flex; }
+}
+
+/* Desktop mascot: compact at 1100–1279, default at 1280+ */
+.mascot-desktop-default { display: none; }
+.mascot-desktop-compact { display: block; }
+@media (min-width: 1280px) {
+  .mascot-desktop-default { display: block; }
+  .mascot-desktop-compact { display: none; }
+}
+
+/* ── Hero top bar — row layout from 1100px ── */
+@media (min-width: 1100px) {
+  .hero-top-bar {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .hero-top-bar-stats {
+    padding-top: 2px;
+    text-align: right;
+  }
 }
 
 /* ── Mascot Carousel — blinking cursor ── */
