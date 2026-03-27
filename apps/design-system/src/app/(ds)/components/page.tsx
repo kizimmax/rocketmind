@@ -1,8 +1,12 @@
 "use client"
 
 import React from "react"
-import { Badge, GlowingEffect, Separator, Tabs, TabsContent, TabsList, TabsTrigger } from "@rocketmind/ui"
-import { Section } from "@/components/ds/shared"
+import {
+  Avatar, AvatarFallback, AvatarImage,
+  Badge, GlowingEffect, ScrollArea, Separator, Skeleton,
+  Tabs, TabsContent, TabsList, TabsTrigger,
+} from "@rocketmind/ui"
+import { Section, SubSection } from "@/components/ds/shared"
 import { CopyButton } from "@/components/copy-button"
 import { SearchComboboxShowcase } from "@/components/ui/search-combobox-showcase"
 import { TextareaShowcase } from "@/components/ui/textarea-showcase"
@@ -11,6 +15,9 @@ import { RadioShowcase } from "@/components/ui/radio-showcase"
 import { SwitchShowcase } from "@/components/ui/switch-showcase"
 import { NoteShowcase } from "@/components/ui/note-showcase"
 import { TableShowcase } from "@/components/ui/table-showcase"
+import { DialogShowcase } from "@/components/ui/dialog-showcase"
+import { DropdownMenuShowcase } from "@/components/ui/dropdown-menu-showcase"
+import { ToastShowcase } from "@/components/ui/toast-showcase"
 import {
   Rocket, User, Gem, BookOpen, Search,
   Loader2, Trash2, ArrowRight, Wrench, GraduationCap
@@ -28,7 +35,7 @@ export default function ComponentsPage() {
 
         {/* ── Кнопки ── */}
         <div className="mb-12">
-          <h3 id="components-buttons" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Кнопки</h3>
+          <SubSection id="components-buttons" title="Кнопки" first />
           <p className={`text-[length:var(--text-14)] text-muted-foreground mb-6`}>
             Четыре варианта × четыре размера. Высоты совпадают с инпутами — LG (48px) / MD (40px) / SM (32px) / XS (28px).
           </p>
@@ -147,7 +154,7 @@ export default function ComponentsPage() {
 
         {/* ── Бейджи ── */}
         <div className="mb-12">
-          <h3 id="components-badges" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Бейджи</h3>
+          <SubSection id="components-badges" title="Бейджи" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Лейблы для статусов, категорий и тегов. Шрифт — Loos Latin Condensed Medium, uppercase. Три размера: SM (20px) / MD (24px) / LG (28px).
           </p>
@@ -222,7 +229,7 @@ export default function ComponentsPage() {
 
         {/* ── Табы ── */}
         <div className="mb-12">
-          <h3 id="components-tabs" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Табы</h3>
+          <SubSection id="components-tabs" title="Табы" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Tabs переключают соседние панели без смены экрана. <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">default</code> для равноправных наборов данных, <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">secondary</code> для локальной навигации.
           </p>
@@ -343,7 +350,7 @@ export default function ComponentsPage() {
 
         {/* ── Чекбоксы ── */}
         <div className="mb-12">
-          <h3 id="components-checkboxes" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Чекбоксы</h3>
+          <SubSection id="components-checkboxes" title="Чекбоксы" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Паттерн для независимого yes/no-выбора. Основа: 16×16 control, общий focus-visible и один акцент для checked и indeterminate.
           </p>
@@ -352,7 +359,7 @@ export default function ComponentsPage() {
 
         {/* ── Радио ── */}
         <div className="mb-12">
-          <h3 id="components-radio" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Радио</h3>
+          <SubSection id="components-radio" title="Радио" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Паттерн для выбора одного варианта из группы. Основа: 16×16 control, один активный выбор и headless-композиция внутри строки.
           </p>
@@ -361,16 +368,16 @@ export default function ComponentsPage() {
 
         {/* ── Тумблер ── */}
         <div className="mb-12">
-          <h3 id="components-switch" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Тумблер</h3>
+          <SubSection id="components-switch" title="Тумблер" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
-            Паттерн для немедленного on/off внутри настроек. Токены: <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">--border</code>, <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">--rm-gray-1</code>, <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">--rm-yellow-100</code>.
+            Немедленный on/off. Squircle-форма (<code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">rounded-sm</code>, 4px) — как у всех контролов DS.
           </p>
           <SwitchShowcase />
         </div>
 
         {/* ── Примечания ── */}
         <div className="mb-12">
-          <h3 id="components-notes" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Примечания / Notes</h3>
+          <SubSection id="components-notes" title="Примечания / Notes" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Постоянные сервисные сообщения внутри экрана: подсказки, предупреждения, подтверждения и локальные CTA. Используют только operational-состояния и существующие status/surface-токены.
           </p>
@@ -379,7 +386,7 @@ export default function ComponentsPage() {
 
         {/* ── Таблицы ── */}
         <div className="mb-12">
-          <h3 id="components-tables" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Таблицы</h3>
+          <SubSection id="components-tables" title="Таблицы" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Паттерн для плотных сравнимых данных: кейсы, платежи, документы, usage-отчёты. Таблица собирается на существующих surface, border, badge и control-токенах.
           </p>
@@ -388,7 +395,7 @@ export default function ComponentsPage() {
 
         {/* ── Инпуты ── */}
         <div className="mb-12">
-          <h3 id="components-inputs" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Инпуты</h3>
+          <SubSection id="components-inputs" title="Инпуты" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">Четыре размера идентичны кнопкам по высоте и padding: LG (48px) / MD (40px, default) / SM (32px) / XS (28px).</p>
 
           {(() => {
@@ -481,7 +488,7 @@ export default function ComponentsPage() {
 
         {/* ── Textarea ── */}
         <div className="mb-12">
-          <h3 id="components-textarea" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Textarea</h3>
+          <SubSection id="components-textarea" title="Textarea" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Паттерн для multiline-ввода. Базовые состояния: default, disabled и error; focus меняет только border.
           </p>
@@ -490,7 +497,7 @@ export default function ComponentsPage() {
 
         {/* ── Поиск / Combobox ── */}
         <div className="mb-12">
-          <h3 id="components-search" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">Поиск / Combobox</h3>
+          <SubSection id="components-search" title="Поиск / Combobox" />
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Компонент поиска для Rocketmind: inline-search, подсказки, история, empty-state и запуск в модальном окне.
           </p>
@@ -499,7 +506,7 @@ export default function ComponentsPage() {
 
         {/* ── Карточки ── */}
         <div>
-          <h3 id="components-cards" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">Карточки</h3>
+          <SubSection id="components-cards" title="Карточки" />
           <Tabs defaultValue="cards" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="cards">Каталог карточек</TabsTrigger>
@@ -1099,6 +1106,257 @@ export default function ComponentsPage() {
               </div>
             </TabsContent>
           </Tabs>
+        </div>
+
+        {/* ── Аватар ── */}
+        <div className="mb-12">
+          <SubSection id="components-avatar" title="Аватар" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Круглый аватар пользователя или агента. 5 размеров: XS (24px) / SM (32px) / MD (40px) / LG (48px) / XL (64px). Fallback — инициалы на <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-rm-gray-1</code>, моно-шрифт.
+          </p>
+
+          <div className="rounded-lg border border-border overflow-hidden mb-6">
+            <div className={`px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border`}>
+              <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Размеры и fallback</p>
+            </div>
+            <div className="p-6 flex flex-wrap items-end gap-6">
+              {(["xs", "sm", "md", "lg", "xl"] as const).map((size) => (
+                <div key={size} className="flex flex-col items-center gap-2">
+                  <Avatar size={size}>
+                    <AvatarFallback className={size === "xs" ? "text-[10px]" : size === "sm" ? "text-[length:var(--text-12)]" : size === "md" ? "text-[length:var(--text-14)]" : size === "lg" ? "text-[length:var(--text-16)]" : "text-[20px]"}>
+                      {size === "xs" ? "М" : size === "sm" ? "АИ" : size === "md" ? "НК" : size === "lg" ? "СД" : "RM"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground`}>{size.toUpperCase()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border overflow-hidden">
+            <div className={`px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border`}>
+              <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Контекстные примеры</p>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-3 p-3 border border-border rounded-sm">
+                <Avatar size="md">
+                  <AvatarFallback className="text-[length:var(--text-14)]">АА</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="text-[length:var(--text-14)] font-medium text-foreground">AI-агент «Аналитик»</p>
+                  <p className="text-[length:var(--text-12)] text-muted-foreground">Финансовый анализ</p>
+                </div>
+                <Badge variant="green-subtle" size="sm" className="ml-auto">Активен</Badge>
+              </div>
+              <div className="flex items-center gap-2">
+                {["МД", "АС", "НК", "ЕВ"].map((initials, i) => (
+                  <Avatar key={i} size="sm" className={i > 0 ? "-ml-2" : ""}>
+                    <AvatarFallback className="text-[length:var(--text-12)]">{initials}</AvatarFallback>
+                  </Avatar>
+                ))}
+                <span className="text-[length:var(--text-12)] text-muted-foreground ml-2">+3 участника</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Диалог ── */}
+        <div className="mb-12">
+          <SubSection id="components-dialog" title="Диалог" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Модальное окно для подтверждения действий и показа информации. Оверлей — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">rm-gray-alpha-600</code>, панель — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">max-w-480px bg-card rounded-lg</code>.
+          </p>
+          <DialogShowcase />
+        </div>
+
+        {/* ── Dropdown Menu ── */}
+        <div className="mb-12">
+          <SubSection id="components-dropdown" title="Dropdown Menu" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Контекстное меню действий. Контейнер — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-popover rounded-sm min-w-160px</code>. Destructive-элемент — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">text-rm-red-100</code>.
+          </p>
+          <DropdownMenuShowcase />
+        </div>
+
+        {/* ── Разделитель ── */}
+        <div className="mb-12">
+          <SubSection id="components-separator" title="Разделитель" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Визуальный разделитель контента. Горизонтальный — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">h-px w-full</code>, вертикальный — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">w-px self-stretch</code>. Цвет — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-border</code>.
+          </p>
+
+          <div className="rounded-lg border border-border overflow-hidden">
+            <div className={`px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border`}>
+              <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Горизонтальный и вертикальный</p>
+            </div>
+            <div className="p-6 space-y-6">
+              <div>
+                <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>Horizontal</p>
+                <div className="rounded-sm border border-border p-4 bg-card">
+                  <p className="text-[length:var(--text-14)] text-foreground mb-3">Блок контента сверху</p>
+                  <Separator />
+                  <p className="text-[length:var(--text-14)] text-foreground mt-3">Блок контента снизу</p>
+                </div>
+              </div>
+              <div>
+                <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>Vertical</p>
+                <div className="rounded-sm border border-border p-4 bg-card flex items-center gap-4 h-16">
+                  <span className="text-[length:var(--text-14)]">Раздел A</span>
+                  <Separator orientation="vertical" />
+                  <span className="text-[length:var(--text-14)]">Раздел B</span>
+                  <Separator orientation="vertical" />
+                  <span className="text-[length:var(--text-14)]">Раздел C</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Skeleton ── */}
+        <div className="mb-12">
+          <SubSection id="components-skeleton" title="Skeleton" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Placeholder-загрузка с анимацией пульса. Фон — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-rm-gray-1 animate-pulse rounded-sm</code>. Повторяет форму реального контента.
+          </p>
+
+          <div className="rounded-lg border border-border overflow-hidden">
+            <div className={`px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border`}>
+              <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Паттерны загрузки</p>
+            </div>
+            <div className="p-6 grid gap-6 sm:grid-cols-2">
+              <div>
+                <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>Card skeleton</p>
+                <div className="rounded-lg border border-border p-4 space-y-3">
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <div className="flex justify-between pt-2">
+                    <Skeleton className="h-5 w-16 rounded-sm" />
+                    <Skeleton className="h-7 w-20 rounded-sm" />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>Chat skeleton</p>
+                <div className="rounded-lg border border-border p-4 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-4/5" />
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 flex-row-reverse">
+                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>Table skeleton</p>
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <div className="h-9 bg-[var(--rm-gray-1)] border-b border-border px-3 flex items-center gap-4">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-3 w-16 ml-auto" />
+                  </div>
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="h-10 px-3 flex items-center gap-4 border-b border-border last:border-b-0">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-5 w-14 rounded-sm ml-auto" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>Profile skeleton</p>
+                <div className="rounded-lg border border-border p-4 flex items-center gap-4">
+                  <Skeleton className="h-12 w-12 rounded-full shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Scroll Area ── */}
+        <div className="mb-12">
+          <SubSection id="components-scroll-area" title="Scroll Area" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Контейнер с кастомным скроллбаром. Thumb — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-rm-gray-3</code>, hover — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-rm-gray-4</code>, ширина — 8px, rounded-full.
+          </p>
+
+          <div className="rounded-lg border border-border overflow-hidden">
+            <div className={`px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border`}>
+              <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Вертикальный скролл</p>
+            </div>
+            <div className="p-6 grid gap-6 sm:grid-cols-2">
+              <div>
+                <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>Список агентов</p>
+                <ScrollArea className="h-48 rounded-sm border border-border">
+                  <div className="p-3 space-y-2">
+                    {[
+                      { name: "Аналитик", desc: "Финансовый анализ и прогнозирование" },
+                      { name: "Стратег", desc: "Разработка стратегии и планирование" },
+                      { name: "Исследователь", desc: "Маркетинговые исследования" },
+                      { name: "Тестировщик", desc: "Тестирование гипотез и A/B тесты" },
+                      { name: "Копирайтер", desc: "Создание текстов и контента" },
+                      { name: "Дизайнер", desc: "Визуальный дизайн и брендинг" },
+                      { name: "Разработчик", desc: "Прототипирование и MVP" },
+                      { name: "Консультант", desc: "Бизнес-консалтинг" },
+                    ].map((agent) => (
+                      <div key={agent.name} className="flex items-center gap-3 p-2 rounded-sm hover:bg-[var(--rm-gray-2)] transition-colors">
+                        <Avatar size="sm">
+                          <AvatarFallback className="text-[length:var(--text-12)]">{agent.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="text-[length:var(--text-14)] text-foreground truncate">{agent.name}</p>
+                          <p className="text-[length:var(--text-12)] text-muted-foreground truncate">{agent.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+              <div>
+                <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>Лог сообщений</p>
+                <ScrollArea className="h-48 rounded-sm border border-border">
+                  <div className="p-3 space-y-2">
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <div key={i} className="flex items-start gap-2 text-[length:var(--text-12)]">
+                        <span className={`${mono} text-muted-foreground shrink-0`}>{String(i + 1).padStart(2, "0")}.</span>
+                        <span className="text-muted-foreground">
+                          {i % 3 === 0 ? "Пользователь отправил сообщение" : i % 3 === 1 ? "Агент обработал запрос" : "Система обновила статус кейса"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Toasts ── */}
+        <div className="mb-12">
+          <SubSection id="components-toasts" title="Уведомления / Toasts" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Всплывающие уведомления через sonner. Типы: default, success, error, warning, info, loading. Фон — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-popover</code>, бордер — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">border-border</code>.
+          </p>
+          <ToastShowcase />
         </div>
       </Section>
 

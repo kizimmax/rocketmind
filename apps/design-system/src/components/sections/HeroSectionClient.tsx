@@ -626,7 +626,6 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
               gradientAngle={settings.gradientAngle}
               shadowEnabled={settings.shadowEnabled}
               motionParallax
-              motionStrength={0.032}
               showControls={false}
             />
 

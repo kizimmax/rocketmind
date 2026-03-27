@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 import { cn } from "@/lib/utils";
+import { MobileNav } from "./MobileNav";
 import { RocketmindMenu } from "./RocketmindMenu";
 
 export function Header() {
@@ -44,10 +45,12 @@ export function Header() {
                     />
                 </Link>
 
-                <RocketmindMenu 
-                    className="ml-auto flex flex-1 items-center justify-end gap-8 lg:gap-12" 
+                <RocketmindMenu
+                    className="hero-menu-desktop ml-auto flex-1 items-center justify-end gap-8 lg:gap-12"
                     showDropdowns={true}
                 />
+
+                <MobileNav className="ml-auto" />
             </div>
         </header>
     );

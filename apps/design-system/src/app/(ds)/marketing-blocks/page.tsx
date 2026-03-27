@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Separator } from "@rocketmind/ui"
-import { Section } from "@/components/ds/shared"
+import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
 import { Accordion05Demo, VersionHistory } from "@/components/ds/shared"
 
@@ -15,9 +15,7 @@ export default function MarketingBlocksPage() {
         </p>
 
         {/* ── Accordion 05 ── */}
-        <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
-          Аккордион — FAQ
-        </h3>
+        <SubSection title="Аккордион — FAQ" first />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
           Аккордион для секций FAQ и «Часто задаваемые вопросы». Числа слева — порядковые метки. Заголовок раскрытого пункта подсвечивается акцентным жёлтым. Плавное открытие через <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-caption-family)]">grid-template-rows</code> (200ms, ease-standard).
         </p>
@@ -26,11 +24,8 @@ export default function MarketingBlocksPage() {
           <Accordion05Demo />
         </div>
 
-        {/* Token spec */}
-        <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          Токены
-        </h3>
-        <div className="overflow-auto rounded-lg border border-border mb-8">
+        <SpecBlock title="Токены">
+        <div className="overflow-auto rounded-lg border border-border">
           <table className="w-full text-[length:var(--text-14)]">
             <thead>
               <tr className="border-b border-border bg-rm-gray-2/30">
@@ -59,6 +54,7 @@ export default function MarketingBlocksPage() {
             </tbody>
           </table>
         </div>
+        </SpecBlock>
       </Section>
 
       <Separator />

@@ -31,6 +31,9 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  Avatar: () => Avatar,
+  AvatarFallback: () => AvatarFallback,
+  AvatarImage: () => AvatarImage,
   Badge: () => Badge,
   Button: () => Button,
   Card: () => Card,
@@ -41,7 +44,28 @@ __export(index_exports, {
   CardHeader: () => CardHeader,
   CardTitle: () => CardTitle,
   Checkbox: () => Checkbox,
+  Dialog: () => Dialog,
+  DialogClose: () => DialogClose,
+  DialogContent: () => DialogContent,
+  DialogDescription: () => DialogDescription,
+  DialogFooter: () => DialogFooter,
+  DialogHeader: () => DialogHeader,
+  DialogOverlay: () => DialogOverlay,
+  DialogPortal: () => DialogPortal,
+  DialogTitle: () => DialogTitle,
+  DialogTrigger: () => DialogTrigger,
+  DropdownMenu: () => DropdownMenu,
+  DropdownMenuContent: () => DropdownMenuContent,
+  DropdownMenuGroup: () => DropdownMenuGroup,
+  DropdownMenuItem: () => DropdownMenuItem,
+  DropdownMenuLabel: () => DropdownMenuLabel,
+  DropdownMenuPortal: () => DropdownMenuPortal,
+  DropdownMenuSeparator: () => DropdownMenuSeparator,
+  DropdownMenuTrigger: () => DropdownMenuTrigger,
   GlowingEffect: () => GlowingEffect,
+  InfiniteLogoMarquee: () => InfiniteLogoMarquee,
+  Input: () => Input,
+  InputOTP: () => InputOTP,
   NavigationMenu: () => NavigationMenu,
   NavigationMenuContent: () => NavigationMenuContent,
   NavigationMenuItem: () => NavigationMenuItem,
@@ -54,9 +78,20 @@ __export(index_exports, {
   NoteEyebrow: () => NoteEyebrow,
   NoteTitle: () => NoteTitle,
   Radio: () => Radio,
+  ScrollArea: () => ScrollArea,
+  ScrollBar: () => ScrollBar,
   SearchCombobox: () => SearchCombobox,
-  Separator: () => Separator,
+  Separator: () => Separator2,
+  Skeleton: () => Skeleton,
   Switch: () => Switch,
+  Table: () => Table,
+  TableBody: () => TableBody,
+  TableCaption: () => TableCaption,
+  TableCell: () => TableCell,
+  TableFooter: () => TableFooter,
+  TableHead: () => TableHead,
+  TableHeader: () => TableHeader,
+  TableRow: () => TableRow,
   Tabs: () => Tabs,
   TabsContent: () => TabsContent,
   TabsList: () => TabsList,
@@ -68,10 +103,12 @@ __export(index_exports, {
   TooltipContent: () => TooltipContent,
   TooltipProvider: () => TooltipProvider,
   TooltipTrigger: () => TooltipTrigger,
+  avatarVariants: () => avatarVariants,
   badgeVariants: () => badgeVariants,
   buttonVariants: () => buttonVariants,
   checkboxBaseClassName: () => checkboxBaseClassName,
   cn: () => cn,
+  inputVariants: () => inputVariants,
   noteVariants: () => noteVariants,
   radioBaseClassName: () => radioBaseClassName,
   tabsListVariants: () => tabsListVariants,
@@ -96,10 +133,69 @@ function ThemeProvider({
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_next_themes.ThemeProvider, { ...props, children });
 }
 
-// src/components/ui/badge.tsx
+// src/components/ui/avatar.tsx
+var React = __toESM(require("react"), 1);
+var AvatarPrimitive = __toESM(require("@radix-ui/react-avatar"), 1);
 var import_class_variance_authority = require("class-variance-authority");
 var import_jsx_runtime2 = require("react/jsx-runtime");
-var badgeVariants = (0, import_class_variance_authority.cva)(
+var avatarVariants = (0, import_class_variance_authority.cva)(
+  "relative inline-flex shrink-0 overflow-hidden rounded-full border border-border",
+  {
+    variants: {
+      size: {
+        xs: "w-6 h-6",
+        sm: "w-8 h-8",
+        md: "w-10 h-10",
+        lg: "w-12 h-12",
+        xl: "w-16 h-16"
+      }
+    },
+    defaultVariants: {
+      size: "md"
+    }
+  }
+);
+var Avatar = React.forwardRef(({ className, size = "md", ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+  AvatarPrimitive.Root,
+  {
+    ref,
+    "data-slot": "avatar",
+    "data-size": size,
+    className: cn(avatarVariants({ size, className })),
+    ...props
+  }
+));
+Avatar.displayName = "Avatar";
+var AvatarImage = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+  AvatarPrimitive.Image,
+  {
+    ref,
+    "data-slot": "avatar-image",
+    className: cn("aspect-square h-full w-full object-cover", className),
+    ...props
+  }
+));
+AvatarImage.displayName = "AvatarImage";
+var AvatarFallback = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+  AvatarPrimitive.Fallback,
+  {
+    ref,
+    "data-slot": "avatar-fallback",
+    className: cn(
+      "flex h-full w-full items-center justify-center rounded-full",
+      "bg-[var(--rm-gray-1)] text-muted-foreground",
+      "font-[family-name:var(--font-mono-family)] uppercase",
+      className
+    ),
+    ...props
+  }
+));
+AvatarFallback.displayName = "AvatarFallback";
+
+// src/components/ui/badge.tsx
+var import_class_variance_authority2 = require("class-variance-authority");
+var import_jsx_runtime3 = require("react/jsx-runtime");
+var badgeVariants = (0, import_class_variance_authority2.cva)(
   // Base: flat, Loos Condensed, uppercase — consistent with buttons and labels
   "inline-flex items-center gap-1 rounded-sm border border-transparent px-2 whitespace-nowrap font-[family-name:var(--font-mono-family)] uppercase tracking-[0.04em] transition-all",
   {
@@ -155,7 +251,7 @@ function Badge({
   size,
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
     "span",
     {
       className: cn(badgeVariants({ variant, size }), className),
@@ -166,9 +262,9 @@ function Badge({
 
 // src/components/ui/button.tsx
 var import_button = require("@base-ui/react/button");
-var import_class_variance_authority2 = require("class-variance-authority");
-var import_jsx_runtime3 = require("react/jsx-runtime");
-var buttonVariants = (0, import_class_variance_authority2.cva)(
+var import_class_variance_authority3 = require("class-variance-authority");
+var import_jsx_runtime4 = require("react/jsx-runtime");
+var buttonVariants = (0, import_class_variance_authority3.cva)(
   "group/button inline-flex shrink-0 items-center justify-center rounded-sm border border-transparent bg-clip-padding text-[length:var(--text-14)] font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
@@ -203,7 +299,7 @@ function Button({
   size = "default",
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
     import_button.Button,
     {
       "data-slot": "button",
@@ -214,13 +310,13 @@ function Button({
 }
 
 // src/components/ui/card.tsx
-var import_jsx_runtime4 = require("react/jsx-runtime");
+var import_jsx_runtime5 = require("react/jsx-runtime");
 function Card({
   className,
   size = "default",
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
       "data-slot": "card",
@@ -234,7 +330,7 @@ function Card({
   );
 }
 function CardHeader({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
       "data-slot": "card-header",
@@ -247,7 +343,7 @@ function CardHeader({ className, ...props }) {
   );
 }
 function CardTitle({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
       "data-slot": "card-title",
@@ -260,7 +356,7 @@ function CardTitle({ className, ...props }) {
   );
 }
 function CardDescription({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
       "data-slot": "card-description",
@@ -270,7 +366,7 @@ function CardDescription({ className, ...props }) {
   );
 }
 function CardAction({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
       "data-slot": "card-action",
@@ -283,7 +379,7 @@ function CardAction({ className, ...props }) {
   );
 }
 function CardContent({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
       "data-slot": "card-content",
@@ -293,7 +389,7 @@ function CardContent({ className, ...props }) {
   );
 }
 function CardFooter({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
     "div",
     {
       "data-slot": "card-footer",
@@ -307,20 +403,20 @@ function CardFooter({ className, ...props }) {
 }
 
 // src/components/ui/checkbox.tsx
-var React = __toESM(require("react"), 1);
+var React2 = __toESM(require("react"), 1);
 var import_lucide_react = require("lucide-react");
-var import_jsx_runtime5 = require("react/jsx-runtime");
+var import_jsx_runtime6 = require("react/jsx-runtime");
 var checkboxBaseClassName = "peer size-4 shrink-0 appearance-none rounded-sm border border-border bg-rm-gray-1 transition-[background-color,border-color,opacity] duration-150 outline-none checked:border-[var(--rm-yellow-100)] checked:bg-[var(--rm-yellow-100)] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40";
-var Checkbox = React.forwardRef(
+var Checkbox = React2.forwardRef(
   ({ className, indeterminate = false, ...props }, forwardedRef) => {
-    const internalRef = React.useRef(null);
-    React.useImperativeHandle(forwardedRef, () => internalRef.current);
-    React.useEffect(() => {
+    const internalRef = React2.useRef(null);
+    React2.useImperativeHandle(forwardedRef, () => internalRef.current);
+    React2.useEffect(() => {
       if (!internalRef.current) return;
       internalRef.current.indeterminate = indeterminate;
     }, [indeterminate]);
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("span", { className: "relative inline-flex size-4 shrink-0 items-center justify-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("span", { className: "relative inline-flex size-4 shrink-0 items-center justify-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
         "input",
         {
           ...props,
@@ -335,7 +431,7 @@ var Checkbox = React.forwardRef(
           )
         }
       ),
-      indeterminate ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react.Minus, { className: "pointer-events-none absolute size-3 text-[var(--rm-yellow-fg)]", strokeWidth: 2.4 }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+      indeterminate ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react.Minus, { className: "pointer-events-none absolute size-3 text-[var(--rm-yellow-fg)]", strokeWidth: 2.4 }) : /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
         import_lucide_react.Check,
         {
           className: "pointer-events-none absolute size-3 text-[var(--rm-yellow-fg)] opacity-0 transition-opacity duration-150 peer-checked:opacity-100",
@@ -347,10 +443,166 @@ var Checkbox = React.forwardRef(
 );
 Checkbox.displayName = "Checkbox";
 
+// src/components/ui/dialog.tsx
+var React3 = __toESM(require("react"), 1);
+var DialogPrimitive = __toESM(require("@radix-ui/react-dialog"), 1);
+var import_jsx_runtime7 = require("react/jsx-runtime");
+var Dialog = DialogPrimitive.Root;
+var DialogTrigger = DialogPrimitive.Trigger;
+var DialogClose = DialogPrimitive.Close;
+var DialogPortal = DialogPrimitive.Portal;
+var DialogOverlay = React3.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+  DialogPrimitive.Overlay,
+  {
+    ref,
+    "data-slot": "dialog-overlay",
+    className: cn(
+      "fixed inset-0 z-50 bg-[var(--rm-gray-alpha-600)]",
+      "data-[state=open]:animate-in data-[state=open]:fade-in-0",
+      "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
+      className
+    ),
+    ...props
+  }
+));
+DialogOverlay.displayName = "DialogOverlay";
+var DialogContent = React3.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(DialogPortal, { children: [
+  /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(DialogOverlay, {}),
+  /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+    DialogPrimitive.Content,
+    {
+      ref,
+      "data-slot": "dialog-content",
+      className: cn(
+        "fixed left-1/2 top-1/2 z-50 w-full max-w-[480px] -translate-x-1/2 -translate-y-1/2",
+        "rounded-lg border border-border bg-card p-6",
+        "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
+        "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]",
+        className
+      ),
+      ...props,
+      children
+    }
+  )
+] }));
+DialogContent.displayName = "DialogContent";
+function DialogHeader({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+    "div",
+    {
+      "data-slot": "dialog-header",
+      className: cn("flex flex-col gap-1.5", className),
+      ...props
+    }
+  );
+}
+function DialogFooter({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+    "div",
+    {
+      "data-slot": "dialog-footer",
+      className: cn("flex justify-end gap-3 pt-4", className),
+      ...props
+    }
+  );
+}
+var DialogTitle = React3.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+  DialogPrimitive.Title,
+  {
+    ref,
+    "data-slot": "dialog-title",
+    className: cn(
+      "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold uppercase tracking-[-0.005em]",
+      className
+    ),
+    ...props
+  }
+));
+DialogTitle.displayName = "DialogTitle";
+var DialogDescription = React3.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+  DialogPrimitive.Description,
+  {
+    ref,
+    "data-slot": "dialog-description",
+    className: cn("text-[length:var(--text-14)] text-muted-foreground", className),
+    ...props
+  }
+));
+DialogDescription.displayName = "DialogDescription";
+
+// src/components/ui/dropdown-menu.tsx
+var React4 = __toESM(require("react"), 1);
+var DropdownMenuPrimitive = __toESM(require("@radix-ui/react-dropdown-menu"), 1);
+var import_jsx_runtime8 = require("react/jsx-runtime");
+var DropdownMenu = DropdownMenuPrimitive.Root;
+var DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+var DropdownMenuGroup = DropdownMenuPrimitive.Group;
+var DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+var DropdownMenuContent = React4.forwardRef(({ className, sideOffset = 4, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DropdownMenuPrimitive.Portal, { children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  DropdownMenuPrimitive.Content,
+  {
+    ref,
+    "data-slot": "dropdown-menu-content",
+    sideOffset,
+    className: cn(
+      "z-50 min-w-[160px] overflow-hidden rounded-sm border border-border bg-popover p-1 text-popover-foreground",
+      "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+      "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+      "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    ),
+    ...props
+  }
+) }));
+DropdownMenuContent.displayName = "DropdownMenuContent";
+var DropdownMenuItem = React4.forwardRef(({ className, destructive, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  DropdownMenuPrimitive.Item,
+  {
+    ref,
+    "data-slot": "dropdown-menu-item",
+    className: cn(
+      "relative flex items-center gap-2 h-8 px-2 py-1.5 rounded-sm",
+      "text-[length:var(--text-14)] cursor-pointer select-none outline-none",
+      "transition-colors duration-150",
+      "focus:bg-[var(--rm-gray-2)] focus:text-foreground",
+      "data-[disabled]:pointer-events-none data-[disabled]:opacity-40",
+      destructive && "text-[var(--rm-red-100)] focus:bg-[var(--rm-red-900)] focus:text-[var(--rm-red-100)]",
+      "[&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground",
+      destructive && "[&_svg]:text-[var(--rm-red-100)]",
+      className
+    ),
+    ...props
+  }
+));
+DropdownMenuItem.displayName = "DropdownMenuItem";
+var DropdownMenuSeparator = React4.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  DropdownMenuPrimitive.Separator,
+  {
+    ref,
+    "data-slot": "dropdown-menu-separator",
+    className: cn("-mx-1 my-1 h-px bg-border", className),
+    ...props
+  }
+));
+DropdownMenuSeparator.displayName = "DropdownMenuSeparator";
+var DropdownMenuLabel = React4.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  DropdownMenuPrimitive.Label,
+  {
+    ref,
+    "data-slot": "dropdown-menu-label",
+    className: cn(
+      "px-2 py-1.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground",
+      className
+    ),
+    ...props
+  }
+));
+DropdownMenuLabel.displayName = "DropdownMenuLabel";
+
 // src/components/ui/glowing-effect.tsx
 var import_react = require("react");
 var import_react2 = require("motion/react");
-var import_jsx_runtime6 = require("react/jsx-runtime");
+var import_jsx_runtime9 = require("react/jsx-runtime");
 var GlowingEffect = (0, import_react.memo)(
   ({
     blur = 0,
@@ -461,8 +713,8 @@ var GlowingEffect = (0, import_react.memo)(
           #dd7bbb calc(100% / var(--repeating-conic-gradient-times))
         )`;
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(import_jsx_runtime6.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
         "div",
         {
           className: cn(
@@ -474,7 +726,7 @@ var GlowingEffect = (0, import_react.memo)(
           )
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
         "div",
         {
           ref: containerRef,
@@ -494,7 +746,7 @@ var GlowingEffect = (0, import_react.memo)(
             className,
             disabled && "!hidden"
           ),
-          children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+          children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
             "div",
             {
               className: cn(
@@ -517,12 +769,128 @@ var GlowingEffect = (0, import_react.memo)(
 );
 GlowingEffect.displayName = "GlowingEffect";
 
+// src/components/ui/input.tsx
+var React5 = __toESM(require("react"), 1);
+var import_class_variance_authority4 = require("class-variance-authority");
+var import_jsx_runtime10 = require("react/jsx-runtime");
+var inputVariants = (0, import_class_variance_authority4.cva)(
+  "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive",
+  {
+    variants: {
+      size: {
+        xs: "h-7 px-3 text-[length:var(--text-12)]",
+        sm: "h-8 px-3 text-[length:var(--text-12)]",
+        md: "h-10 px-4 text-[length:var(--text-14)]",
+        lg: "h-12 px-6 text-[length:var(--text-16)]"
+      }
+    },
+    defaultVariants: {
+      size: "md"
+    }
+  }
+);
+var Input = React5.forwardRef(
+  ({ className, size, type = "text", ...props }, ref) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+      "input",
+      {
+        ref,
+        type,
+        "data-slot": "input",
+        className: cn(inputVariants({ size, className })),
+        ...props
+      }
+    );
+  }
+);
+Input.displayName = "Input";
+
+// src/components/ui/input-otp.tsx
+var React6 = __toESM(require("react"), 1);
+var import_jsx_runtime11 = require("react/jsx-runtime");
+var InputOTP = React6.forwardRef(
+  ({ length = 6, value = "", onChange, disabled, className, "aria-invalid": ariaInvalid, ...props }, ref) => {
+    const inputRefs = React6.useRef([]);
+    const chars = value.split("");
+    function handleChange(index, char) {
+      if (char.length > 1) {
+        const pasted = char.replace(/\D/g, "").slice(0, length);
+        onChange?.(pasted);
+        const focusIndex = Math.min(pasted.length, length - 1);
+        inputRefs.current[focusIndex]?.focus();
+        return;
+      }
+      if (!/^\d?$/.test(char)) return;
+      const next = [...chars];
+      next[index] = char;
+      for (let i = 0; i < length; i++) {
+        if (next[i] === void 0) next[i] = "";
+      }
+      const newValue = next.join("").slice(0, length);
+      onChange?.(newValue);
+      if (char && index < length - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
+    }
+    function handleKeyDown(index, e) {
+      if (e.key === "Backspace" && !chars[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      }
+      if (e.key === "ArrowLeft" && index > 0) {
+        inputRefs.current[index - 1]?.focus();
+      }
+      if (e.key === "ArrowRight" && index < length - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      "div",
+      {
+        ref,
+        "data-slot": "input-otp",
+        className: cn("flex gap-2", className),
+        ...props,
+        children: Array.from({ length }, (_, i) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+          "input",
+          {
+            ref: (el) => {
+              inputRefs.current[i] = el;
+            },
+            type: "text",
+            inputMode: "numeric",
+            maxLength: length,
+            value: chars[i] ?? "",
+            disabled,
+            "aria-invalid": ariaInvalid,
+            autoComplete: i === 0 ? "one-time-code" : "off",
+            className: cn(
+              "w-14 h-14 text-center",
+              "rounded-sm border border-border",
+              "bg-rm-gray-1 text-foreground",
+              "font-[family-name:var(--font-mono-family)] text-[length:var(--text-25)] tracking-[0.08em]",
+              "transition-all duration-150",
+              "outline-none focus-visible:border-ring",
+              "disabled:cursor-not-allowed disabled:opacity-40",
+              "aria-invalid:border-destructive"
+            ),
+            onChange: (e) => handleChange(i, e.target.value),
+            onKeyDown: (e) => handleKeyDown(i, e),
+            onFocus: (e) => e.target.select()
+          },
+          i
+        ))
+      }
+    );
+  }
+);
+InputOTP.displayName = "InputOTP";
+
 // src/components/ui/navigation-menu.tsx
-var React2 = __toESM(require("react"), 1);
+var React7 = __toESM(require("react"), 1);
 var import_lucide_react2 = require("lucide-react");
 var NavigationMenuPrimitive = __toESM(require("@radix-ui/react-navigation-menu"), 1);
-var import_jsx_runtime7 = require("react/jsx-runtime");
-var NavigationMenu = React2.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+var import_jsx_runtime12 = require("react/jsx-runtime");
+var NavigationMenu = React7.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
   NavigationMenuPrimitive.Root,
   {
     ref,
@@ -530,12 +898,12 @@ var NavigationMenu = React2.forwardRef(({ className, children, ...props }, ref) 
     ...props,
     children: [
       children,
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(NavigationMenuViewport, {})
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(NavigationMenuViewport, {})
     ]
   }
 ));
 NavigationMenu.displayName = NavigationMenuPrimitive.Root.displayName;
-var NavigationMenuList = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+var NavigationMenuList = React7.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
   NavigationMenuPrimitive.List,
   {
     ref,
@@ -545,7 +913,7 @@ var NavigationMenuList = React2.forwardRef(({ className, ...props }, ref) => /* 
 ));
 NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName;
 var NavigationMenuItem = NavigationMenuPrimitive.Item;
-var NavigationMenuTrigger = React2.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+var NavigationMenuTrigger = React7.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
   NavigationMenuPrimitive.Trigger,
   {
     ref,
@@ -560,7 +928,7 @@ var NavigationMenuTrigger = React2.forwardRef(({ className, children, ...props }
     ...props,
     children: [
       children,
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
         import_lucide_react2.ChevronDown,
         {
           className: "relative size-3 transition-transform duration-200 group-data-[state=open]:rotate-180",
@@ -572,7 +940,7 @@ var NavigationMenuTrigger = React2.forwardRef(({ className, children, ...props }
   }
 ));
 NavigationMenuTrigger.displayName = NavigationMenuPrimitive.Trigger.displayName;
-var NavigationMenuContent = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+var NavigationMenuContent = React7.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
   NavigationMenuPrimitive.Content,
   {
     ref,
@@ -590,7 +958,7 @@ var NavigationMenuContent = React2.forwardRef(({ className, ...props }, ref) => 
 ));
 NavigationMenuContent.displayName = NavigationMenuPrimitive.Content.displayName;
 var NavigationMenuLink = NavigationMenuPrimitive.Link;
-var NavigationMenuViewport = React2.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "absolute left-0 top-full flex justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+var NavigationMenuViewport = React7.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "absolute left-0 top-full flex justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
   NavigationMenuPrimitive.Viewport,
   {
     ref,
@@ -608,9 +976,9 @@ var NavigationMenuViewport = React2.forwardRef(({ className, ...props }, ref) =>
 NavigationMenuViewport.displayName = NavigationMenuPrimitive.Viewport.displayName;
 
 // src/components/ui/note.tsx
-var import_class_variance_authority3 = require("class-variance-authority");
-var import_jsx_runtime8 = require("react/jsx-runtime");
-var noteVariants = (0, import_class_variance_authority3.cva)(
+var import_class_variance_authority5 = require("class-variance-authority");
+var import_jsx_runtime13 = require("react/jsx-runtime");
+var noteVariants = (0, import_class_variance_authority5.cva)(
   "rounded-lg border p-4 transition-[border-color,background-color,color,opacity] duration-150",
   {
     variants: {
@@ -697,7 +1065,7 @@ function Note({
   disabled,
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
     "div",
     {
       "data-slot": "note",
@@ -707,7 +1075,7 @@ function Note({
   );
 }
 function NoteEyebrow({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
     "p",
     {
       "data-slot": "note-eyebrow",
@@ -720,7 +1088,7 @@ function NoteEyebrow({ className, ...props }) {
   );
 }
 function NoteTitle({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
     "p",
     {
       "data-slot": "note-title",
@@ -730,7 +1098,7 @@ function NoteTitle({ className, ...props }) {
   );
 }
 function NoteDescription({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
     "div",
     {
       "data-slot": "note-description",
@@ -741,12 +1109,12 @@ function NoteDescription({ className, ...props }) {
 }
 
 // src/components/ui/radio.tsx
-var React3 = __toESM(require("react"), 1);
-var import_jsx_runtime9 = require("react/jsx-runtime");
+var React8 = __toESM(require("react"), 1);
+var import_jsx_runtime14 = require("react/jsx-runtime");
 var radioBaseClassName = "peer size-4 shrink-0 appearance-none rounded-full border border-border bg-rm-gray-1 transition-[background-color,border-color,opacity] duration-150 outline-none checked:border-[var(--rm-yellow-100)] checked:bg-background focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40";
-var Radio = React3.forwardRef(({ className, ...props }, ref) => {
-  return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("span", { className: "relative inline-flex size-4 shrink-0 items-center justify-center", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+var Radio = React8.forwardRef(({ className, ...props }, ref) => {
+  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("span", { className: "relative inline-flex size-4 shrink-0 items-center justify-center", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
       "input",
       {
         ...props,
@@ -756,15 +1124,61 @@ var Radio = React3.forwardRef(({ className, ...props }, ref) => {
         className: cn(radioBaseClassName, className)
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "pointer-events-none absolute size-2 rounded-full bg-[var(--rm-yellow-100)] opacity-0 transition-opacity duration-150 peer-checked:opacity-100" })
+    /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("span", { className: "pointer-events-none absolute size-2 rounded-full bg-[var(--rm-yellow-100)] opacity-0 transition-opacity duration-150 peer-checked:opacity-100" })
   ] });
 });
 Radio.displayName = "Radio";
 
+// src/components/ui/scroll-area.tsx
+var React9 = __toESM(require("react"), 1);
+var ScrollAreaPrimitive = __toESM(require("@radix-ui/react-scroll-area"), 1);
+var import_jsx_runtime15 = require("react/jsx-runtime");
+var ScrollArea = React9.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
+  ScrollAreaPrimitive.Root,
+  {
+    ref,
+    "data-slot": "scroll-area",
+    className: cn("relative overflow-hidden", className),
+    ...props,
+    children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(ScrollAreaPrimitive.Viewport, { className: "h-full w-full rounded-[inherit]", children }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(ScrollBar, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(ScrollAreaPrimitive.Corner, {})
+    ]
+  }
+));
+ScrollArea.displayName = "ScrollArea";
+var ScrollBar = React9.forwardRef(({ className, orientation = "vertical", ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+  ScrollAreaPrimitive.ScrollAreaScrollbar,
+  {
+    ref,
+    "data-slot": "scroll-bar",
+    orientation,
+    className: cn(
+      "flex touch-none select-none transition-colors",
+      orientation === "vertical" && "h-full w-2 border-l border-l-transparent p-px",
+      orientation === "horizontal" && "h-2 flex-col border-t border-t-transparent p-px",
+      className
+    ),
+    ...props,
+    children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      ScrollAreaPrimitive.ScrollAreaThumb,
+      {
+        className: cn(
+          "relative flex-1 rounded-full",
+          "bg-[var(--rm-gray-3)] hover:bg-[var(--rm-gray-4)]",
+          "transition-colors duration-150"
+        )
+      }
+    )
+  }
+));
+ScrollBar.displayName = "ScrollBar";
+
 // src/components/ui/search-combobox.tsx
 var import_react3 = require("react");
 var import_lucide_react3 = require("lucide-react");
-var import_jsx_runtime10 = require("react/jsx-runtime");
+var import_jsx_runtime16 = require("react/jsx-runtime");
 var sizeStyles = {
   xs: "h-7 px-3 text-[length:var(--text-12)]",
   sm: "h-8 px-3 text-[length:var(--text-12)]",
@@ -819,14 +1233,14 @@ function SearchCombobox({
       groups.push({
         id: "recent",
         title: "\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u0438\u0441\u043A\u0430",
-        icon: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react3.Clock3, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react3.Clock3, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
         items: recentSearches
       });
     } else {
       groups.push({
         id: "recent-empty",
         title: "\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u0438\u0441\u043A\u0430",
-        icon: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react3.Clock3, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react3.Clock3, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
         items: [],
         emptyText: "\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u043A\u0430 \u043F\u0443\u0441\u0442\u0430. \u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u0441 \u043E\u0434\u043D\u043E\u0433\u043E \u0438\u0437 \u0433\u043E\u0442\u043E\u0432\u044B\u0445 \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u0435\u0432 \u043D\u0438\u0436\u0435."
       });
@@ -835,7 +1249,7 @@ function SearchCombobox({
       groups.push({
         id: "preset",
         title: recentSearches.length > 0 ? "\u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0438" : "\u041F\u043E\u043F\u0443\u043B\u044F\u0440\u043D\u044B\u0435 \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u0438",
-        icon: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react3.Sparkles, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react3.Sparkles, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
         items: predefinedSuggestions
       });
     }
@@ -848,9 +1262,9 @@ function SearchCombobox({
     setOpen(false);
     onSelect?.(option);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: cn("w-full", className), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { ref: rootRef, className: "relative", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: cn("w-full", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { ref: rootRef, className: "relative", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
         "div",
         {
           className: cn(
@@ -859,7 +1273,7 @@ function SearchCombobox({
             disabled ? "opacity-40 cursor-not-allowed" : "focus-within:border-ring",
             open && !disabled && !error && "border-ring"
           ),
-          children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
+          children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
             "div",
             {
               className: cn(
@@ -872,8 +1286,8 @@ function SearchCombobox({
               "aria-haspopup": "listbox",
               "aria-controls": "rm-search-combobox-list",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react3.Search, { className: `${iconSizes[size]} shrink-0 text-muted-foreground`, strokeWidth: 2.2 }),
-                /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react3.Search, { className: `${iconSizes[size]} shrink-0 text-muted-foreground`, strokeWidth: 2.2 }),
+                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
                   "input",
                   {
                     "aria-label": ariaLabel,
@@ -919,7 +1333,7 @@ function SearchCombobox({
                     value: query
                   }
                 ),
-                query ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+                query ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
                   "button",
                   {
                     "aria-label": "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0437\u0430\u043F\u0440\u043E\u0441",
@@ -931,9 +1345,9 @@ function SearchCombobox({
                       setHighlighted(0);
                     },
                     type: "button",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react3.X, { className: iconSizes[size], strokeWidth: 2.2 })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react3.X, { className: iconSizes[size], strokeWidth: 2.2 })
                   }
-                ) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+                ) : /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
                   "button",
                   {
                     "aria-label": "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0441\u043F\u0438\u0441\u043E\u043A",
@@ -946,7 +1360,7 @@ function SearchCombobox({
                       }
                     },
                     type: "button",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react3.ChevronDown, { className: iconSizes[size], strokeWidth: 2.2 })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react3.ChevronDown, { className: iconSizes[size], strokeWidth: 2.2 })
                   }
                 )
               ]
@@ -954,14 +1368,14 @@ function SearchCombobox({
           )
         }
       ),
-      open && !disabled && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "absolute left-0 right-0 top-[calc(100%+8px)] z-20 overflow-hidden rounded-lg border border-border bg-popover", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "max-h-[320px] overflow-auto p-1.5", children: !trimmedQuery && suggestionGroups.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "space-y-1.5", children: suggestionGroups.map((group) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "rounded-md", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "flex items-center gap-2 px-2.5 py-2", children: [
+      open && !disabled && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "absolute left-0 right-0 top-[calc(100%+8px)] z-20 overflow-hidden rounded-lg border border-border bg-popover", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "max-h-[320px] overflow-auto p-1.5", children: !trimmedQuery && suggestionGroups.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "space-y-1.5", children: suggestionGroups.map((group) => /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "rounded-md", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center gap-2 px-2.5 py-2", children: [
           group.icon,
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground", children: group.title })
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground", children: group.title })
         ] }),
-        group.items.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("ul", { className: "space-y-1", role: "listbox", children: group.items.map((option, index) => {
+        group.items.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("ul", { className: "space-y-1", role: "listbox", children: group.items.map((option, index) => {
           const optionIndex = suggestionGroups.slice(0, suggestionGroups.findIndex((entry) => entry.id === group.id)).flatMap((entry) => entry.items).length + index;
-          return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
+          return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
             "button",
             {
               className: cn(
@@ -972,16 +1386,16 @@ function SearchCombobox({
               onMouseEnter: () => setHighlighted(optionIndex),
               type: "button",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "min-w-0", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "truncate text-[length:var(--text-14)] text-popover-foreground", children: option.label }),
-                  option.meta ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "mt-0.5 truncate text-[length:var(--text-12)] text-muted-foreground", children: option.meta }) : null
+                /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "min-w-0", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "truncate text-[length:var(--text-14)] text-popover-foreground", children: option.label }),
+                  option.meta ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "mt-0.5 truncate text-[length:var(--text-12)] text-muted-foreground", children: option.meta }) : null
                 ] }),
-                option.hint ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "shrink-0 font-[family-name:var(--font-mono-family)] text-[10px] uppercase tracking-[0.08em] text-muted-foreground", children: option.hint }) : null
+                option.hint ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "shrink-0 font-[family-name:var(--font-mono-family)] text-[10px] uppercase tracking-[0.08em] text-muted-foreground", children: option.hint }) : null
               ]
             }
           ) }, `${group.id}-${option.value}`);
-        }) }) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "px-2.5 pb-3 pt-1", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "text-[length:var(--text-12)] leading-relaxed text-muted-foreground", children: group.emptyText }) })
-      ] }, group.id)) }) : filteredOptions.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("ul", { className: "space-y-1", id: "rm-search-combobox-list", role: "listbox", children: filteredOptions.map((option, index) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
+        }) }) : /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "px-2.5 pb-3 pt-1", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-[length:var(--text-12)] leading-relaxed text-muted-foreground", children: group.emptyText }) })
+      ] }, group.id)) }) : filteredOptions.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("ul", { className: "space-y-1", id: "rm-search-combobox-list", role: "listbox", children: filteredOptions.map((option, index) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
         "button",
         {
           className: cn(
@@ -992,28 +1406,28 @@ function SearchCombobox({
           onMouseEnter: () => setHighlighted(index),
           type: "button",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "min-w-0", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "truncate text-[length:var(--text-14)] text-popover-foreground", children: option.label }),
-              option.meta ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "mt-0.5 truncate text-[length:var(--text-12)] text-muted-foreground", children: option.meta }) : null
+            /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "min-w-0", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "truncate text-[length:var(--text-14)] text-popover-foreground", children: option.label }),
+              option.meta ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "mt-0.5 truncate text-[length:var(--text-12)] text-muted-foreground", children: option.meta }) : null
             ] }),
-            option.hint ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "shrink-0 font-[family-name:var(--font-mono-family)] text-[10px] uppercase tracking-[0.08em] text-muted-foreground", children: option.hint }) : null
+            option.hint ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "shrink-0 font-[family-name:var(--font-mono-family)] text-[10px] uppercase tracking-[0.08em] text-muted-foreground", children: option.hint }) : null
           ]
         }
-      ) }, option.value)) }) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "px-3 py-4", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "text-[length:var(--text-13)] text-muted-foreground", children: emptyMessage }) }) }) })
+      ) }, option.value)) }) : /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "px-3 py-4", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-[length:var(--text-13)] text-muted-foreground", children: emptyMessage }) }) }) })
     ] }),
-    error ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "mt-1.5 text-[length:var(--text-12)] text-destructive", children: error }) : null
+    error ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "mt-1.5 text-[length:var(--text-12)] text-destructive", children: error }) : null
   ] });
 }
 
 // src/components/ui/separator.tsx
 var import_separator = require("@base-ui/react/separator");
-var import_jsx_runtime11 = require("react/jsx-runtime");
-function Separator({
+var import_jsx_runtime17 = require("react/jsx-runtime");
+function Separator2({
   className,
   orientation = "horizontal",
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
     import_separator.Separator,
     {
       "data-slot": "separator",
@@ -1027,24 +1441,37 @@ function Separator({
   );
 }
 
+// src/components/ui/skeleton.tsx
+var import_jsx_runtime18 = require("react/jsx-runtime");
+function Skeleton({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+    "div",
+    {
+      "data-slot": "skeleton",
+      className: cn("animate-pulse rounded-sm bg-[var(--rm-gray-1)]", className),
+      ...props
+    }
+  );
+}
+
 // src/components/ui/sonner.tsx
 var import_next_themes2 = require("next-themes");
 var import_sonner = require("sonner");
 var import_lucide_react4 = require("lucide-react");
-var import_jsx_runtime12 = require("react/jsx-runtime");
+var import_jsx_runtime19 = require("react/jsx-runtime");
 var Toaster = ({ ...props }) => {
   const { theme = "system" } = (0, import_next_themes2.useTheme)();
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
     import_sonner.Toaster,
     {
       theme,
       className: "toaster group",
       icons: {
-        success: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(import_lucide_react4.CircleCheckIcon, { className: "size-4" }),
-        info: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(import_lucide_react4.InfoIcon, { className: "size-4" }),
-        warning: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(import_lucide_react4.TriangleAlertIcon, { className: "size-4" }),
-        error: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(import_lucide_react4.OctagonXIcon, { className: "size-4" }),
-        loading: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(import_lucide_react4.Loader2Icon, { className: "size-4 animate-spin" })
+        success: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react4.CircleCheckIcon, { className: "size-4" }),
+        info: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react4.InfoIcon, { className: "size-4" }),
+        warning: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react4.TriangleAlertIcon, { className: "size-4" }),
+        error: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react4.OctagonXIcon, { className: "size-4" }),
+        loading: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react4.Loader2Icon, { className: "size-4 animate-spin" })
       },
       style: {
         "--normal-bg": "var(--popover)",
@@ -1064,43 +1491,147 @@ var Toaster = ({ ...props }) => {
 
 // src/components/ui/switch.tsx
 var import_switch = require("@base-ui/react/switch");
-var import_jsx_runtime13 = require("react/jsx-runtime");
+var import_jsx_runtime20 = require("react/jsx-runtime");
 function Switch({
   className,
   size = "default",
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
     import_switch.Switch.Root,
     {
       "data-slot": "switch",
       "data-size": size,
       className: cn(
-        "peer group/switch relative inline-flex shrink-0 items-center rounded-full border border-border bg-rm-gray-1 p-[1px] transition-[background-color,border-color,box-shadow,opacity] duration-150 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[size=default]:h-5 data-[size=default]:w-9 data-[size=sm]:h-4 data-[size=sm]:w-7 data-checked:border-[var(--rm-yellow-100)] data-checked:bg-[var(--rm-yellow-100)] data-disabled:cursor-not-allowed data-disabled:opacity-40",
+        "peer group/switch relative inline-flex shrink-0 items-center rounded-sm border border-border bg-rm-gray-1 p-[1px] transition-[background-color,border-color,box-shadow,opacity] duration-150 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-[size=default]:h-5 data-[size=default]:w-9 data-[size=sm]:h-4 data-[size=sm]:w-7 data-checked:border-[var(--rm-yellow-100)] data-checked:bg-[var(--rm-yellow-100)] data-disabled:cursor-not-allowed data-disabled:opacity-40",
         className
       ),
       ...props,
-      children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+      children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
         import_switch.Switch.Thumb,
         {
           "data-slot": "switch-thumb",
-          className: "pointer-events-none block rounded-full bg-foreground transition-[transform,background-color] duration-150 group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-data-[size=default]/switch:data-checked:translate-x-4 group-data-[size=sm]/switch:data-checked:translate-x-3 group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-unchecked:translate-x-0 group-data-checked/switch:bg-[var(--rm-yellow-fg)]"
+          className: "pointer-events-none block rounded-sm bg-foreground transition-[transform,background-color] duration-150 group-data-[size=default]/switch:size-4 group-data-[size=sm]/switch:size-3 group-data-[size=default]/switch:data-checked:translate-x-4 group-data-[size=sm]/switch:data-checked:translate-x-3 group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-unchecked:translate-x-0 group-data-checked/switch:bg-[var(--rm-yellow-fg)]"
         }
       )
     }
   );
 }
 
+// src/components/ui/table.tsx
+var import_jsx_runtime21 = require("react/jsx-runtime");
+function Table({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { "data-slot": "table-container", className: "relative w-full overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    "table",
+    {
+      "data-slot": "table",
+      className: cn("w-full border-collapse caption-bottom bg-card", className),
+      ...props
+    }
+  ) });
+}
+function TableHeader({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    "thead",
+    {
+      "data-slot": "table-header",
+      className: cn("bg-[var(--rm-gray-1)]", className),
+      ...props
+    }
+  );
+}
+function TableBody({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    "tbody",
+    {
+      "data-slot": "table-body",
+      className: cn("[&_tr:last-child]:border-0", className),
+      ...props
+    }
+  );
+}
+function TableFooter({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    "tfoot",
+    {
+      "data-slot": "table-footer",
+      className: cn(
+        "border-t border-border bg-[var(--rm-gray-1)] font-medium",
+        className
+      ),
+      ...props
+    }
+  );
+}
+function TableRow({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    "tr",
+    {
+      "data-slot": "table-row",
+      className: cn(
+        "transition-colors duration-150",
+        "hover:bg-[var(--rm-gray-2)]",
+        "data-[selected=true]:bg-[var(--rm-yellow-900)]",
+        className
+      ),
+      ...props
+    }
+  );
+}
+function TableHead({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    "th",
+    {
+      "data-slot": "table-head",
+      className: cn(
+        "h-10 px-4 text-left align-middle border-b border-border",
+        "font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-medium uppercase tracking-[0.08em] text-muted-foreground",
+        "[&:has([role=checkbox])]:pr-0",
+        className
+      ),
+      ...props
+    }
+  );
+}
+function TableCell({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    "td",
+    {
+      "data-slot": "table-cell",
+      className: cn(
+        "px-4 py-3 align-middle border-b border-border",
+        "text-[length:var(--text-14)]",
+        "[&:has([role=checkbox])]:pr-0",
+        className
+      ),
+      ...props
+    }
+  );
+}
+function TableCaption({ className, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    "caption",
+    {
+      "data-slot": "table-caption",
+      className: cn(
+        "mt-4 text-[length:var(--text-14)] text-muted-foreground",
+        className
+      ),
+      ...props
+    }
+  );
+}
+
 // src/components/ui/tabs.tsx
 var import_tabs = require("@base-ui/react/tabs");
-var import_class_variance_authority4 = require("class-variance-authority");
-var import_jsx_runtime14 = require("react/jsx-runtime");
+var import_class_variance_authority6 = require("class-variance-authority");
+var import_jsx_runtime22 = require("react/jsx-runtime");
 function Tabs({
   className,
   orientation = "horizontal",
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
     import_tabs.Tabs.Root,
     {
       "data-slot": "tabs",
@@ -1113,7 +1644,7 @@ function Tabs({
     }
   );
 }
-var tabsListVariants = (0, import_class_variance_authority4.cva)(
+var tabsListVariants = (0, import_class_variance_authority6.cva)(
   "group/tabs-list inline-flex w-fit max-w-full items-center text-muted-foreground group-data-horizontal/tabs:min-h-10 group-data-vertical/tabs:h-fit group-data-vertical/tabs:w-full group-data-vertical/tabs:flex-col group-data-vertical/tabs:items-stretch",
   {
     variants: {
@@ -1132,7 +1663,7 @@ function TabsList({
   variant = "default",
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
     import_tabs.Tabs.List,
     {
       "data-slot": "tabs-list",
@@ -1143,7 +1674,7 @@ function TabsList({
   );
 }
 function TabsTrigger({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
     import_tabs.Tabs.Tab,
     {
       "data-slot": "tabs-trigger",
@@ -1159,7 +1690,7 @@ function TabsTrigger({ className, ...props }) {
   );
 }
 function TabsContent({ className, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
     import_tabs.Tabs.Panel,
     {
       "data-slot": "tabs-content",
@@ -1170,10 +1701,10 @@ function TabsContent({ className, ...props }) {
 }
 
 // src/components/ui/textarea.tsx
-var React5 = __toESM(require("react"), 1);
-var import_class_variance_authority5 = require("class-variance-authority");
-var import_jsx_runtime15 = require("react/jsx-runtime");
-var textareaVariants = (0, import_class_variance_authority5.cva)(
+var React11 = __toESM(require("react"), 1);
+var import_class_variance_authority7 = require("class-variance-authority");
+var import_jsx_runtime23 = require("react/jsx-runtime");
+var textareaVariants = (0, import_class_variance_authority7.cva)(
   "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive",
   {
     variants: {
@@ -1187,9 +1718,9 @@ var textareaVariants = (0, import_class_variance_authority5.cva)(
     }
   }
 );
-var Textarea = React5.forwardRef(
+var Textarea = React11.forwardRef(
   ({ className, variant, ...props }, ref) => {
-    return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
       "textarea",
       {
         ref,
@@ -1204,12 +1735,12 @@ Textarea.displayName = "Textarea";
 
 // src/components/ui/tooltip.tsx
 var import_tooltip = require("@base-ui/react/tooltip");
-var import_jsx_runtime16 = require("react/jsx-runtime");
+var import_jsx_runtime24 = require("react/jsx-runtime");
 function TooltipProvider({
   delay = 0,
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
     import_tooltip.Tooltip.Provider,
     {
       "data-slot": "tooltip-provider",
@@ -1219,10 +1750,10 @@ function TooltipProvider({
   );
 }
 function Tooltip({ ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_tooltip.Tooltip.Root, { "data-slot": "tooltip", ...props });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_tooltip.Tooltip.Root, { "data-slot": "tooltip", ...props });
 }
 function TooltipTrigger({ ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_tooltip.Tooltip.Trigger, { "data-slot": "tooltip-trigger", ...props });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_tooltip.Tooltip.Trigger, { "data-slot": "tooltip-trigger", ...props });
 }
 function TooltipContent({
   className,
@@ -1233,7 +1764,7 @@ function TooltipContent({
   children,
   ...props
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_tooltip.Tooltip.Portal, { children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_tooltip.Tooltip.Portal, { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
     import_tooltip.Tooltip.Positioner,
     {
       align,
@@ -1241,7 +1772,7 @@ function TooltipContent({
       side,
       sideOffset,
       className: "isolate z-50",
-      children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
+      children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         import_tooltip.Tooltip.Popup,
         {
           "data-slot": "tooltip-content",
@@ -1252,15 +1783,86 @@ function TooltipContent({
           ...props,
           children: [
             children,
-            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_tooltip.Tooltip.Arrow, { className: "z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_tooltip.Tooltip.Arrow, { className: "z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" })
           ]
         }
       )
     }
   ) });
 }
+
+// src/components/ui/infinite-logo-marquee.tsx
+var import_jsx_runtime25 = require("react/jsx-runtime");
+function LogoSequence({
+  logos,
+  gap,
+  maxLogoHeight
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+    "div",
+    {
+      className: "flex shrink-0 items-center py-[10px] pl-1",
+      style: { gap: `${gap}px`, paddingRight: `${gap}px` },
+      children: logos.map((logo) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+        "div",
+        {
+          className: "flex shrink-0 items-center justify-center opacity-90",
+          children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+            "img",
+            {
+              src: logo.src,
+              alt: logo.alt,
+              width: logo.width,
+              height: logo.height,
+              loading: "lazy",
+              className: "h-auto w-auto object-contain",
+              style: { maxHeight: `${maxLogoHeight}px` }
+            }
+          )
+        },
+        logo.src
+      ))
+    }
+  );
+}
+var buildFadeMask = (fadeWidth) => ({
+  maskImage: `linear-gradient(90deg, transparent 0, #000 ${fadeWidth}px, #000 calc(100% - ${fadeWidth}px), transparent 100%)`,
+  WebkitMaskImage: `linear-gradient(90deg, transparent 0, #000 ${fadeWidth}px, #000 calc(100% - ${fadeWidth}px), transparent 100%)`
+});
+function InfiniteLogoMarquee({
+  className,
+  logos,
+  speedSeconds = 14,
+  gap = 67,
+  maxLogoHeight = 39,
+  fadeWidth = 44
+}) {
+  if (logos.length === 0) {
+    return null;
+  }
+  const marqueeStyle = {
+    "--hero-marquee-duration": `${speedSeconds}s`
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+    "div",
+    {
+      className: cn(
+        "relative w-full overflow-hidden",
+        className
+      ),
+      style: buildFadeMask(fadeWidth),
+      children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "partner-logo-marquee-track", style: marqueeStyle, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(LogoSequence, { logos, gap, maxLogoHeight }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(LogoSequence, { logos, gap, maxLogoHeight })
+      ] })
+    }
+  );
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Button,
   Card,
@@ -1271,7 +1873,28 @@ function TooltipContent({
   CardHeader,
   CardTitle,
   Checkbox,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   GlowingEffect,
+  InfiniteLogoMarquee,
+  Input,
+  InputOTP,
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
@@ -1284,9 +1907,20 @@ function TooltipContent({
   NoteEyebrow,
   NoteTitle,
   Radio,
+  ScrollArea,
+  ScrollBar,
   SearchCombobox,
   Separator,
+  Skeleton,
   Switch,
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
   Tabs,
   TabsContent,
   TabsList,
@@ -1298,10 +1932,12 @@ function TooltipContent({
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  avatarVariants,
   badgeVariants,
   buttonVariants,
   checkboxBaseClassName,
   cn,
+  inputVariants,
   noteVariants,
   radioBaseClassName,
   tabsListVariants,

@@ -1,6 +1,7 @@
 "use client"
 
 import { CopyButton } from "@/components/copy-button"
+import { SpecBlock } from "@/components/ds/shared"
 import { Badge, Button, Textarea } from "@rocketmind/ui"
 
 const DEFAULT_TEXTAREA_CODE = `min-h-[120px] resize-y px-4 py-3 rounded-sm border border-border bg-rm-gray-1 text-foreground text-[length:var(--text-14)] leading-[1.5] placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:opacity-40 disabled:cursor-not-allowed aria-invalid:border-destructive`
@@ -109,10 +110,7 @@ export function TextareaShowcase() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border p-6">
-        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] uppercase tracking-[-0.01em] mb-3">
-          Инструкция
-        </h4>
+      <SpecBlock title="Правила">
         <div className="grid gap-3 md:grid-cols-2">
           {[
             "Используй default для форм, брифов, описаний кейса и любых задач, где пользователь пишет больше одной строки.",
@@ -125,7 +123,7 @@ export function TextareaShowcase() {
             </p>
           ))}
         </div>
-      </div>
+      </SpecBlock>
     </div>
   )
 }

@@ -417,11 +417,31 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"optical" | "shape" | "style">("optical");
 
-  // Panel settings — initialized from props + localStorage, only used when showControls=true
-  const [panelSettings, setPanelSettings] = useState<RoundGlassLensSettings>(() => {
-    const stored = showControls && storageKey ? loadStoredSettings(storageKey) : undefined;
-    return resolveSettings(props, stored);
-  });
+  // Panel settings — initialized from props, localStorage loaded after mount (SSR-safe)
+  const [panelSettings, setPanelSettings] = useState<RoundGlassLensSettings>(() =>
+    resolveSettings(props),
+  );
+
+  // Load saved settings from localStorage after mount (client-only)
+  useEffect(() => {
+    if (!showControls || !storageKey) return;
+    const stored = loadStoredSettings(storageKey);
+    if (Object.keys(stored).length > 0) {
+      setPanelSettings((prev) => ({ ...prev, ...stored }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-save to localStorage when panel settings change
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!showControls || !storageKey) return;
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      return;
+    }
+    saveStoredSettings(storageKey, panelSettings);
+  }, [showControls, storageKey, panelSettings]);
 
   // Effective settings: panel takes over when showControls=true, otherwise follow props.
   // useMemo prevents a new object reference on every parent re-render, which would otherwise
@@ -779,8 +799,13 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
   }, []);
 
   // ── Dev controls panel ────────────────────────────────────────────────────
+  const [saveFlash, setSaveFlash] = useState(false);
   const handleSave = () => {
-    if (storageKey) saveStoredSettings(storageKey, panelSettings);
+    if (storageKey) {
+      saveStoredSettings(storageKey, panelSettings);
+      setSaveFlash(true);
+      setTimeout(() => setSaveFlash(false), 800);
+    }
   };
 
   const handleCopy = () => {
@@ -818,8 +843,8 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
                   COPY
                 </button>
                 {storageKey && (
-                  <button type="button" className="lens-controls-panel__btn" onClick={handleSave}>
-                    SAVE
+                  <button type="button" className={`lens-controls-panel__btn${saveFlash ? " is-saved" : ""}`} onClick={handleSave}>
+                    {saveFlash ? "SAVED" : "SAVE"}
                   </button>
                 )}
               </div>

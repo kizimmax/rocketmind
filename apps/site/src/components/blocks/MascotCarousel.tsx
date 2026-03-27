@@ -197,7 +197,7 @@ export function MascotCarousel({
 
   return (
     <div
-      className="flex w-full items-stretch overflow-hidden rounded-[8px] border-2 border-[#FFCC00] bg-[#121212]"
+      className="flex w-full items-stretch overflow-hidden rounded-[8px] border border-[#404040] bg-[#121212]"
       style={{ height: isCompact ? 108 : 140, padding: 2, gap: 7 }}
     >
       {/* ── Mascot column ── */}
@@ -272,9 +272,10 @@ export function MascotCarousel({
           )}
         </p>
 
-        {/* Arrow-up button (↑) */}
-        <div
-          className="flex shrink-0 items-center justify-center rounded-[4px] border border-[#404040] bg-[#1A1A1A]"
+        {/* Arrow-up button (↑) — btn-primary */}
+        <button
+          type="button"
+          className="flex shrink-0 cursor-pointer items-center justify-center rounded-[4px] bg-[#FFCC00] transition-colors duration-150 hover:bg-[#FFE040] active:bg-[#E6B800]"
           style={{
             width: isCompact ? 40 : 56,
             height: isCompact ? 40 : 56,
@@ -289,13 +290,13 @@ export function MascotCarousel({
           >
             <path
               d="M12 19V5M5 12L12 5L19 12"
-              stroke="#939393"
+              stroke="#121212"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
-        </div>
+        </button>
       </div>
     </div>
   );

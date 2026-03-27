@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react"
 import { Badge } from "@rocketmind/ui"
 import { CopyButton } from "@/components/copy-button"
 import { TokenChip } from "@/components/ds/color-helpers"
-import { ArrowRight, ChevronDown } from "lucide-react"
+import { ArrowRight, ChevronDown, ChevronRight } from "lucide-react"
 import { Accordion } from "@base-ui/react"
 
 /* ───────── SECTION WRAPPER ───────── */
@@ -26,6 +26,70 @@ export function Section({
       </div>
       {children}
     </section>
+  )
+}
+
+/* ───────── SUBSECTION (H3 — top-level within a Section) ───────── */
+export function SubSection({
+  id,
+  title,
+  first,
+}: {
+  id?: string
+  title: string
+  first?: boolean
+}) {
+  return (
+    <>
+      {!first && <div className="-mx-5 md:-mx-10 h-px bg-border mt-10 mb-8" />}
+      <h3
+        id={id}
+        className={`${id ? "scroll-mt-20 " : ""}font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4`}
+      >
+        {title}
+      </h3>
+    </>
+  )
+}
+
+/* ───────── SUB-SUBSECTION (H4 — nested within a SubSection) ───────── */
+export function SubSubSection({
+  id,
+  title,
+}: {
+  id?: string
+  title: string
+}) {
+  return (
+    <h4
+      id={id}
+      className={`${id ? "scroll-mt-20 " : ""}font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.01em] mb-4`}
+    >
+      {title}
+    </h4>
+  )
+}
+
+/* ───────── SPEC BLOCK (collapsible details) ───────── */
+export function SpecBlock({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <details className="group border border-border rounded-lg mb-8 [&_summary]:list-none [&_summary::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer items-center gap-2 px-4 py-3 select-none">
+        <ChevronRight size={14} className="text-muted-foreground transition-transform duration-150 group-open:rotate-90" />
+        <span className="text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] text-muted-foreground">
+          {title}
+        </span>
+      </summary>
+      <div className="px-4 pb-4 pt-0">
+        {children}
+      </div>
+    </details>
   )
 }
 

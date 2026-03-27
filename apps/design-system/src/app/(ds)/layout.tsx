@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Badge } from "@rocketmind/ui"
 import { ChevronRight, Menu, X } from "lucide-react"
@@ -48,6 +48,13 @@ const sections: NavSection[] = [
     { id: "components-textarea", label: "Textarea" },
     { id: "components-search",   label: "Поиск / Combobox" },
     { id: "components-cards",    label: "Карточки" },
+    { id: "components-avatar",   label: "Аватар" },
+    { id: "components-dialog",   label: "Диалог" },
+    { id: "components-dropdown", label: "Dropdown Menu" },
+    { id: "components-separator", label: "Разделитель" },
+    { id: "components-skeleton", label: "Skeleton" },
+    { id: "components-scroll-area", label: "Scroll Area" },
+    { id: "components-toasts",   label: "Toasts" },
   ]},
   { id: "tooltips", label: "Тултипы", subsections: [
     { id: "tooltips-animation", label: "Анимация" },
@@ -77,17 +84,36 @@ const sections: NavSection[] = [
 
 export default function DSLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [mobileNav, setMobileNav] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [hoverArrowId, setHoverArrowId] = useState<string | null>(null)
   const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingAnchorRef = useRef<string | null>(null)
 
   // Derive active section from pathname: /logos → "logos", /radius-shadows → "radius-shadows"
   const activeId = pathname.replace(/^\//, "") || "logos"
 
-  // Auto-expand active section
+  // Auto-expand active section + instant scroll on route changes
   useEffect(() => {
     setExpandedId(activeId)
+    const pending = pendingAnchorRef.current
+    if (pending) {
+      pendingAnchorRef.current = null
+      // Two rAFs to let Next.js render the new page before scrolling
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const el = document.getElementById(pending)
+          if (el) {
+            el.scrollIntoView({ behavior: "instant", block: "start" })
+          } else {
+            window.scrollTo({ top: 0, behavior: "instant" })
+          }
+        })
+      })
+    } else {
+      window.scrollTo({ top: 0, behavior: "instant" })
+    }
   }, [activeId])
 
   const startHover = (id: string) => {
@@ -163,6 +189,7 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
               <Link
                 key={s.id}
                 href={`/${s.id}`}
+                scroll={false}
                 onClick={() => setMobileNav(false)}
                 className="block py-1.5 text-[length:var(--text-14)] text-muted-foreground hover:text-foreground transition-colors font-[family-name:var(--font-mono-family)] uppercase tracking-wider"
               >
@@ -216,6 +243,7 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
                       )}
                       <Link
                         href={`/${s.id}`}
+                        scroll={false}
                         onClick={() => setExpandedId(s.id)}
                         className={`flex-1 py-1.5 text-[length:var(--text-12)] transition-colors
                                    font-[family-name:var(--font-mono-family)] uppercase tracking-wider
@@ -240,8 +268,20 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
                           {s.subsections.map((sub) => (
                             <a
                               key={sub.id}
-                              href={`#${sub.id}`}
+                              href={`/${s.id}#${sub.id}`}
                               className="block py-0.5 text-[length:var(--text-12)] text-muted-foreground hover:text-foreground transition-colors font-[family-name:var(--font-mono-family)] uppercase tracking-wider opacity-80"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                if (activeId === s.id) {
+                                  // Already on correct page — scroll instantly
+                                  const el = document.getElementById(sub.id)
+                                  if (el) el.scrollIntoView({ behavior: "instant", block: "start" })
+                                } else {
+                                  // Navigate to section, then scroll after render
+                                  pendingAnchorRef.current = sub.id
+                                  router.push(`/${s.id}`, { scroll: false })
+                                }
+                              }}
                             >
                               {sub.label}
                             </a>

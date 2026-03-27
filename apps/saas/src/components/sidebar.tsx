@@ -1,0 +1,492 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  Input,
+} from "@rocketmind/ui";
+import {
+  Plus,
+  MoreHorizontal,
+  Archive,
+  ArchiveRestore,
+  Pencil,
+  Trash2,
+  LogOut,
+  ChevronDown,
+  ChevronRight,
+  Sun,
+  Moon,
+  User,
+  X,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import { useCases, useCaseAgents } from "@/lib/hooks";
+import { useAuth } from "@/lib/auth-context";
+import { getInitials } from "@/lib/utils";
+import type { Case } from "@/lib/types";
+
+export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
+  const {
+    activeCases,
+    archivedCases,
+    createCase,
+    archiveCase,
+    restoreCase,
+    renameCase,
+    deleteCase,
+  } = useCases();
+  const [showArchived, setShowArchived] = useState(false);
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const activeCaseId =
+    (params?.id as string | undefined) ??
+    searchParams?.get("caseId") ??
+    undefined;
+  const activeAgentId = searchParams?.get("agent") ?? null;
+
+  const [isCreating, setIsCreating] = useState(false);
+  const [newCaseName, setNewCaseName] = useState("");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const createInputRef = useRef<HTMLInputElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isCreating) createInputRef.current?.focus();
+  }, [isCreating]);
+
+  useEffect(() => {
+    if (renamingId) renameInputRef.current?.focus();
+  }, [renamingId]);
+
+  function handleCreateCase() {
+    const name = newCaseName.trim();
+    if (!name) {
+      setIsCreating(false);
+      return;
+    }
+    const newCase = createCase(name);
+    setNewCaseName("");
+    setIsCreating(false);
+    router.push(`/cases/${newCase.id}`);
+    onNavigate?.();
+  }
+
+  function handleRenameCase() {
+    if (!renamingId) return;
+    const name = renameValue.trim();
+    if (name) renameCase(renamingId, name);
+    setRenamingId(null);
+    setRenameValue("");
+  }
+
+  function startRename(c: Case) {
+    setRenamingId(c.id);
+    setRenameValue(c.name);
+  }
+
+  return (
+    <aside className="flex h-full w-60 flex-col border-r border-border bg-background">
+      {/* Logo */}
+      <LogoHeader onClose={onNavigate} />
+
+      {/* Scrollable content — left padding 16px matches Figma container pl */}
+      <div className="flex-1 overflow-y-auto pl-4">
+
+        {/* КЕЙСЫ header — padding: 12px 16px 12px 0, gap: 8px */}
+        <div className="flex items-center gap-2 pr-4 py-3">
+          <span className="flex-1 text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground">
+            Кейсы
+          </span>
+          {/* + button: 24×24px, bg: rm-gray-1, rounded: 4px */}
+          <button
+            onClick={() => setIsCreating(true)}
+            className="h-6 w-6 shrink-0 flex items-center justify-center rounded-sm bg-rm-gray-1 text-muted-foreground hover:bg-rm-gray-2 hover:text-foreground transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* Inline create new case */}
+        {isCreating && (
+          <div className="pr-4 pb-3">
+            <Input
+              ref={createInputRef}
+              size="sm"
+              placeholder="Название кейса"
+              value={newCaseName}
+              onChange={(e) => setNewCaseName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCreateCase();
+                if (e.key === "Escape") setIsCreating(false);
+              }}
+              onBlur={handleCreateCase}
+            />
+          </div>
+        )}
+
+        {/* Divider after header */}
+        <div className="h-px bg-border mr-4" />
+
+        {/* Empty state */}
+        {activeCases.length === 0 && !isCreating && (
+          <p className="py-4 pr-4 text-center text-[length:var(--text-12)] text-muted-foreground">
+            Нет кейсов.{" "}
+            <button
+              onClick={() => setIsCreating(true)}
+              className="text-foreground underline underline-offset-2"
+            >
+              Создать первый
+            </button>
+          </p>
+        )}
+
+        {/* Case groups with dividers between them */}
+        {activeCases.map((c, idx) => (
+          <div key={c.id}>
+            <CaseItemWithAgents
+              caseItem={c}
+              isActive={c.id === activeCaseId}
+              activeAgentId={activeAgentId}
+              isRenaming={c.id === renamingId}
+              renameValue={renameValue}
+              renameInputRef={renameInputRef}
+              onSelect={() => {
+                router.push(`/cases/${c.id}`);
+                onNavigate?.();
+              }}
+              onAgentSelect={(agentId) => {
+                router.push(`/cases/${c.id}?agent=${agentId}`);
+                onNavigate?.();
+              }}
+              onRenameChange={setRenameValue}
+              onRenameSubmit={handleRenameCase}
+              onRenameCancel={() => setRenamingId(null)}
+              onStartRename={() => startRename(c)}
+              onArchive={() => archiveCase(c.id)}
+              onDelete={() => deleteCase(c.id)}
+            />
+            {/* Divider between case groups */}
+            {idx < activeCases.length - 1 && (
+              <div className="h-px bg-border mr-4" />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Archive — pinned above footer */}
+      {archivedCases.length > 0 && (
+        <div className="border-t border-border pl-4">
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            className="flex w-full items-center gap-2 pr-4 py-3 text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronDown
+              className={`h-2 w-2 transition-transform ${showArchived ? "" : "-rotate-90"}`}
+            />
+            Архив ({archivedCases.length})
+          </button>
+          {showArchived && (
+            <div className="pb-2">
+              {archivedCases.map((c) => (
+                <div
+                  key={c.id}
+                  className="group flex items-center gap-2 rounded-sm pr-4 py-1.5 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground cursor-pointer transition-colors opacity-60"
+                  onClick={() => router.push(`/cases/${c.id}`)}
+                >
+                  <Archive className="h-3.5 w-3.5 shrink-0" />
+                  <span className="flex-1 truncate text-[length:var(--text-14)]">
+                    {c.name}
+                  </span>
+                  <button
+                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm p-0.5 hover:bg-rm-gray-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      restoreCase(c.id);
+                    }}
+                    title="Восстановить"
+                  >
+                    <ArchiveRestore className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Footer — user menu */}
+      <div className="border-t border-border px-3 py-2">
+        <UserMenu user={user} onLogout={logout} />
+      </div>
+    </aside>
+  );
+}
+
+// --- Case group with nested agents ---
+
+function CaseItemWithAgents({
+  caseItem,
+  isActive,
+  activeAgentId,
+  isRenaming,
+  renameValue,
+  renameInputRef,
+  onSelect,
+  onAgentSelect,
+  onRenameChange,
+  onRenameSubmit,
+  onRenameCancel,
+  onStartRename,
+  onArchive,
+  onDelete,
+}: {
+  caseItem: Case;
+  isActive: boolean;
+  activeAgentId: string | null;
+  isRenaming: boolean;
+  renameValue: string;
+  renameInputRef: React.RefObject<HTMLInputElement | null>;
+  onSelect: () => void;
+  onAgentSelect: (agentId: string) => void;
+  onRenameChange: (v: string) => void;
+  onRenameSubmit: () => void;
+  onRenameCancel: () => void;
+  onStartRename: () => void;
+  onArchive: () => void;
+  onDelete: () => void;
+}) {
+  // Case group: padding 16px top/bottom/right, 0 left (inherited from pl-4 parent), gap 4px
+  return (
+    <div className="flex flex-col gap-1 py-4 pr-4">
+      {/* Case header row: padding 8px all, gap 8px, bg rm-gray-1 when active, rounded 4px */}
+      {isRenaming ? (
+        <Input
+          ref={renameInputRef}
+          size="sm"
+          value={renameValue}
+          onChange={(e) => onRenameChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onRenameSubmit();
+            if (e.key === "Escape") onRenameCancel();
+          }}
+          onBlur={onRenameSubmit}
+        />
+      ) : (
+        <div
+          className={`group flex items-center gap-2 rounded-sm p-2 cursor-pointer transition-colors ${
+            isActive
+              ? "bg-rm-gray-1 text-foreground"
+              : "text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground"
+          }`}
+          onClick={onSelect}
+        >
+          {/* Chevron: 8×8px (h-2 w-2) */}
+          <ChevronRight
+            className={`h-2 w-2 shrink-0 transition-transform text-muted-foreground ${
+              isActive ? "rotate-90" : ""
+            }`}
+          />
+          <span className="flex-1 truncate text-[length:var(--text-14)]">
+            {caseItem.name}
+          </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm p-0.5 hover:bg-rm-gray-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreHorizontal className="h-3.5 w-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={onStartRename}>
+                <Pencil className="mr-2 h-3.5 w-3.5" />
+                Переименовать
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onArchive}>
+                <Archive className="mr-2 h-3.5 w-3.5" />
+                Архивировать
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onDelete}
+                className="text-[var(--rm-red-500)]"
+              >
+                <Trash2 className="mr-2 h-3.5 w-3.5" />
+                Удалить
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+
+      {/* Agents — shown only when case is active */}
+      {isActive && (
+        <CaseAgentsNested
+          caseId={caseItem.id}
+          activeAgentId={activeAgentId}
+          onAgentSelect={onAgentSelect}
+        />
+      )}
+    </div>
+  );
+}
+
+// --- Agents nested under active case ---
+
+function CaseAgentsNested({
+  caseId,
+  activeAgentId,
+  onAgentSelect,
+}: {
+  caseId: string;
+  activeAgentId: string | null;
+  onAgentSelect: (agentId: string) => void;
+}) {
+  const { agents } = useCaseAgents(caseId);
+  const router = useRouter();
+
+  return (
+    <>
+      {agents.map((agent) => {
+        const isSelected = agent.id === activeAgentId;
+        return (
+          // Agent row: padding 4px top/bottom, 8px right, 0 left, gap 8px
+          // bg rm-gray-1 always; rm-gray-2 when selected
+          <div
+            key={agent.id}
+            onClick={() => onAgentSelect(agent.id)}
+            className={`flex items-center gap-2 rounded-sm py-1 pr-2 cursor-pointer transition-colors ${
+              isSelected
+                ? "bg-rm-gray-2 text-foreground"
+                : "text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground"
+            }`}
+          >
+            {/* Avatar: 40×40px (size="md"), no border */}
+            <Avatar size="md" className="border-0 shrink-0">
+              {agent.avatar_url && <AvatarImage src={agent.avatar_url} />}
+              <AvatarFallback>{getInitials(agent.name)}</AvatarFallback>
+            </Avatar>
+            <span className="truncate text-[length:var(--text-14)]">
+              {agent.name}
+            </span>
+          </div>
+        );
+      })}
+
+      {/* Add agent row */}
+      <button
+        onClick={() => router.push(`/agents?caseId=${caseId}`)}
+        className="relative flex w-full items-center gap-2 rounded-sm py-1 pr-2 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors group/add"
+      >
+        {/* Dashed border: 4px dash, 12px gap (3× rarer than default) */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none opacity-100 group-hover/add:opacity-0 transition-opacity"
+        >
+          <rect
+            x="0.5"
+            y="0.5"
+            rx="3"
+            ry="3"
+            fill="none"
+            stroke="var(--rm-gray-3)"
+            strokeDasharray="4 4"
+            style={{ width: "calc(100% - 1px)", height: "calc(100% - 1px)" }}
+          />
+        </svg>
+        <span className="h-10 w-10 shrink-0 flex items-center justify-center">
+          <Plus className="h-3.5 w-3.5" />
+        </span>
+        <span className="text-[length:var(--text-14)]">Агент</span>
+      </button>
+    </>
+  );
+}
+
+// --- Logo header ---
+
+function LogoHeader({ onClose }: { onClose?: () => void }) {
+  const { resolvedTheme } = useTheme();
+  const src =
+    resolvedTheme === "dark"
+      ? "/text_logo_dark_background_en.svg"
+      : "/text_logo_light_background_en.svg";
+
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+      <Image src={src} alt="Rocketmind" width={140} height={24} priority />
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+          aria-label="Закрыть меню"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// --- User menu (avatar dropdown) ---
+
+function UserMenu({
+  user,
+  onLogout,
+}: {
+  user: { email: string } | null;
+  onLogout: () => void;
+}) {
+  const { resolvedTheme, setTheme } = useTheme();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-rm-gray-1 transition-colors">
+          <Avatar size="xs">
+            <AvatarFallback>
+              <User className="h-3 w-3" />
+            </AvatarFallback>
+          </Avatar>
+          <span className="flex-1 truncate text-left text-[length:var(--text-12)] text-muted-foreground">
+            {user?.email}
+          </span>
+          <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="top" className="w-52">
+        <DropdownMenuItem
+          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+        >
+          {resolvedTheme === "dark" ? (
+            <Sun className="mr-2 h-3.5 w-3.5" />
+          ) : (
+            <Moon className="mr-2 h-3.5 w-3.5" />
+          )}
+          {resolvedTheme === "dark" ? "Светлая тема" : "Тёмная тема"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={onLogout}
+          className="text-[var(--rm-red-500)]"
+        >
+          <LogOut className="mr-2 h-3.5 w-3.5" />
+          Выйти
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

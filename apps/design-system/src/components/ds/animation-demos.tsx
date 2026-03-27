@@ -1,7 +1,8 @@
 "use client"
 
-import React, { useRef, useState, useEffect, memo } from "react"
-import { RoundGlassLens } from "@/components/ui/round-glass-lens"
+import React, { useRef, useState, useEffect, useCallback, memo, type CSSProperties } from "react"
+import { createPortal } from "react-dom"
+import { RoundGlassLens, ROUND_GLASS_LENS_DEFAULTS, type RoundGlassLensSettings } from "@/components/ui/round-glass-lens"
 
 /* ───────── DOT GRID LENS DEMO ───────── */
 const GRID_GAP = 28
@@ -139,64 +140,308 @@ export function DotGridDemo() {
 
 /* ───────── ROUND GLASS LENS SHOWCASE ───────── */
 
+type LensTab = "optical" | "shape" | "style" | "motion"
+
+function loadLensSettings(key: string): Partial<RoundGlassLensSettings> {
+  if (typeof window === "undefined") return {}
+  try {
+    const raw = window.localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as Partial<RoundGlassLensSettings>) : {}
+  } catch {
+    return {}
+  }
+}
+
+function saveLensSettings(key: string, settings: RoundGlassLensSettings) {
+  if (typeof window === "undefined") return
+  window.localStorage.setItem(key, JSON.stringify(settings))
+}
+
+function LensControlSlider({
+  label, value, min, max, step, disabled, format, onChange,
+}: {
+  label: string; value: number; min: number; max: number; step: number;
+  disabled?: boolean; format?: (v: number) => string; onChange: (v: number) => void;
+}) {
+  return (
+    <label style={{ display: "grid", gap: 6, opacity: disabled ? 0.35 : 1, pointerEvents: disabled ? "none" : undefined }}>
+      <div style={{
+        display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8,
+        fontFamily: "var(--font-mono-family, monospace)", fontSize: 11, fontWeight: 500,
+        textTransform: "uppercase", letterSpacing: "0.06em", color: "#939393",
+      }}>
+        <span>{label}</span>
+        <span style={{ fontVariantNumeric: "tabular-nums", color: "#F0F0F0" }}>
+          {format ? format(value) : value.toFixed(3)}
+        </span>
+      </div>
+      <input
+        type="range" min={min} max={max} step={step} value={value} disabled={disabled}
+        onChange={(e) => onChange(Number(e.currentTarget.value))}
+        style={{ width: "100%", height: 3, accentColor: "#F0F0F0", cursor: "pointer" }}
+      />
+    </label>
+  )
+}
+
+const LENS_TABS: { id: LensTab; label: string }[] = [
+  { id: "optical", label: "ОПТИКА" },
+  { id: "shape", label: "ФОРМА" },
+  { id: "style", label: "СТИЛЬ" },
+  { id: "motion", label: "ДВИЖЕНИЕ" },
+]
+
+const panelStyle: CSSProperties = {
+  position: "fixed",
+  left: 20,
+  bottom: 20,
+  zIndex: 9999,
+  width: "min(calc(100% - 40px), 420px)",
+  border: "1px solid rgba(64,64,64,1)",
+  borderRadius: 12,
+  background: "#0A0A0A",
+  boxShadow: "0 8px 40px rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.16)",
+  padding: 16,
+  color: "#F0F0F0",
+  fontFamily: "var(--font-mono-family, monospace)",
+}
+
+const labelStyle: CSSProperties = {
+  fontFamily: "var(--font-mono-family, monospace)",
+  fontSize: 11,
+  fontWeight: 500,
+  textTransform: "uppercase",
+  letterSpacing: "0.06em",
+  color: "#939393",
+}
+
 export const LensShowcase = memo(function LensShowcase({ storageKey, size = 280 }: { storageKey: string; size?: number }) {
   const sceneRef = useRef<HTMLDivElement>(null)
-  const [showControls, setShowControls] = useState(false)
+  const [showPanel, setShowPanel] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [activeTab, setActiveTab] = useState<LensTab>("optical")
+  const [saveFlash, setSaveFlash] = useState(false)
+
+  const [settings, setSettings] = useState<RoundGlassLensSettings>(() => ({ ...ROUND_GLASS_LENS_DEFAULTS }))
+
+  // Load from localStorage after mount
+  useEffect(() => {
+    setMounted(true)
+    const stored = loadLensSettings(storageKey)
+    if (Object.keys(stored).length > 0) {
+      setSettings((prev) => ({ ...prev, ...stored }))
+    }
+  }, [storageKey])
+
+  // Auto-save on change
+  const initializedRef = useRef(false)
+  useEffect(() => {
+    if (!initializedRef.current) { initializedRef.current = true; return }
+    saveLensSettings(storageKey, settings)
+  }, [storageKey, settings])
+
+  const handleSave = useCallback(() => {
+    saveLensSettings(storageKey, settings)
+    setSaveFlash(true)
+    setTimeout(() => setSaveFlash(false), 800)
+  }, [storageKey, settings])
+
+  const handleCopy = useCallback(() => {
+    const s = settings
+    const code = [
+      `refraction={${s.refraction}}`,
+      `depth={${s.depth}}`,
+      `dispersion={${s.dispersion}}`,
+      `distortionRadius={${s.distortionRadius}}`,
+      `blur={${s.blur}}`,
+      `gradientAngle={${s.gradientAngle}}`,
+      `motionStrengthX={${s.motionStrengthX}}`,
+      `motionStrengthY={${s.motionStrengthY}}`,
+    ].join("\n  ")
+    void navigator.clipboard.writeText(`<RoundGlassLens\n  ${code}\n/>`)
+  }, [settings])
+
+  const tabBaseStyle = (isActive: boolean): CSSProperties => ({
+    padding: "6px 10px 8px",
+    border: "none",
+    borderBottom: `2px solid ${isActive ? "#F0F0F0" : "transparent"}`,
+    background: "transparent",
+    color: isActive ? "#F0F0F0" : "#939393",
+    fontSize: 11,
+    fontWeight: 500,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    marginBottom: -1,
+  })
 
   const monoSm = "text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider"
+
+  const controls = mounted && showPanel
+    ? createPortal(
+        <div style={panelStyle} data-lens-hide="true">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.02em", textTransform: "uppercase" as const }}>
+                LENS CONTROLS
+              </div>
+              <div style={{ ...labelStyle, marginTop: 2, opacity: 0.5 }}>
+                {storageKey}
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button type="button" onClick={handleCopy} style={{
+                height: 28, padding: "0 10px", border: "1px solid rgba(64,64,64,1)", borderRadius: 6,
+                background: "transparent", color: "#939393", fontSize: 11, fontWeight: 500,
+                textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer", fontFamily: "inherit",
+              }}>
+                COPY
+              </button>
+              <button type="button" onClick={handleSave} style={{
+                height: 28, padding: "0 10px",
+                border: `1px solid ${saveFlash ? "#FFCC00" : "rgba(64,64,64,1)"}`,
+                borderRadius: 6,
+                background: saveFlash ? "rgba(255,204,0,0.12)" : "transparent",
+                color: saveFlash ? "#FFCC00" : "#939393",
+                fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em",
+                cursor: "pointer", fontFamily: "inherit", transition: "all 150ms",
+              }}>
+                {saveFlash ? "SAVED ✓" : "SAVE"}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 4, marginBottom: 14, borderBottom: "1px solid rgba(64,64,64,1)", paddingBottom: 0 }}>
+            {LENS_TABS.map((tab) => (
+              <button key={tab.id} type="button" style={tabBaseStyle(activeTab === tab.id)} onClick={() => setActiveTab(tab.id)}>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: "grid", gap: 14 }}>
+            {activeTab === "optical" && (
+              <>
+                <LensControlSlider label="REFRACTION" value={settings.refraction}
+                  min={0} max={0.12} step={0.001}
+                  onChange={(v) => setSettings((p) => ({ ...p, refraction: v }))} />
+                <LensControlSlider label="DEPTH" value={settings.depth}
+                  min={0} max={0.5} step={0.001}
+                  onChange={(v) => setSettings((p) => ({ ...p, depth: v }))} />
+                <LensControlSlider label="DISPERSION" value={settings.dispersion}
+                  min={0} max={5} step={0.01}
+                  onChange={(v) => setSettings((p) => ({ ...p, dispersion: v }))} />
+              </>
+            )}
+            {activeTab === "shape" && (
+              <>
+                <LensControlSlider label="DISTORTION RADIUS" value={settings.distortionRadius}
+                  min={0.2} max={1.5} step={0.001}
+                  onChange={(v) => setSettings((p) => ({ ...p, distortionRadius: v }))} />
+                <LensControlSlider label="BLUR" value={settings.blur}
+                  min={0} max={2} step={0.001}
+                  onChange={(v) => setSettings((p) => ({ ...p, blur: v }))} />
+              </>
+            )}
+            {activeTab === "style" && (
+              <LensControlSlider label="GRADIENT ANGLE" value={settings.gradientAngle}
+                min={0} max={360} step={1}
+                format={(v) => `${Math.round(v)}°`}
+                onChange={(v) => setSettings((p) => ({ ...p, gradientAngle: v }))} />
+            )}
+            {activeTab === "motion" && (
+              <>
+                <LensControlSlider label="FOLLOW X" value={settings.motionStrengthX}
+                  min={0} max={0.1} step={0.001}
+                  onChange={(v) => setSettings((p) => ({ ...p, motionStrengthX: v }))} />
+                <LensControlSlider label="FOLLOW Y" value={settings.motionStrengthY}
+                  min={0} max={0.1} step={0.001}
+                  onChange={(v) => setSettings((p) => ({ ...p, motionStrengthY: v }))} />
+              </>
+            )}
+          </div>
+        </div>,
+        document.body,
+      )
+    : null
 
   return (
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center gap-3">
         <button
-          onClick={() => setShowControls(v => !v)}
-          className={`${monoSm} px-3 py-1 rounded border transition-colors cursor-pointer ${showControls ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:border-foreground"}`}
+          onClick={() => setShowPanel(v => !v)}
+          className={`${monoSm} px-3 py-1 rounded border transition-colors cursor-pointer ${showPanel ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:border-foreground"}`}
         >
-          Настроить
+          {showPanel ? "Скрыть" : "Настроить"}
         </button>
       </div>
 
-      {/* Demo scene */}
+      {/* Demo scene — inline hex/rgba colors only (html2canvas can't parse oklch) */}
       <div
         ref={sceneRef}
-        className="relative rounded-lg border border-border overflow-hidden h-[380px] dark cursor-crosshair select-none"
-        style={{ background: "var(--background)" }}
+        className="relative overflow-hidden cursor-crosshair select-none"
+        style={{
+          height: 380,
+          borderRadius: 8,
+          border: "1px solid rgba(64,64,64,1)",
+          background: "#0A0A0A",
+        }}
       >
         {/* Background image */}
         <img
           src="/hero-art/hero-lens.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.45 }}
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", pointerEvents: "none", userSelect: "none", opacity: 0.45,
+          }}
         />
-        {/* Yellow radial glow — rgba to avoid color-mix parse error in html2canvas */}
+        {/* Yellow radial glow */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255, 204, 0, 0.08) 0%, transparent 68%)" }}
+          style={{
+            position: "absolute", inset: 0, pointerEvents: "none",
+            background: "radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255, 204, 0, 0.08) 0%, transparent 68%)",
+          }}
         />
         {/* Center content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 pointer-events-none">
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center", gap: 24, pointerEvents: "none",
+        }}>
           <img
             src="/text_logo_dark_background_en.svg"
             alt="Rocketmind"
-            className="w-full h-auto"
-            style={{ opacity: 0.9, paddingLeft: 20, paddingRight: 20 }}
+            style={{ width: "100%", height: "auto", opacity: 0.9, paddingLeft: 20, paddingRight: 20 }}
           />
-          <span className={`${monoSm} tracking-widest text-muted-foreground/30`}>
+          <span style={{
+            fontFamily: "var(--font-mono-family, monospace)", fontSize: 12, fontWeight: 500,
+            textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(250,250,250,0.2)",
+          }}>
             Двигай курсор
           </span>
         </div>
-        {/* WebGL Lens — panel floats via portal when showControls=true */}
+        {/* WebGL Lens — settings controlled externally */}
         <RoundGlassLens
           sceneRef={sceneRef}
           size={size}
+          refraction={settings.refraction}
+          depth={settings.depth}
+          dispersion={settings.dispersion}
+          distortionRadius={settings.distortionRadius}
+          shadowRadius={settings.shadowRadius}
+          blur={settings.blur}
+          gradientAngle={settings.gradientAngle}
+          shadowEnabled={settings.shadowEnabled}
+          motionStrengthX={settings.motionStrengthX}
+          motionStrengthY={settings.motionStrengthY}
           motionParallax
-          showControls={showControls}
-          storageKey={storageKey}
         />
       </div>
+
+      {controls}
     </div>
   )
 })

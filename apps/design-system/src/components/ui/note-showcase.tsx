@@ -4,6 +4,7 @@ import { ArrowRight, CircleAlert, CircleCheck, Info, Sparkles, TriangleAlert } f
 
 import { Badge, Button, Note, NoteDescription, NoteEyebrow, NoteTitle } from "@rocketmind/ui"
 import { CopyButton } from "@/components/copy-button"
+import { SpecBlock } from "@/components/ds/shared"
 
 const NOTE_CODE = `rounded-lg border p-4 transition-[border-color,background-color,color,opacity] duration-150`
 
@@ -292,44 +293,42 @@ export function NoteShowcase() {
         </div>
       </div>
 
-      <div className="overflow-auto rounded-lg border border-border">
-        <table className="w-full text-[length:var(--text-14)]">
-          <thead>
-            <tr className="border-b border-border bg-rm-gray-2/30">
-              <th className="text-left px-4 py-2 font-medium">Вариант</th>
-              <th className="text-left px-4 py-2 font-medium">Токены</th>
-              <th className="text-left px-4 py-2 font-medium">Когда использовать</th>
-            </tr>
-          </thead>
-          <tbody className="text-muted-foreground">
-            {tokenRows.map(([variant, tokens, usage]) => (
-              <tr key={variant} className="border-b border-border last:border-0">
-                <td className="px-4 py-2 font-medium text-foreground">{variant}</td>
-                <td className="px-4 py-2"><code className="ds-token-chip">{tokens}</code></td>
-                <td className="px-4 py-2 text-[length:var(--text-14)] text-muted-foreground">{usage}</td>
-              </tr>
+      <SpecBlock title="Токены и правила">
+        <div className="space-y-6">
+          <div className="overflow-auto">
+            <table className="w-full text-[length:var(--text-14)]">
+              <thead>
+                <tr className="border-b border-border bg-rm-gray-2/30">
+                  <th className="text-left px-4 py-2 font-medium">Вариант</th>
+                  <th className="text-left px-4 py-2 font-medium">Токены</th>
+                  <th className="text-left px-4 py-2 font-medium">Когда использовать</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                {tokenRows.map(([variant, tokens, usage]) => (
+                  <tr key={variant} className="border-b border-border last:border-0">
+                    <td className="px-4 py-2 font-medium text-foreground">{variant}</td>
+                    <td className="px-4 py-2"><code className="ds-token-chip">{tokens}</code></td>
+                    <td className="px-4 py-2 text-[length:var(--text-14)] text-muted-foreground">{usage}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {[
+              "Note нужен для постоянного контекста внутри экрана. Если сообщение краткоживущее и не должно занимать место после действия, используй toast.",
+              "Не добавляй новые декоративные цвета. Для note зафиксированы только operational-состояния: neutral, info, success, warning, error, action.",
+              "CTA внутри note разрешён только один, размером sm и только когда действие логически завершает или исправляет конкретное сообщение.",
+              "Внутри note не используем badge-лейблы. Если нужен дополнительный смысловой слой, ставь короткий текстовый подзаголовок над заголовком.",
+            ].map((rule) => (
+              <p key={rule} className="text-[length:var(--text-14)] text-muted-foreground">
+                {rule}
+              </p>
             ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="rounded-lg border border-border p-6">
-        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] uppercase tracking-[-0.01em] mb-3">
-          Инструкция
-        </h4>
-        <div className="grid gap-3 md:grid-cols-2">
-          {[
-            "Note нужен для постоянного контекста внутри экрана. Если сообщение краткоживущее и не должно занимать место после действия, используй toast.",
-            "Не добавляй новые декоративные цвета. Для note зафиксированы только operational-состояния: neutral, info, success, warning, error, action.",
-            "CTA внутри note разрешён только один, размером sm и только когда действие логически завершает или исправляет конкретное сообщение.",
-            "Внутри note не используем badge-лейблы. Если нужен дополнительный смысловой слой, ставь короткий текстовый подзаголовок над заголовком.",
-          ].map((rule) => (
-            <p key={rule} className="text-[length:var(--text-14)] text-muted-foreground">
-              {rule}
-            </p>
-          ))}
+          </div>
         </div>
-      </div>
+      </SpecBlock>
     </div>
   )
 }

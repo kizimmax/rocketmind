@@ -10,7 +10,8 @@
     "postinstall": "patch-package"
   },
   "dependencies": {
-    "@rocketmind/ui": "workspace:*",
+    "@base-ui/react": "~1.2.0",
+    "@rocketmind/ui": "*",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.577.0",
     "motion": "^12.36.0",

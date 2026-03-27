@@ -6,6 +6,7 @@ import { HeroSection } from "@/components/sections/HeroSection";
 import { PlatformOverview } from "@/components/sections/PlatformOverview";
 import { RocketmindMenu } from "@/components/sections/RocketmindMenu";
 import { ServicesGrid } from "@/components/sections/ServicesGrid";
+import { CTASection } from "@/components/sections/CTASection";
 
 export const metadata = {
   title: "Rocketmind | Стратегия и бизнес-модели",
@@ -22,6 +23,7 @@ export default function RocketmindPage() {
         <HeroSection />
         <PlatformOverview />
         <ServicesGrid />
+        <CTASection />
       </main>
 
       <footer className="border-t border-border bg-background">

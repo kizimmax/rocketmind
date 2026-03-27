@@ -3,6 +3,7 @@
 import * as React from "react"
 
 import { CopyButton } from "@/components/copy-button"
+import { SpecBlock } from "@/components/ds/shared"
 import { Badge, Radio } from "@rocketmind/ui"
 
 const RADIO_CODE = `input[type="radio"] { appearance: none; width: 16px; height: 16px; border-radius: 9999px; border: 1px solid var(--border); background: var(--rm-gray-1); } input:checked { border-color: var(--rm-yellow-100); background: var(--background); } input:checked + .dot { opacity: 1; background: var(--rm-yellow-100); } input:focus-visible { border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent); } input:disabled { opacity: 0.4; }`
@@ -182,10 +183,7 @@ export function RadioShowcase() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border p-6">
-        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] uppercase tracking-[-0.01em] mb-3">
-          Инструкция
-        </h4>
+      <SpecBlock title="Правила">
         <div className="grid gap-3 md:grid-cols-2">
           {[
             "Radio используем только там, где пользователь обязан выбрать ровно один вариант из группы.",
@@ -198,7 +196,7 @@ export function RadioShowcase() {
             </p>
           ))}
         </div>
-      </div>
+      </SpecBlock>
     </div>
   )
 }

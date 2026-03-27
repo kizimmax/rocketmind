@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@rocketmind/ui": "workspace:*",
+    "@rocketmind/ui": "*",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "react": "19.2.3",

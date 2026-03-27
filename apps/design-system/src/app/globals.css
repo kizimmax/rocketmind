@@ -53,24 +53,6 @@
   animation: fadeInUp 0.2s ease-out forwards;
 }
 
-/* ── Hero marquee ── */
-@keyframes hero-marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-@keyframes hero-logo-marquee {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-50%, 0, 0); }
-}
-
-.partner-logo-marquee-track {
-  display: flex;
-  width: max-content;
-  animation: hero-logo-marquee var(--hero-marquee-duration, 18s) linear infinite;
-  will-change: transform;
-}
-
 /* ── Visual Language: Corner Brackets ── */
 .bracket {
   position: relative;

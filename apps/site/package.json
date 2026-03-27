@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@rocketmind/ui": "workspace:*",
+    "@rocketmind/ui": "*",
     "@radix-ui/react-navigation-menu": "^1.2.14",
     "lucide-react": "^0.577.0",
     "motion": "^12.36.0",

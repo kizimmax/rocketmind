@@ -6,7 +6,7 @@ import {
   ChevronRight, Loader2,
 } from "lucide-react"
 import { Separator } from "@rocketmind/ui"
-import { Section } from "@/components/ds/shared"
+import { Section, SubSection } from "@/components/ds/shared"
 import { CopyButton } from "@/components/copy-button"
 import { MascotSection } from "@/components/ds/mascot"
 
@@ -20,9 +20,7 @@ export default function IconsPage() {
           <code className="text-[length:var(--text-12)] font-[family-name:var(--font-caption-family)] bg-rm-gray-3 px-1 py-0.5 rounded">strokeWidth={"{48/size}"}</code>.
         </p>
 
-        <h3 id="icons-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          Размерная шкала
-        </h3>
+        <SubSection id="icons-scale" title="Размерная шкала" first />
         <div className="flex flex-wrap items-end gap-6 mb-8">
           {[
             { size: 12, label: "xs (12px)", tw: "size={12} strokeWidth={4}" },
@@ -44,9 +42,7 @@ export default function IconsPage() {
           ))}
         </div>
 
-        <h3 id="icons-lucide" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          Примеры иконок (Lucide)
-        </h3>
+        <SubSection id="icons-lucide" title="Примеры иконок (Lucide)" />
         <div className="flex flex-wrap gap-3 mb-8">
           {[
             { icon: <Rocket size={20} strokeWidth={2.4} />, name: "Rocket" },
@@ -72,9 +68,7 @@ export default function IconsPage() {
           ))}
         </div>
 
-        <h3 id="icons-mascots" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          AI-агенты (Маскоты)
-        </h3>
+        <SubSection id="icons-mascots" title="AI-агенты (Маскоты)" />
         <MascotSection />
       </Section>
 

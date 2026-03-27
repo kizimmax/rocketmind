@@ -3,7 +3,7 @@
 import React from "react"
 import { CopyButton } from "@/components/copy-button"
 import { Badge, Separator, Tabs, TabsContent, TabsList, TabsTrigger } from "@rocketmind/ui"
-import { Section } from "@/components/ds/shared"
+import { Section, SubSection } from "@/components/ds/shared"
 
 export default function TypographyPage() {
   return (
@@ -14,9 +14,7 @@ export default function TypographyPage() {
         </p>
 
         {/* 2.1 ШРИФТЫ */}
-        <h3 id="typography-fonts" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          Шрифты
-        </h3>
+        <SubSection id="typography-fonts" title="Шрифты" first />
         <div className="border border-border rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2 mb-10">
           {(() => {
             const fonts = [
@@ -40,9 +38,7 @@ export default function TypographyPage() {
         </div>
 
         {/* 2.2 ТИПОГРАФИКА */}
-        <h3 id="typography-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          Типографика
-        </h3>
+        <SubSection id="typography-scale" title="Типографика" />
 
         <Tabs defaultValue="scale" className="w-full">
           <TabsList className="mb-6">

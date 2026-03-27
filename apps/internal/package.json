@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@rocketmind/ui": "workspace:*",
+    "@rocketmind/ui": "*",
     "firebase": "^12.10.0",
     "lucide-react": "^0.577.0",
     "motion": "^12.36.0",

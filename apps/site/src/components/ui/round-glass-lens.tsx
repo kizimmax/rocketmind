@@ -183,6 +183,10 @@ export type RoundGlassLensSettings = {
   gradientAngle: number;
   /** Enable inner edge shadow. */
   shadowEnabled: boolean;
+  /** Parallax strength along X axis. Range: 0–0.1. */
+  motionStrengthX: number;
+  /** Parallax strength along Y axis. Range: 0–0.1. */
+  motionStrengthY: number;
 };
 
 export const ROUND_GLASS_LENS_DEFAULTS: RoundGlassLensSettings = {
@@ -194,6 +198,8 @@ export const ROUND_GLASS_LENS_DEFAULTS: RoundGlassLensSettings = {
   blur: 0.18,
   gradientAngle: 205,
   shadowEnabled: true,
+  motionStrengthX: 0.032,
+  motionStrengthY: 0.032,
 };
 
 export type RoundGlassLensProps = {
@@ -255,6 +261,11 @@ export type RoundGlassLensProps = {
   /** Enable inner edge shadow. Default: true */
   shadowEnabled?: boolean;
 
+  /** Parallax strength along X axis. Range: 0–0.1. Default: 0.032 */
+  motionStrengthX?: number;
+  /** Parallax strength along Y axis. Range: 0–0.1. Default: 0.032 */
+  motionStrengthY?: number;
+
   // ── Behaviour ────────────────────────────────────────────────────────────
 
   /**
@@ -262,9 +273,6 @@ export type RoundGlassLensProps = {
    * Defaults to `true` on pointer:fine devices.
    */
   motionParallax?: boolean;
-
-  /** Parallax travel strength (higher = more movement). Default: 0.032 */
-  motionStrength?: number;
 
   // ── Dev controls ─────────────────────────────────────────────────────────
 
@@ -319,6 +327,8 @@ function resolveSettings(
     blur: overrides?.blur ?? props.blur ?? D.blur,
     gradientAngle: overrides?.gradientAngle ?? props.gradientAngle ?? D.gradientAngle,
     shadowEnabled: overrides?.shadowEnabled ?? props.shadowEnabled ?? D.shadowEnabled,
+    motionStrengthX: overrides?.motionStrengthX ?? props.motionStrengthX ?? D.motionStrengthX,
+    motionStrengthY: overrides?.motionStrengthY ?? props.motionStrengthY ?? D.motionStrengthY,
   };
 }
 
@@ -399,7 +409,6 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     xOffset = 0,
     yOffset = 0,
     motionParallax,
-    motionStrength = 0.032,
     showControls = false,
     storageKey,
     className,
@@ -415,13 +424,33 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
   const positionRef = useRef({ x, y, xOffset, yOffset, anchorRef });
 
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"optical" | "shape" | "style">("optical");
+  const [activeTab, setActiveTab] = useState<"optical" | "shape" | "style" | "motion">("optical");
 
-  // Panel settings — initialized from props + localStorage, only used when showControls=true
-  const [panelSettings, setPanelSettings] = useState<RoundGlassLensSettings>(() => {
-    const stored = showControls && storageKey ? loadStoredSettings(storageKey) : undefined;
-    return resolveSettings(props, stored);
-  });
+  // Panel settings — initialized from props, localStorage loaded after mount (SSR-safe)
+  const [panelSettings, setPanelSettings] = useState<RoundGlassLensSettings>(() =>
+    resolveSettings(props),
+  );
+
+  // Load saved settings from localStorage after mount (client-only)
+  useEffect(() => {
+    if (!showControls || !storageKey) return;
+    const stored = loadStoredSettings(storageKey);
+    if (Object.keys(stored).length > 0) {
+      setPanelSettings((prev) => ({ ...prev, ...stored }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-save to localStorage when panel settings change
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!showControls || !storageKey) return;
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      return;
+    }
+    saveStoredSettings(storageKey, panelSettings);
+  }, [showControls, storageKey, panelSettings]);
 
   // Effective settings: panel takes over when showControls=true, otherwise follow props.
   // useMemo prevents a new object reference on every parent re-render, which would otherwise
@@ -434,6 +463,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       props.refraction, props.depth, props.dispersion,
       props.distortionRadius, props.shadowRadius, props.blur,
       props.gradientAngle, props.shadowEnabled,
+      props.motionStrengthX, props.motionStrengthY,
     ],
   );
 
@@ -722,8 +752,9 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     const handleMove = (event: PointerEvent) => {
       if (!parallaxEnabled || prefersReducedMotion) return;
       const rect = scene.getBoundingClientRect();
-      target.x = clampVal((event.clientX - rect.left - rect.width  / 2) * motionStrength, -PARALLAX_LIMIT, PARALLAX_LIMIT);
-      target.y = clampVal((event.clientY - rect.top  - rect.height / 2) * motionStrength, -PARALLAX_LIMIT, PARALLAX_LIMIT);
+      const s = settingsRef.current;
+      target.x = clampVal((event.clientX - rect.left - rect.width  / 2) * s.motionStrengthX, -PARALLAX_LIMIT, PARALLAX_LIMIT);
+      target.y = clampVal((event.clientY - rect.top  - rect.height / 2) * s.motionStrengthY, -PARALLAX_LIMIT, PARALLAX_LIMIT);
       scheduleRender();
       requestCapture();
     };
@@ -779,8 +810,13 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
   }, []);
 
   // ── Dev controls panel ────────────────────────────────────────────────────
+  const [saveFlash, setSaveFlash] = useState(false);
   const handleSave = () => {
-    if (storageKey) saveStoredSettings(storageKey, panelSettings);
+    if (storageKey) {
+      saveStoredSettings(storageKey, panelSettings);
+      setSaveFlash(true);
+      setTimeout(() => setSaveFlash(false), 800);
+    }
   };
 
   const handleCopy = () => {
@@ -792,6 +828,8 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       `distortionRadius={${s.distortionRadius}}`,
       `blur={${s.blur}}`,
       `gradientAngle={${s.gradientAngle}}`,
+      `motionStrengthX={${s.motionStrengthX}}`,
+      `motionStrengthY={${s.motionStrengthY}}`,
     ].join("\n  ");
     void navigator.clipboard.writeText(`<RoundGlassLens\n  ${code}\n/>`);
   };
@@ -800,6 +838,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     { key: "optical" as const, label: "ОПТИКА" },
     { key: "shape"   as const, label: "ФОРМА"  },
     { key: "style"   as const, label: "СТИЛЬ"  },
+    { key: "motion"  as const, label: "ДВИЖЕНИЕ" },
   ];
 
   const controls =
@@ -818,8 +857,8 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
                   COPY
                 </button>
                 {storageKey && (
-                  <button type="button" className="lens-controls-panel__btn" onClick={handleSave}>
-                    SAVE
+                  <button type="button" className={`lens-controls-panel__btn${saveFlash ? " is-saved" : ""}`} onClick={handleSave}>
+                    {saveFlash ? "SAVED" : "SAVE"}
                   </button>
                 )}
               </div>
@@ -867,6 +906,16 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
                   min={0} max={360} step={1}
                   format={(v) => `${Math.round(v)}°`}
                   onChange={(v) => setPanelSettings((p) => ({ ...p, gradientAngle: v }))} />
+              )}
+              {activeTab === "motion" && (
+                <>
+                  <ControlSlider label="FOLLOW X" value={panelSettings.motionStrengthX}
+                    min={0} max={0.1} step={0.001}
+                    onChange={(v) => setPanelSettings((p) => ({ ...p, motionStrengthX: v }))} />
+                  <ControlSlider label="FOLLOW Y" value={panelSettings.motionStrengthY}
+                    min={0} max={0.1} step={0.001}
+                    onChange={(v) => setPanelSettings((p) => ({ ...p, motionStrengthY: v }))} />
+                </>
               )}
             </div>
           </div>,

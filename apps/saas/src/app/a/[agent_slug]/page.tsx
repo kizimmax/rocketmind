@@ -1,20 +1,15 @@
-export default async function AgentPage({
+import { mockAgents } from "@/lib/mock-data";
+import BootstrapClient from "./bootstrap-client";
+
+export function generateStaticParams() {
+  return mockAgents.map((a) => ({ agent_slug: a.slug }));
+}
+
+export default async function BootstrapPage({
   params,
 }: {
   params: Promise<{ agent_slug: string }>;
 }) {
   const { agent_slug } = await params;
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center space-y-2">
-        <h1 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-32)] font-bold uppercase">
-          Агент: {agent_slug}
-        </h1>
-        <p className="text-[length:var(--text-14)] text-muted-foreground">
-          Чат-интерфейс будет здесь
-        </p>
-      </div>
-    </div>
-  );
+  return <BootstrapClient agentSlug={agent_slug} />;
 }

@@ -3,6 +3,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Scan @rocketmind/ui component sources so Tailwind generates all utility classes */
+@source "../components";
+
 @custom-variant dark (&:is(.dark *));
 
 /* Google Fonts */
@@ -548,6 +551,59 @@ code {
   }
 }
 
+/* ── Responsive Heading Utilities ──
+ * Auto-apply mobile sizes from the DS heading table.
+ * Usage:  <h1 class="heading-52">…</h1>
+ * Mobile (< 768px): smaller size. Desktop (≥ 768px): nominal size.
+ */
+.heading-80 {
+  font-family: var(--font-heading-family);
+  font-size: var(--text-40);   /* 40px mobile */
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+@media (min-width: 768px) {
+  .heading-80 { font-size: var(--text-80); }
+}
+
+.heading-52 {
+  font-family: var(--font-heading-family);
+  font-size: var(--text-30);   /* 30px mobile */
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+@media (min-width: 768px) {
+  .heading-52 { font-size: var(--text-52); }
+}
+
+.heading-32 {
+  font-family: var(--font-heading-family);
+  font-size: var(--text-24);   /* 24px mobile */
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+}
+@media (min-width: 768px) {
+  .heading-32 { font-size: var(--text-32); }
+}
+
+.heading-24 {
+  font-family: var(--font-heading-family);
+  font-size: var(--text-18);   /* 18px mobile */
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+@media (min-width: 768px) {
+  .heading-24 { font-size: var(--text-24); }
+}
+
 /* Copy notification animation */
 @keyframes fadeInUp {
   from {
@@ -782,4 +838,17 @@ code {
 
 .tooltip-enter {
   animation: tooltip-in 120ms cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+/* ── InfiniteLogoMarquee ── */
+@keyframes hero-logo-marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+.partner-logo-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: hero-logo-marquee var(--hero-marquee-duration, 18s) linear infinite;
+  will-change: transform;
 }

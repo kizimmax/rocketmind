@@ -2,21 +2,42 @@
 
 import React from "react"
 import { Badge, Separator } from "@rocketmind/ui"
-import { Section, RadiusTokenCard } from "@/components/ds/shared"
+import { Section, SubSection, RadiusTokenCard } from "@/components/ds/shared"
 
 export default function RadiusShadowsPage() {
   return (
     <>
       <Section id="radius-shadows" title="4. Скругления">
         <p className="text-muted-foreground mb-6">
-          <strong>Flat стиль.</strong> Скругление объясняет тип объекта: <strong>4px</strong> для controls, <strong>8px</strong> для surface,
+          <strong>Flat стиль.</strong> Скругление объясняет тип объекта: <strong>0px</strong> для column-контейнеров, <strong>4px</strong> для controls, <strong>8px</strong> для surface,
           <strong> full</strong> только для самостоятельных pill / avatar-элементов. Тени не используются.
         </p>
 
-        <h3 id="radius-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          Наглядные сценарии
-        </h3>
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
+        <SubSection id="radius-scale" title="Наглядные сценарии" first />
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 mb-8">
+          <RadiusTokenCard
+            label="none"
+            value="0px"
+            token="--radius-none"
+            tailwind="rounded-none"
+            usage="Column-контейнеры: секции, обёртки, hero-блоки, full-width панели."
+            note="Самый крупный уровень — внутри уже лежат карточки и заголовки. Скругление не нужно."
+          >
+            <div className="space-y-3">
+              <div className="rounded-none border border-border bg-card p-4">
+                <p className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-16)] uppercase mb-2">Column / Section</p>
+                <div className="flex flex-col gap-2">
+                  <div className="rounded-lg border border-border bg-background p-3">
+                    <p className="text-[length:var(--text-12)] text-muted-foreground">Вложенная карточка (8px)</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-background p-3">
+                    <p className="text-[length:var(--text-12)] text-muted-foreground">Ещё одна карточка (8px)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </RadiusTokenCard>
+
           <RadiusTokenCard
             label="sm"
             value="4px"

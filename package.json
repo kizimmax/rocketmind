@@ -16,9 +16,11 @@
     "dev:site": "npm run dev --workspace=apps/site",
     "dev:saas": "npm run dev --workspace=apps/saas",
     "dev:internal": "npm run dev --workspace=apps/internal",
-    "release": "bash scripts/release.sh"
+    "release": "bash scripts/release.sh",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
+    "patch-package": "^8.0.0",
     "turbo": "^2.5.4"
   }
 }

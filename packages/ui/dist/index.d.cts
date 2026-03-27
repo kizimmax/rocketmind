@@ -3,9 +3,13 @@ import * as react_jsx_runtime from 'react/jsx-runtime';
 import * as React$1 from 'react';
 import { ThemeProvider as ThemeProvider$1 } from 'next-themes';
 import * as class_variance_authority_types from 'class-variance-authority/types';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { VariantProps } from 'class-variance-authority';
 import { Button as Button$1 } from '@base-ui/react/button';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as NavigationMenuPrimitive from '@radix-ui/react-navigation-menu';
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { Separator as Separator$1 } from '@base-ui/react/separator';
 import { ToasterProps } from 'sonner';
 import { Switch as Switch$1 } from '@base-ui/react/switch';
@@ -15,6 +19,15 @@ import { Tooltip as Tooltip$1 } from '@base-ui/react/tooltip';
 declare function cn(...inputs: ClassValue[]): string;
 
 declare function ThemeProvider({ children, ...props }: React$1.ComponentProps<typeof ThemeProvider$1>): react_jsx_runtime.JSX.Element;
+
+declare const avatarVariants: (props?: ({
+    size?: "xs" | "sm" | "md" | "lg" | "xl" | null | undefined;
+} & class_variance_authority_types.ClassProp) | undefined) => string;
+declare const Avatar: React$1.ForwardRefExoticComponent<Omit<AvatarPrimitive.AvatarProps & React$1.RefAttributes<HTMLSpanElement>, "ref"> & VariantProps<(props?: ({
+    size?: "xs" | "sm" | "md" | "lg" | "xl" | null | undefined;
+} & class_variance_authority_types.ClassProp) | undefined) => string> & React$1.RefAttributes<HTMLSpanElement>>;
+declare const AvatarImage: React$1.ForwardRefExoticComponent<Omit<AvatarPrimitive.AvatarImageProps & React$1.RefAttributes<HTMLImageElement>, "ref"> & React$1.RefAttributes<HTMLImageElement>>;
+declare const AvatarFallback: React$1.ForwardRefExoticComponent<Omit<AvatarPrimitive.AvatarFallbackProps & React$1.RefAttributes<HTMLSpanElement>, "ref"> & React$1.RefAttributes<HTMLSpanElement>>;
 
 declare const badgeVariants: (props?: ({
     variant?: "neutral" | "yellow-solid" | "yellow-subtle" | "violet-solid" | "violet-subtle" | "sky-solid" | "sky-subtle" | "terracotta-solid" | "terracotta-subtle" | "pink-solid" | "pink-subtle" | "blue-solid" | "blue-subtle" | "red-solid" | "red-subtle" | "green-solid" | "green-subtle" | "default" | "secondary" | "destructive" | "outline" | null | undefined;
@@ -26,7 +39,7 @@ declare function Badge({ className, variant, size, ...props }: React.ComponentPr
 
 declare const buttonVariants: (props?: ({
     variant?: "link" | "default" | "secondary" | "destructive" | "outline" | "ghost" | null | undefined;
-    size?: "default" | "sm" | "lg" | "xs" | "icon" | "icon-xs" | "icon-sm" | "icon-lg" | null | undefined;
+    size?: "xs" | "sm" | "lg" | "default" | "icon" | "icon-xs" | "icon-sm" | "icon-lg" | null | undefined;
 } & class_variance_authority_types.ClassProp) | undefined) => string;
 declare function Button({ className, variant, size, ...props }: Button$1.Props & VariantProps<typeof buttonVariants>): react_jsx_runtime.JSX.Element;
 
@@ -45,6 +58,28 @@ declare const Checkbox: React$1.ForwardRefExoticComponent<Omit<React$1.InputHTML
     indeterminate?: boolean;
 } & React$1.RefAttributes<HTMLInputElement>>;
 
+declare const Dialog: React$1.FC<DialogPrimitive.DialogProps>;
+declare const DialogTrigger: React$1.ForwardRefExoticComponent<DialogPrimitive.DialogTriggerProps & React$1.RefAttributes<HTMLButtonElement>>;
+declare const DialogClose: React$1.ForwardRefExoticComponent<DialogPrimitive.DialogCloseProps & React$1.RefAttributes<HTMLButtonElement>>;
+declare const DialogPortal: React$1.FC<DialogPrimitive.DialogPortalProps>;
+declare const DialogOverlay: React$1.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogOverlayProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
+declare const DialogContent: React$1.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogContentProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
+declare function DialogHeader({ className, ...props }: React$1.HTMLAttributes<HTMLDivElement>): react_jsx_runtime.JSX.Element;
+declare function DialogFooter({ className, ...props }: React$1.HTMLAttributes<HTMLDivElement>): react_jsx_runtime.JSX.Element;
+declare const DialogTitle: React$1.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogTitleProps & React$1.RefAttributes<HTMLHeadingElement>, "ref"> & React$1.RefAttributes<HTMLHeadingElement>>;
+declare const DialogDescription: React$1.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogDescriptionProps & React$1.RefAttributes<HTMLParagraphElement>, "ref"> & React$1.RefAttributes<HTMLParagraphElement>>;
+
+declare const DropdownMenu: React$1.FC<DropdownMenuPrimitive.DropdownMenuProps>;
+declare const DropdownMenuTrigger: React$1.ForwardRefExoticComponent<DropdownMenuPrimitive.DropdownMenuTriggerProps & React$1.RefAttributes<HTMLButtonElement>>;
+declare const DropdownMenuGroup: React$1.ForwardRefExoticComponent<DropdownMenuPrimitive.DropdownMenuGroupProps & React$1.RefAttributes<HTMLDivElement>>;
+declare const DropdownMenuPortal: React$1.FC<DropdownMenuPrimitive.DropdownMenuPortalProps>;
+declare const DropdownMenuContent: React$1.ForwardRefExoticComponent<Omit<DropdownMenuPrimitive.DropdownMenuContentProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
+declare const DropdownMenuItem: React$1.ForwardRefExoticComponent<Omit<DropdownMenuPrimitive.DropdownMenuItemProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & {
+    destructive?: boolean;
+} & React$1.RefAttributes<HTMLDivElement>>;
+declare const DropdownMenuSeparator: React$1.ForwardRefExoticComponent<Omit<DropdownMenuPrimitive.DropdownMenuSeparatorProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
+declare const DropdownMenuLabel: React$1.ForwardRefExoticComponent<Omit<DropdownMenuPrimitive.DropdownMenuLabelProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
+
 interface GlowingEffectProps {
     blur?: number;
     inactiveZone?: number;
@@ -58,6 +93,23 @@ interface GlowingEffectProps {
     borderWidth?: number;
 }
 declare const GlowingEffect: React$1.MemoExoticComponent<({ blur, inactiveZone, proximity, spread, variant, glow, className, movementDuration, borderWidth, disabled, }: GlowingEffectProps) => react_jsx_runtime.JSX.Element>;
+
+declare const inputVariants: (props?: ({
+    size?: "xs" | "sm" | "md" | "lg" | null | undefined;
+} & class_variance_authority_types.ClassProp) | undefined) => string;
+declare const Input: React$1.ForwardRefExoticComponent<Omit<React$1.InputHTMLAttributes<HTMLInputElement>, "size"> & VariantProps<(props?: ({
+    size?: "xs" | "sm" | "md" | "lg" | null | undefined;
+} & class_variance_authority_types.ClassProp) | undefined) => string> & React$1.RefAttributes<HTMLInputElement>>;
+
+interface InputOTPProps {
+    length?: number;
+    value?: string;
+    onChange?: (value: string) => void;
+    disabled?: boolean;
+    className?: string;
+    "aria-invalid"?: boolean;
+}
+declare const InputOTP: React$1.ForwardRefExoticComponent<InputOTPProps & React$1.RefAttributes<HTMLDivElement>>;
 
 declare const NavigationMenu: React$1.ForwardRefExoticComponent<Omit<NavigationMenuPrimitive.NavigationMenuProps & React$1.RefAttributes<HTMLElement>, "ref"> & React$1.RefAttributes<HTMLElement>>;
 declare const NavigationMenuList: React$1.ForwardRefExoticComponent<Omit<NavigationMenuPrimitive.NavigationMenuListProps & React$1.RefAttributes<HTMLUListElement>, "ref"> & React$1.RefAttributes<HTMLUListElement>>;
@@ -80,6 +132,9 @@ declare function NoteDescription({ className, ...props }: React$1.ComponentProps
 type RadioProps = Omit<React$1.InputHTMLAttributes<HTMLInputElement>, "type">;
 declare const radioBaseClassName = "peer size-4 shrink-0 appearance-none rounded-full border border-border bg-rm-gray-1 transition-[background-color,border-color,opacity] duration-150 outline-none checked:border-[var(--rm-yellow-100)] checked:bg-background focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40";
 declare const Radio: React$1.ForwardRefExoticComponent<RadioProps & React$1.RefAttributes<HTMLInputElement>>;
+
+declare const ScrollArea: React$1.ForwardRefExoticComponent<Omit<ScrollAreaPrimitive.ScrollAreaProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
+declare const ScrollBar: React$1.ForwardRefExoticComponent<Omit<ScrollAreaPrimitive.ScrollAreaScrollbarProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
 
 type SearchComboboxOption = {
     value: string;
@@ -106,11 +161,22 @@ declare function SearchCombobox({ ariaLabel, className, defaultValue, disabled, 
 
 declare function Separator({ className, orientation, ...props }: Separator$1.Props): react_jsx_runtime.JSX.Element;
 
+declare function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>): react_jsx_runtime.JSX.Element;
+
 declare const Toaster: ({ ...props }: ToasterProps) => react_jsx_runtime.JSX.Element;
 
 declare function Switch({ className, size, ...props }: Switch$1.Root.Props & {
     size?: "sm" | "default";
 }): react_jsx_runtime.JSX.Element;
+
+declare function Table({ className, ...props }: React$1.HTMLAttributes<HTMLTableElement>): react_jsx_runtime.JSX.Element;
+declare function TableHeader({ className, ...props }: React$1.HTMLAttributes<HTMLTableSectionElement>): react_jsx_runtime.JSX.Element;
+declare function TableBody({ className, ...props }: React$1.HTMLAttributes<HTMLTableSectionElement>): react_jsx_runtime.JSX.Element;
+declare function TableFooter({ className, ...props }: React$1.HTMLAttributes<HTMLTableSectionElement>): react_jsx_runtime.JSX.Element;
+declare function TableRow({ className, ...props }: React$1.HTMLAttributes<HTMLTableRowElement>): react_jsx_runtime.JSX.Element;
+declare function TableHead({ className, ...props }: React$1.ThHTMLAttributes<HTMLTableCellElement>): react_jsx_runtime.JSX.Element;
+declare function TableCell({ className, ...props }: React$1.TdHTMLAttributes<HTMLTableCellElement>): react_jsx_runtime.JSX.Element;
+declare function TableCaption({ className, ...props }: React$1.HTMLAttributes<HTMLTableCaptionElement>): react_jsx_runtime.JSX.Element;
 
 declare function Tabs({ className, orientation, ...props }: Tabs$1.Root.Props): react_jsx_runtime.JSX.Element;
 declare const tabsListVariants: (props?: ({
@@ -132,4 +198,24 @@ declare function Tooltip({ ...props }: Tooltip$1.Root.Props): react_jsx_runtime.
 declare function TooltipTrigger({ ...props }: Tooltip$1.Trigger.Props): react_jsx_runtime.JSX.Element;
 declare function TooltipContent({ className, side, sideOffset, align, alignOffset, children, ...props }: Tooltip$1.Popup.Props & Pick<Tooltip$1.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">): react_jsx_runtime.JSX.Element;
 
-export { Badge, type BadgeSize, type BadgeVariant, Button, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, GlowingEffect, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, Radio, SearchCombobox, type SearchComboboxOption, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ThemeProvider, Toaster, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, badgeVariants, buttonVariants, checkboxBaseClassName, cn, noteVariants, radioBaseClassName, tabsListVariants, textareaVariants };
+type LogoMarqueeItem = {
+    alt: string;
+    src: string;
+    width?: number;
+    height?: number;
+};
+type InfiniteLogoMarqueeProps = {
+    className?: string;
+    logos: LogoMarqueeItem[];
+    /** Duration of one full loop in seconds. Default: 14 */
+    speedSeconds?: number;
+    /** Gap between logos in pixels. Default: 67 */
+    gap?: number;
+    /** Maximum logo height in pixels. Default: 39 */
+    maxLogoHeight?: number;
+    /** Width of the fade mask on each edge in pixels. Default: 44 */
+    fadeWidth?: number;
+};
+declare function InfiniteLogoMarquee({ className, logos, speedSeconds, gap, maxLogoHeight, fadeWidth, }: InfiniteLogoMarqueeProps): react_jsx_runtime.JSX.Element | null;
+
+export { Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, Button, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, GlowingEffect, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, type LogoMarqueeItem, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, Radio, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, Skeleton, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ThemeProvider, Toaster, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, tabsListVariants, textareaVariants };

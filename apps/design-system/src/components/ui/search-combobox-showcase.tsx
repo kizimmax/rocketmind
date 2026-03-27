@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react"
 import { Search } from "lucide-react"
 
+import { SpecBlock } from "@/components/ds/shared"
 import { SearchCombobox, type SearchComboboxOption } from "@rocketmind/ui"
 
 const SEARCH_OPTIONS: SearchComboboxOption[] = [
@@ -171,14 +172,11 @@ export function SearchComboboxShowcase() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-lg border border-border bg-rm-gray-1 p-4">
-          <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
-            Правило empty-state
-          </p>
-          <p className="mt-1 text-[length:var(--text-14)] leading-relaxed text-muted-foreground">
+        <SpecBlock title="Правило empty-state">
+          <p className="text-[length:var(--text-14)] leading-relaxed text-muted-foreground">
             Когда запрос уже введён, список показывает только результаты совпадения или одно текстовое сообщение без декоративных иллюстраций. Когда запрос пустой, вместо пустоты показываем полезный старт: история, популярные сценарии или оба блока сразу.
           </p>
-        </div>
+        </SpecBlock>
       </div>
 
       <div className="rounded-lg border border-border p-6">

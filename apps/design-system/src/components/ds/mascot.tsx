@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, useRef } from "react"
+import React, { useState, useEffect, useRef } from "react"
+import { User, ShieldCheck, MousePointerClick, Zap, Lightbulb, Smile, ThumbsUp } from "lucide-react"
 
 const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind-design-system" : ""
 
@@ -174,13 +175,13 @@ const MASCOTS: Array<{
 ]
 
 const MASCOT_STATE_TABS = [
-  { key: "base",      label: "Базовое" },
-  { key: "confident", label: "Уверенное" },
-  { key: "pointer",   label: "Указывает" },
-  { key: "surprised", label: "Удивлённый" },
-  { key: "thinks",    label: "Думает" },
-  { key: "smile",     label: "Улыбка" },
-  { key: "ok",        label: "ОК" },
+  { key: "base",      label: "Базовое",     icon: User },
+  { key: "confident", label: "Уверенное",   icon: ShieldCheck },
+  { key: "pointer",   label: "Указывает",   icon: MousePointerClick },
+  { key: "surprised", label: "Удивлённый",  icon: Zap },
+  { key: "thinks",    label: "Думает",      icon: Lightbulb },
+  { key: "smile",     label: "Улыбка",      icon: Smile },
+  { key: "ok",        label: "ОК",          icon: ThumbsUp },
 ]
 
 export function getVariantLabel(filename: string): string {
@@ -197,6 +198,9 @@ export function MascotCard({ mascot, activeState }: { mascot: typeof MASCOTS[0];
   const [variantIdx, setVariantIdx] = useState(0)
   const [tooltip, setTooltip] = useState<{ top: number; right: number } | null>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
+
+  // Reset variant index when active state changes
+  useEffect(() => { setVariantIdx(0) }, [activeState])
 
   const currentFile = files[variantIdx] ?? files[0]
   const imgPath = `${BASE_PATH}/ai-mascots/${mascot.key}/${currentFile}`
@@ -226,7 +230,7 @@ export function MascotCard({ mascot, activeState }: { mascot: typeof MASCOTS[0];
                 <button
                   key={f}
                   onClick={() => setVariantIdx(i)}
-                  className={`px-1.5 py-0.5 rounded text-[length:var(--text-12)] font-mono border transition-colors ${
+                  className={`min-w-[26px] px-1.5 py-0.5 rounded text-[length:var(--text-12)] font-mono border text-center transition-colors cursor-pointer ${
                     i === variantIdx
                       ? "bg-[var(--rm-yellow-100)] text-black border-[var(--rm-yellow-100)]"
                       : "bg-background/80 border-border text-muted-foreground hover:text-foreground"
@@ -315,24 +319,32 @@ export function MascotSection() {
       <p className="text-muted-foreground mb-4 text-[length:var(--text-14)]">
         PNG-маскоты AI-агентов. Переключайте состояния через табы. Если у маскота нет варианта — показывается базовое с прозрачностью, кнопка скачать недоступна.
       </p>
-      <div className="flex flex-wrap gap-2 mb-6">
-        {MASCOT_STATE_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveState(tab.key)}
-            className={`px-3 py-1.5 rounded-sm text-[length:var(--text-12)] font-medium border transition-colors ${
-              activeState === tab.key
-                ? "bg-[var(--rm-yellow-100)] text-black border-[var(--rm-yellow-100)]"
-                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="inline-flex flex-wrap items-center gap-4 border-b border-border mb-6">
+        {MASCOT_STATE_TABS.map((tab) => {
+          const Icon = tab.icon
+          const isActive = activeState === tab.key
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveState(tab.key)}
+              className={`relative inline-flex h-10 items-center gap-1.5 px-0 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] whitespace-nowrap transition-colors duration-150 cursor-pointer ${
+                isActive
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Icon className="size-4" />
+              {tab.label}
+              {isActive && (
+                <span className="absolute bottom-[-1px] left-0 h-0.5 w-full bg-[var(--rm-yellow-100)]" />
+              )}
+            </button>
+          )
+        })}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {MASCOTS.map((mascot) => (
-          <MascotCard key={`${mascot.key}-${activeState}`} mascot={mascot} activeState={activeState} />
+          <MascotCard key={mascot.key} mascot={mascot} activeState={activeState} />
         ))}
       </div>
     </div>

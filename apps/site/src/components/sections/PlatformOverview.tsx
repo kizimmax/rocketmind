@@ -12,8 +12,8 @@ import { MascotCarousel } from "@/components/blocks/MascotCarousel";
 
    Breakpoints:
      Mobile  — < md  (< 768px)
-     Tablet  — md–xl (768–1279px)
-     Desktop — xl+   (≥ 1280px)
+     Tablet  — md–1099px (768–1099px)
+     Desktop — 1100px+ (compact mascot 1100–1279, full 1280+)
    ─────────────────────────────────────────────────────────── */
 
 export function PlatformOverview() {
@@ -52,9 +52,9 @@ export function PlatformOverview() {
   return (
     <section className="relative w-full bg-background" id="platform-overview">
       <div className="mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14">
-        {/* ═══════════════ DESKTOP (xl+) ═══════════════ */}
+        {/* ═══════════════ DESKTOP (1100px+) ═══════════════ */}
         <div
-          className="relative hidden w-full xl:block"
+          className="platform-desktop relative w-full"
           style={{ aspectRatio: "1400 / 867" }}
         >
           {/* SVG background — Fibonacci spiral + grid borders */}
@@ -114,7 +114,7 @@ export function PlatformOverview() {
               </BodyText>
             </div>
 
-            {/* Animated mascot carousel */}
+            {/* Animated mascot carousel — compact 1100–1279, default 1280+ */}
             <div
               className="absolute"
               style={{
@@ -123,7 +123,12 @@ export function PlatformOverview() {
                 width: "82.09%",
               }}
             >
-              <MascotCarousel />
+              <div className="mascot-desktop-default">
+                <MascotCarousel />
+              </div>
+              <div className="mascot-desktop-compact">
+                <MascotCarousel size="compact" />
+              </div>
             </div>
           </div>
 
@@ -180,8 +185,8 @@ export function PlatformOverview() {
           </div>
         </div>
 
-        {/* ═══════════════ TABLET (md – xl) ═══════════════ */}
-        <div className="hidden flex-col md:flex xl:hidden">
+        {/* ═══════════════ TABLET (md – 1099px) ═══════════════ */}
+        <div className="platform-tablet flex-col">
           {/* ── Column 01 (715×443) — div 01 + div 02 side by side ── */}
           <div
             className="relative w-full"

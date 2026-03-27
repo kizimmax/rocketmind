@@ -4,7 +4,7 @@ import React from "react"
 import { CopyButton } from "@/components/copy-button"
 import { Badge, Card, CardContent, CardHeader, CardTitle, Separator, Tabs, TabsContent, TabsList, TabsTrigger } from "@rocketmind/ui"
 import { GridGuides } from "@/components/ui/guide-grid"
-import { Section } from "@/components/ds/shared"
+import { Section, SubSection } from "@/components/ds/shared"
 
 export default function SpacingPage() {
   return (
@@ -15,9 +15,7 @@ export default function SpacingPage() {
           Все отступы кратны 8. Золотое сечение для макетных пропорций.
         </p>
 
-        <h3 id="spacing-scale" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          Шкала отступов
-        </h3>
+        <SubSection id="spacing-scale" title="Шкала отступов" first />
         <div className="flex flex-wrap gap-3 mb-8">
           {[
             { label: "1", px: 4 },
@@ -46,9 +44,7 @@ export default function SpacingPage() {
           ))}
         </div>
 
-        <h3 id="spacing-grid" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4">
-          Сетка страницы
-        </h3>
+        <SubSection id="spacing-grid" title="Сетка страницы" />
         <Tabs defaultValue="mobile" className="mb-6">
           <TabsList className="mb-4">
             <TabsTrigger value="mobile">Mobile</TabsTrigger>
@@ -140,9 +136,7 @@ export default function SpacingPage() {
           ))}
         </Tabs>
 
-        <h3 id="spacing-phi" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
-          Макетные пропорции (phi)
-        </h3>
+        <SubSection id="spacing-phi" title="Макетные пропорции (phi)" />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-6 max-w-[640px]">
           Алгоритм: <strong>1 → контент</strong> диктует ширину зоны, <strong>2 → колонки</strong> привязывают к сетке, <strong>3 → φ (≈ 38/62)</strong> используется как ориентир, не жёсткое правило.
         </p>
@@ -242,9 +236,7 @@ export default function SpacingPage() {
           Золотое сечение 38/62 — ориентир для пар sidebar/content, text/visual в hero-блоках.
         </p>
 
-        <h3 id="spacing-visual" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4 mt-10">
-          Сетка как визуальный стиль
-        </h3>
+        <SubSection id="spacing-visual" title="Сетка как визуальный стиль" />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-6 max-w-[640px]">
           Сетка — часть дизайн-кода. Направляющие линии между колонками — не декор, а материализация структуры.
           Реальные 1px CSS-колонки задают ритм и видимый каркас. <code className="bg-rm-gray-2 px-1.5 py-0.5 rounded text-[length:var(--text-12)] font-[family-name:var(--font-caption-family)]">guideVisible</code> управляет видимостью без изменения раскладки.
@@ -337,9 +329,7 @@ export default function SpacingPage() {
           GridGuides cols=3 guideVisible=true cellPadding=12
         </p>
 
-        <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-4 mt-10">
-          Bento Grid — нерегулярная сетка
-        </h3>
+        <SubSection title="Bento Grid — нерегулярная сетка" />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-4 max-w-[640px]">
           Секция Features / «Что умеет сервис» — мозаика карточек разного размера. Минимум 4, максимум 6 ячеек. Ни одна строка не одинакова (принцип асимметрии φ).
         </p>

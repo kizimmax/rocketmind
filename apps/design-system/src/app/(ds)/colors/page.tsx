@@ -4,7 +4,7 @@ import React from "react"
 import { CopyButton } from "@/components/copy-button"
 import { Separator } from "@rocketmind/ui"
 import { ChevronRight } from "lucide-react"
-import { Section } from "@/components/ds/shared"
+import { Section, SubSection } from "@/components/ds/shared"
 import { ColorHexBlock, FgRow } from "@/components/ds/color-helpers"
 
 export default function ColorsPage() {
@@ -17,9 +17,7 @@ export default function ColorsPage() {
         </p>
 
         {/* ── Backgrounds ── */}
-        <h3 id="colors-bg" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
-          Фоны
-        </h3>
+        <SubSection id="colors-bg" title="Фоны" first />
         <div className="border border-border rounded-lg overflow-hidden grid grid-cols-2 mb-3">
           {[
             { name: "Background", var: "--background",    token: "--background", lhex: "#FAFAFA", dhex: "#0A0A0A",
@@ -50,9 +48,7 @@ export default function ColorsPage() {
         </div>
 
         {/* ── Gray Scale ── */}
-        <h3 id="colors-gray" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-1">
-          Серая шкала
-        </h3>
+        <SubSection id="colors-gray" title="Серая шкала" />
         <p className="text-[length:var(--text-13)] text-muted-foreground font-[family-name:var(--font-mono-family)] mb-3">
           Используй шкалу последовательно — не пропускай уровни без причины.
         </p>
@@ -97,9 +93,7 @@ export default function ColorsPage() {
         </div>
 
         {/* ── Accent Scale ── */}
-        <h3 id="colors-accent" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mb-2">
-          Акцентная шкала
-        </h3>
+        <SubSection id="colors-accent" title="Акцентная шкала" />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
           Каждый цвет имеет 5 уровней насыщенности и 2 foreground-токена.
         </p>
@@ -183,9 +177,7 @@ export default function ColorsPage() {
         </div>
 
         {/* ── On-color surfaces ── */}
-        <h3 id="colors-inverted" className="scroll-mt-20 font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] md:text-[length:var(--text-32)] uppercase tracking-[-0.01em] mt-12 mb-2">
-          Инвертированные поверхности
-        </h3>
+        <SubSection id="colors-inverted" title="Инвертированные поверхности" />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
           Блоки с акцентным фоном. Добавь класс <code className="font-[family-name:var(--font-caption-family)] text-foreground">.on-{"{color}"}</code> на контейнер —
           все дочерние токены (<code className="font-[family-name:var(--font-caption-family)] text-foreground">--foreground</code>, <code className="font-[family-name:var(--font-caption-family)] text-foreground">--border</code>) автоматически инвертируются.
