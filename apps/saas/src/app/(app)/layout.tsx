@@ -2,13 +2,14 @@
 
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { MobileHeader } from "@/components/mobile-header";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const shellRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -16,27 +17,36 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, router]);
 
-  // Track visual viewport height to keep layout above virtual keyboard (iOS/Android)
+  // Align app shell with visual viewport (handles iOS virtual keyboard)
   useEffect(() => {
-    function updateHeight() {
-      const h = window.visualViewport?.height ?? window.innerHeight;
-      document.documentElement.style.setProperty("--app-height", `${h}px`);
+    const shell = shellRef.current;
+    if (!shell) return;
+
+    function update() {
+      const vv = window.visualViewport;
+      if (vv) {
+        shell!.style.height = `${vv.height}px`;
+        shell!.style.transform = `translateY(${vv.offsetTop}px)`;
+      } else {
+        shell!.style.height = `${window.innerHeight}px`;
+        shell!.style.transform = "";
+      }
     }
 
-    updateHeight();
+    update();
 
     const vv = window.visualViewport;
     if (vv) {
-      vv.addEventListener("resize", updateHeight);
-      vv.addEventListener("scroll", updateHeight);
+      vv.addEventListener("resize", update);
+      vv.addEventListener("scroll", update);
       return () => {
-        vv.removeEventListener("resize", updateHeight);
-        vv.removeEventListener("scroll", updateHeight);
+        vv.removeEventListener("resize", update);
+        vv.removeEventListener("scroll", update);
       };
     }
 
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
 
   if (isLoading) {
@@ -50,7 +60,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="app-shell flex bg-background">
+    <div
+      ref={shellRef}
+      className="fixed inset-x-0 top-0 flex overflow-hidden bg-background"
+      style={{ height: "100dvh" }}
+    >
       {/* Desktop sidebar */}
       <div className="hidden lg:flex">
         <Sidebar />
