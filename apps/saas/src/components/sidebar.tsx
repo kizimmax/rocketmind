@@ -59,16 +59,18 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
     undefined;
   const activeAgentId = searchParams?.get("agent") ?? null;
 
-  // Drawer mode: local accordion state, independent of URL navigation
-  const [drawerExpandedId, setDrawerExpandedId] = useState<string | null>(
-    activeCaseId ?? null
+  // Drawer mode: set of expanded case ids
+  const [drawerExpandedIds, setDrawerExpandedIds] = useState<Set<string>>(
+    activeCaseId ? new Set([activeCaseId]) : new Set()
   );
-  // Desktop mode: local accordion state; syncs when agent navigation changes activeCaseId
-  const [desktopExpandedId, setDesktopExpandedId] = useState<string | null>(
-    activeCaseId ?? null
+  // Desktop mode: set of expanded case ids; adds activeCaseId when navigating via agent
+  const [desktopExpandedIds, setDesktopExpandedIds] = useState<Set<string>>(
+    activeCaseId ? new Set([activeCaseId]) : new Set()
   );
   useEffect(() => {
-    if (!drawerMode && activeCaseId) setDesktopExpandedId(activeCaseId);
+    if (!drawerMode && activeCaseId) {
+      setDesktopExpandedIds((prev) => new Set([...prev, activeCaseId]));
+    }
   }, [activeCaseId, drawerMode]);
 
   const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
@@ -222,8 +224,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
         {/* Case groups with dividers between them */}
         {activeCases.map((c, idx) => {
           const isExpanded = drawerMode
-            ? c.id === drawerExpandedId
-            : c.id === desktopExpandedId;
+            ? drawerExpandedIds.has(c.id)
+            : desktopExpandedIds.has(c.id);
 
           return (
           <div key={c.id}>
@@ -237,14 +239,17 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
               renameInputRef={renameInputRef}
               onSelect={() => {
                 if (drawerMode) {
-                  setDrawerExpandedId((prev) =>
-                    prev === c.id ? null : c.id
-                  );
+                  setDrawerExpandedIds((prev) => {
+                    const next = new Set(prev);
+                    next.has(c.id) ? next.delete(c.id) : next.add(c.id);
+                    return next;
+                  });
                 } else {
-                  // Desktop: toggle accordion only, dialog opens via agent click
-                  setDesktopExpandedId((prev) =>
-                    prev === c.id ? null : c.id
-                  );
+                  setDesktopExpandedIds((prev) => {
+                    const next = new Set(prev);
+                    next.has(c.id) ? next.delete(c.id) : next.add(c.id);
+                    return next;
+                  });
                 }
               }}
               onAgentSelect={(agentId) => {
