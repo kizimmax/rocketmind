@@ -156,9 +156,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
           {/* + button: 24×24px, bg: rm-gray-1, rounded: 4px */}
           <button
             onClick={() => setIsCreating(true)}
-            className="h-6 w-6 shrink-0 flex items-center justify-center rounded-sm bg-rm-gray-1 text-muted-foreground hover:bg-rm-gray-2 hover:text-foreground transition-colors"
+            className="h-7 w-7 shrink-0 flex items-center justify-center rounded-sm bg-rm-gray-1 text-muted-foreground hover:bg-rm-gray-2 hover:text-foreground transition-colors"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
           </button>
         </div>
 
@@ -489,7 +489,7 @@ function CaseAgentsNested({
           router.push(`/agents?caseId=${caseId}`);
           onNavigate?.();
         }}
-        className="relative flex w-full items-center gap-2 rounded-sm py-1 pr-2 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors group/add"
+        className="mt-1 relative flex w-full items-center gap-2 rounded-sm py-1 pr-2 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors group/add"
       >
         {/* Dashed border: 4px dash, 12px gap (3× rarer than default) */}
         <svg
@@ -580,23 +580,24 @@ function UserMenu({
           <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side="top" className="z-[70] w-52">
+      <DropdownMenuContent align="start" side="top" className="z-[70] w-64">
         <DropdownMenuItem
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+          className="h-auto py-3 text-[length:var(--text-16)] [&_svg]:!size-5"
         >
           {resolvedTheme === "dark" ? (
-            <Sun className="mr-2 h-3.5 w-3.5" />
+            <Sun className="mr-3 h-5 w-5" />
           ) : (
-            <Moon className="mr-2 h-3.5 w-3.5" />
+            <Moon className="mr-3 h-5 w-5" />
           )}
           {resolvedTheme === "dark" ? "Светлая тема" : "Тёмная тема"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={onLogout}
-          className="text-[var(--rm-red-500)]"
+          className="h-auto py-3 text-[length:var(--text-16)] [&_svg]:!size-5 text-[var(--rm-red-500)]"
         >
-          <LogOut className="mr-2 h-3.5 w-3.5" />
+          <LogOut className="mr-3 h-5 w-5" />
           Выйти
         </DropdownMenuItem>
       </DropdownMenuContent>
