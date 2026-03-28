@@ -608,7 +608,7 @@ function UserMenu({
       <DropdownMenuContent align="start" side="top" className="z-[70] w-64">
         {/* Font size */}
         <div className="flex items-center gap-2 px-3 py-3">
-          <span className="flex-1 text-[length:var(--text-16)]">Размер текста</span>
+          <span className="flex-1 text-[length:var(--text-16)]">Размер</span>
           <div className="flex gap-1">
             {(["sm", "md", "lg"] as const).map((s, i) => (
               <button
