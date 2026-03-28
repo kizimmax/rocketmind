@@ -153,6 +153,7 @@ export function useMessages(caseId: string, agentId: string) {
     conv ? getMockMessages(conv.id) : []
   );
   const [isSending, setIsSending] = useState(false);
+  const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -188,12 +189,13 @@ export function useMessages(caseId: string, agentId: string) {
       const updatedWithAssistant = [...updatedWithUser, assistantMsg];
       mockMessages[conv.id] = updatedWithAssistant;
       setMessages(updatedWithAssistant);
+      setStreamingMsgId(assistantMsg.id);
       setIsSending(false);
     },
     [conv]
   );
 
-  return { messages, sendMessage, isSending, conversationId: conv?.id };
+  return { messages, sendMessage, isSending, streamingMsgId, conversationId: conv?.id };
 }
 
 // --- Conversations ---

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button, GlowingEffect } from "@rocketmind/ui";
 import { ExternalLink } from "lucide-react";
@@ -9,15 +10,19 @@ import { formatTime, getInitials } from "@/lib/utils";
 export function MessageBubble({
   message,
   agent,
+  isNew,
 }: {
   message: Message;
   agent?: Agent;
+  isNew?: boolean;
 }) {
   switch (message.role) {
     case "user":
       return <UserMessage message={message} />;
     case "assistant":
-      return <AssistantMessage message={message} agent={agent} />;
+      return (
+        <AssistantMessage message={message} agent={agent} stream={isNew} />
+      );
     case "system":
       return <SystemMessage message={message} />;
   }
@@ -27,7 +32,7 @@ function UserMessage({ message }: { message: Message }) {
   return (
     <div className="flex justify-end">
       <div className="max-w-[75%] space-y-1">
-        <div className="rounded-sm bg-[var(--rm-yellow-900)] px-3 py-2 text-[length:var(--text-14)] text-foreground">
+        <div className="rounded-sm bg-[var(--rm-yellow-900)] px-4 py-3 text-[length:var(--text-14)] text-foreground">
           <p className="whitespace-pre-wrap">{message.content}</p>
         </div>
         <p className="text-right text-[length:var(--text-12)] text-muted-foreground">
@@ -41,10 +46,38 @@ function UserMessage({ message }: { message: Message }) {
 function AssistantMessage({
   message,
   agent,
+  stream,
 }: {
   message: Message;
   agent?: Agent;
+  stream?: boolean;
 }) {
+  const [displayedText, setDisplayedText] = useState(stream ? "" : message.content);
+  const [isStreaming, setIsStreaming] = useState(!!stream);
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    if (!stream) return;
+    const full = message.content;
+    const speed = 18; // ms per character
+    indexRef.current = 0;
+    setDisplayedText("");
+    setIsStreaming(true);
+
+    const timer = setInterval(() => {
+      indexRef.current += 1;
+      if (indexRef.current >= full.length) {
+        setDisplayedText(full);
+        setIsStreaming(false);
+        clearInterval(timer);
+      } else {
+        setDisplayedText(full.slice(0, indexRef.current));
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [stream, message.content]);
+
   return (
     <div className="flex justify-start">
       <div className="max-w-[75%] space-y-1">
@@ -71,9 +104,12 @@ function AssistantMessage({
             </span>
           </div>
         )}
-        <div className="relative rounded-sm bg-background px-3 py-2 text-[length:var(--text-14)] text-foreground">
+        <div className="relative rounded-sm bg-background px-4 py-3 text-[length:var(--text-14)] text-foreground">
           <GlowingEffect variant="yellow" borderWidth={2} disabled={false} />
-          <MarkdownContent content={message.content} />
+          <MarkdownContent content={displayedText} />
+          {isStreaming && (
+            <span className="inline-block w-[2px] h-[1em] bg-foreground ml-0.5 align-text-bottom animate-blink" />
+          )}
         </div>
         <p className="text-[length:var(--text-12)] text-muted-foreground">
           {formatTime(message.created_at)}

@@ -16,7 +16,7 @@ interface ChatProps {
 }
 
 export function Chat({ caseId, agent }: ChatProps) {
-  const { messages, sendMessage, isSending } = useMessages(caseId, agent.id);
+  const { messages, sendMessage, isSending, streamingMsgId } = useMessages(caseId, agent.id);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll on new messages
@@ -49,7 +49,12 @@ export function Chat({ caseId, agent }: ChatProps) {
         ) : (
           <div className="mx-auto max-w-2xl space-y-4 px-4 py-4">
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} agent={agent} />
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                agent={agent}
+                isNew={msg.id === streamingMsgId}
+              />
             ))}
             {isSending && <TypingIndicator />}
           </div>
