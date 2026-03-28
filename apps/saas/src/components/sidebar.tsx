@@ -141,7 +141,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   }
 
   return (
-    <aside className={`flex h-full flex-col border-r border-border bg-background ${drawerMode ? "w-full" : "w-60"}`}>
+    <aside className={`flex h-full flex-col border-r border-border bg-background ${drawerMode ? "w-full" : "w-[312px]"}`}>
       {/* Logo */}
       <LogoHeader onClose={onNavigate} />
 
