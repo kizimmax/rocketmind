@@ -244,7 +244,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
             />
             Архив ({archivedCases.length})
           </button>
-          {showArchived && (
+          <Collapsible open={showArchived}>
             <div className="pb-2">
               {archivedCases.map((c) => (
                 <div
@@ -269,7 +269,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
                 </div>
               ))}
             </div>
-          )}
+          </Collapsible>
         </div>
       )}
 
@@ -382,15 +382,15 @@ function CaseItemWithAgents({
         </div>
       )}
 
-      {/* Agents — shown when case is expanded (drawer: local state; desktop: URL) */}
-      {isExpanded && (
+      {/* Agents — animated expand/collapse */}
+      <Collapsible open={isExpanded}>
         <CaseAgentsNested
           caseId={caseItem.id}
           activeAgentId={activeAgentId}
           onAgentSelect={onAgentSelect}
           onNavigate={onNavigate}
         />
-      )}
+      </Collapsible>
     </div>
   );
 }
@@ -468,6 +468,19 @@ function CaseAgentsNested({
         <span className="text-[length:var(--text-14)]">Агент</span>
       </button>
     </>
+  );
+}
+
+// --- Animated collapse/expand ---
+
+function Collapsible({ open, children }: { open: boolean; children: React.ReactNode }) {
+  return (
+    <div
+      className="grid transition-[grid-template-rows] duration-200 ease-out"
+      style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+    >
+      <div className="overflow-hidden">{children}</div>
+    </div>
   );
 }
 
