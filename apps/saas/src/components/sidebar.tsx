@@ -112,7 +112,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   }
 
   return (
-    <aside className="flex h-full w-60 flex-col border-r border-border bg-background">
+    <aside className={`flex h-full flex-col border-r border-border bg-background ${drawerMode ? "w-full" : "w-60"}`}>
       {/* Logo */}
       <LogoHeader onClose={onNavigate} />
 
@@ -361,7 +361,7 @@ function CaseItemWithAgents({
                 <MoreHorizontal className="h-3.5 w-3.5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuContent align="end" className="z-[70] w-40">
               <DropdownMenuItem onClick={onStartRename}>
                 <Pencil className="mr-2 h-3.5 w-3.5" />
                 Переименовать
@@ -523,7 +523,7 @@ function UserMenu({
           <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side="top" className="w-52">
+      <DropdownMenuContent align="start" side="top" className="z-[70] w-52">
         <DropdownMenuItem
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
         >
