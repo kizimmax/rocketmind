@@ -25,13 +25,13 @@ jobs:
         run: npm install --legacy-peer-deps --ignore-scripts
       - name: Build UI package
         run: npm run ui:build
-      - name: Build SaaS app
-        run: npm run build --workspace=apps/saas
+      - name: Build Site
+        run: npm run build --workspace=apps/site
         env:
           NODE_ENV: production
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/saas/out
+          path: apps/site/out
 
   deploy:
     needs: build
