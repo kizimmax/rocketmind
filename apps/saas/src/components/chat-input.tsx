@@ -32,7 +32,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   return (
     <div className="px-3.5 pb-3.5">
       <div className="mx-auto max-w-2xl">
-        <div className="relative rounded-sm border border-border bg-background/80 backdrop-blur-sm transition-colors focus-within:border-ring">
+        <div className="relative rounded-sm border-2 border-border bg-background/80 backdrop-blur-sm transition-colors focus-within:border-ring">
           <GlowingEffect variant="yellow" borderWidth={2} disabled={false} />
           <Textarea
             ref={textareaRef}
