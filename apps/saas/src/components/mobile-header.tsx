@@ -88,6 +88,14 @@ export function MobileHeader() {
 
   const close = useCallback(() => setIsOpen(false), []);
 
+  // Clear residual inline styles when drawer opens so CSS classes take over cleanly
+  useEffect(() => {
+    if (isOpen) {
+      if (panelRef.current) panelRef.current.style.transform = "";
+      if (backdropRef.current) backdropRef.current.style.opacity = "";
+    }
+  }, [isOpen]);
+
   /* Body scroll lock */
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -155,8 +163,8 @@ export function MobileHeader() {
       if (backdropRef.current) backdropRef.current.style.opacity = "0";
       setTimeout(() => {
         close();
+        // backdrop opacity cleared in useEffect(isOpen) to avoid flash
         if (panelRef.current) panelRef.current.style.transform = "";
-        if (backdropRef.current) backdropRef.current.style.opacity = "";
       }, 300);
     } else {
       // Snap back
