@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import { getMockCase, getMockCaseAgents } from "@/lib/mock-data";
 import { Sidebar } from "./sidebar";
@@ -61,15 +61,30 @@ function Breadcrumb({
 export function MobileHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [agentSearch, setAgentSearch] = useState("");
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { resolvedTheme } = useTheme();
 
   const caseId = params?.id as string | undefined;
   const agentId = searchParams?.get("agent") ?? undefined;
+  const isAgentsPage = pathname === "/agents";
 
   useEffect(() => setMounted(true), []);
+
+  // Reset search when navigating away from agents page
+  useEffect(() => {
+    if (!isAgentsPage) setAgentSearch("");
+  }, [isAgentsPage]);
+
+  // Emit search value to agents page via custom event
+  useEffect(() => {
+    if (isAgentsPage) {
+      window.dispatchEvent(new CustomEvent("agents-search", { detail: agentSearch }));
+    }
+  }, [agentSearch, isAgentsPage]);
 
   const close = useCallback(() => setIsOpen(false), []);
 
@@ -210,21 +225,49 @@ export function MobileHeader() {
           <BurgerIcon open={isOpen} />
         </button>
 
-        {/* Breadcrumb — flex-1, min-w-0 for truncation */}
-        <div className="ml-3 flex flex-1 items-center overflow-hidden">
-          <Breadcrumb caseId={caseId} agentId={agentId} />
-        </div>
+        {isAgentsPage ? (
+          /* Search input — agents catalog page */
+          <div className="ml-3 flex flex-1 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Поиск по агентам..."
+                value={agentSearch}
+                onChange={(e) => setAgentSearch(e.target.value)}
+                className="h-8 w-full rounded-sm border border-border bg-rm-gray-1 pl-8 pr-8 text-[length:var(--text-14)] text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-ring transition-colors"
+              />
+              {agentSearch && (
+                <button
+                  type="button"
+                  onClick={() => setAgentSearch("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  aria-label="Очистить поиск"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Breadcrumb — flex-1, min-w-0 for truncation */}
+            <div className="ml-3 flex flex-1 items-center overflow-hidden">
+              <Breadcrumb caseId={caseId} agentId={agentId} />
+            </div>
 
-        {/* + new agent — only when on case page WITHOUT agent selected */}
-        {caseId && !agentId && (
-          <button
-            type="button"
-            onClick={() => router.push(`/agents?caseId=${caseId}`)}
-            className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
-            aria-label="Добавить агента"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+            {/* + new agent — only when on case page WITHOUT agent selected */}
+            {caseId && !agentId && (
+              <button
+                type="button"
+                onClick={() => router.push(`/agents?caseId=${caseId}`)}
+                className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+                aria-label="Добавить агента"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            )}
+          </>
         )}
       </header>
 

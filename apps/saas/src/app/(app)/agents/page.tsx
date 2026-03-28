@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@rocketmind/ui";
 import { Search } from "lucide-react";
 import { useAgents, useCaseAgents } from "@/lib/hooks";
@@ -14,6 +14,15 @@ export default function AgentsCatalogPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const caseId = searchParams?.get("caseId") ?? "";
+
+  // Listen for search from mobile header
+  useEffect(() => {
+    function onHeaderSearch(e: Event) {
+      setSearch((e as CustomEvent).detail);
+    }
+    window.addEventListener("agents-search", onHeaderSearch);
+    return () => window.removeEventListener("agents-search", onHeaderSearch);
+  }, []);
 
   const { agents: caseAgents, addAgentToCase } = useCaseAgents(caseId);
   const caseAgentIds = new Set(caseAgents.map((a) => a.id));
@@ -57,8 +66,8 @@ export default function AgentsCatalogPage() {
           </p>
         </div>
 
-        {/* Search */}
-        <div className="relative">
+        {/* Search — hidden on mobile, shown in mobile header instead */}
+        <div className="relative hidden lg:block">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Поиск по агентам..."
