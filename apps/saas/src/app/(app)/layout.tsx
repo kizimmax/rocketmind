@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-background">
+    <div className="fixed inset-0 flex bg-background">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex">
         <Sidebar />
