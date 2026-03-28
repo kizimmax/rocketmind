@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -91,6 +91,59 @@ export function MobileHeader() {
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, close]);
 
+  /* Swipe-to-close */
+  const panelRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const touchRef = useRef({ startX: 0, startY: 0, dx: 0, swiping: false });
+
+  const PANEL_W = 312;
+  const SWIPE_THRESHOLD = 80;
+
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    touchRef.current = { startX: t.clientX, startY: t.clientY, dx: 0, swiping: false };
+    // Disable CSS transition during drag
+    if (panelRef.current) panelRef.current.style.transition = "none";
+    if (backdropRef.current) backdropRef.current.style.transition = "none";
+  }
+
+  function onTouchMove(e: React.TouchEvent) {
+    const t = e.touches[0];
+    const ref = touchRef.current;
+    const dx = t.clientX - ref.startX;
+    const dy = t.clientY - ref.startY;
+
+    // Lock direction on first significant movement
+    if (!ref.swiping && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      ref.swiping = true;
+    }
+    if (!ref.swiping) return;
+
+    ref.dx = Math.min(0, dx); // only allow left swipe
+    if (panelRef.current) {
+      panelRef.current.style.transform = `translateX(${ref.dx}px)`;
+    }
+    if (backdropRef.current) {
+      backdropRef.current.style.opacity = `${Math.max(0, 1 + ref.dx / PANEL_W)}`;
+    }
+  }
+
+  function onTouchEnd() {
+    const ref = touchRef.current;
+    // Restore CSS transitions
+    if (panelRef.current) panelRef.current.style.transition = "";
+    if (backdropRef.current) backdropRef.current.style.transition = "";
+
+    if (ref.swiping && ref.dx < -SWIPE_THRESHOLD) {
+      close();
+    } else {
+      // Snap back
+      if (panelRef.current) panelRef.current.style.transform = "";
+      if (backdropRef.current) backdropRef.current.style.opacity = "";
+    }
+    touchRef.current = { startX: 0, startY: 0, dx: 0, swiping: false };
+  }
+
   const iconSrc =
     resolvedTheme === "dark"
       ? "/icon_dark_background.svg"
@@ -105,12 +158,20 @@ export function MobileHeader() {
               ? "opacity-100 pointer-events-auto"
               : "opacity-0 pointer-events-none",
           )}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50" onClick={close} />
+          <div
+            ref={backdropRef}
+            className="absolute inset-0 bg-black/50 transition-opacity duration-300"
+            onClick={close}
+          />
 
           {/* Sidebar panel */}
           <div
+            ref={panelRef}
             className={cn(
               "absolute left-0 top-0 h-full w-[312px] bg-background shadow-xl transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
               isOpen ? "translate-x-0" : "-translate-x-full",
