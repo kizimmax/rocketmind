@@ -64,6 +64,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
     activeCaseId ?? null
   );
 
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
+
   const [isCreating, setIsCreating] = useState(false);
   const [newCaseName, setNewCaseName] = useState("");
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -96,6 +98,33 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   function handleCancelCreate() {
     setNewCaseName("");
     setIsCreating(false);
+  }
+
+  function handleDeleteArchived(c: Case) {
+    let undone = false;
+
+    // Optimistically hide from list while toast is showing
+    setPendingDeleteIds((prev) => new Set([...prev, c.id]));
+
+    toast(`Кейс «${c.name}» удалён`, {
+      duration: 10000,
+      action: { label: "Отменить", onClick: () => {
+        undone = true;
+        setPendingDeleteIds((prev) => { const n = new Set(prev); n.delete(c.id); return n; });
+      }},
+      onAutoClose: () => {
+        if (undone) return;
+        deleteCase(c.id);
+        setPendingDeleteIds((prev) => { const n = new Set(prev); n.delete(c.id); return n; });
+        toast(`Кейс «${c.name}» удалён навсегда`);
+      },
+      onDismiss: () => {
+        if (undone) return;
+        deleteCase(c.id);
+        setPendingDeleteIds((prev) => { const n = new Set(prev); n.delete(c.id); return n; });
+        toast(`Кейс «${c.name}» удалён навсегда`);
+      },
+    });
   }
 
   function handleRenameCase() {
@@ -246,25 +275,40 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
           </button>
           <Collapsible open={showArchived}>
             <div className="pb-2">
-              {archivedCases.map((c) => (
+              {archivedCases
+                .filter((c) => !pendingDeleteIds.has(c.id))
+                .map((c) => (
                 <div
                   key={c.id}
-                  className="group flex items-center gap-2 rounded-sm pr-4 py-1.5 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground cursor-pointer transition-colors opacity-60"
+                  className="group flex items-center gap-1 rounded-sm pr-2 py-1.5 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground cursor-pointer transition-colors"
                   onClick={() => router.push(`/cases/${c.id}`)}
                 >
-                  <Archive className="h-3.5 w-3.5 shrink-0" />
-                  <span className="flex-1 truncate text-[length:var(--text-14)]">
+                  <Archive className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                  <span className="flex-1 truncate text-[length:var(--text-14)] opacity-60">
                     {c.name}
                   </span>
+                  {/* Restore — always visible */}
                   <button
-                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm p-0.5 hover:bg-rm-gray-2"
+                    className="shrink-0 rounded-sm p-1 text-muted-foreground hover:bg-rm-gray-2 hover:text-foreground transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       restoreCase(c.id);
+                      toast.success(`Кейс «${c.name}» восстановлен`);
                     }}
                     title="Восстановить"
                   >
                     <ArchiveRestore className="h-3.5 w-3.5" />
+                  </button>
+                  {/* Delete — always visible */}
+                  <button
+                    className="shrink-0 rounded-sm p-1 text-[var(--rm-red-500)] hover:bg-rm-gray-2 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteArchived(c);
+                    }}
+                    title="Удалить навсегда"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ))}
