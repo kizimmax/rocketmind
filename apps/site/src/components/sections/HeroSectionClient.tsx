@@ -669,20 +669,20 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
           <div className="hero-background-fade" />
         </div>
 
-        <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1512px] flex-col px-5 pb-10 pt-10 md:px-8 xl:px-14">
+        <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1512px] flex-col px-5 pb-10 pt-5 md:px-8 md:pt-10 xl:px-14">
           <div className="hero-top-bar relative z-20 flex flex-col gap-6">
-            <InfiniteLogoMarquee logos={logos} />
+            <InfiniteLogoMarquee logos={logos} maxLogoHeight={breakpointKey === "mobile" ? 27 : 39} />
 
             <div
               data-lens-hide="true"
               className="hero-top-bar-right flex shrink-0 items-start justify-between gap-4"
             >
               <div className="hero-top-bar-stats text-left">
-                <p className="font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground">
+                <p className="font-heading text-[19px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground md:text-[24px]">
                   <span className="text-muted-foreground">120+ клиентов </span>
                   19 лет опыта
                 </p>
-                <p className="font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground">
+                <p className="font-heading text-[19px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground md:text-[24px]">
                   в бизнес-моделировании
                 </p>
               </div>
