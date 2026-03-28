@@ -3,7 +3,19 @@
 @layer base {
   html,
   body {
+    position: fixed;
+    width: 100%;
     height: 100%;
+    overflow: hidden;
+  }
+
+  /* App shell: adapts to visual viewport so virtual keyboard doesn't overlap */
+  .app-shell {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--app-height, 100%);
     overflow: hidden;
   }
 }

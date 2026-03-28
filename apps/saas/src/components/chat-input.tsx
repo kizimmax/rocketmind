@@ -37,12 +37,13 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           <GlowingEffect variant="yellow" borderWidth={2} disabled={false} />
           <Textarea
             ref={textareaRef}
+            variant="chat"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Введите сообщение..."
             disabled={disabled}
-            className="min-h-[44px] max-h-[160px] resize-none border-0 bg-transparent pr-12 focus-visible:ring-0 focus-visible:border-0"
+            className="min-h-[44px] max-h-[160px] border-0 bg-transparent pr-12 focus-visible:ring-0 focus-visible:border-0"
             rows={1}
           />
           <Button

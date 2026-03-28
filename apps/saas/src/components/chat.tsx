@@ -26,6 +26,21 @@ export function Chat({ caseId, agent }: ChatProps) {
     }
   }, [messages.length]);
 
+  // Re-scroll when virtual keyboard opens/closes (viewport resize)
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    function onResize() {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }
+
+    vv.addEventListener("resize", onResize);
+    return () => vv.removeEventListener("resize", onResize);
+  }, []);
+
   const isEmpty = messages.length === 0;
 
   return (

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider, Toaster } from "@rocketmind/ui";
 import { AuthProvider } from "@/lib/auth-context";
@@ -6,6 +6,12 @@ import { AuthProvider } from "@/lib/auth-context";
 export const metadata: Metadata = {
   title: "Rocketmind",
   description: "AI-агенты для ведения кейсов",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({

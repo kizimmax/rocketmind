@@ -16,6 +16,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, router]);
 
+  // Track visual viewport height to keep layout above virtual keyboard (iOS/Android)
+  useEffect(() => {
+    function updateHeight() {
+      const h = window.visualViewport?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty("--app-height", `${h}px`);
+    }
+
+    updateHeight();
+
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener("resize", updateHeight);
+      vv.addEventListener("scroll", updateHeight);
+      return () => {
+        vv.removeEventListener("resize", updateHeight);
+        vv.removeEventListener("scroll", updateHeight);
+      };
+    }
+
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -27,7 +50,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="fixed inset-0 flex bg-background">
+    <div className="app-shell flex bg-background">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex">
         <Sidebar />
