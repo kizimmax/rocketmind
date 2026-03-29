@@ -33,7 +33,7 @@ function UserMessage({ message }: { message: Message }) {
   return (
     <div className="flex justify-end">
       <div className="max-w-[75%] space-y-1">
-        <div className="rounded-sm bg-[var(--rm-yellow-900)] px-4 py-3 text-[length:var(--text-14)] text-foreground">
+        <div className="rounded-sm bg-rm-gray-2 px-4 py-3 text-[length:var(--text-14)] text-foreground">
           <p className="whitespace-pre-wrap">{message.content}</p>
         </div>
         <p className="text-right text-[length:var(--text-12)] text-muted-foreground">
@@ -87,7 +87,7 @@ function AssistantMessage({
 
   return (
     <div className="flex justify-start gap-2">
-      <div className="min-w-0 max-w-[75%] space-y-1">
+      <div className="min-w-0 max-w-[90%] lg:max-w-[75%] space-y-1">
         {/* Agent identity above bubble */}
         {agent && (
           <div className="flex items-center gap-1.5 mb-1">
