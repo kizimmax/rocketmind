@@ -1,8 +1,11 @@
-name: Deploy to GitHub Pages
+name: Deploy SaaS to GitHub Pages
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'apps/saas/**'
+      - 'packages/ui/**'
 
 permissions:
   contents: read
@@ -25,13 +28,13 @@ jobs:
         run: npm install --legacy-peer-deps --ignore-scripts
       - name: Build UI package
         run: npm run ui:build
-      - name: Build Site
-        run: npm run build --workspace=apps/site
+      - name: Build SaaS
+        run: npm run build --workspace=apps/saas
         env:
           NODE_ENV: production
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/site/out
+          path: apps/saas/out
 
   deploy:
     needs: build
