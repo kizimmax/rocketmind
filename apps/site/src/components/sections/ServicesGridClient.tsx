@@ -7,6 +7,8 @@ import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
 export type ServiceCard = {
   title: string;
   description: string;
+  /** Link for "Подробнее" button */
+  href?: string;
   /** Info bubble: no "Подробнее" button, purple title, partner logos at bottom */
   variant?: "info";
   /** Partner logo image paths for info cards */
@@ -17,6 +19,8 @@ export type ServiceSection = {
   trackName: string;
   headerHighlight: string;
   description: string;
+  /** Link for "Все" button */
+  catalogHref?: string;
   cards: ServiceCard[];
 };
 
@@ -117,7 +121,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
 
           {/* ── Content column ────────────────────────────────────────── */}
           {/*   All 3 sections always in DOM, refs for IntersectionObserver */}
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             {sections.map((section, sIdx) => {
               const carouselIndex = carouselIndices[sIdx];
               const max = Math.max(0, section.cards.length - cardsPerView);
@@ -164,7 +168,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                         <ChevronRight size={16} strokeWidth={2} />
                       </button>
                       <Link
-                        href="#"
+                        href={section.catalogHref ?? "#"}
                         className="hidden md:flex items-center gap-2 border border-border bg-[#1a1a1a] text-foreground h-10 px-5 font-['Loos_Condensed',sans-serif] text-[14px] font-medium uppercase tracking-[0.56px] transition-colors hover:bg-[#242424] rounded-[4px]"
                       >
                         Все
@@ -176,9 +180,11 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                   {/* Cards carousel */}
                   <div className="overflow-hidden">
                     <div
-                      className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                      className="grid transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
                       style={{
-                        transform: `translateX(calc(-${carouselIndex} * 100% / ${cardsPerView}))`,
+                        gridTemplateColumns: `repeat(${section.cards.length}, 1fr)`,
+                        width: `${(section.cards.length * 100) / cardsPerView}%`,
+                        transform: `translateX(-${(carouselIndex * 100) / section.cards.length}%)`,
                       }}
                     >
                       {section.cards.map((card) =>
@@ -186,8 +192,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                           // ── Info bubble card: no button, purple title, logos ──
                           <article
                             key={card.title}
-                            className="shrink-0 flex flex-col border border-border p-8 [&:not(:first-child)]:-ml-px bg-background"
-                            style={{ width: `${100 / cardsPerView}%` }}
+                            className="flex flex-col border border-border [&:not(:first-child)]:border-l-0 p-8 bg-background"
                           >
                             <div className="flex flex-col h-full gap-2">
                               <div className="flex flex-col gap-2 min-h-[156px]">
@@ -219,8 +224,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                           // ── Regular card ──────────────────────────────────────
                           <article
                             key={card.title}
-                            className="shrink-0 flex flex-col border border-border p-8 [&:not(:first-child)]:-ml-px bg-background"
-                            style={{ width: `${100 / cardsPerView}%` }}
+                            className="flex flex-col border border-border [&:not(:first-child)]:border-l-0 p-8 bg-background"
                           >
                             <div className="flex flex-col gap-6">
                               <div className="flex flex-col gap-2 min-h-[156px]">
@@ -232,7 +236,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                                 </p>
                               </div>
                               <Link
-                                href="#contact"
+                                href={card.href ?? "#contact"}
                                 className="flex items-center justify-center border border-border bg-[#1a1a1a] px-5 py-[14px] font-['Loos_Condensed',sans-serif] text-[14px] font-medium uppercase tracking-[0.56px] text-foreground transition-colors hover:bg-[#242424] rounded-[4px]"
                               >
                                 Подробнее

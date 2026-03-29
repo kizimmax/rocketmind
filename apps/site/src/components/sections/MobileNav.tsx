@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
-import { rocketmindMenuItems } from "./RocketmindMenu";
+import { HEADER_NAV } from "@/content/site-nav";
 
 type AccordionState = Record<string, boolean>;
 
@@ -130,9 +130,8 @@ export function MobileNav({ className }: { className?: string }) {
                   Navigation
                 </p>
 
-                {rocketmindMenuItems.map((item, index) => {
-                  const hasDropdown =
-                    "dropdownItems" in item && item.dropdownItems;
+                {HEADER_NAV.map((item, index) => {
+                  const hasDropdown = item.items && item.items.length > 0;
                   const isExpanded = accordions[item.label] ?? false;
 
                   return (
@@ -188,9 +187,9 @@ export function MobileNav({ className }: { className?: string }) {
                                 className="overflow-hidden"
                               >
                                 <div className="grid gap-0.5 pb-5">
-                                  {item.dropdownItems.map((sub) => (
+                                  {item.items!.map((sub) => (
                                     <Link
-                                      key={sub.title}
+                                      key={sub.href}
                                       href={sub.href}
                                       onClick={close}
                                       className="rounded-sm px-3 py-3 transition-colors duration-150 hover:bg-black/5"

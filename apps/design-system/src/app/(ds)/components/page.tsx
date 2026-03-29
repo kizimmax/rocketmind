@@ -18,6 +18,7 @@ import { TableShowcase } from "@/components/ui/table-showcase"
 import { DialogShowcase } from "@/components/ui/dialog-showcase"
 import { DropdownMenuShowcase } from "@/components/ui/dropdown-menu-showcase"
 import { ToastShowcase } from "@/components/ui/toast-showcase"
+import { ShowMoreShowcase } from "@/components/ui/show-more-showcase"
 import {
   Rocket, User, Gem, BookOpen, Search,
   Loader2, Trash2, ArrowRight, Wrench, GraduationCap
@@ -1357,6 +1358,15 @@ export default function ComponentsPage() {
             Всплывающие уведомления через sonner. Типы: default, success, error, warning, info, loading. Фон — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">bg-popover</code>, бордер — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">border-border</code>.
           </p>
           <ToastShowcase />
+        </div>
+
+        {/* ── Show More ── */}
+        <div className="mb-12">
+          <SubSection id="components-show-more" title="Show More" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Кнопка-разделитель для скрытия избыточного контента. Пропсы: <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">expanded</code>, <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">onClick</code>, <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">label</code>, <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">labelExpanded</code>. Занимает всю ширину контейнера.
+          </p>
+          <ShowMoreShowcase />
         </div>
       </Section>
 

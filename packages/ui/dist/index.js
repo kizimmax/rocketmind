@@ -1325,10 +1325,52 @@ function Separator2({
   );
 }
 
+// src/components/ui/show-more.tsx
+import { ChevronDown as ChevronDown3 } from "lucide-react";
+import { jsx as jsx18, jsxs as jsxs8 } from "react/jsx-runtime";
+function ShowMore({
+  expanded,
+  onClick,
+  label = "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u0435\u0449\u0451",
+  labelExpanded = "\u0421\u043A\u0440\u044B\u0442\u044C",
+  className
+}) {
+  return /* @__PURE__ */ jsxs8(
+    "button",
+    {
+      type: "button",
+      onClick,
+      "aria-expanded": expanded,
+      className: cn(
+        "group/show-more flex w-full items-center gap-3 py-1 text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:text-foreground",
+        className
+      ),
+      children: [
+        /* @__PURE__ */ jsx18("span", { className: "h-px flex-1 bg-border transition-colors duration-[var(--duration-fast)] group-hover/show-more:bg-muted-foreground/30" }),
+        /* @__PURE__ */ jsxs8("span", { className: "inline-flex shrink-0 items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] transition-all duration-[var(--duration-fast)] group-hover/show-more:border-muted-foreground/40 group-hover/show-more:bg-[var(--rm-gray-1)]", children: [
+          expanded ? labelExpanded : label,
+          /* @__PURE__ */ jsx18(
+            ChevronDown3,
+            {
+              size: 12,
+              strokeWidth: 2.5,
+              className: cn(
+                "transition-transform duration-[var(--duration-base)]",
+                expanded && "rotate-180"
+              )
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsx18("span", { className: "h-px flex-1 bg-border transition-colors duration-[var(--duration-fast)] group-hover/show-more:bg-muted-foreground/30" })
+      ]
+    }
+  );
+}
+
 // src/components/ui/skeleton.tsx
-import { jsx as jsx18 } from "react/jsx-runtime";
+import { jsx as jsx19 } from "react/jsx-runtime";
 function Skeleton({ className, ...props }) {
-  return /* @__PURE__ */ jsx18(
+  return /* @__PURE__ */ jsx19(
     "div",
     {
       "data-slot": "skeleton",
@@ -1342,20 +1384,20 @@ function Skeleton({ className, ...props }) {
 import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react";
-import { jsx as jsx19 } from "react/jsx-runtime";
+import { jsx as jsx20 } from "react/jsx-runtime";
 var Toaster = ({ ...props }) => {
   const { theme = "system" } = useTheme();
-  return /* @__PURE__ */ jsx19(
+  return /* @__PURE__ */ jsx20(
     Sonner,
     {
       theme,
       className: "toaster group",
       icons: {
-        success: /* @__PURE__ */ jsx19(CircleCheckIcon, { className: "size-4" }),
-        info: /* @__PURE__ */ jsx19(InfoIcon, { className: "size-4" }),
-        warning: /* @__PURE__ */ jsx19(TriangleAlertIcon, { className: "size-4" }),
-        error: /* @__PURE__ */ jsx19(OctagonXIcon, { className: "size-4" }),
-        loading: /* @__PURE__ */ jsx19(Loader2Icon, { className: "size-4 animate-spin" })
+        success: /* @__PURE__ */ jsx20(CircleCheckIcon, { className: "size-4" }),
+        info: /* @__PURE__ */ jsx20(InfoIcon, { className: "size-4" }),
+        warning: /* @__PURE__ */ jsx20(TriangleAlertIcon, { className: "size-4" }),
+        error: /* @__PURE__ */ jsx20(OctagonXIcon, { className: "size-4" }),
+        loading: /* @__PURE__ */ jsx20(Loader2Icon, { className: "size-4 animate-spin" })
       },
       style: {
         "--normal-bg": "var(--popover)",
@@ -1375,13 +1417,13 @@ var Toaster = ({ ...props }) => {
 
 // src/components/ui/switch.tsx
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
-import { jsx as jsx20 } from "react/jsx-runtime";
+import { jsx as jsx21 } from "react/jsx-runtime";
 function Switch({
   className,
   size = "default",
   ...props
 }) {
-  return /* @__PURE__ */ jsx20(
+  return /* @__PURE__ */ jsx21(
     SwitchPrimitive.Root,
     {
       "data-slot": "switch",
@@ -1391,7 +1433,7 @@ function Switch({
         className
       ),
       ...props,
-      children: /* @__PURE__ */ jsx20(
+      children: /* @__PURE__ */ jsx21(
         SwitchPrimitive.Thumb,
         {
           "data-slot": "switch-thumb",
@@ -1403,9 +1445,9 @@ function Switch({
 }
 
 // src/components/ui/table.tsx
-import { jsx as jsx21 } from "react/jsx-runtime";
+import { jsx as jsx22 } from "react/jsx-runtime";
 function Table({ className, ...props }) {
-  return /* @__PURE__ */ jsx21("div", { "data-slot": "table-container", className: "relative w-full overflow-auto", children: /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx22("div", { "data-slot": "table-container", className: "relative w-full overflow-auto", children: /* @__PURE__ */ jsx22(
     "table",
     {
       "data-slot": "table",
@@ -1415,7 +1457,7 @@ function Table({ className, ...props }) {
   ) });
 }
 function TableHeader({ className, ...props }) {
-  return /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx22(
     "thead",
     {
       "data-slot": "table-header",
@@ -1425,7 +1467,7 @@ function TableHeader({ className, ...props }) {
   );
 }
 function TableBody({ className, ...props }) {
-  return /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx22(
     "tbody",
     {
       "data-slot": "table-body",
@@ -1435,7 +1477,7 @@ function TableBody({ className, ...props }) {
   );
 }
 function TableFooter({ className, ...props }) {
-  return /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx22(
     "tfoot",
     {
       "data-slot": "table-footer",
@@ -1448,7 +1490,7 @@ function TableFooter({ className, ...props }) {
   );
 }
 function TableRow({ className, ...props }) {
-  return /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx22(
     "tr",
     {
       "data-slot": "table-row",
@@ -1463,7 +1505,7 @@ function TableRow({ className, ...props }) {
   );
 }
 function TableHead({ className, ...props }) {
-  return /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx22(
     "th",
     {
       "data-slot": "table-head",
@@ -1478,7 +1520,7 @@ function TableHead({ className, ...props }) {
   );
 }
 function TableCell({ className, ...props }) {
-  return /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx22(
     "td",
     {
       "data-slot": "table-cell",
@@ -1493,7 +1535,7 @@ function TableCell({ className, ...props }) {
   );
 }
 function TableCaption({ className, ...props }) {
-  return /* @__PURE__ */ jsx21(
+  return /* @__PURE__ */ jsx22(
     "caption",
     {
       "data-slot": "table-caption",
@@ -1509,13 +1551,13 @@ function TableCaption({ className, ...props }) {
 // src/components/ui/tabs.tsx
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { cva as cva6 } from "class-variance-authority";
-import { jsx as jsx22 } from "react/jsx-runtime";
+import { jsx as jsx23 } from "react/jsx-runtime";
 function Tabs({
   className,
   orientation = "horizontal",
   ...props
 }) {
-  return /* @__PURE__ */ jsx22(
+  return /* @__PURE__ */ jsx23(
     TabsPrimitive.Root,
     {
       "data-slot": "tabs",
@@ -1547,7 +1589,7 @@ function TabsList({
   variant = "default",
   ...props
 }) {
-  return /* @__PURE__ */ jsx22(
+  return /* @__PURE__ */ jsx23(
     TabsPrimitive.List,
     {
       "data-slot": "tabs-list",
@@ -1558,7 +1600,7 @@ function TabsList({
   );
 }
 function TabsTrigger({ className, ...props }) {
-  return /* @__PURE__ */ jsx22(
+  return /* @__PURE__ */ jsx23(
     TabsPrimitive.Tab,
     {
       "data-slot": "tabs-trigger",
@@ -1574,7 +1616,7 @@ function TabsTrigger({ className, ...props }) {
   );
 }
 function TabsContent({ className, ...props }) {
-  return /* @__PURE__ */ jsx22(
+  return /* @__PURE__ */ jsx23(
     TabsPrimitive.Panel,
     {
       "data-slot": "tabs-content",
@@ -1587,7 +1629,7 @@ function TabsContent({ className, ...props }) {
 // src/components/ui/textarea.tsx
 import * as React11 from "react";
 import { cva as cva7 } from "class-variance-authority";
-import { jsx as jsx23 } from "react/jsx-runtime";
+import { jsx as jsx24 } from "react/jsx-runtime";
 var textareaVariants = cva7(
   "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive",
   {
@@ -1604,7 +1646,7 @@ var textareaVariants = cva7(
 );
 var Textarea = React11.forwardRef(
   ({ className, variant, ...props }, ref) => {
-    return /* @__PURE__ */ jsx23(
+    return /* @__PURE__ */ jsx24(
       "textarea",
       {
         ref,
@@ -1619,12 +1661,12 @@ Textarea.displayName = "Textarea";
 
 // src/components/ui/tooltip.tsx
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
-import { jsx as jsx24, jsxs as jsxs8 } from "react/jsx-runtime";
+import { jsx as jsx25, jsxs as jsxs9 } from "react/jsx-runtime";
 function TooltipProvider({
   delay = 0,
   ...props
 }) {
-  return /* @__PURE__ */ jsx24(
+  return /* @__PURE__ */ jsx25(
     TooltipPrimitive.Provider,
     {
       "data-slot": "tooltip-provider",
@@ -1634,10 +1676,10 @@ function TooltipProvider({
   );
 }
 function Tooltip({ ...props }) {
-  return /* @__PURE__ */ jsx24(TooltipPrimitive.Root, { "data-slot": "tooltip", ...props });
+  return /* @__PURE__ */ jsx25(TooltipPrimitive.Root, { "data-slot": "tooltip", ...props });
 }
 function TooltipTrigger({ ...props }) {
-  return /* @__PURE__ */ jsx24(TooltipPrimitive.Trigger, { "data-slot": "tooltip-trigger", ...props });
+  return /* @__PURE__ */ jsx25(TooltipPrimitive.Trigger, { "data-slot": "tooltip-trigger", ...props });
 }
 function TooltipContent({
   className,
@@ -1648,7 +1690,7 @@ function TooltipContent({
   children,
   ...props
 }) {
-  return /* @__PURE__ */ jsx24(TooltipPrimitive.Portal, { children: /* @__PURE__ */ jsx24(
+  return /* @__PURE__ */ jsx25(TooltipPrimitive.Portal, { children: /* @__PURE__ */ jsx25(
     TooltipPrimitive.Positioner,
     {
       align,
@@ -1656,7 +1698,7 @@ function TooltipContent({
       side,
       sideOffset,
       className: "isolate z-50",
-      children: /* @__PURE__ */ jsxs8(
+      children: /* @__PURE__ */ jsxs9(
         TooltipPrimitive.Popup,
         {
           "data-slot": "tooltip-content",
@@ -1667,7 +1709,7 @@ function TooltipContent({
           ...props,
           children: [
             children,
-            /* @__PURE__ */ jsx24(TooltipPrimitive.Arrow, { className: "z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" })
+            /* @__PURE__ */ jsx25(TooltipPrimitive.Arrow, { className: "z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" })
           ]
         }
       )
@@ -1676,22 +1718,22 @@ function TooltipContent({
 }
 
 // src/components/ui/infinite-logo-marquee.tsx
-import { jsx as jsx25, jsxs as jsxs9 } from "react/jsx-runtime";
+import { jsx as jsx26, jsxs as jsxs10 } from "react/jsx-runtime";
 function LogoSequence({
   logos,
   gap,
   maxLogoHeight
 }) {
-  return /* @__PURE__ */ jsx25(
+  return /* @__PURE__ */ jsx26(
     "div",
     {
       className: "flex shrink-0 items-center py-[10px] pl-1",
       style: { gap: `${gap}px`, paddingRight: `${gap}px` },
-      children: logos.map((logo) => /* @__PURE__ */ jsx25(
+      children: logos.map((logo) => /* @__PURE__ */ jsx26(
         "div",
         {
           className: "flex shrink-0 items-center justify-center opacity-90",
-          children: /* @__PURE__ */ jsx25(
+          children: /* @__PURE__ */ jsx26(
             "img",
             {
               src: logo.src,
@@ -1727,7 +1769,7 @@ function InfiniteLogoMarquee({
   const marqueeStyle = {
     "--hero-marquee-duration": `${speedSeconds}s`
   };
-  return /* @__PURE__ */ jsx25(
+  return /* @__PURE__ */ jsx26(
     "div",
     {
       className: cn(
@@ -1735,9 +1777,9 @@ function InfiniteLogoMarquee({
         className
       ),
       style: buildFadeMask(fadeWidth),
-      children: /* @__PURE__ */ jsxs9("div", { className: "partner-logo-marquee-track", style: marqueeStyle, children: [
-        /* @__PURE__ */ jsx25(LogoSequence, { logos, gap, maxLogoHeight }),
-        /* @__PURE__ */ jsx25(LogoSequence, { logos, gap, maxLogoHeight })
+      children: /* @__PURE__ */ jsxs10("div", { className: "partner-logo-marquee-track", style: marqueeStyle, children: [
+        /* @__PURE__ */ jsx26(LogoSequence, { logos, gap, maxLogoHeight }),
+        /* @__PURE__ */ jsx26(LogoSequence, { logos, gap, maxLogoHeight })
       ] })
     }
   );
@@ -1794,6 +1836,7 @@ export {
   ScrollBar,
   SearchCombobox,
   Separator2 as Separator,
+  ShowMore,
   Skeleton,
   Switch,
   Table,

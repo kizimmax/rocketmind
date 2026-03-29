@@ -1,4 +1,9 @@
 import { ServicesGridClient, type ServiceSection } from "./ServicesGridClient";
+import {
+  CONSULTING_SERVICES,
+  ACADEMY_COURSES,
+  AI_PRODUCTS,
+} from "@/content/site-nav";
 
 const sectionsData: ServiceSection[] = [
   {
@@ -6,46 +11,31 @@ const sectionsData: ServiceSection[] = [
     headerHighlight: "Стратегия и бизнес-модели",
     description:
       "Помогаем командам искать, проверять и усиливать бизнес-модели, связывать стратегию с операционными действиями и переходить от продуктовой логики к платформенной и экосистемной архитектуре.",
-    cards: [
-      {
-        title: "Архитектура устойчивых экосистем",
-        description:
-          "Создадим стратегию и портфель бизнес-моделей, которые расширят влияние и сделают бизнес более устойчивым",
-      },
-      {
-        title: "Стратегические и дизайн-сессии",
-        description:
-          "Организуем рабочие сессии для поиска решений, запуска гипотез и формирования общего видения",
-      },
-      {
-        title: "Цифровая платформа в вашем бизнесе",
-        description:
-          "Находим платформенную логику, чтобы масштабироваться и запускать новые потоки дохода",
-      },
-    ],
+    catalogHref: "/consulting",
+    cards: CONSULTING_SERVICES.map((s) => ({
+      title: s.title,
+      description: s.description,
+      href: s.href,
+    })),
   },
   {
     trackName: "Онлайн-школа",
     headerHighlight: "академия бизнес-дизайна",
     description:
       "Среда, где управленцы и команды осваивают бизнес-дизайн, платформенное мышление и работу с гипотезами. Мы обучаем тому, что сами применяем в проектах: от системной стратегии до запуска цифровых инициатив.",
+    catalogHref: "/academy",
     cards: [
-      {
-        title: "Практикум по бизнес-дизайну для команд",
-        description:
-          "Навыки стратегического развития бизнеса — от поиска бизнес-модели до проектирования платформ и экосистем",
-      },
-      {
-        title: "Практический бизнес-дизайн. быстрый старт",
-        description:
-          "Онлайн-курс, который поможет быстро понять суть бизнес-дизайна и начать мыслить как стратег",
-      },
+      ...ACADEMY_COURSES.map((s) => ({
+        title: s.title,
+        description: s.description,
+        href: s.href,
+      })),
       {
         title: "Программы с ведущими бизнес-школами",
         description:
           "Обучаем топ-менеджеров крупных компаний, помогаем трансформировать бизнес с помощью бизнес-дизайна",
-        variant: "info",
-        // partnerLogos: ["/partner-logos/biz-school-1.png", "/partner-logos/biz-school-2.png"],
+        variant: "info" as const,
+        partnerLogos: ["/partners/partner-logo-1.png", "/partners/partner-logo-2.png"],
       },
     ],
   },
@@ -54,18 +44,12 @@ const sectionsData: ServiceSection[] = [
     headerHighlight: "продукты с AI для бизнеса",
     description:
       "Встроенные помощники, которые усиливают мышление, а не заменяют экспертов. Они помогают командам быстрее проходить через сложные задачи: от исследования и анализа до формирования бизнес-моделей и стратегий.",
-    cards: [
-      {
-        title: "AI-агенты по тестированию гипотез",
-        description:
-          "Помогает быстро формулировать гипотезы, выбирать эксперименты и измерять их успех",
-      },
-      {
-        title: "AI-стратег для работы с портфелем",
-        description:
-          "Автоматизирует анализ рынка и помогает найти скрытые возможности для роста продукта",
-      },
-    ],
+    catalogHref: "/ai-products",
+    cards: AI_PRODUCTS.map((s) => ({
+      title: s.title,
+      description: s.description,
+      href: s.href,
+    })),
   },
 ];
 

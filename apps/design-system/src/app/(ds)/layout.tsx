@@ -55,6 +55,7 @@ const sections: NavSection[] = [
     { id: "components-skeleton", label: "Skeleton" },
     { id: "components-scroll-area", label: "Scroll Area" },
     { id: "components-toasts",   label: "Toasts" },
+    { id: "components-show-more", label: "Show More" },
   ]},
   { id: "tooltips", label: "Тултипы", subsections: [
     { id: "tooltips-animation", label: "Анимация" },

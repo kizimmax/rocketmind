@@ -21,6 +21,7 @@ export * from './components/ui/radio';
 export * from './components/ui/scroll-area';
 export * from './components/ui/search-combobox';
 export * from './components/ui/separator';
+export * from './components/ui/show-more';
 export * from './components/ui/skeleton';
 export * from './components/ui/sonner';
 export * from './components/ui/switch';

@@ -4,116 +4,9 @@ import Link from "next/link";
 import { useId, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { HEADER_NAV, type NavSection } from "@/content/site-nav";
 
-const MENU_CHEVRON_ICON =
-  "http://localhost:3845/assets/d0db95d68600a9f355b629d217908ef191f6c70e.svg";
-
-type DropdownItem = {
-  href: string;
-  title: string;
-  description: string;
-};
-
-type MenuItem =
-  | {
-      href: string;
-      label: string;
-      dropdownItems?: undefined;
-    }
-  | {
-      href: string;
-      label: string;
-      dropdownItems: readonly DropdownItem[];
-    };
-
-const CONSULTING_ITEMS = [
-  {
-    href: "#focus",
-    title: "AI-консалтинг",
-    description: "Стратегия внедрения ИИ в бизнес и в операционные процессы.",
-  },
-  {
-    href: "#focus",
-    title: "Платформенная стратегия",
-    description: "Переход от линейной модели к экосистемной архитектуре роста.",
-  },
-  {
-    href: "#focus",
-    title: "Кейс-система",
-    description: "Проектируем работу с кейсами как управляемый цифровой контур.",
-  },
-  {
-    href: "#focus",
-    title: "Операционная аналитика",
-    description: "Связываем управленческие гипотезы с данными и ритмом решений.",
-  },
-] as const satisfies readonly DropdownItem[];
-
-const ONLINE_SCHOOL_ITEMS = [
-  {
-    href: "#focus",
-    title: "Программы",
-    description: "Обучение платформенному мышлению, AI и бизнес-дизайну.",
-  },
-  {
-    href: "#focus",
-    title: "Мастерские",
-    description: "Практические интенсивы с разбором реальных бизнес-кейсов.",
-  },
-  {
-    href: "#focus",
-    title: "База знаний",
-    description: "Материалы, шаблоны и framework'и для команд и лидеров.",
-  },
-  {
-    href: "#focus",
-    title: "Корпоративный трек",
-    description: "Кастомные программы для управленческих и продуктовых команд.",
-  },
-] as const satisfies readonly DropdownItem[];
-
-const AI_PRODUCT_ITEMS = [
-  {
-    href: "#focus",
-    title: "AI-агенты",
-    description: "Ролевые агенты для сопровождения кейсов и внутренних сценариев.",
-  },
-  {
-    href: "#focus",
-    title: "AI-аналитик",
-    description: "Собирает сигналы, ищет паттерны и формулирует гипотезы.",
-  },
-  {
-    href: "#focus",
-    title: "AI-маркетолог",
-    description: "Помогает с позиционированием, контентом и growth-итерациями.",
-  },
-  {
-    href: "#focus",
-    title: "AI-разработчик",
-    description: "Ускоряет delivery, архитектурные решения и работу с кодом.",
-  },
-] as const satisfies readonly DropdownItem[];
-
-export const rocketmindMenuItems = [
-  {
-    href: "#focus",
-    label: "Консалтинг и стратегии",
-    dropdownItems: CONSULTING_ITEMS,
-  },
-  {
-    href: "#focus",
-    label: "Онлайн-школа",
-    dropdownItems: ONLINE_SCHOOL_ITEMS,
-  },
-  {
-    href: "#focus",
-    label: "AI-продукты",
-    dropdownItems: AI_PRODUCT_ITEMS,
-  },
-  { href: "#about", label: "О Rocketmind" },
-  { href: "#media", label: "Медиа" },
-] as const satisfies readonly MenuItem[];
+export { HEADER_NAV as rocketmindMenuItems };
 
 type RocketmindMenuProps = {
   className?: string;
@@ -122,7 +15,7 @@ type RocketmindMenuProps = {
 };
 
 type DropdownTriggerProps = {
-  item: Extract<MenuItem, { dropdownItems: readonly DropdownItem[] }>;
+  item: NavSection & { items: NonNullable<NavSection["items"]> };
   itemClassName?: string;
 };
 
@@ -175,25 +68,29 @@ function DropdownTrigger({ item, itemClassName }: DropdownTriggerProps) {
       <div
         id={menuId}
         className={cn(
-          "absolute right-0 top-full z-40 w-[420px] pt-3 text-popover-foreground transition-[opacity,transform,visibility] duration-200",
+          "absolute right-0 top-full z-50 pt-3 text-popover-foreground transition-[opacity,transform,visibility] duration-200",
+          item.items.length > 4 ? "w-[620px]" : "w-[420px]",
           open
             ? "visible translate-y-0 opacity-100"
             : "pointer-events-none invisible translate-y-1 opacity-0",
         )}
       >
         <div className="overflow-hidden rounded-sm border border-border bg-popover">
-          <ul className="grid grid-cols-2 gap-1.5 p-3">
-            {item.dropdownItems.map((dropdownItem) => (
-              <li key={dropdownItem.title}>
+          <ul className={cn(
+            "grid gap-0.5 p-2",
+            item.items.length > 4 ? "grid-cols-3" : "grid-cols-2",
+          )}>
+            {item.items.map((navItem) => (
+              <li key={navItem.href}>
                 <Link
-                  href={dropdownItem.href}
-                  className="flex min-h-[84px] flex-col rounded-sm border border-transparent p-2.5 text-left transition-[background-color,border-color,color,opacity] duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  href={navItem.href}
+                  className="flex flex-col rounded-sm px-2.5 py-2 text-left transition-[background-color,color,opacity] duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
-                  <span className="font-mono text-[12px] uppercase tracking-[0.08em] text-foreground">
-                    {dropdownItem.title}
+                  <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-foreground">
+                    {navItem.title}
                   </span>
-                  <span className="mt-1 text-[13px] leading-[1.45] text-muted-foreground">
-                    {dropdownItem.description}
+                  <span className="mt-0.5 text-[12px] leading-[1.4] text-muted-foreground">
+                    {navItem.description}
                   </span>
                 </Link>
               </li>
@@ -212,12 +109,12 @@ export function RocketmindMenu({
 }: RocketmindMenuProps) {
   return (
     <nav className={className} aria-label="Rocketmind navigation">
-      {rocketmindMenuItems.map((item) => {
-        if (showDropdowns && 'dropdownItems' in item && item.dropdownItems) {
+      {HEADER_NAV.map((item) => {
+        if (showDropdowns && item.items && item.items.length > 0) {
           return (
             <DropdownTrigger
               key={item.label}
-              item={item}
+              item={item as DropdownTriggerProps["item"]}
               itemClassName={itemClassName}
             />
           );

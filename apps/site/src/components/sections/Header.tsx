@@ -3,29 +3,33 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 import { cn } from "@/lib/utils";
 import { MobileNav } from "./MobileNav";
 import { RocketmindMenu } from "./RocketmindMenu";
 
 export function Header() {
-    const [isVisible, setIsVisible] = useState(false);
+    const pathname = usePathname();
+    const isHome = pathname === "/";
+    const [isVisible, setIsVisible] = useState(!isHome);
 
     useEffect(() => {
+        if (!isHome) {
+            setIsVisible(true);
+            return;
+        }
+
         const handleScroll = () => {
             const heroMidpoint = window.innerHeight / 2;
-            if (window.scrollY > heroMidpoint) {
-                setIsVisible(true);
-            } else {
-                setIsVisible(false);
-            }
+            setIsVisible(window.scrollY > heroMidpoint);
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
-        handleScroll(); // Check initial scroll position
+        handleScroll();
 
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [isHome]);
 
     return (
         <header 

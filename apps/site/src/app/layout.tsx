@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@rocketmind/ui";
 
+import { Header } from "@/components/sections/Header";
+import { Footer } from "@/components/sections/Footer";
+
 export const metadata: Metadata = {
   title: "Rocketmind | Стратегия и бизнес-модели",
   description:
@@ -22,7 +25,11 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          {children}
+          <div className="dark flex min-h-screen flex-col bg-background font-body text-foreground">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </ThemeProvider>
       </body>
     </html>
