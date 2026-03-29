@@ -7,7 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Badge } from "@rocketmind/ui"
 import { ChevronRight, Menu, X } from "lucide-react"
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind-design-system" : ""
+const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
 const DS_VERSION = "1.5.7"
 const DS_DATE = "2026-03-18"
 

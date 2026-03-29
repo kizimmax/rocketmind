@@ -7,7 +7,7 @@ import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
 import { SiteHeader } from "@/components/ui/site-header"
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind-design-system" : ""
+const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
 
 const DEMO_LOGOS: LogoMarqueeItem[] = [
   { alt: "Билайн",           src: `${BASE_PATH}/hero-logos/beeline.svg`,   width: 125, height: 24 },

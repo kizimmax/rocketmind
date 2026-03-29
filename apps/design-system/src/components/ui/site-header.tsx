@@ -108,7 +108,7 @@ function MobileGroup({ label, items, onClose }: { label: string; items: NavItem[
 
 /* ── Component ── */
 type SiteHeaderProps = {
-  /** Base path for logo images (e.g. "/rocketmind-design-system" in prod) */
+  /** Base path for logo images (e.g. "/rocketmind/ds" in prod) */
   basePath?: string
   /** Preview mode: disables sticky positioning (for DS docs demos) */
   preview?: boolean
