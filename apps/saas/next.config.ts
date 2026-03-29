@@ -4,7 +4,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
   output: "export",
-  basePath: isProd ? "/rocketmind" : "",
+  basePath: isProd ? "/rocketmind-saas" : "",
   images: { unoptimized: true },
 };
 

@@ -1,4 +1,4 @@
-name: Deploy SaaS to GitHub Pages
+name: Deploy SaaS to GitHub Pages (rocketmind-saas)
 
 on:
   push:
@@ -8,17 +8,8 @@ on:
       - 'packages/ui/**'
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,16 +24,10 @@ jobs:
         run: npm run build --workspace=apps/saas
         env:
           NODE_ENV: production
-      - uses: actions/upload-pages-artifact@v3
+      - name: Deploy to rocketmind-saas
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: apps/saas/out
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          personal_token: ${{ secrets.SAAS_DEPLOY_TOKEN }}
+          external_repository: kizimmax/rocketmind-saas
+          publish_branch: gh-pages
+          publish_dir: apps/saas/out
