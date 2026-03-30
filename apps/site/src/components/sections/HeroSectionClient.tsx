@@ -162,6 +162,32 @@ const BREAKPOINT_PRESETS: Record<BreakpointKey, BreakpointPreset> = {
   },
 };
 
+const HERO_EASE = [0.23, 1, 0.32, 1] as const;
+
+function heroFadeUp(ready: boolean, delay: number) {
+  return {
+    initial: { opacity: 0, y: 8 } as const,
+    animate: ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 },
+    transition: { duration: 0.65, delay, ease: HERO_EASE },
+  };
+}
+
+function heroFadeIn(ready: boolean, delay: number) {
+  return {
+    initial: { opacity: 0 } as const,
+    animate: ready ? { opacity: 1 } : { opacity: 0 },
+    transition: { duration: 0.75, delay, ease: HERO_EASE },
+  };
+}
+
+function heroScaleIn(ready: boolean, delay: number) {
+  return {
+    initial: { opacity: 0, scale: 0.88 } as const,
+    animate: ready ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.88 },
+    transition: { duration: 0.85, delay, ease: HERO_EASE },
+  };
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -290,6 +316,8 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
   const [settings, setSettings] = useState<LensControlSettings>(
     BREAKPOINT_PRESETS.wide,
   );
+  const [heroReady, setHeroReady] = useState(false);
+  const [largeLensReady, setLargeLensReady] = useState(false);
 
   const breakpointPreset = BREAKPOINT_PRESETS[breakpointKey];
 
@@ -315,6 +343,18 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // ── Hero entrance animations ──────────────────────────────────────────────
+  useEffect(() => {
+    const t = setTimeout(() => setHeroReady(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!heroReady) return;
+    const t = setTimeout(() => setLargeLensReady(true), 1000);
+    return () => clearTimeout(t);
+  }, [heroReady]);
 
   // ── Viewport / breakpoint sync ────────────────────────────────────────────
   useEffect(() => {
@@ -671,11 +711,14 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
 
         <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1512px] flex-col px-5 pb-6 pt-6 md:px-8 md:pb-10 md:pt-10 xl:px-14">
           <div className="hero-top-bar relative z-20 flex flex-col gap-6">
-            <InfiniteLogoMarquee logos={logos} maxLogoHeight={breakpointKey === "mobile" ? 27 : 39} />
+            <motion.div {...heroFadeUp(heroReady, 0)}>
+              <InfiniteLogoMarquee logos={logos} maxLogoHeight={breakpointKey === "mobile" ? 27 : 39} />
+            </motion.div>
 
-            <div
+            <motion.div
               data-lens-hide="true"
               className="hero-top-bar-right flex shrink-0 items-start justify-between gap-4"
+              {...heroFadeUp(heroReady, 0.1)}
             >
               <div className="hero-top-bar-stats text-left">
                 <p className="font-heading text-[20px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground md:text-[24px]">
@@ -688,11 +731,11 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
               </div>
 
               <MobileNav />
-            </div>
+            </motion.div>
           </div>
 
           <div className="relative flex flex-1 flex-col justify-center gap-6 py-4 md:gap-[44px] md:py-8">
-            <div ref={wordmarkRef} className="relative z-0 w-full">
+            <motion.div ref={wordmarkRef} className="relative z-0 w-full" {...heroFadeIn(heroReady, 0.15)}>
               <Image
                 src="/text_logo_dark_background_en.svg"
                 alt="Rocketmind"
@@ -701,9 +744,10 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
                 priority
                 className="mx-auto h-auto w-full max-w-none"
               />
-            </div>
+            </motion.div>
 
             {/* Small WebGL lens — managed by RoundGlassLens component */}
+            <motion.div {...heroScaleIn(heroReady, 0.7)}>
             <RoundGlassLens
               sceneRef={heroRef}
               anchorRef={wordmarkRef}
@@ -723,6 +767,7 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
               motionParallax
               showControls={false}
             />
+            </motion.div>
 
             {/* Large static CSS lens */}
             <div
@@ -730,16 +775,20 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
               aria-hidden="true"
               data-lens-ignore="true"
               className="round-glass-lens round-glass-lens--static pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full"
-              style={largeLensStyle}
+              style={{
+                ...largeLensStyle,
+                opacity: largeLensReady ? 1 : 0,
+                transition: "opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1)",
+              }}
             />
 
-            <div data-lens-hide="true" className="relative z-30">
+            <motion.div data-lens-hide="true" className="relative z-30" {...heroFadeUp(heroReady, 0.28)}>
               <RocketmindMenu className="hero-menu-desktop w-full flex-wrap items-center justify-end gap-x-12 gap-y-4 text-right" />
-            </div>
+            </motion.div>
           </div>
 
           <div className="grid gap-10 lg:grid-cols-[minmax(0,888px)_212px] lg:items-end lg:justify-between">
-            <div className="flex flex-col items-start gap-6">
+            <motion.div className="flex flex-col items-start gap-6" {...heroFadeUp(heroReady, 0.22)}>
               <h1 className="h2 w-full max-w-[888px]">
                 <span className="block text-foreground">Помогаем бизнесу&nbsp;расти</span>
                 <span className="block text-foreground">и масштабироваться</span>
@@ -770,9 +819,9 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
                 <span>Обсудить стратегию</span>
                 <ArrowRight size={20} strokeWidth={2.1} className="text-primary" />
               </Link>
-            </div>
+            </motion.div>
 
-            <div className="flex flex-row items-center gap-4 self-end lg:flex-col lg:items-end lg:gap-5">
+            <motion.div className="flex flex-row items-center gap-4 self-end lg:flex-col lg:items-end lg:gap-5" {...heroFadeUp(heroReady, 0.38)}>
               <Image
                 src="/hero-art/pik-logo.svg"
                 alt="Platform Innovation Kit"
@@ -790,7 +839,7 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
                 <br />
                 в России и странах Азии
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

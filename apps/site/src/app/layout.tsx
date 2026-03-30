@@ -4,6 +4,7 @@ import { ThemeProvider } from "@rocketmind/ui";
 
 import { Header } from "@/components/sections/Header";
 import { Footer } from "@/components/sections/Footer";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 export const metadata: Metadata = {
   title: "Rocketmind | Стратегия и бизнес-модели",
@@ -18,7 +19,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+      </head>
       <body className="antialiased">
+        <PageLoader />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
