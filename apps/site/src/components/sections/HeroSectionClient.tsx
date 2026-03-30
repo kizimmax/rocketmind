@@ -747,7 +747,6 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
             </motion.div>
 
             {/* Small WebGL lens — managed by RoundGlassLens component */}
-            <motion.div {...heroScaleIn(heroReady, 0.7)}>
             <RoundGlassLens
               sceneRef={heroRef}
               anchorRef={wordmarkRef}
@@ -767,7 +766,6 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
               motionParallax
               showControls={false}
             />
-            </motion.div>
 
             {/* Large static CSS lens */}
             <div
