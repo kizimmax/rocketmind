@@ -10,10 +10,10 @@ export type ServiceCard = {
   description: string;
   /** Link for "Подробнее" button */
   href?: string;
-  /** Info bubble: no "Подробнее" button, purple title, partner logos at bottom */
+  /** Info bubble: no "Подробнее" button, purple bg, dark text, partner logos at bottom */
   variant?: "info";
-  /** Partner logo image paths for info cards */
-  partnerLogos?: string[];
+  /** Partner logos for info cards */
+  partnerLogos?: Array<{ src: string; width?: number; height?: number }>;
 };
 
 export type ServiceSection = {
@@ -193,22 +193,22 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                           // ── Info bubble card: no button, purple title, logos ──
                           <article
                             key={card.title}
-                            className="flex flex-col border border-border [&:not(:first-child)]:border-l-0 p-8 bg-background"
+                            className="flex flex-col border border-border [&:not(:first-child)]:border-l-0 p-8 bg-[#A172F8]"
                           >
                             <div className="flex flex-col h-full gap-2">
                               <div className="flex flex-col gap-2 min-h-[156px]">
-                                <h3 className="font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#A172F8]">
+                                <h3 className="font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]">
                                   {card.title}
                                 </h3>
-                                <p className="text-[14px] leading-[1.32] tracking-[0.01em] text-muted-foreground">
+                                <p className="text-[14px] leading-[1.32] tracking-[0.01em] text-[#0A0A0A]">
                                   {card.description}
                                 </p>
                               </div>
                               {/* Partner logos */}
                               <div className="flex items-end justify-between gap-10 py-2 mt-auto">
                                 {card.partnerLogos ? (
-                                  card.partnerLogos.map((src, i) => (
-                                    <Image key={i} src={src} alt="" width={139} height={32} className="h-8 w-auto object-contain" unoptimized />
+                                  card.partnerLogos.map((logo, i) => (
+                                    <Image key={i} src={logo.src} alt="" width={logo.width ?? 139} height={logo.height ?? 32} className="h-8 w-auto object-contain" unoptimized />
                                   ))
                                 ) : (
                                   // Placeholder until real logos are added

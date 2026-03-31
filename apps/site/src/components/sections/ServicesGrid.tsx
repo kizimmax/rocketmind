@@ -27,18 +27,21 @@ const sectionsData: ServiceSection[] = [
       "Среда, где управленцы и команды осваивают бизнес-дизайн, платформенное мышление и работу с гипотезами. Мы обучаем тому, что сами применяем в проектах: от системной стратегии до запуска цифровых инициатив.",
     catalogHref: "/academy",
     cards: [
-      ...ACADEMY_COURSES.map((s) => ({
-        title: s.title,
-        description: s.description,
-        href: s.href,
-      })),
       {
         title: "Программы с ведущими бизнес-школами",
         description:
           "Обучаем топ-менеджеров крупных компаний, помогаем трансформировать бизнес с помощью бизнес-дизайна",
         variant: "info" as const,
-        partnerLogos: [`${BASE_PATH}/partners/partner-logo-1.png`, `${BASE_PATH}/partners/partner-logo-2.png`],
+        partnerLogos: [
+          { src: `${BASE_PATH}/partners/partner-logo-1.1.svg`, width: 139, height: 32 },
+          { src: `${BASE_PATH}/partners/partner-logo-2.2.png`, width: 120, height: 39 },
+        ],
       },
+      ...ACADEMY_COURSES.map((s) => ({
+        title: s.title,
+        description: s.description,
+        href: s.href,
+      })),
     ],
   },
   {
