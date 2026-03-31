@@ -48,7 +48,7 @@ export function PlatformOverview() {
   }, []);
 
   return (
-    <section className="relative w-full bg-background pb-12 lg:pb-[108px]" id="platform-overview">
+    <section className="relative isolate w-full bg-background pb-12 lg:pb-[108px]" id="platform-overview">
       <div className="mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14">
         {/* ═══════════════ DESKTOP (1100px+) ═══════════════ */}
         <div
