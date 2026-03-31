@@ -695,11 +695,14 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
         className="relative isolate overflow-hidden bg-background text-foreground dark"
       >
         <div className="absolute inset-0">
-          <img
+          <Image
             alt=""
             aria-hidden="true"
             src="/hero-art/hero-bg.png"
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            fill
+            className="object-cover object-center"
+            priority
+            unoptimized
           />
           <div className="hero-background-fade" />
         </div>
