@@ -108,7 +108,7 @@ function DropdownSection({
         <ul
           className={cn(
             "grid gap-0.5 p-2",
-            item.items.length > 4 ? "w-[620px] grid-cols-3" : "w-[420px] grid-cols-2",
+            item.items.length > 4 ? "w-[820px] grid-cols-3" : "w-[420px] grid-cols-2",
           )}
         >
           {item.items.map((navItem) => (
