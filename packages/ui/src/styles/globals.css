@@ -859,11 +859,20 @@ code {
   to   { transform: translate3d(0, 0, 0); }
 }
 
+/* Force wrapper onto its own GPU layer — fixes Safari -webkit-mask-image + child transform flicker */
+.partner-logo-marquee-wrapper {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
 .partner-logo-marquee-track {
   display: flex;
   width: max-content;
   animation: hero-logo-marquee var(--hero-marquee-duration, 25s) linear infinite;
   will-change: transform;
+  /* Prevent subpixel jitter and backface flash on mobile browsers */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .partner-logo-marquee-track--ltr {

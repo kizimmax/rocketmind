@@ -48,7 +48,8 @@ function LogoSequence({
             alt={logo.alt}
             width={logo.width}
             height={logo.height}
-            loading="lazy"
+            loading="eager"
+            decoding="async"
             className="h-auto w-auto object-contain"
             style={{ maxHeight: `${maxLogoHeight}px` }}
           />
@@ -83,7 +84,7 @@ export function InfiniteLogoMarquee({
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden",
+        "relative w-full overflow-hidden partner-logo-marquee-wrapper",
         className,
       )}
       style={buildFadeMask(fadeWidth)}
