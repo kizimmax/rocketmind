@@ -29,6 +29,37 @@ function SliderInteractiveDemo() {
   return <Slider value={val} min={0} max={1} step={0.01} width={200} onChange={setVal} />
 }
 
+/** Demo: Slider Number — numbers stay in place, slider appears after active */
+function SliderNumberDemo() {
+  const [active, setActive] = React.useState(0)
+  const count = 5
+  const duration = 4000
+
+  React.useEffect(() => {
+    const t = setTimeout(() => setActive((p) => (p + 1) % count), duration)
+    return () => clearTimeout(t)
+  }, [active])
+
+  return (
+    <div className="flex items-center gap-4">
+      {Array.from({ length: count }, (_, i) => (
+        <React.Fragment key={i}>
+          <button
+            onClick={() => setActive(i)}
+            className={[
+              "font-[family-name:var(--font-mono-family)] text-[16px] uppercase tracking-[0.02em] leading-[1.16] transition-colors cursor-pointer",
+              i === active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+            ].join(" ")}
+          >
+            {String(i + 1).padStart(2, "0")}
+          </button>
+          {i === active && <Slider animate animateKey={active} animationDuration={duration} />}
+        </React.Fragment>
+      ))}
+    </div>
+  )
+}
+
 export default function ComponentsPage() {
   const mono = "font-[family-name:var(--font-mono-family)]"
 
@@ -1402,6 +1433,18 @@ export default function ComponentsPage() {
               <p className="text-[length:var(--text-12)] text-muted-foreground mb-3">Интерактивный, ширина 200 px</p>
               <div className="flex items-center gap-6 p-6 border border-border rounded-sm bg-background">
                 <SliderInteractiveDemo />
+              </div>
+            </div>
+            {/* Slider Number — case navigator pattern */}
+            <div>
+              <p className="text-[length:var(--text-12)] text-muted-foreground mb-3">Slider Number — навигатор кейсов</p>
+              <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
+                Паттерн из блока кейсов: все номера остаются на местах, анимированный ползунок появляется справа от активного номера.
+                Активный номер — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">foreground</code>, остальные — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">muted-foreground</code>.
+                Gap между элементами — 16px. Ползунок 62×8 px.
+              </p>
+              <div className="flex items-center gap-6 p-6 border border-border rounded-sm bg-background">
+                <SliderNumberDemo />
               </div>
             </div>
           </div>

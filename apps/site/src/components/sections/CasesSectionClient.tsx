@@ -477,28 +477,26 @@ function CaseNavigator({
   onSelect: (i: number) => void;
 }) {
   return (
-    <div className="flex items-center gap-4 flex-wrap">
-      <button
-        onClick={() => onSelect(activeCase)}
-        aria-label={`Кейс ${activeCase + 1}`}
-        className="font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[#F0F0F0] cursor-pointer"
-      >
-        {String(activeCase + 1).padStart(2, "0")}
-      </button>
-      <Slider animate animateKey={activeCase} animationDuration={CASE_DURATION_MS} />
-      {CASES.map((_, i) => {
-        if (i === activeCase) return null;
-        return (
+    <div className="flex items-center gap-4">
+      {CASES.map((_, i) => (
+        <React.Fragment key={i}>
           <button
-            key={i}
             onClick={() => onSelect(i)}
             aria-label={`Кейс ${i + 1}`}
-            className="font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[#939393] hover:text-[#F0F0F0] transition-colors cursor-pointer"
+            className={[
+              "font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.02em] leading-[1.16] transition-colors cursor-pointer",
+              i === activeCase
+                ? "text-[#F0F0F0]"
+                : "text-[#939393] hover:text-[#F0F0F0]",
+            ].join(" ")}
           >
             {String(i + 1).padStart(2, "0")}
           </button>
-        );
-      })}
+          {i === activeCase && (
+            <Slider animate animateKey={activeCase} animationDuration={CASE_DURATION_MS} />
+          )}
+        </React.Fragment>
+      ))}
     </div>
   );
 }
