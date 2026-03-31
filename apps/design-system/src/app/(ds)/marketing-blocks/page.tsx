@@ -4,7 +4,7 @@ import React from "react"
 import { Separator } from "@rocketmind/ui"
 import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
-import { Accordion05Demo, VersionHistory } from "@/components/ds/shared"
+import { Accordion05Demo } from "@/components/ds/shared"
 import { CasesSectionShowcase } from "@/components/ds/cases-section-showcase"
 
 export default function MarketingBlocksPage() {
@@ -285,8 +285,6 @@ export default function MarketingBlocksPage() {
       </Section>
 
       <Separator />
-
-      <VersionHistory />
     </>
   )
 }

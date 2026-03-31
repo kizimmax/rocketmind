@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { VersionHistory } from "@/components/ds/shared"
 import { Badge } from "@rocketmind/ui"
 import {
   ChevronRight, Menu, X, PanelLeftOpen, PanelLeftClose,
@@ -110,6 +111,9 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
   const [mobileNav, setMobileNav] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const pendingAnchorRef = useRef<string | null>(null)
+
+  /* ── Version history panel ── */
+  const [versionOpen, setVersionOpen] = useState(false)
 
   /* ── Sidebar rail / overlay / pinned state ── */
   const [pinned, setPinned] = useState(false)
@@ -405,8 +409,13 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
 
-          {/* Version footer */}
-          <div className="shrink-0 border-t border-border" style={{ height: 60 }}>
+          {/* Version footer — click to open version history */}
+          <button
+            className="shrink-0 border-t border-border w-full text-left hover:bg-rm-gray-2/50 transition-colors cursor-pointer"
+            style={{ height: 60 }}
+            onClick={() => setVersionOpen(true)}
+            title="История версий"
+          >
             <div className="flex items-center h-full">
               {/* Icon zone */}
               <div
@@ -425,10 +434,39 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
                 </p>
               </div>
             </div>
-          </div>
+          </button>
 
         </div>
       </aside>
+
+      {/* ───── VERSION HISTORY OVERLAY ───── */}
+      {versionOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-[60] bg-background/60 backdrop-blur-sm"
+            onClick={() => setVersionOpen(false)}
+          />
+          {/* Panel */}
+          <div className="fixed inset-4 md:inset-8 lg:inset-y-12 lg:inset-x-16 z-[61] bg-background border border-border rounded-lg shadow-lg flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+              <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] uppercase tracking-[-0.01em]">
+                История версий
+              </h2>
+              <button
+                onClick={() => setVersionOpen(false)}
+                className="inline-flex items-center justify-center h-8 w-8 rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer"
+                aria-label="Закрыть"
+              >
+                <X size={18} strokeWidth={1.5} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+              <VersionHistory compact />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ───── MAIN CONTENT ─────
           margin-left = RAIL_W (always in rail mode)

@@ -545,7 +545,7 @@ const VERSION_HISTORY: VersionEntry[] = [
   },
 ]
 
-export function VersionHistory() {
+export function VersionHistory({ compact = false }: { compact?: boolean }) {
   const [openVersions, setOpenVersions] = React.useState<string[]>(["1.5.0"])
 
   function toggle(version: string) {
@@ -555,10 +555,12 @@ export function VersionHistory() {
   }
 
   return (
-    <section id="version-history" className="scroll-mt-20 pb-16">
-      <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-52)] uppercase tracking-[-0.01em] leading-[1.2] mb-6">
-        История версий
-      </h2>
+    <div className={compact ? "" : "scroll-mt-20 pb-16"}>
+      {!compact && (
+        <h2 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-52)] uppercase tracking-[-0.01em] leading-[1.2] mb-6">
+          История версий
+        </h2>
+      )}
       <div className="space-y-2">
         {VERSION_HISTORY.map((entry) => {
           const isOpen = openVersions.includes(entry.version)
@@ -647,6 +649,6 @@ export function VersionHistory() {
           )
         })}
       </div>
-    </section>
+    </div>
   )
 }
