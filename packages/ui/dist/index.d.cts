@@ -241,7 +241,7 @@ type LogoMarqueeItem = {
 type InfiniteLogoMarqueeProps = {
     className?: string;
     logos: LogoMarqueeItem[];
-    /** Duration of one full loop in seconds. Default: 14 */
+    /** Duration of one full loop in seconds. Default: 25 */
     speedSeconds?: number;
     /** Gap between logos in pixels. Default: 67 */
     gap?: number;
@@ -249,7 +249,9 @@ type InfiniteLogoMarqueeProps = {
     maxLogoHeight?: number;
     /** Width of the fade mask on each edge in pixels. Default: 44 */
     fadeWidth?: number;
+    /** Reverse scroll direction (left-to-right). Default: false */
+    reverse?: boolean;
 };
-declare function InfiniteLogoMarquee({ className, logos, speedSeconds, gap, maxLogoHeight, fadeWidth, }: InfiniteLogoMarqueeProps): react_jsx_runtime.JSX.Element | null;
+declare function InfiniteLogoMarquee({ className, logos, speedSeconds, gap, maxLogoHeight, fadeWidth, reverse, }: InfiniteLogoMarqueeProps): react_jsx_runtime.JSX.Element | null;
 
 export { Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, Button, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, GlowingEffect, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, type LogoMarqueeItem, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, Radio, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, Skeleton, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ThemeProvider, Toaster, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, tabsListVariants, textareaVariants };

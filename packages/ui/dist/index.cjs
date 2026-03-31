@@ -1926,10 +1926,11 @@ var buildFadeMask = (fadeWidth) => ({
 function InfiniteLogoMarquee({
   className,
   logos,
-  speedSeconds = 14,
+  speedSeconds = 25,
   gap = 67,
   maxLogoHeight = 39,
-  fadeWidth = 44
+  fadeWidth = 44,
+  reverse = false
 }) {
   if (logos.length === 0) {
     return null;
@@ -1945,7 +1946,7 @@ function InfiniteLogoMarquee({
         className
       ),
       style: buildFadeMask(fadeWidth),
-      children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "partner-logo-marquee-track", style: marqueeStyle, children: [
+      children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: `partner-logo-marquee-track${reverse ? " partner-logo-marquee-track--ltr" : ""}`, style: marqueeStyle, children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LogoSequence, { logos, gap, maxLogoHeight }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(LogoSequence, { logos, gap, maxLogoHeight })
       ] })

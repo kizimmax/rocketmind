@@ -290,6 +290,9 @@ export type RoundGlassLensProps = {
 
   /** Additional CSS classes on the lens container div. */
   className?: string;
+
+  /** Additional inline styles on the lens container div. */
+  style?: CSSProperties;
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -412,6 +415,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     showControls = false,
     storageKey,
     className,
+    style: externalStyle,
   } = props;
 
   const glassRef = useRef<HTMLDivElement | null>(null);
@@ -472,8 +476,10 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       "--lens-gradient-angle": `${effectiveSettings.gradientAngle}deg`,
       width: `${size}px`,
       height: `${size}px`,
+      ...externalStyle,
     } as CSSProperties),
-    [effectiveSettings.gradientAngle, size],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [effectiveSettings.gradientAngle, size, externalStyle],
   );
 
   // Sync position props to ref → triggers re-position without WebGL teardown

@@ -12,7 +12,7 @@ export type LogoMarqueeItem = {
 export type InfiniteLogoMarqueeProps = {
   className?: string;
   logos: LogoMarqueeItem[];
-  /** Duration of one full loop in seconds. Default: 14 */
+  /** Duration of one full loop in seconds. Default: 25 */
   speedSeconds?: number;
   /** Gap between logos in pixels. Default: 67 */
   gap?: number;
@@ -20,6 +20,8 @@ export type InfiniteLogoMarqueeProps = {
   maxLogoHeight?: number;
   /** Width of the fade mask on each edge in pixels. Default: 44 */
   fadeWidth?: number;
+  /** Reverse scroll direction (left-to-right). Default: false */
+  reverse?: boolean;
 };
 
 function LogoSequence({
@@ -64,10 +66,11 @@ const buildFadeMask = (fadeWidth: number): CSSProperties => ({
 export function InfiniteLogoMarquee({
   className,
   logos,
-  speedSeconds = 14,
+  speedSeconds = 25,
   gap = 67,
   maxLogoHeight = 39,
   fadeWidth = 44,
+  reverse = false,
 }: InfiniteLogoMarqueeProps) {
   if (logos.length === 0) {
     return null;
@@ -85,7 +88,7 @@ export function InfiniteLogoMarquee({
       )}
       style={buildFadeMask(fadeWidth)}
     >
-      <div className="partner-logo-marquee-track" style={marqueeStyle}>
+      <div className={`partner-logo-marquee-track${reverse ? " partner-logo-marquee-track--ltr" : ""}`} style={marqueeStyle}>
         <LogoSequence logos={logos} gap={gap} maxLogoHeight={maxLogoHeight} />
         <LogoSequence logos={logos} gap={gap} maxLogoHeight={maxLogoHeight} />
       </div>

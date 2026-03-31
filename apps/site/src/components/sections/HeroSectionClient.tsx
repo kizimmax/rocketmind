@@ -21,8 +21,6 @@ import type { PartnerLogo } from "@/lib/partner-logos";
 import { MobileNav } from "./MobileNav";
 import { RocketmindMenu } from "./RocketmindMenu";
 
-const HERO_BACKGROUND_IMAGE = "/hero-art/hero-lens.png";
-
 const HERO_ROTATION_INTERVAL_MS = 2800;
 const HERO_ROTATION_TRANSITION_MS = 640;
 const HERO_ROTATION_ENTRY_DELAY_MS = 220;
@@ -33,13 +31,6 @@ const platformTextStyle = {
   textShadow: "0 4px 4px rgba(0, 0, 0, 0.25)",
 } satisfies CSSProperties;
 
-const heroBackgroundImageStyle = {
-  height: "115.42%",
-  left: "-8.38%",
-  maxWidth: "none",
-  top: "-15.42%",
-  width: "120.19%",
-} satisfies CSSProperties;
 
 type HeroSectionClientProps = {
   logos: PartnerLogo[];
@@ -317,6 +308,7 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
     BREAKPOINT_PRESETS.wide,
   );
   const [heroReady, setHeroReady] = useState(false);
+  const [smallLensReady, setSmallLensReady] = useState(false);
   const [largeLensReady, setLargeLensReady] = useState(false);
 
   const breakpointPreset = BREAKPOINT_PRESETS[breakpointKey];
@@ -329,6 +321,14 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
       2200,
     );
   }, [breakpointPreset.largeLensSize, settings.largeLensSize]);
+
+  const smallLensStyle = useMemo<CSSProperties>(
+    () => ({
+      opacity: smallLensReady ? 1 : 0,
+      transition: "opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1)",
+    }),
+    [smallLensReady],
+  );
 
   const largeLensStyle = useMemo(
     () =>
@@ -352,8 +352,9 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
 
   useEffect(() => {
     if (!heroReady) return;
-    const t = setTimeout(() => setLargeLensReady(true), 1000);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(() => setSmallLensReady(true), 2100);
+    const t2 = setTimeout(() => setLargeLensReady(true), 2500);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [heroReady]);
 
   // ── Viewport / breakpoint sync ────────────────────────────────────────────
@@ -694,24 +695,18 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
         className="relative isolate overflow-hidden bg-background text-foreground dark"
       >
         <div className="absolute inset-0">
-          <div className="absolute inset-0 opacity-30 mix-blend-exclusion">
-            <div className="absolute inset-[0_0_0.12%_0] overflow-hidden">
-              <img
-                alt=""
-                aria-hidden="true"
-                src={HERO_BACKGROUND_IMAGE}
-                className="absolute"
-                style={heroBackgroundImageStyle}
-              />
-            </div>
-          </div>
-          <div className="hero-background-noise" />
+          <img
+            alt=""
+            aria-hidden="true"
+            src="/hero-art/hero-bg.png"
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
           <div className="hero-background-fade" />
         </div>
 
         <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1512px] flex-col px-5 pb-6 pt-6 md:px-8 md:pb-10 md:pt-10 xl:px-14">
           <motion.div className="hero-top-bar relative z-20 flex flex-col gap-6" {...heroFadeUp(heroReady, 0)}>
-            <InfiniteLogoMarquee logos={logos} maxLogoHeight={breakpointKey === "mobile" ? 27 : 39} />
+            <InfiniteLogoMarquee logos={logos} maxLogoHeight={breakpointKey === "mobile" ? 27 : 39} reverse />
 
             <div
               data-lens-hide="true"
@@ -762,6 +757,7 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
               motionStrengthY={settings.motionStrengthY}
               motionParallax
               showControls={false}
+              style={smallLensStyle}
             />
 
             {/* Large static CSS lens */}
@@ -778,7 +774,7 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
             />
 
             <motion.div data-lens-hide="true" className="relative z-30" {...heroFadeUp(heroReady, 0.28)}>
-              <RocketmindMenu className="hero-menu-desktop w-full flex-wrap items-center justify-end gap-x-12 gap-y-4 text-right" />
+              <RocketmindMenu className="hero-menu-desktop w-full flex-wrap items-center justify-end gap-x-7 gap-y-4 text-right" />
             </motion.div>
           </div>
 

@@ -93,10 +93,10 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
          * On mobile:  flex-col → tabs row first, then content sections stacked
          * On desktop: grid [344px | 1fr] → tabs col sticky left, content col scrolls normally
          */}
-        <div className="border-t border-border flex flex-col xl:grid xl:grid-cols-[344px_1fr] xl:gap-2 xl:items-start">
+        <div className="border-t border-border flex flex-col lg:grid lg:grid-cols-[344px_1fr] lg:gap-2 lg:items-start">
 
           {/* ── Tabs column: desktop only (sticky vertical) ──────────── */}
-          <div className="hidden xl:flex xl:flex-col xl:gap-[4px] xl:sticky xl:top-14 xl:self-start xl:pt-14 xl:pb-14">
+          <div className="hidden lg:flex lg:flex-col lg:gap-[4px] lg:sticky lg:top-14 lg:self-start lg:pt-14 lg:pb-14">
             {sections.map((section, index) => {
               const isActive = index === activeIndex;
               return (
@@ -132,21 +132,21 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                 <div
                   key={section.trackName}
                   ref={(el) => { sectionRefs.current[sIdx] = el; }}
-                  className="pt-8 xl:pt-14 pb-12 xl:pb-[108px] last:pb-8 xl:last:pb-14"
+                  className="pt-8 lg:pt-14 pb-12 lg:pb-[108px] last:pb-8 lg:last:pb-14"
                 >
                   {/* Header row: title + description on left, nav on right */}
-                  <div className="flex items-end justify-between gap-6 xl:gap-10 mb-8 xl:mb-10">
+                  <div className="flex items-end justify-between gap-6 lg:gap-10 mb-8 lg:mb-10">
 
                     {/* Title + description */}
-                    <div className="flex flex-col gap-4 xl:gap-5 flex-1 min-w-0">
+                    <div className="flex flex-col gap-4 lg:gap-5 flex-1 min-w-0">
                       {/* Yellow track label — mobile/tablet only (replaces tabs) */}
-                      <p className="xl:hidden font-['Loos_Condensed',sans-serif] font-medium text-[18px] uppercase leading-[1.16] tracking-[0.02em] text-[var(--rm-yellow-100)]">
+                      <p className="lg:hidden font-['Loos_Condensed',sans-serif] font-medium text-[18px] uppercase leading-[1.16] tracking-[0.02em] text-[var(--rm-yellow-100)]">
                         {section.trackName}
                       </p>
-                      <h2 className="font-heading text-[30px] md:text-[42px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-foreground">
+                      <h2 className="font-heading text-[30px] md:text-[42px] lg:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-foreground">
                         {section.headerHighlight}
                       </h2>
-                      <p className="text-[15px] xl:text-[18px] leading-[1.2] text-muted-foreground max-w-[766px]">
+                      <p className="text-[15px] lg:text-[18px] leading-[1.2] text-muted-foreground max-w-[766px]">
                         {section.description}
                       </p>
                     </div>

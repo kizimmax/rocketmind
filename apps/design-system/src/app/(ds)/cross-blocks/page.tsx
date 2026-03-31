@@ -150,7 +150,7 @@ export default function CrossBlocksPage() {
         {/* ── Live preview ── */}
         <div className="-mx-5 md:-mx-10 border-y border-border py-8 mb-8 bg-[#0A0A0A]">
           <div className="mx-auto max-w-[1056px]">
-            <InfiniteLogoMarquee logos={DEMO_LOGOS} />
+            <InfiniteLogoMarquee logos={DEMO_LOGOS} reverse />
           </div>
         </div>
 
@@ -169,10 +169,11 @@ export default function CrossBlocksPage() {
                 <tbody className="text-muted-foreground">
                   {[
                     ["logos",          "LogoMarqueeItem[]", "—",   "Массив логотипов { alt, src, width?, height? }"],
-                    ["speedSeconds",   "number",            "14",  "Длительность одного цикла анимации"],
+                    ["speedSeconds",   "number",            "25",  "Длительность одного цикла анимации"],
                     ["gap",           "number",            "67",  "Расстояние между логотипами (px)"],
                     ["maxLogoHeight", "number",            "39",  "Максимальная высота логотипа (px)"],
                     ["fadeWidth",     "number",            "44",  "Ширина fade-маски по краям (px)"],
+                    ["reverse",      "boolean",           "false", "Направление: true — слева направо (→)"],
                     ["className",    "string",            "—",   "Дополнительные классы контейнера"],
                   ].map(([prop, type, def, desc]) => (
                     <tr key={prop} className="border-b border-border last:border-0">
@@ -188,7 +189,7 @@ export default function CrossBlocksPage() {
             <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
               <p>{'import { InfiniteLogoMarquee } from "@rocketmind/ui";'}</p>
               <p>&nbsp;</p>
-              <p>{'<InfiniteLogoMarquee logos={logos} speedSeconds={14} />'}</p>
+              <p>{'<InfiniteLogoMarquee logos={logos} reverse />'}</p>
             </div>
             <div className="overflow-auto rounded-lg border border-border">
               <table className="w-full text-[length:var(--text-14)]">

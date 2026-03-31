@@ -854,9 +854,18 @@ code {
   to   { transform: translate3d(-50%, 0, 0); }
 }
 
+@keyframes hero-logo-marquee-ltr {
+  from { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
 .partner-logo-marquee-track {
   display: flex;
   width: max-content;
-  animation: hero-logo-marquee var(--hero-marquee-duration, 18s) linear infinite;
+  animation: hero-logo-marquee var(--hero-marquee-duration, 25s) linear infinite;
   will-change: transform;
+}
+
+.partner-logo-marquee-track--ltr {
+  animation-name: hero-logo-marquee-ltr;
 }

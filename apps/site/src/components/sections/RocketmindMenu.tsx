@@ -38,7 +38,7 @@ function DropdownTrigger({ item, itemClassName }: DropdownTriggerProps) {
       <button
         type="button"
         className={cn(
-          "inline-flex items-center gap-3 whitespace-nowrap font-mono text-[18px] uppercase leading-[1.16] tracking-[0.36px] text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+          "inline-flex items-center gap-3 whitespace-nowrap font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px] text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
           itemClassName,
         )}
         aria-expanded={open}
@@ -68,7 +68,7 @@ function DropdownTrigger({ item, itemClassName }: DropdownTriggerProps) {
       <div
         id={menuId}
         className={cn(
-          "absolute right-0 top-full z-50 pt-3 text-popover-foreground transition-[opacity,transform,visibility] duration-200",
+          "absolute left-0 top-full z-50 pt-3 text-popover-foreground transition-[opacity,transform,visibility] duration-200",
           item.items.length > 4 ? "w-[620px]" : "w-[420px]",
           open
             ? "visible translate-y-0 opacity-100"
@@ -125,7 +125,7 @@ export function RocketmindMenu({
             key={item.label}
             href={item.href}
             className={cn(
-              "inline-flex items-center gap-3 whitespace-nowrap font-mono text-[18px] uppercase leading-[1.16] tracking-[0.36px] text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+              "inline-flex items-center gap-3 whitespace-nowrap font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px] text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
               itemClassName,
             )}
           >

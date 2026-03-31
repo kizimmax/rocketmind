@@ -180,10 +180,11 @@ const INITIAL_SUBTITLE = '4 недели · Дизайн-система + MVP с
 // ─── EditableText ─────────────────────────────────────────────────────────────
 
 function EditableText({
-  value, onChange, className, style,
+  value, onChange, className, style, startEditing,
 }: {
   value: string; onChange: (v: string) => void;
   className?: string; style?: React.CSSProperties;
+  startEditing?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -193,14 +194,20 @@ function EditableText({
     requestAnimationFrame(() => { ref.current?.focus(); ref.current?.select(); });
   }, []);
 
+  useEffect(() => {
+    if (startEditing) start();
+  }, [startEditing, start]);
+
   if (editing) {
+    const lineCount = Math.max((value.match(/\n/g)?.length ?? 0) + 1, Math.ceil(value.length / 30), 2);
     return (
       <textarea
         ref={ref}
         defaultValue={value}
         className={`bg-transparent resize-none outline-none w-full ${className ?? ''}`}
         style={{ ...style, minHeight: 32 }}
-        rows={2}
+        rows={lineCount}
+        onInput={e => { const t = e.currentTarget; t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }}
         onBlur={e => { onChange(e.target.value); setEditing(false); }}
         onKeyDown={e => {
           if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); (e.target as HTMLTextAreaElement).blur(); }
@@ -274,12 +281,13 @@ function CardItem({
       className="rounded-lg px-2.5 pt-1.5 pb-2 group/card relative transition-colors duration-300"
       style={{
         backgroundColor: c.done
-          ? `color-mix(in srgb, ${cssVar(weekColor, '900')}, transparent 40%)`
+          ? 'transparent'
           : cssVar(weekColor, '900'),
         border: `1px solid ${c.done
           ? `color-mix(in srgb, ${cssVar(weekColor, '300')}, transparent 60%)`
           : cssVar(weekColor, '300')}`,
         cursor: editing ? 'default' : 'grab',
+        opacity: c.done ? 0.45 : 1,
       }}
     >
       {/* Top row: checkbox + days + remove */}
@@ -303,6 +311,7 @@ function CardItem({
         <div className="flex-1 grid grid-cols-5 gap-1">
           {DAYS.map(day => {
             const active = (c.days ?? []).includes(day);
+            const isNeutral = weekColor === 'neutral';
             return (
               <button
                 key={day}
@@ -312,10 +321,16 @@ function CardItem({
                   fontSize: 9,
                   height: 16,
                   borderRadius: 3,
-                  backgroundColor: active ? cssVar(weekColor, '100') : cssVar(weekColor, '900'),
-                  color: active ? cssVar(weekColor, 'fg') : cssVar(weekColor, 'fg-subtle'),
+                  backgroundColor: active
+                    ? (isNeutral && !c.done ? 'var(--foreground)' : cssVar(weekColor, '100'))
+                    : cssVar(weekColor, '900'),
+                  color: active
+                    ? (isNeutral && !c.done ? 'var(--background)' : cssVar(weekColor, 'fg'))
+                    : cssVar(weekColor, 'fg-subtle'),
                   opacity: active ? 1 : 0.6,
-                  border: `1px solid ${active ? cssVar(weekColor, '100') : cssVar(weekColor, '300')}`,
+                  border: `1px solid ${active
+                    ? (isNeutral && !c.done ? 'var(--foreground)' : cssVar(weekColor, '100'))
+                    : cssVar(weekColor, '300')}`,
                 }}
                 title={day}
               >
@@ -340,7 +355,7 @@ function CardItem({
           ref={taRef}
           defaultValue={c.label}
           className="w-full bg-transparent outline-none resize-none text-[length:var(--text-12)] leading-snug"
-          style={{ color: cssVar(weekColor, 'fg-subtle'), minHeight: 32 }}
+          style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : (weekColor === 'neutral' ? 'var(--foreground)' : cssVar(weekColor, '100')), minHeight: 32 }}
           rows={Math.max(lines.length, 1)}
           onInput={e => autoResize(e.currentTarget)}
           onBlur={e => {
@@ -358,12 +373,15 @@ function CardItem({
           onDoubleClick={locked ? undefined : startEdit}
           title={locked ? undefined : 'Двойной клик — редактировать'}
         >
-          {(lines.length > 0 ? lines : [c.label]).map((line, i) => (
+          {(lines.length > 0 ? lines : [c.label]).map((line, i) => {
+            const openColor = weekColor === 'neutral' ? 'var(--foreground)' : cssVar(weekColor, '100');
+            return (
             <li key={i} className="flex items-start gap-1.5 text-[length:var(--text-12)] leading-snug">
-              <span className="flex-shrink-0 mt-[3px] w-1 h-1 rounded-full" style={{ backgroundColor: cssVar(weekColor, '100'), opacity: 0.7 }} />
-              <span style={{ color: cssVar(weekColor, 'fg-subtle') }}>{line}</span>
+              <span className="flex-shrink-0 mt-[3px] w-1 h-1 rounded-full" style={{ backgroundColor: openColor, opacity: c.done ? 0.4 : 0.7 }} />
+              <span style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : openColor }}>{line}</span>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>
@@ -436,38 +454,6 @@ function LockModal({ onClose, onUnlock }: { onClose: () => void; onUnlock: () =>
   );
 }
 
-// ─── Summary modal ────────────────────────────────────────────────────────────
-
-function SummaryModal({ weekLabel, text, onClose }: { weekLabel: string; text: string; onClose: () => void }) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'var(--rm-gray-alpha-600)' }}
-      onClick={onClose}
-    >
-      <div
-        className="bg-background border border-border rounded-2xl p-6 w-[480px] max-h-[80vh] shadow-lg flex flex-col"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="font-heading font-bold text-[length:var(--text-16)]">Итог: {weekLabel}</div>
-          <button
-            onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors text-[length:var(--text-16)] leading-none"
-          >
-            &times;
-          </button>
-        </div>
-        <div className="overflow-y-auto">
-          <pre className="whitespace-pre-wrap font-body text-[length:var(--text-12)] text-muted-foreground leading-relaxed">
-            {text}
-          </pre>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Sync indicator ───────────────────────────────────────────────────────────
 
 function SyncDot({ status }: { status: 'synced' | 'saving' | 'error' | 'loading' }) {
@@ -479,10 +465,7 @@ function SyncDot({ status }: { status: 'synced' | 'saving' | 'error' | 'loading'
   };
   const { color, label } = map[status];
   return (
-    <div className="flex items-center gap-1.5 font-mono text-[length:var(--text-12)] text-muted-foreground select-none" title={label}>
-      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-      {label}
-    </div>
+    <span className="w-2 h-2 rounded-full flex-shrink-0 inline-block" style={{ backgroundColor: color }} title={label} />
   );
 }
 
@@ -528,15 +511,26 @@ export default function GanttPage() {
   const [showLockModal, setShowLockModal] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'error' | 'loading'>('loading');
 
-  // Week navigation
-  const [visibleStartIdx, setVisibleStartIdx] = useState(0);
+  // Week navigation — start near current week to avoid flash
+  const [visibleStartIdx, setVisibleStartIdx] = useState(() => {
+    const cwIdx = getCurrentWeekIndex();
+    const mobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+    const count = mobile ? 1 : VISIBLE_COUNT;
+    const maxStart = Math.max(0, INITIAL_WEEKS.length - count);
+    const ideal = mobile ? cwIdx : Math.max(0, cwIdx - 1);
+    return cwIdx > 0 ? Math.min(ideal, maxStart) : 0;
+  });
 
-  // Summary popup
-  const [summaryPopup, setSummaryPopup] = useState<{ weekId: string; text: string; weekLabel: string } | null>(null);
+  // Summary loading
   const [summaryLoading, setSummaryLoading] = useState<string | null>(null);
+  const [summaryReady, setSummaryReady] = useState<string | null>(null);
+  // API key input dialog
+  const [showKeyInput, setShowKeyInput] = useState(false);
+  const [pendingWeekId, setPendingWeekId] = useState<string | null>(null);
 
   // Track whether we've received the first snapshot from Firebase
   const initialized = useRef(false);
+  const [loaded, setLoaded] = useState(false);
   // Suppress writes while receiving remote update
   const remoteUpdate = useRef(false);
   // Track initial scroll
@@ -545,29 +539,55 @@ export default function GanttPage() {
   // ── Current week index ─────────────────────────────────────────────────────
   const currentWeekIdx = useMemo(() => getCurrentWeekIndex(), []);
 
+  // ── Mobile detection ─────────────────────────────────────────────────────
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   // ── Visible weeks ──────────────────────────────────────────────────────────
+  const effectiveCount = isMobile ? 1 : VISIBLE_COUNT;
   const visibleWeeks = useMemo(() => {
     return weeks.slice(visibleStartIdx, visibleStartIdx + VISIBLE_COUNT);
   }, [weeks, visibleStartIdx]);
+  const shownWeeks = isMobile ? weeks.slice(visibleStartIdx, visibleStartIdx + 1) : visibleWeeks;
 
   const canGoBack = visibleStartIdx > 0;
-  const canGoForward = visibleStartIdx + VISIBLE_COUNT < weeks.length;
+  const canGoForward = visibleStartIdx + effectiveCount < weeks.length;
+
+  // Slide animation direction
+  const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null);
+  const [animating, setAnimating] = useState(false);
+  const slideTimerRef = useRef<number | null>(null);
+
+  const navigateWeeks = useCallback((dir: 'left' | 'right') => {
+    if (animating) return;
+    if (dir === 'left' && !canGoBack) return;
+    if (dir === 'right' && !canGoForward) return;
+    setSlideDir(dir);
+    setAnimating(true);
+    if (slideTimerRef.current !== null) clearTimeout(slideTimerRef.current);
+    slideTimerRef.current = window.setTimeout(() => {
+      const maxIdx = Math.max(0, weeks.length - effectiveCount);
+      setVisibleStartIdx(i => dir === 'left' ? Math.max(0, i - 1) : Math.min(maxIdx, i + 1));
+      setSlideDir(null);
+      setAnimating(false);
+    }, 250);
+  }, [animating, canGoBack, canGoForward, weeks.length, effectiveCount]);
 
   // Effective color: current week = yellow, others = neutral
   const getEffectiveColor = useCallback((globalIdx: number): ColorToken => {
     return globalIdx === currentWeekIdx ? 'yellow' : 'neutral';
   }, [currentWeekIdx]);
 
-  // ── Auto-scroll to current week on first data load ─────────────────────────
-  useEffect(() => {
-    if (!didInitialScroll.current && weeks.length > 0) {
-      didInitialScroll.current = true;
-      if (currentWeekIdx >= 0 && currentWeekIdx < weeks.length) {
-        const target = Math.max(0, Math.min(currentWeekIdx - 1, weeks.length - VISIBLE_COUNT));
-        setVisibleStartIdx(target);
-      }
-    }
-  }, [weeks.length, currentWeekIdx]);
+  // ── Auto-scroll to current week on first Firebase load ──────────────────────
+  // (handled inside onValue callback to avoid racing with initial state)
 
   // ── Subscribe to Firebase Realtime DB ─────────────────────────────────────
   useEffect(() => {
@@ -583,8 +603,23 @@ export default function GanttPage() {
           if (data.title) setTitle(data.title);
           if (data.subtitle) setSubtitle(data.subtitle);
           if (data.locked !== undefined) setLocked(data.locked);
+          // Auto-scroll to current week on first load
+          if (!didInitialScroll.current && data.weeks?.length > 0) {
+            didInitialScroll.current = true;
+            const wLen = data.weeks.length;
+            const mobile = window.matchMedia('(max-width: 768px)').matches;
+            const count = mobile ? 1 : VISIBLE_COUNT;
+            if (currentWeekIdx >= 0 && currentWeekIdx < wLen) {
+              const maxStart = Math.max(0, wLen - count);
+              const ideal = mobile ? currentWeekIdx : Math.max(0, currentWeekIdx - 1);
+              setVisibleStartIdx(Math.min(ideal, maxStart));
+            } else if (wLen > count) {
+              setVisibleStartIdx(wLen - count);
+            }
+          }
         }
         initialized.current = true;
+        setLoaded(true);
         setSyncStatus('synced');
         // reset flag after state updates are flushed
         setTimeout(() => { remoteUpdate.current = false; }, 0);
@@ -593,6 +628,7 @@ export default function GanttPage() {
         console.error('Firebase error:', error);
         setSyncStatus('error');
         initialized.current = true;
+        setLoaded(true);
       }
     );
     return () => unsub();
@@ -625,8 +661,6 @@ export default function GanttPage() {
 
   const updateWeeks = (next: Week[]) => { setWeeks(next); persist(next, rows, title, subtitle, locked); };
   const updateRows  = (next: Row[])  => { setRows(next);  persist(weeks, next, title, subtitle, locked); };
-  const updateTitle = (v: string)    => { setTitle(v);    persist(weeks, rows, v, subtitle, locked); };
-  const updateSubtitle = (v: string) => { setSubtitle(v); persist(weeks, rows, title, v, locked); };
   const updateLocked = (v: boolean)  => { setLocked(v);   persist(weeks, rows, title, subtitle, v); };
 
   // ── Row drag ──────────────────────────────────────────────────────────────
@@ -820,68 +854,130 @@ export default function GanttPage() {
     setVisibleStartIdx(Math.max(0, idx + 1 - VISIBLE_COUNT));
   };
 
-  // ── Generate week summary ─────────────────────────────────────────────────
+  // ── Generate week summary (AI-powered via Groq) ─────────────────────────
 
-  const generateWeekSummary = (weekId: string) => {
-    const weekIdx = weeks.findIndex(w => w.id === weekId);
-    const week = weeks[weekIdx];
+  const callAI = async (weekId: string, apiKey: string) => {
+    const week = weeks.find(w => w.id === weekId);
     if (!week) return;
 
     setSummaryLoading(weekId);
+    updateWeekTheme(weekId, 'Загрузка...');
 
-    // Collect all cards for this week
-    const sections: { name: string; total: number; done: number; tasks: { label: string; done: boolean }[] }[] = [];
+    // Group rows into 4 semantic blocks
+    const blockMap: Record<string, string> = {
+      'согласование': 'Согласование',
+      'контент': 'Контент',
+      'ui-направление': 'Сайт', 'вайп код дизайн сайта': 'Сайт', 'design system': 'Сайт', 'вайп код верстка сайта': 'Сайт',
+      'mvp сервиса': 'Сервис', 'n8n интеграция': 'Сервис', 'продуктовые состояния': 'Сервис', 'qa аналитики': 'Сервис',
+    };
+    const blocks: Record<string, string[]> = {};
+    let totalCount = 0;
     rows.forEach(row => {
       const cards = row.cells[weekId] ?? [];
-      if (cards.length > 0) {
-        sections.push({
-          name: row.label,
-          total: cards.length,
-          done: cards.filter(c => c.done).length,
-          tasks: cards.map(c => ({ label: c.label.split('\n')[0], done: c.done })),
-        });
-      }
+      if (cards.length === 0) return;
+      const block = blockMap[row.label.toLowerCase().trim()] ?? row.label;
+      if (!blocks[block]) blocks[block] = [];
+      cards.forEach(c => {
+        const status = c.done ? '✅' : '⬜';
+        blocks[block].push(`${status} ${c.label.split('\n')[0]}`);
+        totalCount++;
+      });
     });
 
-    const totalTasks = sections.reduce((s, sec) => s + sec.total, 0);
-    const doneTasks = sections.reduce((s, sec) => s + sec.done, 0);
-    const pct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-
-    let text = '';
-
-    if (totalTasks === 0) {
-      text = 'На эту неделю пока нет задач.';
-    } else {
-      text += `Прогресс: ${doneTasks} из ${totalTasks} (${pct}%)\n\n`;
-
-      const activeAreas = sections.map(s => s.name);
-      text += `Направления: ${activeAreas.join(', ')}\n\n`;
-
-      sections.forEach(s => {
-        const status = s.done === s.total ? 'Готово' : `${s.done}/${s.total}`;
-        text += `${s.name} [${status}]:\n`;
-        s.tasks.forEach(t => {
-          text += `  ${t.done ? '[x]' : '[ ]'} ${t.label}\n`;
-        });
-        text += '\n';
-      });
-
-      if (pct === 100) {
-        text += 'Все задачи выполнены.';
-      } else if (pct >= 75) {
-        text += `Неделя почти завершена. Осталось ${totalTasks - doneTasks} задач(и).`;
-      } else if (pct >= 50) {
-        text += `Прогресс на середине. ${totalTasks - doneTasks} задач(и) в работе.`;
-      } else {
-        text += `В начале пути. ${totalTasks - doneTasks} задач(и) впереди.`;
-      }
+    if (totalCount === 0) {
+      updateWeekTheme(weekId, 'Нет задач');
+      setSummaryLoading(null);
+      return;
     }
 
-    // Simulate brief processing delay for UX feedback
-    setTimeout(() => {
-      setSummaryPopup({ weekId, text, weekLabel: `${week.label} · ${week.dates}` });
+    const blockText = Object.entries(blocks).map(([name, tasks]) => `[${name}]\n${tasks.join('\n')}`).join('\n\n');
+
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-8b-instant',
+          max_tokens: 150,
+          messages: [
+            { role: 'system', content: 'Ты — помощник проджект-менеджера. Пиши кратко на русском.' },
+            { role: 'user', content: `Задачи недели "${week.label}" (${week.dates}) сгруппированы по блокам:\n\n${blockText}\n\nНапиши саммери из ТРЁХ коротких частей через « · » (точка по центру). Каждая часть — ключевой конкретный результат одного-двух блоков. Объедини смежные блоки по смыслу.\n\nПравила:\n- НЕ пиши названия блоков (Сайт, Сервис, Контент, Согласование)\n- НЕ начинай с цифр\n- НЕ используй общие слова: «работа над», «согласование», «подготовка», «разработка», «создание»\n- Называй конкретные сущности из задач: «hero + сетка услуг» вместо «дизайн сайта»\n- Каждая часть до 25 символов\n- Формат ответа: «часть1 · часть2 · часть3»\n- Пример: «hero + навигация · auth-флоу · тексты о компании»` },
+          ],
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        if (res.status === 401) {
+          set(ref(db, 'gantt_config/groq_api_key'), null);
+          setGroqKey(null);
+          updateWeekTheme(weekId, 'Неверный ключ');
+          setPendingWeekId(weekId);
+          setKeyValue('');
+          setShowKeyInput(true);
+        } else {
+          updateWeekTheme(weekId, `Ошибка API: ${res.status}`);
+          console.error('Groq error:', errBody);
+        }
+        setSummaryLoading(null);
+        return;
+      }
+
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content?.trim() ?? '';
+      updateWeekTheme(weekId, text || 'Пустой ответ от AI');
+      setSummaryReady(weekId);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      updateWeekTheme(weekId, `Ошибка: ${msg}`);
+      console.error('AI summary error:', e);
+    } finally {
       setSummaryLoading(null);
-    }, 300);
+    }
+  };
+
+  const [keyValue, setKeyValue] = useState('');
+  const [groqKey, setGroqKey] = useState<string | null>(null);
+
+  // Default dark theme
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+  }, []);
+
+  // Load Groq key from Firebase on mount
+  useEffect(() => {
+    const keyRef = ref(db, 'gantt_config/groq_api_key');
+    const unsub = onValue(keyRef, (snap) => {
+      const val = snap.val();
+      if (val) setGroqKey(val);
+    });
+    return () => unsub();
+  }, []);
+
+  const generateWeekSummary = (weekId: string) => {
+    if (groqKey) {
+      callAI(weekId, groqKey);
+    } else {
+      setPendingWeekId(weekId);
+      setKeyValue('');
+      setShowKeyInput(true);
+    }
+  };
+
+  const handleKeySubmit = () => {
+    const val = keyValue.trim();
+    if (!val || !pendingWeekId) return;
+    // Save to Firebase so all devices can use it
+    set(ref(db, 'gantt_config/groq_api_key'), val);
+    setGroqKey(val);
+    setShowKeyInput(false);
+    const wid = pendingWeekId;
+    setPendingWeekId(null);
+    callAI(wid, val);
   };
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -891,42 +987,70 @@ export default function GanttPage() {
   return (
     <div className="min-h-screen bg-background text-foreground font-body">
 
-      {/* Header */}
-      <div className="border-b border-border px-8 py-6">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="flex items-center gap-3 mb-1">
-            <p className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] text-muted-foreground flex-1">
-              Rocketmind · MVP 1.1
-            </p>
-            <SyncDot status={syncStatus} />
+      {/* API Key input overlay */}
+      {showKeyInput && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => { setShowKeyInput(false); setPendingWeekId(null); }}>
+          <div className="bg-background border border-border rounded-lg p-6 shadow-xl max-w-sm w-full mx-4" onClick={e => e.stopPropagation()}>
+            <p className="font-heading text-[length:var(--text-16)] font-bold mb-1">Groq API Key</p>
+            <p className="text-muted-foreground text-[length:var(--text-12)] mb-4">Бесплатно на <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style={{textDecoration:'underline'}}>console.groq.com/keys</a></p>
+            <input
+              autoFocus
+              type="password"
+              placeholder="gsk_..."
+              value={keyValue}
+              onChange={e => setKeyValue(e.target.value)}
+              className="w-full px-3 py-2 rounded border border-border bg-background text-foreground font-mono text-[length:var(--text-14)] mb-3 outline-none focus:border-muted-foreground"
+              onKeyDown={e => { if (e.key === 'Enter') handleKeySubmit(); }}
+            />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => { setShowKeyInput(false); setPendingWeekId(null); }} className="px-3 py-1.5 rounded text-[length:var(--text-12)] text-muted-foreground hover:bg-muted">Отмена</button>
+              <button onClick={handleKeySubmit} className="px-3 py-1.5 rounded text-[length:var(--text-12)] bg-foreground text-background font-medium hover:opacity-90">Сохранить</button>
+            </div>
           </div>
-          <h1 className="font-heading text-[length:var(--text-31)] font-bold leading-tight">
-            <EditableText value={title} onChange={updateTitle} />
-          </h1>
-          <p className="text-muted-foreground mt-1.5 text-[length:var(--text-14)]">
-            <EditableText value={subtitle} onChange={updateSubtitle} />
-          </p>
+        </div>
+      )}
+
+      {/* Header bar */}
+      <div className="border-b border-border px-4 py-3 md:px-8">
+        <div className="max-w-[1400px] mx-auto flex items-center gap-3">
+          <span className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] text-muted-foreground">Rocketmind</span>
+          <span className="text-muted-foreground/30">·</span>
+          <span className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] text-muted-foreground">Сайт и Сервис</span>
+          <span className="text-muted-foreground/30">·</span>
+          <SyncDot status={syncStatus} />
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-8 py-8 space-y-6">
+      <div className="max-w-[1400px] mx-auto px-4 py-4 md:px-8 md:py-6 space-y-4 md:space-y-6">
 
         {/* Week navigation */}
         <div className="flex items-center gap-2">
-          <span className="text-[length:var(--text-12)] text-muted-foreground font-mono mr-auto">
-            Недели {visibleStartIdx + 1}–{Math.min(visibleStartIdx + VISIBLE_COUNT, weeks.length)} из {weeks.length}
+          <span className="font-heading text-[length:var(--text-16)] md:text-[length:var(--text-20)] font-bold uppercase tracking-wide mr-auto">
+            План работ
           </span>
           <button
-            onClick={() => setVisibleStartIdx(i => Math.max(0, i - 1))}
-            disabled={!canGoBack}
+            onClick={() => {
+              const html = document.documentElement;
+              const isDark = html.classList.contains('dark');
+              html.classList.toggle('dark', !isDark);
+              html.classList.toggle('light', isDark);
+            }}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted text-[length:var(--text-14)]"
+            title="Сменить тему"
+          >
+            ◐
+          </button>
+          <button
+            onClick={() => navigateWeeks('left')}
+            disabled={!canGoBack || animating}
             className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted disabled:opacity-25 disabled:pointer-events-none"
             title="Предыдущая неделя"
           >
             <ChevronLeftIcon className="w-4 h-4" />
           </button>
           <button
-            onClick={() => setVisibleStartIdx(i => Math.min(weeks.length - VISIBLE_COUNT, i + 1))}
-            disabled={!canGoForward}
+            onClick={() => navigateWeeks('right')}
+            disabled={!canGoForward || animating}
             className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted disabled:opacity-25 disabled:pointer-events-none"
             title="Следующая неделя"
           >
@@ -943,84 +1067,64 @@ export default function GanttPage() {
           )}
         </div>
 
-        {/* Week cards */}
-        <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${visibleWeeks.length}, 1fr)` }}>
-          {visibleWeeks.map((w, localIdx) => {
-            const globalIdx = visibleStartIdx + localIdx;
-            const isCurrent = globalIdx === currentWeekIdx;
-            const effColor = getEffectiveColor(globalIdx);
-            return (
-              <div
-                key={w.id}
-                className="border rounded-xl p-4 relative overflow-hidden transition-colors"
-                style={{
-                  borderColor: isCurrent ? cssVar('yellow', '300') : 'var(--border)',
-                  backgroundColor: isCurrent ? cssVar('yellow', '900') : undefined,
-                }}
-              >
-                <div
-                  className="absolute top-0 left-0 right-0"
-                  style={{
-                    height: isCurrent ? 3 : 1,
-                    backgroundColor: cssVar(effColor, '100'),
-                  }}
-                />
-                <div className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] mb-1" style={{ color: cssVar(effColor, isCurrent ? '100' : 'fg-subtle') }}>
-                  <EditableText value={w.dates} onChange={v => updateWeekDates(w.id, v)} />
-                </div>
-                <div className="font-heading font-bold text-[length:var(--text-16)] mb-1" style={{ color: isCurrent ? cssVar('yellow', 'fg') : undefined }}>
-                  <EditableText value={w.label} onChange={v => updateWeekLabel(w.id, v)} />
-                </div>
-                <p className="text-[length:var(--text-12)] leading-snug" style={{ color: cssVar(effColor, 'fg-subtle') }}>
-                  <EditableText value={w.theme} onChange={v => updateWeekTheme(w.id, v)} />
-                </p>
-                {isCurrent && (
-                  <div
-                    className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[length:9px] font-mono uppercase tracking-wider"
-                    style={{
-                      backgroundColor: cssVar('yellow', '100'),
-                      color: cssVar('yellow', 'fg'),
-                    }}
-                  >
-                    сейчас
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
         {/* Gantt table */}
-        <div className="border border-border rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <div style={{ minWidth: COL_W + visibleWeeks.length * 240 }}>
+        <div className="border border-border rounded-xl overflow-hidden relative">
+          <div style={{ overflow: 'hidden' }}>
+            <div style={{
+              minWidth: isMobile ? '100%' : COL_W + shownWeeks.length * 240,
+              transform: slideDir ? `translateX(${slideDir === 'left' ? '40px' : '-40px'})` : 'translateX(0)',
+              opacity: slideDir ? 0.6 : 1,
+              transition: slideDir ? 'transform 0.25s ease-out, opacity 0.25s ease-out' : 'none',
+            }}>
 
               {/* Header */}
               <div className="flex border-b border-border bg-muted/40 sticky top-0 z-10">
                 <div
-                  className="flex-shrink-0 px-4 py-3 border-r border-border text-[length:var(--text-12)] font-mono uppercase tracking-wide text-muted-foreground bg-muted/40"
-                  style={{ width: COL_W, minWidth: COL_W }}
+                  className="flex-shrink-0 px-2 py-3 md:px-4 border-r border-border text-[length:var(--text-12)] font-mono uppercase tracking-wide text-muted-foreground bg-muted/40"
+                  style={isMobile ? { width: '30%', minWidth: 0 } : { width: COL_W, minWidth: COL_W }}
                 >
                   Раздел
                 </div>
-                {visibleWeeks.map((w, localIdx) => {
+                {shownWeeks.map((w, localIdx) => {
                   const globalIdx = visibleStartIdx + localIdx;
                   const isCurrent = globalIdx === currentWeekIdx;
                   const effColor = getEffectiveColor(globalIdx);
                   return (
                     <div
                       key={w.id}
-                      className="flex-1 px-3 py-3 border-r border-border last:border-r-0 text-center"
-                      style={{ minWidth: 240, backgroundColor: isCurrent ? `color-mix(in srgb, ${cssVar('yellow', '900')}, transparent 60%)` : undefined }}
+                      className="flex-1 px-2 py-2 md:px-3 md:py-2.5 border-r border-border last:border-r-0 relative overflow-hidden"
+                      style={{
+                        minWidth: isMobile ? 0 : 240,
+                        backgroundColor: isCurrent ? cssVar('yellow', '900') : undefined,
+                        borderTop: `2px solid ${cssVar(effColor, '100')}`,
+                      }}
                     >
-                      <div className="flex items-center justify-center gap-1">
+                      {/* Row 1: label + dates + badge */}
+                      <div className="flex items-center gap-1.5">
                         <div className="font-mono text-[length:var(--text-12)] font-bold uppercase tracking-wide" style={{ color: cssVar(effColor, '100') }}>
                           <EditableText value={w.label} onChange={v => updateWeekLabel(w.id, v)} />
                         </div>
+                        <div className="font-mono text-[length:var(--text-12)]" style={{ color: isCurrent ? cssVar('yellow', '500') : 'var(--muted-foreground)' }}>
+                          <EditableText value={w.dates} onChange={v => updateWeekDates(w.id, v)} />
+                        </div>
+                        {isCurrent && (
+                          <span
+                            className="ml-auto px-1.5 py-0.5 rounded text-[length:9px] font-mono uppercase tracking-wider flex-shrink-0"
+                            style={{ backgroundColor: cssVar('yellow', '100'), color: cssVar('yellow', 'fg') }}
+                          >
+                            сейчас
+                          </span>
+                        )}
+                      </div>
+                      {/* Row 2: theme/summary + refresh */}
+                      <div className="flex items-start gap-1 mt-1">
+                        <p className="text-[length:var(--text-12)] leading-snug flex-1 min-w-0" style={{ color: cssVar(effColor, 'fg-subtle') }}>
+                          <EditableText value={w.theme} onChange={v => { updateWeekTheme(w.id, v); setSummaryReady(null); }} startEditing={summaryReady === w.id} />
+                        </p>
                         <button
                           onClick={() => generateWeekSummary(w.id)}
                           disabled={summaryLoading === w.id}
-                          className="inline-flex items-center justify-center w-5 h-5 rounded transition-colors text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted"
+                          className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded transition-colors text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted mt-0.5"
                           title="Сгенерировать итог недели"
                         >
                           {summaryLoading === w.id ? (
@@ -1029,9 +1133,6 @@ export default function GanttPage() {
                             <RefreshIcon className="w-3.5 h-3.5" />
                           )}
                         </button>
-                      </div>
-                      <div className="font-mono text-[length:var(--text-12)] text-muted-foreground mt-0.5">
-                        <EditableText value={w.dates} onChange={v => updateWeekDates(w.id, v)} />
                       </div>
                     </div>
                   );
@@ -1048,37 +1149,41 @@ export default function GanttPage() {
                     backgroundColor: dropTargetRowIdx === idx && draggingRowId && draggingRowId !== row.id
                       ? 'var(--muted)' : undefined,
                   }}
-                  draggable
-                  onDragStart={e => onRowDragStart(e, idx)}
-                  onDragOver={e => onRowDragOver(e, idx)}
-                  onDrop={e => onRowDrop(e, idx)}
-                  onDragEnd={onRowDragEnd}
+                  draggable={!isMobile}
+                  onDragStart={isMobile ? undefined : e => onRowDragStart(e, idx)}
+                  onDragOver={isMobile ? undefined : e => onRowDragOver(e, idx)}
+                  onDrop={isMobile ? undefined : e => onRowDrop(e, idx)}
+                  onDragEnd={isMobile ? undefined : onRowDragEnd}
                 >
                   {/* Left column */}
                   <div
-                    className="flex-shrink-0 flex items-start gap-2 px-3 py-3 border-r border-border bg-background"
-                    style={{ width: COL_W, minWidth: COL_W }}
+                    className="flex-shrink-0 flex items-start gap-1 px-2 py-2 md:gap-2 md:px-3 md:py-3 border-r border-border bg-background"
+                    style={isMobile ? { width: '30%', minWidth: 0 } : { width: COL_W, minWidth: COL_W }}
                   >
-                    <span
-                      className="cursor-grab text-muted-foreground/30 hover:text-muted-foreground transition-colors select-none flex-shrink-0 mt-0.5 text-[length:var(--text-16)] leading-none"
-                      title="Перетащить строку"
-                    >
-                      ⠿
-                    </span>
+                    {!isMobile && (
+                      <span
+                        className="cursor-grab text-muted-foreground/30 hover:text-muted-foreground transition-colors select-none flex-shrink-0 mt-0.5 text-[length:var(--text-16)] leading-none"
+                        title="Перетащить строку"
+                      >
+                        ⠿
+                      </span>
+                    )}
                     <span className="text-[length:var(--text-12)] font-medium text-foreground flex-1 min-w-0 mt-0.5">
                       <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                     </span>
-                    <button
-                      onClick={() => removeRow(row.id)}
-                      className="flex-shrink-0 text-muted-foreground/20 hover:text-destructive transition-colors text-[length:var(--text-14)] leading-none mt-0.5"
-                      title="Удалить строку"
-                    >
-                      ×
-                    </button>
+                    {!isMobile && (
+                      <button
+                        onClick={() => removeRow(row.id)}
+                        className="flex-shrink-0 text-muted-foreground/20 hover:text-destructive transition-colors text-[length:var(--text-14)] leading-none mt-0.5"
+                        title="Удалить строку"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
 
                   {/* Week cells */}
-                  {visibleWeeks.map((w, localIdx) => {
+                  {shownWeeks.map((w, localIdx) => {
                     const globalIdx = visibleStartIdx + localIdx;
                     const isCurrent = globalIdx === currentWeekIdx;
                     const effColor = getEffectiveColor(globalIdx);
@@ -1086,9 +1191,9 @@ export default function GanttPage() {
                     return (
                       <div
                         key={w.id}
-                        className="flex-1 px-2 py-2 border-r border-border/40 last:border-r-0"
+                        className="flex-1 px-1.5 py-1.5 md:px-2 md:py-2 border-r border-border/40 last:border-r-0"
                         style={{
-                          minWidth: 240,
+                          minWidth: isMobile ? 0 : 240,
                           backgroundColor: isCurrent ? `color-mix(in srgb, ${cssVar('yellow', '900')}, transparent 60%)` : undefined,
                         }}
                         onDragOver={e => onCardDragOver(e, row.id, w.id, null)}
@@ -1161,10 +1266,42 @@ export default function GanttPage() {
               ))}
             </div>
           </div>
+
+          {/* Skeleton overlay while loading from Firebase */}
+          {!loaded && (
+            <div className="absolute inset-0 z-20 bg-background/95 flex flex-col">
+              {/* Skeleton header */}
+              <div className="flex border-b border-border">
+                <div className="flex-shrink-0 px-4 py-4" style={isMobile ? { width: '30%' } : { width: COL_W }}>
+                  <div className="h-3 w-16 rounded bg-muted animate-pulse" />
+                </div>
+                {Array.from({ length: effectiveCount }).map((_, i) => (
+                  <div key={i} className="flex-1 px-3 py-3 border-l border-border">
+                    <div className="h-3 w-20 rounded bg-muted animate-pulse mb-2" />
+                    <div className="h-2 w-28 rounded bg-muted/60 animate-pulse" />
+                  </div>
+                ))}
+              </div>
+              {/* Skeleton rows */}
+              {[0, 1, 2, 3].map(r => (
+                <div key={r} className="flex border-b border-border/40">
+                  <div className="flex-shrink-0 px-4 py-4" style={isMobile ? { width: '30%' } : { width: COL_W }}>
+                    <div className="h-3 w-20 rounded bg-muted animate-pulse" />
+                  </div>
+                  {Array.from({ length: effectiveCount }).map((_, i) => (
+                    <div key={i} className="flex-1 px-3 py-3 border-l border-border/40 space-y-2">
+                      <div className="h-16 rounded-lg bg-muted/50 animate-pulse" />
+                      <div className="h-12 rounded-lg bg-muted/30 animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Bottom controls */}
-        <div className="flex items-center gap-4 text-[length:var(--text-12)] text-muted-foreground font-mono pb-2">
+        <div className="flex items-center gap-3 md:gap-4 text-[length:var(--text-12)] text-muted-foreground font-mono pb-2">
           {!locked && (
             <button
               onClick={addRow}
@@ -1173,7 +1310,7 @@ export default function GanttPage() {
               + строка
             </button>
           )}
-          <div className="flex items-center gap-4 flex-1">
+          <div className="hidden md:flex items-center gap-4 flex-1">
             {!locked && (
               <>
                 <span>⠿ перетащить строку</span>
@@ -1183,6 +1320,7 @@ export default function GanttPage() {
             )}
             {locked && <span className="text-muted-foreground/60">Редактирование заблокировано</span>}
           </div>
+          <div className="flex-1 md:hidden" />
           <button
             onClick={() => {
               if (locked) { setShowLockModal(true); }
@@ -1204,13 +1342,6 @@ export default function GanttPage() {
         />
       )}
 
-      {summaryPopup && (
-        <SummaryModal
-          weekLabel={summaryPopup.weekLabel}
-          text={summaryPopup.text}
-          onClose={() => setSummaryPopup(null)}
-        />
-      )}
     </div>
   );
 }

@@ -50,7 +50,8 @@ export function Header() {
                 </Link>
 
                 <RocketmindMenu
-                    className="hero-menu-desktop ml-auto flex-1 items-center justify-end gap-8 lg:gap-12"
+                    className="hero-menu-desktop ml-auto flex-1 items-center justify-end gap-5 lg:gap-7"
+                    itemClassName="!text-[18px]"
                     showDropdowns={true}
                 />
 

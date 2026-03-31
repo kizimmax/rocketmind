@@ -8,21 +8,17 @@
 .hero-background-noise {
   position: absolute;
   inset: 0;
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.045) 0, transparent 42%),
-    radial-gradient(circle at 80% 70%, rgba(255, 233, 0, 0.08) 0, transparent 28%),
-    radial-gradient(circle at 70% 85%, rgba(161, 114, 248, 0.08) 0, transparent 24%);
-  mix-blend-mode: screen;
-  opacity: 0.42;
+  background: rgba(0, 0, 0, 0.7);
   pointer-events: none;
 }
 
 .hero-background-fade {
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, transparent 22%, transparent 76%, rgba(0, 0, 0, 0.28) 100%),
-    radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.12) 100%);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 36%;
+  background: linear-gradient(to top, rgba(10, 10, 10, 1) 15%, rgba(10, 10, 10, 0) 100%);
   pointer-events: none;
 }
 
@@ -356,3 +352,29 @@
 .animate-blink {
   animation: blink 0.7s step-end infinite;
 }
+
+/* ── Cases Section ── */
+
+/* Cases progress bar: fill left → right in 15 s */
+@keyframes cases-progress-fill {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+.cases-progress-bar {
+  animation: cases-progress-fill 15s linear forwards;
+  animation-delay: 0.2s;
+  animation-fill-mode: backwards;
+}
+
+/* Cases progress dot: moves with the bar */
+@keyframes cases-progress-dot {
+  from { left: 0px; }
+  to   { left: calc(100% - 8px); }
+}
+.cases-progress-dot {
+  animation: cases-progress-dot 15s linear forwards;
+  animation-delay: 0.2s;
+  animation-fill-mode: backwards;
+}
+
+
