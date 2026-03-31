@@ -77,7 +77,7 @@ export function Footer() {
         <div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12">
           <div className="flex flex-col justify-between">
             <FooterColumn title="Консалтинг" links={consultingLinks.slice(0, 4)} />
-            <p className="mt-8 text-[13px] text-muted-foreground/50">
+            <p className="mt-8 text-[13px] text-muted-foreground/50 hidden md:block">
               &copy; {new Date().getFullYear()} Rocketmind
             </p>
           </div>
@@ -88,6 +88,11 @@ export function Footer() {
           </div>
           <FooterColumn title="Компания" links={COMPANY_LINKS} />
         </div>
+
+        {/* Mobile copyright — at very bottom */}
+        <p className="mt-10 text-[13px] text-muted-foreground/50 md:hidden">
+          &copy; {new Date().getFullYear()} Rocketmind
+        </p>
       </div>
     </footer>
   );

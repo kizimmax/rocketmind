@@ -507,15 +507,54 @@ function CaseNavigator({
 // Main component
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Stagger delays for each content block (title, desc, stats, result) */
+const STAGGER_MS = 60;
+const SLIDE_PX = 40;
+
+/** Returns inline style for a staggered slide animation block.
+ *  @param phase  "out" = exiting, "in" = entering, null = idle
+ *  @param dir    1 = forward (slide left), -1 = backward (slide right)
+ *  @param index  stagger order (0 = title, 1 = desc, 2 = stats, 3 = result)
+ */
+function staggerStyle(
+  phase: "out" | "in" | null,
+  dir: number,
+  index: number,
+): React.CSSProperties {
+  if (phase === null) {
+    return {
+      opacity: 1,
+      transform: "translateX(0)",
+      transition: `opacity ${FADE_MS}ms ease, transform ${FADE_MS}ms ease`,
+    };
+  }
+  const delay = index * STAGGER_MS;
+  if (phase === "out") {
+    return {
+      opacity: 0,
+      transform: `translateX(${-dir * SLIDE_PX}px)`,
+      transition: `opacity ${FADE_MS}ms ease ${delay}ms, transform ${FADE_MS}ms ease ${delay}ms`,
+    };
+  }
+  // phase === "in"
+  return {
+    opacity: 1,
+    transform: "translateX(0)",
+    transition: `opacity ${FADE_MS}ms ease ${delay}ms, transform ${FADE_MS}ms ease ${delay}ms`,
+  };
+}
+
 export function CasesSectionClient({ logos }: { logos: PartnerLogo[] }) {
   /**
    * activeCase  — drives the progress bar & 15 s timer (updates immediately)
    * displayCase — drives the visible content (updates after fade-out)
-   * fading      — true while content is fading out
+   * phase       — "out" while exiting, "in" while entering, null when idle
+   * direction   — 1 = forward (slide left), -1 = backward (slide right)
    */
   const [activeCase, setActiveCase] = useState(0);
   const [displayCase, setDisplayCase] = useState(0);
-  const [fading, setFading] = useState(false);
+  const [phase, setPhase] = useState<"out" | "in" | null>(null);
+  const [direction, setDirection] = useState(1);
 
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -526,15 +565,22 @@ export function CasesSectionClient({ logos }: { logos: PartnerLogo[] }) {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
 
-    setFading(true);   // begin fade-out
-    setActiveCase(i);  // progress bar resets immediately
+    setDirection(
+      i > displayCase || (i === 0 && displayCase === CASES.length - 1) ? 1 : -1,
+    );
+    setPhase("out");
+    setActiveCase(i);
 
-    // After fade-out completes, swap content and fade back in
+    // After exit animation, swap content and start enter
     fadeTimerRef.current = setTimeout(() => {
       setDisplayCase(i);
-      setFading(false);
-    }, FADE_MS);
-  }, []);
+      setPhase("in");
+      // After enter animation completes, go idle
+      fadeTimerRef.current = setTimeout(() => {
+        setPhase(null);
+      }, FADE_MS + STAGGER_MS * 4);
+    }, FADE_MS + STAGGER_MS * 3);
+  }, [displayCase]);
 
   // Restart 15 s auto-advance whenever activeCase changes
   useEffect(() => {
@@ -611,78 +657,66 @@ export function CasesSectionClient({ logos }: { logos: PartnerLogo[] }) {
               </div>
             </div>
 
-            {/* Fading content: title, description, stats, result */}
-            <div
-              className="flex flex-col gap-5 lg:gap-11 transition-opacity"
-              style={{
-                opacity: fading ? 0 : 1,
-                transitionDuration: `${FADE_MS}ms`,
-              }}
-            >
-              {/* Title + [mobile nav] + Description */}
+            {/* Staggered slide content: title, description, stats, result */}
+            <div className="flex flex-col gap-5 lg:gap-11">
+              {/* Title + Description */}
               <div className="flex flex-col gap-2 lg:gap-5">
-                <div className="flex flex-col gap-2">
-                  {/*
-                   * min-h reserves 3 lines at each breakpoint so the layout
-                   * never jumps when a title wraps to 2 vs 3 lines:
-                   * xl  52 × 1.08 × 3 ≈ 168 px
-                   * md  36 × 1.08 × 3 ≈ 117 px
-                   * mob 24 × 1.08 × 3 ≈  78 px
-                   */}
-                  <h2 className="font-heading text-[24px] md:text-[36px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] min-h-[78px] md:min-h-[117px] xl:min-h-[168px]">
+                <div className="flex flex-col gap-2 overflow-hidden">
+                  <h2
+                    className="font-heading text-[24px] md:text-[36px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] min-h-[78px] md:min-h-[117px] xl:min-h-[168px]"
+                    style={staggerStyle(phase, direction, 0)}
+                  >
                     {nb(current.title)}
                   </h2>
                 </div>
-                {/* Mobile navigator moved to label row above */}
-                {/* copy-18 token: 18px / 1.32 / 0 tracking
-                    xl:pr-[200px] — right padding per Figma layout_WF4UU5
-                    min-h: 18 × 1.32 × 3 ≈ 72px prevents jump on case switch */}
-                <p className="text-[16px] xl:text-[18px] leading-[1.32] text-[#939393] 2xl:pr-[200px] xl:min-h-[72px]">
-                  {nb(current.description)}
-                </p>
+                <div className="overflow-hidden">
+                  <p
+                    className="text-[16px] xl:text-[18px] leading-[1.32] text-[#939393] 2xl:pr-[200px] xl:min-h-[72px]"
+                    style={staggerStyle(phase, direction, 1)}
+                  >
+                    {nb(current.description)}
+                  </p>
+                </div>
               </div>
 
-              {/* Stats — bordered box
-                  padding: 20px mob / 24px sm / 32px xl (Figma layout_PPFQJK: 32px)
-                  gap between cards: 24px (Figma layout_PPFQJK gap: 24px) */}
-              <div className="border border-[#404040] p-5 sm:p-6 xl:p-8">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                  {current.stats.map((stat, i) => (
-                    /* gap-1 mobile (4px per Figma), justify-between sm+ for equal-height grid cells */
-                    <div key={i} className="flex flex-col gap-1 sm:gap-5 xl:justify-between">
-                      {/* Value + Label — row layout, gap 12px (Figma layout_1456BS / layout_0J9AVS) */}
-                      <div className="flex flex-row items-center gap-3 sm:flex-col sm:items-start sm:gap-1 xl:flex-row xl:items-center xl:gap-3">
-                        <div className="font-heading text-[52px] sm:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] flex-none">
-                          {stat.value}
+              {/* Stats — bordered box */}
+              <div className="overflow-hidden">
+                <div
+                  className="border border-[#404040] p-5 sm:p-6 xl:p-8"
+                  style={staggerStyle(phase, direction, 2)}
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                    {current.stats.map((stat, i) => (
+                      <div key={i} className="flex flex-col gap-1 sm:gap-5 xl:justify-between">
+                        <div className="flex flex-row items-center gap-3 sm:flex-col sm:items-start sm:gap-1 xl:flex-row xl:items-center xl:gap-3">
+                          <div className="font-heading text-[52px] sm:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] flex-none">
+                            {stat.value}
+                          </div>
+                          <div className="font-['Loos_Condensed',sans-serif] text-[18px] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[#F0F0F0] whitespace-pre-wrap">
+                            {stat.label}
+                          </div>
                         </div>
-                        {/* whitespace-pre-wrap preserves \n line breaks for guaranteed 2-line labels */}
-                        <div className="font-['Loos_Condensed',sans-serif] text-[18px] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[#F0F0F0] whitespace-pre-wrap">
-                          {stat.label}
-                        </div>
+                        <p className="text-[12px] sm:text-[14px] leading-[1.4] tracking-[0.01em] text-[#939393]">
+                          {nb(stat.description)}
+                        </p>
                       </div>
-                      {/* 12px mobile / 14px sm+ */}
-                      <p className="text-[12px] sm:text-[14px] leading-[1.4] tracking-[0.01em] text-[#939393]">
-                        {nb(stat.description)}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
 
             </div>
 
-            {/* Bottom row: result text LEFT (fading) + desktop navigator RIGHT (static)
-                align-items: flex-end → bottom-align text and nav (Figma layout_1B1LK2)
-                gap 80px desktop (lg+), stacked on mobile
-                mt-5 mobile (20px) / mt-11 desktop (44px) per Figma */}
+            {/* Bottom row: result + desktop navigator */}
             <div className="mt-5 lg:mt-11 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-[80px]">
-              <p
-                className="font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] text-[#F0F0F0] md:flex-1 transition-opacity"
-                style={{ opacity: fading ? 0 : 1, transitionDuration: `${FADE_MS}ms` }}
-              >
-                {nb(current.result)}
-              </p>
-              {/* Desktop-only navigator — on mobile it sits between title and description */}
+              <div className="md:flex-1 overflow-hidden">
+                <p
+                  className="font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] text-[#F0F0F0]"
+                  style={staggerStyle(phase, direction, 3)}
+                >
+                  {nb(current.result)}
+                </p>
+              </div>
               <div className="hidden lg:block">
                 <CaseNavigator activeCase={activeCase} onSelect={switchToCase} />
               </div>
