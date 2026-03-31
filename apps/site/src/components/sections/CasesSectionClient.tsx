@@ -620,46 +620,53 @@ export function CasesSectionClient({ logos }: { logos: PartnerLogo[] }) {
 
             {/* Fading content: title, description, stats, result */}
             <div
-              className="flex flex-col gap-10 xl:gap-11 transition-opacity"
+              className="flex flex-col gap-11 transition-opacity"
               style={{
                 opacity: fading ? 0 : 1,
                 transitionDuration: `${FADE_MS}ms`,
               }}
             >
-              {/* Title + Description */}
-              <div className="flex flex-col gap-6">
+              {/* Title + Description — gap 20px per Figma layout_36XFLD */}
+              <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-2">
                   {/*
                    * min-h reserves 3 lines at each breakpoint so the layout
                    * never jumps when a title wraps to 2 vs 3 lines:
                    * xl  52 × 1.08 × 3 ≈ 168 px
-                   * sm  36 × 1.08 × 3 ≈ 117 px
+                   * md  36 × 1.08 × 3 ≈ 117 px
                    * mob 24 × 1.08 × 3 ≈  78 px
                    */}
-                  <h2 className="font-heading text-[24px] sm:text-[36px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] min-h-[78px] sm:min-h-[117px] xl:min-h-[168px]">
+                  <h2 className="font-heading text-[24px] md:text-[36px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] min-h-[78px] md:min-h-[117px] xl:min-h-[168px]">
                     {nb(current.title)}
                   </h2>
                 </div>
-                {/* xl: 18 × 1.2 × 3 = 65 px — reserves 3 lines, prevents jump */}
-                <p className="text-[15px] xl:text-[18px] leading-[1.2] text-[#939393] xl:min-h-[65px]">
+                {/* copy-18 token: 18px / 1.32 / 0 tracking
+                    xl:pr-[200px] — right padding per Figma layout_WF4UU5
+                    min-h: 18 × 1.32 × 3 ≈ 72px prevents jump on case switch */}
+                <p className="text-[16px] xl:text-[18px] leading-[1.32] text-[#939393] xl:pr-[200px] xl:min-h-[72px]">
                   {nb(current.description)}
                 </p>
               </div>
 
-              {/* Stats — bordered box */}
-              <div className="border border-[#404040] p-6 xl:p-8">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-[40px] xl:gap-[52px]">
+              {/* Stats — bordered box
+                  padding: 20px mob / 24px sm / 32px xl (Figma layout_PPFQJK: 32px)
+                  gap between cards: 24px (Figma layout_PPFQJK gap: 24px) */}
+              <div className="border border-[#404040] p-5 sm:p-6 xl:p-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">
                   {current.stats.map((stat, i) => (
-                    <div key={i} className="flex flex-col gap-3">
-                      <div>
-                        <div className="font-heading text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0]">
+                    /* justify-between: in equal-height grid cells header stays top, desc goes bottom */
+                    <div key={i} className="flex flex-col justify-between gap-5">
+                      {/* Value + Label — row layout, gap 12px (Figma layout_1456BS / layout_0J9AVS) */}
+                      <div className="flex flex-row items-center gap-3">
+                        <div className="font-heading text-[32px] sm:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] flex-none">
                           {stat.value}
                         </div>
-                        <div className="font-['Loos_Condensed',sans-serif] text-[15px] xl:text-[18px] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[#F0F0F0]">
+                        <div className="font-['Loos_Condensed',sans-serif] text-[13px] sm:text-[15px] xl:text-[18px] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[#F0F0F0]">
                           {nb(stat.label)}
                         </div>
                       </div>
-                      <p className="text-[14px] xl:text-[16px] leading-[1.2] text-[#939393] min-h-[51px] xl:min-h-[77px]">
+                      {/* copy-14 token: 14px / 1.4 / 0.01em (Figma style_M1DUJF) */}
+                      <p className="text-[14px] leading-[1.4] tracking-[0.01em] text-[#939393]">
                         {nb(stat.description)}
                       </p>
                     </div>
@@ -669,11 +676,12 @@ export function CasesSectionClient({ logos }: { logos: PartnerLogo[] }) {
 
             </div>
 
-            {/* Bottom row: result text LEFT (fading) + navigator RIGHT (static) */}
-            {/* Result min-h = 2 lines: 13px×1.16×2≈31px; xl: 16px×1.16×2≈38px */}
-            <div className="mt-10 xl:mt-11 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            {/* Bottom row: result text LEFT (fading) + navigator RIGHT (static)
+                align-items: flex-end → bottom-align text and nav (Figma layout_1B1LK2)
+                gap 80px desktop (lg+), stacked on mobile */}
+            <div className="mt-11 flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-[80px]">
               <p
-                className="font-['Loos_Condensed',sans-serif] text-[13px] xl:text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] text-[#F0F0F0] md:max-w-[55%] min-h-[31px] xl:min-h-[38px] transition-opacity"
+                className="font-['Loos_Condensed',sans-serif] text-[14px] xl:text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] text-[#F0F0F0] md:flex-1 transition-opacity"
                 style={{ opacity: fading ? 0 : 1, transitionDuration: `${FADE_MS}ms` }}
               >
                 {nb(current.result)}
