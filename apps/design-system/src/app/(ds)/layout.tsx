@@ -284,8 +284,8 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
           {/* Yellow position indicator — fixed at icon/text boundary */}
           <div
             ref={trackRef}
-            className="absolute top-8 bottom-[60px] pointer-events-none z-10"
-            style={{ left: RAIL_W - 4, width: 4 }}
+            className="absolute top-8 bottom-[60px] pointer-events-none z-10 transition-[left] duration-200 ease-out"
+            style={{ left: sidebarW - 4, width: 4 }}
             aria-hidden
           >
             <div
