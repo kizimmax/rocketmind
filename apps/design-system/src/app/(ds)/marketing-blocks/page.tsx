@@ -152,7 +152,7 @@ export default function MarketingBlocksPage() {
               <img
                 src={`${BASE_PATH}/images/cta/golden-spiral-desktop.svg`}
                 alt=""
-                className="w-full h-full object-cover object-right"
+                className="w-full h-full object-contain object-right"
               />
             </div>
 
