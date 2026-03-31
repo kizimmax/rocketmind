@@ -39,7 +39,7 @@ export default function CrossBlocksPage() {
         </p>
 
         {/* ── Live preview ── */}
-        <div className="rounded-lg border border-border overflow-hidden mb-8">
+        <div className="rounded-lg border border-border overflow-hidden mb-8 isolate relative z-0">
           <div className="bg-rm-gray-2/20">
             <SiteHeader basePath={BASE_PATH} preview />
             <div className="px-8 py-10 space-y-3">

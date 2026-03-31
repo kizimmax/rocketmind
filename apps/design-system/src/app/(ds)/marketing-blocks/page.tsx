@@ -7,6 +7,8 @@ import { TokenChip } from "@/components/ds/color-helpers"
 import { Accordion05Demo } from "@/components/ds/shared"
 import { CasesSectionShowcase } from "@/components/ds/cases-section-showcase"
 
+const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
+
 export default function MarketingBlocksPage() {
   return (
     <>
@@ -125,22 +127,47 @@ export default function MarketingBlocksPage() {
           Жёлтый CTA-блок с тёмной кнопкой и спиралью золотого сечения. Figma: 442-1532 (desktop 1401×400 px) / 443-1546 (mobile 353×571 px). Фон — <TokenChip>#FFCC00</TokenChip>, кнопка — <TokenChip>#0A0A0A</TokenChip> с текстом <TokenChip>#F0F0F0</TokenChip>.
         </p>
         {/* Live preview */}
-        <div className="-mx-5 md:-mx-10 border-y border-border overflow-hidden mb-8">
-          <div className="bg-[#FFCC00] relative overflow-hidden min-h-[280px]">
-            {/* Simplified spiral placeholder */}
-            <div className="absolute right-0 top-0 h-full w-[47%] pointer-events-none opacity-20"
-              style={{ backgroundImage: "radial-gradient(circle at 100% 50%, #000 0%, transparent 60%)" }} />
-            <div className="relative z-10 p-8 xl:p-14">
-              <div className="flex flex-col gap-6 max-w-[640px]">
-                <div className="flex flex-col gap-3">
-                  <div className="font-heading text-[22px] md:text-[36px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#0A0A0A]">
+        <div className="mb-8">
+          <div className="bg-[#FFCC00] relative overflow-hidden rounded-[20px] min-h-[571px] md:min-h-[320px] xl:min-h-[400px]">
+
+            {/* Mobile spiral — full-frame 353×571, below content */}
+            <div
+              className="absolute inset-0 pointer-events-none md:hidden"
+              aria-hidden="true"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`${BASE_PATH}/images/cta/golden-spiral-mobile.svg`}
+                alt=""
+                className="w-full h-full object-cover object-center"
+              />
+            </div>
+
+            {/* Desktop spiral — right ~47%, Figma 646×400 in 1400px frame */}
+            <div
+              className="absolute right-0 top-0 h-full w-[47%] pointer-events-none hidden md:block"
+              aria-hidden="true"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`${BASE_PATH}/images/cta/golden-spiral-desktop.svg`}
+                alt=""
+                className="w-full h-full object-contain object-right-top"
+              />
+            </div>
+
+            {/* Content */}
+            <div className="relative z-10 px-5 md:px-8 xl:px-14 py-8 md:py-11">
+              <div className="flex flex-col gap-9 max-w-[764px]">
+                <div className="flex flex-col gap-4">
+                  <div className="font-heading text-[28px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#0A0A0A]">
                     Хотите увидеть, как команда Rocketmind решит вашу стратегическую задачу?
                   </div>
-                  <p className="text-[13px] md:text-[15px] leading-[1.2] text-[#0A0A0A]/70">
+                  <p className="text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A] xl:max-w-[672px]">
                     Заполните форму — мы проведём экспресс‑оценку ситуации, обозначим возможные сценарии решения и предложим следующий шаг
                   </p>
                 </div>
-                <div className="w-full flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[12px] font-['Loos_Condensed',sans-serif] text-[14px] font-medium uppercase tracking-[0.04em] rounded-[4px]">
+                <div className="w-full md:w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-[4px] cursor-pointer transition-opacity hover:opacity-85">
                   оставить заявку
                 </div>
               </div>
@@ -162,7 +189,7 @@ export default function MarketingBlocksPage() {
                   ["Фон секции",       "#FFCC00 (--rm-yellow-100)",        "Жёлтый"],
                   ["Заголовок",        "#0A0A0A",                          "H2, 52px desktop / H4 24px mobile"],
                   ["Описание",         "#0A0A0A",                          "18px desktop / 14px mobile"],
-                  ["Кнопка",          "#0A0A0A, text #F0F0F0",            "Инверсия; w-full в колонне"],
+                  ["Кнопка",          "#0A0A0A, text #F0F0F0",            "Инверсия; mobile w-full, desktop w-fit (hug)"],
                   ["Декор-спираль",    "SVG белая, right 47%, h-full",     "Спираль золотого сечения"],
                   ["Высота desktop",   "min-h-[400px]",                    "1401×400 px по Figma"],
                   ["Типографика кнопки","Loos Condensed 500, 16px, +4%",  "uppercase, border-radius 4px"],

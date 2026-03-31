@@ -130,8 +130,8 @@ export function SiteHeader({ basePath = '', preview = false }: SiteHeaderProps) 
   return (
     <header
       className={cn(
-        'z-50 w-full border-b transition-all duration-300',
-        preview ? 'relative' : 'sticky top-0',
+        'w-full border-b transition-all duration-300',
+        preview ? 'relative z-0' : 'sticky top-0 z-50',
         headerBg,
       )}
     >
