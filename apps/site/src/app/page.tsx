@@ -1,6 +1,5 @@
-import { CasesSection } from "@/components/sections/CasesSection";
-import { CTASection } from "@/components/sections/CTASection";
 import { HeroSection } from "@/components/sections/HeroSection";
+import { PageBottom } from "@/components/sections/PageBottom";
 import { PlatformOverview } from "@/components/sections/PlatformOverview";
 import { ServicesGrid } from "@/components/sections/ServicesGrid";
 
@@ -16,8 +15,7 @@ export default function RocketmindPage() {
       <HeroSection />
       <PlatformOverview />
       <ServicesGrid />
-      <CasesSection />
-      <CTASection />
+      <PageBottom />
     </>
   );
 }

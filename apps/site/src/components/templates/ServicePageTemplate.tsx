@@ -1,3 +1,5 @@
+import { PageBottom } from "@/components/sections/PageBottom";
+
 /**
  * Шаблон страницы услуги консалтинга / AI-продукта.
  *
@@ -128,40 +130,8 @@ export function ServicePageTemplate({
         </div>
       </section>
 
-      {/* 11. Кейсы */}
-      <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
-          <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Кейсы — заполнить
-          </p>
-        </div>
-      </section>
-
-      {/* 12. Отзывы */}
-      <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
-          <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Отзывы — заполнить
-          </p>
-        </div>
-      </section>
-
-      {/* 13. CTA */}
-      <section className="border-t border-border px-5 py-24 md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px] text-center">
-          <h2 className="font-heading text-3xl font-bold md:text-4xl">
-            Готовы начать?
-          </h2>
-          <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-            Индивидуальный расчёт и отказ от шаблонных решений.
-          </p>
-          <div className="mt-8">
-            <span className="inline-block rounded-sm bg-foreground px-8 py-3 font-mono text-sm uppercase tracking-wider text-background">
-              Оставить заявку
-            </span>
-          </div>
-        </div>
-      </section>
+      {/* 11–13. Кейсы + отзывы + логотипы + CTA */}
+      <PageBottom />
     </div>
   );
 }

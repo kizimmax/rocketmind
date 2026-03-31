@@ -81,7 +81,10 @@ const sections: NavSection[] = [
     { id: "cross-header",  label: "Header" },
     { id: "cross-marquee", label: "Logo Marquee" },
   ]},
-  { id: "marketing-blocks", label: "Маркетинг блоки", subsections: [] },
+  { id: "marketing-blocks", label: "Маркетинг блоки", subsections: [
+    { id: "marketing-blocks-faq",         label: "FAQ / Аккордион" },
+    { id: "marketing-blocks-page-bottom", label: "Кейсы + CTA" },
+  ]},
 ]
 
 export default function DSLayout({ children }: { children: React.ReactNode }) {
