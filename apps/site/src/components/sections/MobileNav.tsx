@@ -187,6 +187,15 @@ export function MobileNav({ className }: { className?: string }) {
                                 className="overflow-hidden"
                               >
                                 <div className="grid gap-0.5 pb-5">
+                                  <Link
+                                    href={item.href}
+                                    onClick={close}
+                                    className="rounded-sm px-3 py-3 transition-colors duration-150 hover:bg-black/5 border-b border-black/10 mb-1"
+                                  >
+                                    <span className="block font-mono text-[13px] uppercase tracking-[0.06em] text-black/50">
+                                      Перейти к разделу
+                                    </span>
+                                  </Link>
                                   {item.items!.map((sub) => (
                                     <Link
                                       key={sub.href}

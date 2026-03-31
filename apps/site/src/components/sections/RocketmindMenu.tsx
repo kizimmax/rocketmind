@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { HEADER_NAV, type NavSection } from "@/content/site-nav";
@@ -28,7 +29,12 @@ export function RocketmindMenu({
 }: RocketmindMenuProps) {
   return (
     <NavigationMenu
-      className={cn("relative z-10 flex max-w-max items-center", className)}
+      className={cn(
+        "relative z-10 flex max-w-max items-center",
+        /* Anchor viewport to right edge */
+        "[&>div]:left-auto [&>div]:right-0 [&>div]:justify-end",
+        className,
+      )}
     >
       <NavigationMenuList className="flex list-none items-center gap-0.5">
         {HEADER_NAV.map((item) => {
@@ -75,6 +81,8 @@ function DropdownSection({
   item: NavSection & { items: NonNullable<NavSection["items"]> };
   itemClassName?: string;
 }) {
+  const router = useRouter();
+
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger
@@ -86,6 +94,7 @@ function DropdownSection({
           "transition-[color,opacity] duration-150 cursor-pointer select-none",
           itemClassName,
         )}
+        onClick={() => router.push(item.href)}
       >
         <span>{item.label}</span>
       </NavigationMenuTrigger>
