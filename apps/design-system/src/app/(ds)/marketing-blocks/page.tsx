@@ -63,9 +63,9 @@ export default function MarketingBlocksPage() {
           Тёмный CTA-блок с желтой кнопкой и декоративным кругом с паттерном точек. Figma: 1400×424 px. Фон — <TokenChip>bg-[#0A0A0A]</TokenChip>, кнопка — <TokenChip>bg-[--rm-yellow-100]</TokenChip> с тёмным текстом.
         </p>
         {/* Live preview */}
-        <div className="-mx-5 md:-mx-10 border-y border-border overflow-hidden mb-8">
+        <div className="mb-8">
           {/* Inline replica to avoid cross-app import */}
-          <div className="dark bg-[#0A0A0A] relative overflow-hidden min-h-[280px]">
+          <div className="dark bg-[#0A0A0A] relative overflow-hidden min-h-[280px] border border-border">
             {/* Decorative circle */}
             <div className="absolute pointer-events-none" style={{ width: 560, height: 560, left: "calc(40%)", top: -130 }}>
               <div className="w-full h-full rounded-full" style={{
@@ -102,6 +102,7 @@ export default function MarketingBlocksPage() {
               </thead>
               <tbody className="text-muted-foreground">
                 {[
+                  ["Контейнер",        "border border-border",             "Рамка вокруг всего блока, px-5 md:px-8 xl:px-14 отступы секции"],
                   ["Фон секции",       "#0A0A0A",                          "bg-background (dark)"],
                   ["Заголовок",        "#F0F0F0 (foreground)",             "H2, Roboto Condensed 700, 52px desktop"],
                   ["Описание",         "text-muted-foreground",            "Copy 18, Roboto 400, 18px desktop"],
