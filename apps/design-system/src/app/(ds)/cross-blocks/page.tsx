@@ -32,17 +32,16 @@ export default function CrossBlocksPage() {
         </p>
 
         {/* ── Header ── */}
-        <SubSection id="cross-header" title="Header — Шапка" first />
+        <SubSection id="cross-header" title="SiteHeader — Шапка сайта" first />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
-          Единая шапка для всех страниц. Sticky, backdrop blur при скролле.
-          Логотип слева, меню и CTA собраны в правой части экрана. На мобайле: логотип + гамбургер.
+          Единая шапка для всех публичных страниц. Sticky, backdrop blur при скролле.
+          Логотип-иконка прижат к левому краю (без паддинга), далее текстовый логотип, навигация с dropdown-меню (Radix NavigationMenu) и CTA-кнопки. На мобайле: логотип + гамбургер → портальное меню на весь экран.
         </p>
 
         {/* ── Live preview ── */}
-        <div className="-mx-5 md:-mx-10 mb-8 border-y border-border overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden mb-8">
           <div className="bg-rm-gray-2/20">
             <SiteHeader basePath={BASE_PATH} preview />
-            {/* Fake page content to simulate context */}
             <div className="px-8 py-10 space-y-3">
               {[100, 75, 88, 60].map((w, i) => (
                 <div key={i} className="h-3 rounded-sm bg-rm-gray-2" style={{ width: `${w}%` }} />
@@ -50,6 +49,36 @@ export default function CrossBlocksPage() {
             </div>
           </div>
         </div>
+
+        {/* ── Behavior description ── */}
+        <SpecBlock title="Поведение на страницах">
+          <div className="space-y-6">
+            <div className="overflow-auto rounded-lg border border-border">
+              <table className="w-full text-[length:var(--text-14)]">
+                <thead>
+                  <tr className="border-b border-border bg-rm-gray-2/30">
+                    <th className="text-left px-4 py-2 font-medium">Контекст</th>
+                    <th className="text-left px-4 py-2 font-medium">Поведение</th>
+                  </tr>
+                </thead>
+                <tbody className="text-muted-foreground">
+                  {[
+                    ["Лендинг (главная)", "sticky top-0, фон прозрачный → при скролле >10px: bg-background/95 + backdrop-blur-lg + border-border. Полная навигация с dropdown-меню (Услуги, Академия, ИИ-продукты), прямые ссылки (Тарифы, О нас), кнопки «Войти» и «Попробовать»"],
+                    ["Внутренние страницы", "Аналогичное поведение sticky + blur. Навигационные пункты и CTA одинаковы на всех страницах. Разница только в active-состоянии ссылок"],
+                    ["Мобайл (<768px)", "Логотип-иконка + текстовый логотип + гамбургер (18px). При клике — портальное меню (React Portal → document.body), fixed top-16, backdrop-blur-lg. Accordion-группы для dropdown-секций. Полная ширина кнопок «Войти» и «Попробовать» внизу меню"],
+                    ["Десктоп (≥768px)", "Иконка логотипа прижата к левому краю (h-16, без padding). Текстовый логотип + NavigationMenu с dropdown-контентом (2-column grid, 480px wide). CTA-кнопки справа: «Войти» (secondary) + «Попробовать» (yellow)"],
+                    ["DS документация", "preview=true → position: relative (не sticky). Фон сразу blur, для демонстрации scrolled-состояния"],
+                  ].map(([ctx, behavior]) => (
+                    <tr key={ctx} className="border-b border-border last:border-0">
+                      <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap align-top">{ctx}</td>
+                      <td className="px-4 py-2">{behavior}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </SpecBlock>
 
         <SpecBlock title="Токены, состояния и применение">
           <div className="space-y-6">
@@ -69,13 +98,15 @@ export default function CrossBlocksPage() {
                     ["Фон (скролл)",     "bg-background/95 + blur",    "backdrop-blur-lg, border-border"],
                     ["Бордер",           "--border",                   "Появляется только при скролле"],
                     ["z-index",          "z-50",                       "Всегда поверх контента"],
-                    ["Логотип",          "text_logo_*.svg",            "dark/light вариант автоматически"],
+                    ["Логотип-иконка",   "icon_*.svg",                 "h-16, flush left (без паддинга), dark/light автоматически"],
+                    ["Логотип текст",    "text_logo_*.svg",            "h-6, после иконки через px-1 mr-4"],
                     ["Навигация",        "--font-mono-family",         "12px, uppercase, tracking 0.08em"],
-                    ["Цвет nav",         "--muted-foreground",         "hover → --foreground + bg-rm-gray-3"],
-                    ["Кнопка «Войти»",   "--border / --rm-gray-2",     "Outline, hover: bg-rm-gray-3"],
-                    ["CTA «Попробовать»","--rm-yellow-100",             "hover: --rm-yellow-300"],
-                    ["Мобайл гамбургер", "Lucide Menu / X",            "18px, stroke 1.5px"],
-                    ["Мобайл меню",      "React portal + fixed",       "top-16, backdrop-blur-lg"],
+                    ["Dropdown",         "NavigationMenu (Radix)",     "480px wide, 2-col grid, icons 16px в 36px контейнере"],
+                    ["Цвет nav",         "--muted-foreground",         "hover → --foreground + bg-accent"],
+                    ["Кнопка «Войти»",   "bg-secondary",              "h-9, px-4, hover: opacity 0.88"],
+                    ["CTA «Попробовать»","--rm-yellow-100",            "hover: --rm-yellow-300"],
+                    ["Мобайл гамбургер", "Lucide Menu / X",            "18px, stroke 1.5px, h-9 w-9 контейнер"],
+                    ["Мобайл меню",      "React Portal + fixed",       "top-16, backdrop-blur-lg, accordion-группы"],
                   ].map(([prop, token, value]) => (
                     <tr key={prop} className="border-b border-border last:border-0">
                       <td className="px-4 py-2 font-medium text-foreground">{prop}</td>
@@ -86,6 +117,8 @@ export default function CrossBlocksPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* State comparison: default vs scrolled */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-lg border border-border overflow-hidden">
                 <div className="px-4 py-2 border-b border-border bg-rm-gray-2/30">
@@ -94,17 +127,19 @@ export default function CrossBlocksPage() {
                 <div className="bg-transparent p-0">
                   <nav className="flex h-16 items-center justify-between px-5 border-b border-transparent">
                     <div className="flex items-center gap-2">
-                      <img src={`${BASE_PATH}/text_logo_dark_background_en.svg`} alt="Rocketmind" className="h-6 hidden dark:block" />
-                      <img src={`${BASE_PATH}/text_logo_light_background_en.svg`} alt="Rocketmind" className="h-6 dark:hidden" />
+                      <img src={`${BASE_PATH}/icon_light_background.svg`} alt="" className="h-10 w-auto dark:hidden" />
+                      <img src={`${BASE_PATH}/icon_dark_background.svg`} alt="" className="h-10 w-auto hidden dark:block" />
+                      <img src={`${BASE_PATH}/text_logo_dark_background_en.svg`} alt="Rocketmind" className="h-5 hidden dark:block" />
+                      <img src={`${BASE_PATH}/text_logo_light_background_en.svg`} alt="Rocketmind" className="h-5 dark:hidden" />
                     </div>
                     <div className="hidden sm:flex items-center gap-0.5">
-                      {["Продукты","Агенты","Тарифы"].map(l => (
+                      {["Услуги","Академия","ИИ-продукты","Тарифы","О нас"].map(l => (
                         <span key={l} className="px-3 py-1.5 rounded-sm font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">{l}</span>
                       ))}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline-flex items-center justify-center h-8 px-3 rounded-sm border border-border text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] text-foreground">Войти</span>
-                      <span className="inline-flex items-center justify-center h-8 px-3 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Попробовать</span>
+                      <span className="hidden sm:inline-flex items-center justify-center h-9 px-4 rounded-sm bg-secondary text-secondary-foreground text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Войти</span>
+                      <span className="inline-flex items-center justify-center h-9 px-4 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Попробовать</span>
                     </div>
                   </nav>
                 </div>
@@ -119,17 +154,19 @@ export default function CrossBlocksPage() {
                 <div className="bg-background/95 backdrop-blur-lg p-0">
                   <nav className="flex h-16 items-center justify-between px-5 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <img src={`${BASE_PATH}/text_logo_dark_background_en.svg`} alt="Rocketmind" className="h-6 hidden dark:block" />
-                      <img src={`${BASE_PATH}/text_logo_light_background_en.svg`} alt="Rocketmind" className="h-6 dark:hidden" />
+                      <img src={`${BASE_PATH}/icon_light_background.svg`} alt="" className="h-10 w-auto dark:hidden" />
+                      <img src={`${BASE_PATH}/icon_dark_background.svg`} alt="" className="h-10 w-auto hidden dark:block" />
+                      <img src={`${BASE_PATH}/text_logo_dark_background_en.svg`} alt="Rocketmind" className="h-5 hidden dark:block" />
+                      <img src={`${BASE_PATH}/text_logo_light_background_en.svg`} alt="Rocketmind" className="h-5 dark:hidden" />
                     </div>
                     <div className="hidden sm:flex items-center gap-0.5">
-                      {["Продукты","Агенты","Тарифы"].map(l => (
+                      {["Услуги","Академия","ИИ-продукты","Тарифы","О нас"].map(l => (
                         <span key={l} className="px-3 py-1.5 rounded-sm font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">{l}</span>
                       ))}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="hidden sm:inline-flex items-center justify-center h-8 px-3 rounded-sm border border-border text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] text-foreground">Войти</span>
-                      <span className="inline-flex items-center justify-center h-8 px-3 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Попробовать</span>
+                      <span className="hidden sm:inline-flex items-center justify-center h-9 px-4 rounded-sm bg-secondary text-secondary-foreground text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Войти</span>
+                      <span className="inline-flex items-center justify-center h-9 px-4 rounded-sm bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em]">Попробовать</span>
                     </div>
                   </nav>
                 </div>
@@ -138,10 +175,102 @@ export default function CrossBlocksPage() {
                 </div>
               </div>
             </div>
-            <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground">
-              <p className="mb-1">{'<SiteHeader basePath={BASE_PATH} />'}</p>
-              <p className="text-[length:var(--text-12)] text-muted-foreground/60">{'// basePath — для корректных путей к SVG-логотипам в prod'}</p>
-            </div>
+
+            {/* Component structure */}
+            <SpecBlock title="Структура компонента">
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
+                  <p>{'import { SiteHeader } from "@/components/ui/site-header";'}</p>
+                  <p>&nbsp;</p>
+                  <p className="text-muted-foreground/60">{'// Лендинг — sticky, прозрачный фон'}</p>
+                  <p>{'<SiteHeader basePath="/rocketmind" />'}</p>
+                  <p>&nbsp;</p>
+                  <p className="text-muted-foreground/60">{'// DS документация — relative, blur-фон сразу'}</p>
+                  <p>{'<SiteHeader basePath="/rocketmind/ds" preview />'}</p>
+                </div>
+
+                <div className="overflow-auto rounded-lg border border-border">
+                  <table className="w-full text-[length:var(--text-14)]">
+                    <thead>
+                      <tr className="border-b border-border bg-rm-gray-2/30">
+                        <th className="text-left px-4 py-2 font-medium">Prop</th>
+                        <th className="text-left px-4 py-2 font-medium">Тип</th>
+                        <th className="text-left px-4 py-2 font-medium">По умолчанию</th>
+                        <th className="text-left px-4 py-2 font-medium">Описание</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-muted-foreground">
+                      {[
+                        ["basePath", "string", '""', "Префикс путей к SVG-логотипам (для prod-деплоя)"],
+                        ["preview",  "boolean", "false", "Режим preview: relative вместо sticky, blur-фон сразу"],
+                      ].map(([prop, type, def, desc]) => (
+                        <tr key={prop} className="border-b border-border last:border-0">
+                          <td className="px-4 py-2 font-medium text-foreground"><code>{prop}</code></td>
+                          <td className="px-4 py-2"><TokenChip>{type}</TokenChip></td>
+                          <td className="px-4 py-2"><code>{def}</code></td>
+                          <td className="px-4 py-2">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="overflow-auto rounded-lg border border-border">
+                  <table className="w-full text-[length:var(--text-14)]">
+                    <thead>
+                      <tr className="border-b border-border bg-rm-gray-2/30">
+                        <th className="text-left px-4 py-2 font-medium">Внутренний элемент</th>
+                        <th className="text-left px-4 py-2 font-medium">Описание</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-muted-foreground">
+                      {[
+                        ["useScroll(10)",       "Хук: отслеживает window.scrollY > 10px, переключает фон"],
+                        ["NavigationMenu",      "Radix NavigationMenu — desktop dropdown-меню (Услуги, Академия, ИИ-продукты)"],
+                        ["DropdownItem",        "Карточка в dropdown: иконка 16px в 36px контейнере + title + description"],
+                        ["MobileGroup",         "Accordion-группа в мобильном меню: label + ChevronDown + список items"],
+                        ["createPortal",        "Мобильное меню рендерится через React Portal в document.body"],
+                      ].map(([elem, desc]) => (
+                        <tr key={elem} className="border-b border-border last:border-0">
+                          <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap"><code>{elem}</code></td>
+                          <td className="px-4 py-2">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </SpecBlock>
+
+            {/* Navigation data */}
+            <SpecBlock title="Навигационные данные">
+              <div className="overflow-auto rounded-lg border border-border">
+                <table className="w-full text-[length:var(--text-14)]">
+                  <thead>
+                    <tr className="border-b border-border bg-rm-gray-2/30">
+                      <th className="text-left px-4 py-2 font-medium">Группа</th>
+                      <th className="text-left px-4 py-2 font-medium">Тип</th>
+                      <th className="text-left px-4 py-2 font-medium">Пункты</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-muted-foreground">
+                    {[
+                      ["Услуги",       "Dropdown", "AI-консалтинг, Автоматизация, Кейс-система, Аналитика"],
+                      ["Академия",     "Dropdown", "Курсы, Мастер-классы, База знаний, Корп. обучение"],
+                      ["ИИ-продукты",  "Dropdown", "AI-агенты, AI-аналитик, AI-маркетолог, AI-разработчик"],
+                      ["Тарифы",       "Link",     "Прямая ссылка, без dropdown"],
+                      ["О нас",        "Link",     "Прямая ссылка, без dropdown"],
+                    ].map(([group, type, items]) => (
+                      <tr key={group} className="border-b border-border last:border-0">
+                        <td className="px-4 py-2 font-medium text-foreground">{group}</td>
+                        <td className="px-4 py-2"><TokenChip>{type}</TokenChip></td>
+                        <td className="px-4 py-2">{items}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </SpecBlock>
           </div>
         </SpecBlock>
 
@@ -152,7 +281,7 @@ export default function CrossBlocksPage() {
         </p>
 
         {/* ── Live preview ── */}
-        <div className="-mx-5 md:-mx-10 border-y border-border py-8 mb-8 bg-[#0A0A0A]">
+        <div className="rounded-lg border border-border py-8 mb-8 bg-[#0A0A0A] overflow-hidden">
           <div className="mx-auto max-w-[1056px]">
             <InfiniteLogoMarquee logos={DEMO_LOGOS} reverse />
           </div>
