@@ -434,19 +434,12 @@ function TestimonialsColumn({
         <div ref={trackRef} className="will-change-transform">
           {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
             <div key={i}>
-              <div className="text-[14px] leading-[1.4] tracking-[0.01em] text-[#939393]">
-                {t.text.split("\n\n").map((para, pi) => (
-                  <p key={pi} className={pi > 0 ? "mt-2" : ""}>
-                    {nb(para.replace(/\n/g, " "))}
-                  </p>
-                ))}
-              </div>
-              {/* Author card */}
-              <div className="flex items-center gap-3 mt-4">
-                <div className="flex-none w-8 h-8 rounded-full overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={t.avatar} alt={t.name} loading="eager" className="w-full h-full object-cover" />
-                </div>
+              {/* Author card — at top so it's always visible as item enters the window */}
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="flex-none w-8 h-8 rounded-full bg-[#2a2a2a] bg-cover bg-center"
+                  style={{ backgroundImage: `url(${t.avatar})` }}
+                />
                 <div className="flex flex-col">
                   <span className="text-[13px] font-medium text-[#F0F0F0] leading-[1.2]">
                     {t.name}
@@ -455,6 +448,13 @@ function TestimonialsColumn({
                     {t.position}
                   </span>
                 </div>
+              </div>
+              <div className="text-[14px] leading-[1.4] tracking-[0.01em] text-[#939393]">
+                {t.text.split("\n\n").map((para, pi) => (
+                  <p key={pi} className={pi > 0 ? "mt-2" : ""}>
+                    {nb(para.replace(/\n/g, " "))}
+                  </p>
+                ))}
               </div>
               {i < TESTIMONIALS.length * 2 - 1 && (
                 <div className="h-px bg-[#404040] my-5" />
