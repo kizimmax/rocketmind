@@ -51,14 +51,14 @@ export function CTASectionYellow() {
 
           {/* ── Content ── */}
           <div className="relative z-10 p-5 md:px-8 md:py-11 xl:px-14">
-            <div className="flex flex-col gap-9 max-w-[764px]">
+            <div className="flex flex-col gap-9 md:max-w-[75%] lg:max-w-[50%]">
 
               {/* H2 + body copy */}
               <div className="flex flex-col gap-4">
                 <h2 className="font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]">
                   Хотите увидеть, как команда Rocketmind решит вашу стратегическую задачу?
                 </h2>
-                <p className="text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A] xl:max-w-[672px]">
+                <p className="text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A]">
                   Заполните форму — мы проведём экспресс‑оценку ситуации, обозначим возможные сценарии решения и предложим следующий шаг
                 </p>
               </div>
