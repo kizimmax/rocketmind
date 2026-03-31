@@ -190,12 +190,10 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
 
       {/* ───── HEADER ───── */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
-        {/* Desktop header row — left-padding follows sidebar width */}
-        <div
-          className="hidden md:flex items-center justify-between h-14 pr-5 transition-[padding-left] duration-200"
-          style={{ paddingLeft: sidebarW + 20 }}
-        >
-          <div className="flex items-center gap-2">
+        {/* Desktop header row — logo flush left, aligned with sidebar icons */}
+        <div className="hidden md:flex items-center justify-between h-14 pr-5">
+          {/* Logo — left edge matches sidebar icon left edge (icons are 15px centered in 48px → start at ~16.5px) */}
+          <div className="flex items-center gap-2" style={{ paddingLeft: 14 }}>
             <img
               src={`${BASE_PATH}/text_logo_dark_background_en.svg`}
               alt="Rocketmind"
