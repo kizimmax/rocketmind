@@ -205,16 +205,16 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                                 </p>
                               </div>
                               {/* Partner logos */}
-                              <div className="flex items-end justify-between gap-10 py-2 mt-auto">
+                              <div className="flex items-end justify-between gap-[clamp(16px,4vw,40px)] py-2 mt-auto">
                                 {card.partnerLogos ? (
                                   card.partnerLogos.map((logo, i) => (
-                                    <Image key={i} src={logo.src} alt="" width={logo.width ?? 139} height={logo.height ?? 32} className="h-8 w-auto object-contain" unoptimized />
+                                    <Image key={i} src={logo.src} alt="" width={logo.width ?? 139} height={logo.height ?? 32} className="h-[clamp(20px,5vw,32px)] w-auto max-w-[45%] object-contain" unoptimized />
                                   ))
                                 ) : (
                                   // Placeholder until real logos are added
                                   <>
-                                    <div className="h-8 w-[139px] bg-muted-foreground/15 rounded-sm" />
-                                    <div className="h-8 w-[108px] bg-muted-foreground/15 rounded-sm" />
+                                    <div className="h-[clamp(20px,5vw,32px)] w-[139px] max-w-[45%] bg-muted-foreground/15 rounded-sm" />
+                                    <div className="h-[clamp(20px,5vw,32px)] w-[108px] max-w-[45%] bg-muted-foreground/15 rounded-sm" />
                                   </>
                                 )}
                               </div>
