@@ -1,10 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { HEADER_NAV, type NavSection } from "@/content/site-nav";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@rocketmind/ui";
 
 export { HEADER_NAV as rocketmindMenuItems };
 
@@ -14,74 +21,85 @@ type RocketmindMenuProps = {
   showDropdowns?: boolean;
 };
 
-type DropdownTriggerProps = {
+export function RocketmindMenu({
+  className,
+  itemClassName,
+  showDropdowns = true,
+}: RocketmindMenuProps) {
+  return (
+    <NavigationMenu
+      className={cn("relative z-10 flex max-w-max items-center", className)}
+    >
+      <NavigationMenuList className="flex list-none items-center gap-0.5">
+        {HEADER_NAV.map((item) => {
+          if (showDropdowns && item.items && item.items.length > 0) {
+            return (
+              <DropdownSection
+                key={item.label}
+                item={item as NavSection & { items: NonNullable<NavSection["items"]> }}
+                itemClassName={itemClassName}
+              />
+            );
+          }
+
+          return (
+            <NavigationMenuItem key={item.label}>
+              <NavigationMenuLink asChild>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-sm",
+                    "font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px]",
+                    "text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88]",
+                    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                    itemClassName,
+                  )}
+                >
+                  <span>{item.label}</span>
+                </Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          );
+        })}
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
+
+/* ── Dropdown section with Radix sliding viewport ── */
+
+function DropdownSection({
+  item,
+  itemClassName,
+}: {
   item: NavSection & { items: NonNullable<NavSection["items"]> };
   itemClassName?: string;
-};
-
-function DropdownTrigger({ item, itemClassName }: DropdownTriggerProps) {
-  const [open, setOpen] = useState(false);
-  const menuId = useId();
-
+}) {
   return (
-    <div
-      className="group/menu relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => setOpen(true)}
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-          setOpen(false);
-        }
-      }}
-    >
-      <button
-        type="button"
+    <NavigationMenuItem>
+      <NavigationMenuTrigger
         className={cn(
-          "inline-flex items-center gap-3 whitespace-nowrap font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px] text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+          "inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-sm",
+          "font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px]",
+          "text-foreground bg-transparent hover:bg-transparent hover:opacity-[0.88]",
+          "data-[state=open]:bg-transparent data-[state=open]:opacity-[0.88]",
+          "transition-[color,opacity] duration-150 cursor-pointer select-none",
           itemClassName,
         )}
-        aria-expanded={open}
-        aria-controls={menuId}
-        aria-haspopup="menu"
       >
         <span>{item.label}</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="10"
-          height="6"
-          viewBox="0 0 10 6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      </NavigationMenuTrigger>
+
+      <NavigationMenuContent>
+        <ul
           className={cn(
-            "h-[6px] w-[10px] shrink-0 transition-transform duration-200",
-            open && "rotate-180",
+            "grid gap-0.5 p-2",
+            item.items.length > 4 ? "w-[620px] grid-cols-3" : "w-[420px] grid-cols-2",
           )}
         >
-          <path d="M1 1L5 5L9 1" />
-        </svg>
-      </button>
-
-      <div
-        id={menuId}
-        className={cn(
-          "absolute left-0 top-full z-50 pt-3 text-popover-foreground transition-[opacity,transform,visibility] duration-200",
-          item.items.length > 4 ? "w-[620px]" : "w-[420px]",
-          open
-            ? "visible translate-y-0 opacity-100"
-            : "pointer-events-none invisible translate-y-1 opacity-0",
-        )}
-      >
-        <div className="overflow-hidden rounded-sm border border-border bg-popover">
-          <ul className={cn(
-            "grid gap-0.5 p-2",
-            item.items.length > 4 ? "grid-cols-3" : "grid-cols-2",
-          )}>
-            {item.items.map((navItem) => (
-              <li key={navItem.href}>
+          {item.items.map((navItem) => (
+            <li key={navItem.href}>
+              <NavigationMenuLink asChild>
                 <Link
                   href={navItem.href}
                   className="flex flex-col rounded-sm px-2.5 py-2 text-left transition-[background-color,color,opacity] duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -93,46 +111,11 @@ function DropdownTrigger({ item, itemClassName }: DropdownTriggerProps) {
                     {navItem.description}
                   </span>
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function RocketmindMenu({
-  className,
-  itemClassName,
-  showDropdowns = true,
-}: RocketmindMenuProps) {
-  return (
-    <nav className={className} aria-label="Rocketmind navigation">
-      {HEADER_NAV.map((item) => {
-        if (showDropdowns && item.items && item.items.length > 0) {
-          return (
-            <DropdownTrigger
-              key={item.label}
-              item={item as DropdownTriggerProps["item"]}
-              itemClassName={itemClassName}
-            />
-          );
-        }
-
-        return (
-          <Link
-            key={item.label}
-            href={item.href}
-            className={cn(
-              "inline-flex items-center gap-3 whitespace-nowrap font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px] text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-              itemClassName,
-            )}
-          >
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
+              </NavigationMenuLink>
+            </li>
+          ))}
+        </ul>
+      </NavigationMenuContent>
+    </NavigationMenuItem>
   );
 }

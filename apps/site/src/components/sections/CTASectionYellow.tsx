@@ -65,7 +65,7 @@ export function CTASectionYellow() {
               {/* Button — mobile: full-width, desktop: hug width */}
               <Link
                 href="#contact"
-                className="w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-[4px] transition-opacity hover:opacity-85 active:opacity-70"
+                className="w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-none transition-opacity hover:opacity-85 active:opacity-70"
               >
                 оставить заявку
               </Link>

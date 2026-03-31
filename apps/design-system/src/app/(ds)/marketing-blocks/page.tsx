@@ -167,7 +167,7 @@ export default function MarketingBlocksPage() {
                     Заполните форму — мы проведём экспресс‑оценку ситуации, обозначим возможные сценарии решения и предложим следующий шаг
                   </p>
                 </div>
-                <div className="w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-[4px] cursor-pointer transition-opacity hover:opacity-85">
+                <div className="w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-none cursor-pointer transition-opacity hover:opacity-85">
                   оставить заявку
                 </div>
               </div>
