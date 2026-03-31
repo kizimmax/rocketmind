@@ -1872,7 +1872,7 @@ function Slider({
         /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
           "div",
           {
-            className: "absolute top-0 w-2 h-2 rounded-full bg-foreground",
+            className: "absolute top-0 w-2 h-2 bg-foreground",
             style: animate2 ? animStyle("rm-slider-dot") : { left: `calc(${fillPct} - 4px)` }
           },
           animate2 ? `dot-${String(animateKey)}` : void 0

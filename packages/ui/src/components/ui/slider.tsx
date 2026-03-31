@@ -90,7 +90,7 @@ export function Slider({
       {/* Dot */}
       <div
         key={animate ? `dot-${String(animateKey)}` : undefined}
-        className="absolute top-0 w-2 h-2 rounded-full bg-foreground"
+        className="absolute top-0 w-2 h-2 bg-foreground"
         style={
           animate
             ? animStyle("rm-slider-dot")

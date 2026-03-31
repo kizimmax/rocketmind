@@ -24,6 +24,11 @@ import {
   Loader2, Trash2, ArrowRight, Wrench, GraduationCap
 } from "lucide-react"
 
+function SliderInteractiveDemo() {
+  const [val, setVal] = React.useState(0.6)
+  return <Slider value={val} min={0} max={1} step={0.01} width={200} onChange={setVal} />
+}
+
 export default function ComponentsPage() {
   const mono = "font-[family-name:var(--font-mono-family)]"
 
@@ -1396,7 +1401,7 @@ export default function ComponentsPage() {
             <div>
               <p className="text-[length:var(--text-12)] text-muted-foreground mb-3">Интерактивный, ширина 200 px</p>
               <div className="flex items-center gap-6 p-6 border border-border rounded-sm bg-background">
-                <Slider value={0.6} width={200} onChange={() => {}} />
+                <SliderInteractiveDemo />
               </div>
             </div>
           </div>
