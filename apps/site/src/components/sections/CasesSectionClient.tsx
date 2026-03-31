@@ -323,6 +323,14 @@ function TestimonialsColumn({
   const lastPointerY = useRef(0);
   const lastPointerTime = useRef(0);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const FRICTION = 0.95;
 
   // Auto-scroll loop with seamless wrap + momentum
@@ -410,17 +418,17 @@ function TestimonialsColumn({
       {/* Clipping window — height set by ResizeObserver in parent (matches cases column). */}
       <div
         ref={scrollWindowRef}
-        className="relative overflow-hidden min-h-[300px] cursor-grab active:cursor-grabbing select-none touch-none"
+        className={`relative overflow-hidden min-h-[300px] ${!isMobile ? "cursor-grab active:cursor-grabbing select-none touch-none" : ""}`}
         style={{
           maskImage:
             "linear-gradient(180deg, transparent 0px, #000 64px, #000 calc(100% - 64px), transparent 100%)",
           WebkitMaskImage:
             "linear-gradient(180deg, transparent 0px, #000 64px, #000 calc(100% - 64px), transparent 100%)",
         }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        onPointerDown={isMobile ? undefined : handlePointerDown}
+        onPointerMove={isMobile ? undefined : handlePointerMove}
+        onPointerUp={isMobile ? undefined : handlePointerUp}
+        onPointerCancel={isMobile ? undefined : handlePointerUp}
       >
         {/* Double the list for a seamless vertical loop */}
         <div ref={trackRef} className="will-change-transform">
@@ -433,7 +441,7 @@ function TestimonialsColumn({
               <div className="flex items-center gap-3 mt-4">
                 <div className="flex-none w-8 h-8 rounded-full overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
+                  <img src={t.avatar} alt={t.name} loading="eager" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[13px] font-medium text-[#F0F0F0] leading-[1.2]">
@@ -561,7 +569,7 @@ export function CasesSectionClient({ logos }: { logos: PartnerLogo[] }) {
         const labelOffset = scrollEl.offsetTop - (scrollEl.parentElement?.offsetTop ?? 0);
         scrollEl.style.height = `${casesEl.offsetHeight - labelOffset}px`;
       } else {
-        scrollEl.style.height = "";
+        scrollEl.style.height = "380px";
       }
     };
 

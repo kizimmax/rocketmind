@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
 
 export type ServiceCard = {
@@ -207,8 +208,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                               <div className="flex items-end justify-between gap-10 py-2 mt-auto">
                                 {card.partnerLogos ? (
                                   card.partnerLogos.map((src, i) => (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img key={i} src={src} alt="" className="h-8 object-contain" />
+                                    <Image key={i} src={src} alt="" width={139} height={32} className="h-8 w-auto object-contain" unoptimized />
                                   ))
                                 ) : (
                                   // Placeholder until real logos are added
