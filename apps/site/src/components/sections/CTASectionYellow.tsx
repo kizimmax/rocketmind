@@ -18,33 +18,27 @@ export function CTASectionYellow() {
   return (
     <section className="px-5 md:px-8 xl:px-14">
       <div className="mx-auto max-w-[1512px]">
-        <div className="bg-[#FFCC00] relative overflow-hidden rounded-none aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]">
+        <div className="bg-[#FFCC00] relative overflow-hidden rounded-none">
 
-          {/* ── Mobile spiral — full-frame 353×571, below content ── */}
+          {/* ── Spiral — height-bound, anchored right on all breakpoints ── */}
           <div
-            className="absolute inset-0 pointer-events-none md:hidden"
+            className="absolute right-0 top-0 bottom-0 pointer-events-none flex items-center"
             aria-hidden="true"
           >
             <Image
               src={`${BASE_PATH}/images/cta/golden-spiral-mobile.svg`}
               alt=""
-              fill
-              className="object-cover object-center"
+              width={353}
+              height={571}
+              className="h-full w-auto object-contain md:hidden"
               unoptimized
             />
-          </div>
-
-          {/* ── Desktop spiral — height-bound, anchored right ── */}
-          <div
-            className="absolute right-0 top-0 bottom-0 pointer-events-none hidden md:flex items-center"
-            aria-hidden="true"
-          >
             <Image
               src={`${BASE_PATH}/images/cta/golden-spiral-desktop.svg`}
               alt=""
               width={646}
               height={400}
-              className="h-full w-auto object-contain"
+              className="h-full w-auto object-contain hidden md:block"
               unoptimized
             />
           </div>

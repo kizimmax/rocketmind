@@ -1,5 +1,5 @@
 import { CasesSection } from "./CasesSection";
-import { CTASection } from "./CTASection";
+import { CTASectionYellow } from "./CTASectionYellow";
 
 /**
  * Стандартный нижний блок страницы:
@@ -11,7 +11,7 @@ export function PageBottom() {
   return (
     <>
       <CasesSection />
-      <CTASection />
+      <CTASectionYellow />
     </>
   );
 }
