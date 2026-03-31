@@ -434,9 +434,13 @@ function TestimonialsColumn({
         <div ref={trackRef} className="will-change-transform">
           {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
             <div key={i}>
-              <p className="text-[15px] leading-[1.35] text-[#939393] whitespace-pre-line">
-                {nb(t.text)}
-              </p>
+              <div className="text-[14px] leading-[1.4] tracking-[0.01em] text-[#939393]">
+                {t.text.split("\n\n").map((para, pi) => (
+                  <p key={pi} className={pi > 0 ? "mt-2" : ""}>
+                    {nb(para.replace(/\n/g, " "))}
+                  </p>
+                ))}
+              </div>
               {/* Author card */}
               <div className="flex items-center gap-3 mt-4">
                 <div className="flex-none w-8 h-8 rounded-full overflow-hidden">

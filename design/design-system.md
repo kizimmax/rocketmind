@@ -416,6 +416,7 @@ Roboto, normal case. Описания и body. Повышенный line-height 
 | `copy-18` | 18 | 400 Regular | 1.32 | 0 | Lead / intro paragraph |
 | `copy-16` | 16 | 400 Regular | 1.32 | 0 | **Body** — основной текст |
 | `copy-16-strong` | 16 | 500 Medium | 1.618 | 0 | Body strong, акцент в тексте |
+| `copy-14` | 14 | 400 Regular | 1.4 | 0.01em | Отзывы, комментарии, вторичный контент; paragraph-spacing 8px |
 | `caption-14` | 14 | 400 Regular | 1.4 | 0.01em | Caption, подпись, служебная поясняющая строка |
 | `code-14` | 14 | 400 Regular | 1.4 | 0.02em | Inline code, технические строки |
 | `copy-12` | 12 | 400 Regular | 1.4 | 0.02em | Micro, copyright, служебный текст |
