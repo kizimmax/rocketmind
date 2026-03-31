@@ -128,7 +128,7 @@ export default function MarketingBlocksPage() {
         </p>
         {/* Live preview */}
         <div className="mb-8">
-          <div className="bg-[#FFCC00] relative overflow-hidden rounded-[20px] min-h-[571px] md:min-h-[320px] xl:min-h-[400px]">
+          <div className="bg-[#FFCC00] relative overflow-hidden rounded-[20px] aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]">
 
             {/* Mobile spiral — full-frame 353×571, below content */}
             <div
@@ -157,17 +157,17 @@ export default function MarketingBlocksPage() {
             </div>
 
             {/* Content */}
-            <div className="relative z-10 px-5 md:px-8 xl:px-14 py-8 md:py-11">
+            <div className="relative z-10 p-5 md:px-8 md:py-11 xl:px-14">
               <div className="flex flex-col gap-9 max-w-[764px]">
                 <div className="flex flex-col gap-4">
-                  <div className="font-heading text-[28px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#0A0A0A]">
+                  <div className="font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]">
                     Хотите увидеть, как команда Rocketmind решит вашу стратегическую задачу?
                   </div>
                   <p className="text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A] xl:max-w-[672px]">
                     Заполните форму — мы проведём экспресс‑оценку ситуации, обозначим возможные сценарии решения и предложим следующий шаг
                   </p>
                 </div>
-                <div className="w-full md:w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-[4px] cursor-pointer transition-opacity hover:opacity-85">
+                <div className="w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-[4px] cursor-pointer transition-opacity hover:opacity-85">
                   оставить заявку
                 </div>
               </div>
