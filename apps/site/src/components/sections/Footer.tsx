@@ -66,7 +66,7 @@ export function Footer() {
           <img
             src={`${BASE_PATH}/with_descriptor_dark_background_en.svg`}
             alt="Rocketmind"
-            className="h-14 w-auto"
+            className="h-[42px] w-auto"
           />
         </Link>
 

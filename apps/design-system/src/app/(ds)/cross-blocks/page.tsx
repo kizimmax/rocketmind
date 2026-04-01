@@ -287,7 +287,7 @@ export default function CrossBlocksPage() {
                 <img
                   src={`${BASE_PATH}/with_descriptor_dark_background_en.svg`}
                   alt="Rocketmind"
-                  className="h-14 w-auto"
+                  className="h-[42px] w-auto"
                 />
               </Link>
               <div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12">
