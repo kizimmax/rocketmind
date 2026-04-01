@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import {
@@ -62,14 +61,12 @@ export function Footer() {
     <footer className="border-t border-border bg-background">
       {/* Main footer */}
       <div className="mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14">
-        {/* Logo */}
+        {/* Logo with descriptor */}
         <Link href="/" className="inline-flex items-center">
-          <Image
-            src={`${BASE_PATH}/text_logo_dark_background_en.svg`}
+          <img
+            src={`${BASE_PATH}/with_descriptor_dark_background_en.svg`}
             alt="Rocketmind"
-            width={120}
-            height={16}
-            className="h-auto w-[120px]"
+            className="h-14 w-auto"
           />
         </Link>
 
