@@ -8,6 +8,7 @@ import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
 import { RocketmindMenu } from "@/components/sections/RocketmindMenu"
 import { MobileNav } from "@/components/sections/MobileNav"
+import { Footer } from "@/components/sections/Footer"
 
 const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
 
@@ -24,12 +25,6 @@ const DEMO_LOGOS: LogoMarqueeItem[] = [
   { alt: "X5 Group",        src: `${BASE_PATH}/clip-logos/x5.svg`,            width: 90,  height: 36 },
 ]
 
-/* ── Nav labels for static footer preview ── */
-const FOOTER_CONSULT_LEFT  = ["Экосистемная стратегия", "Цифровая платформа", "Умная аналитика", "Готовность команды"]
-const FOOTER_CONSULT_RIGHT = ["Стратегические сессии", "Дизайн-спринты", "Резидент Сколково", "Готовность бизнеса"]
-const FOOTER_ACADEMY       = ["Бизнес-дизайн для команд", "Бизнес-дизайн. Быстрый старт"]
-const FOOTER_AI            = ["Тестирование гипотез", "Моделирование бизнеса"]
-const FOOTER_COMPANY       = ["О Rocketmind", "Кейсы", "Медиа", "Политика конфиденциальности", "Обработка персональных данных", "Рекламное согласие"]
 
 export default function CrossBlocksPage() {
   return (
@@ -326,32 +321,9 @@ export default function CrossBlocksPage() {
           юридические ссылки, копирайт. Данные из <code className="text-foreground">site-nav.ts</code>.
         </p>
 
-        {/* ── Live preview — static footer ── */}
+        {/* ── Live preview — real Footer component ── */}
         <div className="rounded-lg border border-border overflow-hidden mb-8 isolate relative z-0">
-          <footer className="border-t border-border bg-background">
-            <div className="mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14">
-              <Link href="/" className="inline-flex items-center">
-                <img
-                  src={`${BASE_PATH}/with_descriptor_dark_background_en.svg`}
-                  alt="Rocketmind"
-                  className="h-[42px] w-auto"
-                />
-              </Link>
-              <div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12">
-                <div className="flex flex-col justify-between">
-                  <FooterCol title="Консалтинг" items={FOOTER_CONSULT_LEFT} />
-                  <p className="mt-8 text-[13px] text-muted-foreground/50 hidden md:block">&copy; 2026 Rocketmind</p>
-                </div>
-                <FooterCol title={"\u00A0"} items={FOOTER_CONSULT_RIGHT} />
-                <div className="flex flex-col gap-10">
-                  <FooterCol title="Онлайн-школа" items={FOOTER_ACADEMY} />
-                  <FooterCol title="AI-продукты" items={FOOTER_AI} />
-                </div>
-                <FooterCol title="Компания" items={FOOTER_COMPANY} />
-              </div>
-              <p className="mt-10 text-[13px] text-muted-foreground/50 md:hidden">&copy; 2026 Rocketmind</p>
-            </div>
-          </footer>
+          <Footer />
         </div>
 
         <SpecBlock title="Токены футера">
@@ -448,21 +420,5 @@ export default function CrossBlocksPage() {
 
       <Separator />
     </>
-  )
-}
-
-/* ── Footer column for static preview ── */
-function FooterCol({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div>
-      <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50">{title}</p>
-      <ul className="mt-4 flex flex-col gap-2.5">
-        {items.map((label) => (
-          <li key={label}>
-            <span className="text-[14px] leading-[1.5] text-muted-foreground">{label}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
   )
 }
