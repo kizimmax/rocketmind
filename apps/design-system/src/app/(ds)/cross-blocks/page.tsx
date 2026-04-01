@@ -1,11 +1,12 @@
 "use client"
 
 import React from "react"
+import Link from "next/link"
 import { InfiniteLogoMarquee, Separator } from "@rocketmind/ui"
 import type { LogoMarqueeItem } from "@rocketmind/ui"
 import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
-import { Header } from "@/components/sections/Header"
+import { RocketmindMenu } from "@/components/sections/RocketmindMenu"
 
 const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
 
@@ -22,9 +23,12 @@ const DEMO_LOGOS: LogoMarqueeItem[] = [
   { alt: "X5 Group",        src: `${BASE_PATH}/clip-logos/x5.svg`,            width: 90,  height: 36 },
 ]
 
-/* ── Nav data for static previews (mirrors site-nav.ts) ── */
-const NAV_LABELS_DROPDOWN = ["Консалтинг и стратегии", "Онлайн-школа", "AI-продукты"] as const
-const NAV_LABELS_PLAIN = ["О Rocketmind", "Медиа"] as const
+/* ── Nav labels for static footer preview ── */
+const FOOTER_CONSULT_LEFT  = ["Экосистемная стратегия", "Цифровая платформа", "Умная аналитика", "Готовность команды"]
+const FOOTER_CONSULT_RIGHT = ["Стратегические сессии", "Дизайн-спринты", "Резидент Сколково", "Готовность бизнеса"]
+const FOOTER_ACADEMY       = ["Бизнес-дизайн для команд", "Бизнес-дизайн. Быстрый старт"]
+const FOOTER_AI            = ["Тестирование гипотез", "Моделирование бизнеса"]
+const FOOTER_COMPANY       = ["О Rocketmind", "Кейсы", "Медиа", "Политика конфиденциальности", "Обработка персональных данных", "Рекламное согласие"]
 
 export default function CrossBlocksPage() {
   return (
@@ -36,21 +40,33 @@ export default function CrossBlocksPage() {
         </p>
 
         {/* ═══════════════════════════════════════════════════════════════
-            1. ФИКСИРОВАННАЯ ШАПКА — Header
+            1. ФИКСИРОВАННАЯ ШАПКА
            ═══════════════════════════════════════════════════════════════ */}
         <SubSection id="cross-header-fixed" title="Header — Фиксированная шапка" first />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
-          Фиксированная шапка для всех страниц кроме главной hero-блока. На главной появляется при
-          скролле за середину viewport. Содержит текстовый логотип, <code className="text-foreground">RocketmindMenu</code> (desktop)
-          и <code className="text-foreground">MobileNav</code> (mobile).
+          Фиксированная шапка для всех страниц. На главной скрыта, появляется при скролле за 50% viewport.
+          На внутренних — видна сразу. Логотип слева, <code className="text-foreground">RocketmindMenu</code> справа (desktop),
+          <code className="text-foreground">MobileNav</code> бургер (mobile).
         </p>
 
-        {/* ── Live preview ── */}
+        {/* ── Live preview — static replica (не fixed, сразу видна) ── */}
         <div className="rounded-lg border border-border overflow-hidden mb-8 isolate relative z-0">
           <div className="bg-rm-gray-2/20">
-            <div className="relative h-16 overflow-hidden">
-              <Header />
-            </div>
+            <header className="w-full h-16 bg-background border-b border-border flex items-center">
+              <div className="mx-auto flex w-full max-w-[1512px] items-center justify-between gap-6 px-5 md:px-8 xl:px-14">
+                <Link href="/" className="flex items-center">
+                  <img
+                    src={`${BASE_PATH}/text_logo_dark_background_en.svg`}
+                    alt="Rocketmind"
+                    className="h-auto w-[120px] md:w-[144px]"
+                  />
+                </Link>
+                <RocketmindMenu
+                  className="ml-auto flex flex-1 items-center justify-end gap-5 lg:gap-7"
+                  showDropdowns={true}
+                />
+              </div>
+            </header>
             <div className="px-8 py-10 space-y-3">
               {[100, 75, 88, 60].map((w, i) => (
                 <div key={i} className="h-3 rounded-sm bg-rm-gray-2" style={{ width: `${w}%` }} />
@@ -60,58 +76,53 @@ export default function CrossBlocksPage() {
         </div>
 
         <SpecBlock title="Поведение">
-          <div className="space-y-6">
-            <div className="overflow-auto rounded-lg border border-border">
-              <table className="w-full text-[length:var(--text-14)]">
-                <thead>
-                  <tr className="border-b border-border bg-rm-gray-2/30">
-                    <th className="text-left px-4 py-2 font-medium">Контекст</th>
-                    <th className="text-left px-4 py-2 font-medium">Поведение</th>
+          <div className="overflow-auto rounded-lg border border-border">
+            <table className="w-full text-[length:var(--text-14)]">
+              <thead>
+                <tr className="border-b border-border bg-rm-gray-2/30">
+                  <th className="text-left px-4 py-2 font-medium">Контекст</th>
+                  <th className="text-left px-4 py-2 font-medium">Поведение</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                {[
+                  ["Главная", "Скрыта. Появляется (translate-y + opacity) при скролле за 50vh. fixed top-0, z-50, h-16"],
+                  ["Внутренние", "Всегда видна. Тот же стиль: fixed top-0, bg-background, border-b"],
+                  ["Desktop (≥768px)", "text_logo слева + RocketmindMenu (с dropdown) справа"],
+                  ["Mobile (<768px)", "text_logo + MobileNav бургер (ml-auto). Меню скрыто"],
+                ].map(([ctx, behavior]) => (
+                  <tr key={ctx} className="border-b border-border last:border-0">
+                    <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap align-top">{ctx}</td>
+                    <td className="px-4 py-2">{behavior}</td>
                   </tr>
-                </thead>
-                <tbody className="text-muted-foreground">
-                  {[
-                    ["Главная страница", "Скрыта по умолчанию. Появляется (translate-y + opacity) при скролле за window.innerHeight / 2. fixed top-0, z-50, h-16, bg-background, border-b border-border"],
-                    ["Внутренние страницы", "Всегда видна сразу. Тот же стиль: fixed top-0, bg-background, border-b"],
-                    ["Десктоп (≥768px)", "Логотип text_logo слева (w-[120px] md:w-[144px]) + RocketmindMenu справа (ml-auto, justify-end) + MobileNav скрыт"],
-                    ["Мобайл (<768px)", "Логотип text_logo + MobileNav (бургер, ml-auto). RocketmindMenu скрыт (hero-menu-desktop)"],
-                  ].map(([ctx, behavior]) => (
-                    <tr key={ctx} className="border-b border-border last:border-0">
-                      <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap align-top">{ctx}</td>
-                      <td className="px-4 py-2">{behavior}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </SpecBlock>
 
-        <SpecBlock title="Токены и стили">
+        <SpecBlock title="Токены">
           <div className="overflow-auto rounded-lg border border-border">
             <table className="w-full text-[length:var(--text-14)]">
               <thead>
                 <tr className="border-b border-border bg-rm-gray-2/30">
                   <th className="text-left px-4 py-2 font-medium">Свойство</th>
-                  <th className="text-left px-4 py-2 font-medium">Токен / класс</th>
                   <th className="text-left px-4 py-2 font-medium">Значение</th>
                 </tr>
               </thead>
               <tbody className="text-muted-foreground">
                 {[
-                  ["Позиция",      "fixed top-0 left-0 right-0",       "Фиксированная, на всю ширину"],
-                  ["Высота",       "h-16",                              "64px"],
-                  ["z-index",      "z-50",                              "Поверх всего контента"],
-                  ["Фон",          "bg-background",                     "Непрозрачный фон (не blur, в отличие от hero)"],
-                  ["Бордер",       "border-b border-border",            "Постоянный нижний бордер"],
-                  ["Контейнер",    "max-w-[1512px] mx-auto",            "Центрирован, padding: px-5 md:px-8 xl:px-14"],
-                  ["Логотип",      "text_logo_dark_background_en.svg",  "w-[120px] md:w-[144px], h-auto"],
-                  ["Анимация",     "transition-all duration-300",       "translate-y + opacity при показе/скрытии"],
-                  ["Скрыто",       "-translate-y-full opacity-0",       "pointer-events-none когда скрыто"],
-                ].map(([prop, token, value]) => (
+                  ["Позиция",     "fixed top-0 left-0 right-0, z-50"],
+                  ["Высота",      "h-16 (64px)"],
+                  ["Фон",         "bg-background, border-b border-border"],
+                  ["Контейнер",   "max-w-[1512px] mx-auto, px-5 md:px-8 xl:px-14"],
+                  ["Логотип",     "text_logo_dark_background_en.svg, w-[120px] md:w-[144px]"],
+                  ["Навигация",   "RocketmindMenu: 18px (!text-[18px]), ml-auto justify-end gap-5 lg:gap-7"],
+                  ["Анимация",    "transition-all duration-300, translate-y + opacity"],
+                  ["Скрыто",      "-translate-y-full opacity-0 pointer-events-none"],
+                ].map(([prop, value]) => (
                   <tr key={prop} className="border-b border-border last:border-0">
-                    <td className="px-4 py-2 font-medium text-foreground">{prop}</td>
-                    <td className="px-4 py-2"><TokenChip>{token}</TokenChip></td>
+                    <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{prop}</td>
                     <td className="px-4 py-2">{value}</td>
                   </tr>
                 ))}
@@ -120,317 +131,78 @@ export default function CrossBlocksPage() {
           </div>
         </SpecBlock>
 
-        <SpecBlock title="Структура компонента">
-          <div className="space-y-4">
-            <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
-              <p>{'import { Header } from "@/components/sections/Header";'}</p>
-              <p>&nbsp;</p>
-              <p className="text-muted-foreground/60">{'// Файл: apps/site/src/components/sections/Header.tsx'}</p>
-              <p className="text-muted-foreground/60">{'// Внутри использует: RocketmindMenu + MobileNav'}</p>
-              <p>&nbsp;</p>
-              <p>{'<Header />'}</p>
-            </div>
-          </div>
-        </SpecBlock>
-
-        {/* ═══════════════════════════════════════════════════════════════
-            2. ШАПКА HERO — встроенная навигация в hero главной
-           ═══════════════════════════════════════════════════════════════ */}
-        <SubSection id="cross-header-hero" title="Hero Header — Навигация в hero-блоке" />
-        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
-          Навигация внутри hero-секции главной страницы. Не является отдельной шапкой — это часть hero-контента.
-          Десктоп: <code className="text-foreground">RocketmindMenu</code> прижат вправо, рядом с ним блок статистики и бургер.
-          Мобайл: только бургер <code className="text-foreground">MobileNav</code>, меню скрыто.
-        </p>
-
-        {/* ── Static preview: hero nav ── */}
-        <div className="rounded-lg border border-border overflow-hidden mb-8 isolate relative z-0">
-          <div className="bg-[#0A0A0A] p-5 md:p-8">
-            {/* Top bar */}
-            <div className="flex items-start justify-between gap-4 mb-6">
-              <div className="flex items-center gap-3">
-                <span className="font-heading text-[18px] font-bold uppercase leading-[1.2] text-foreground">
-                  <span className="text-muted-foreground">120+ клиентов </span>19 лет опыта
-                </span>
-              </div>
-              <div className="flex h-7 w-10 items-center justify-center md:hidden">
-                <div className="relative h-[10px] w-[40px]">
-                  <span className="absolute left-0 block h-[2px] w-full rounded-full bg-foreground top-0" />
-                  <span className="absolute left-0 block h-[2px] w-full rounded-full bg-foreground top-[8px]" />
-                </div>
-              </div>
-            </div>
-            {/* Desktop nav */}
-            <div className="hidden md:flex items-center justify-end gap-x-7 gap-y-4 flex-wrap">
-              {[...NAV_LABELS_DROPDOWN].map(l => (
-                <span key={l} className="inline-flex items-center gap-1.5 font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px] text-foreground">
-                  {l}
-                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M1 1L5 5L9 1" /></svg>
-                </span>
-              ))}
-              {[...NAV_LABELS_PLAIN].map(l => (
-                <span key={l} className="font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px] text-foreground">{l}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <SpecBlock title="Поведение и отличия от фиксированной шапки">
-          <div className="overflow-auto rounded-lg border border-border">
-            <table className="w-full text-[length:var(--text-14)]">
-              <thead>
-                <tr className="border-b border-border bg-rm-gray-2/30">
-                  <th className="text-left px-4 py-2 font-medium">Параметр</th>
-                  <th className="text-left px-4 py-2 font-medium">Hero Header</th>
-                  <th className="text-left px-4 py-2 font-medium">Fixed Header</th>
-                </tr>
-              </thead>
-              <tbody className="text-muted-foreground">
-                {[
-                  ["Позиция",      "Inline, часть hero-контента",               "fixed top-0"],
-                  ["Фон",          "Прозрачный (фон hero)",                      "bg-background, border-b"],
-                  ["Логотип",      "Большой wordmark на всю ширину hero",        "Маленький text_logo (144px)"],
-                  ["Навигация",    "RocketmindMenu, justify-end, 20px шрифт",   "RocketmindMenu, 18px шрифт (!text-[18px])"],
-                  ["Dropdown",     "Radix viewport, right-0, до AI-продукты",   "Radix viewport, right-0, до AI-продукты"],
-                  ["Стат. блок",   "«120+ клиентов · 19 лет опыта» слева",      "Нет"],
-                  ["Бургер",       "MobileNav в top-bar-right",                  "MobileNav справа, ml-auto"],
-                  ["Анимация",     "motion fadeUp при загрузке hero",            "translate-y при скролле"],
-                  ["Видимость",    "Только в hero, до скролла",                  "Появляется при скролле за 50vh"],
-                ].map(([param, hero, fixed]) => (
-                  <tr key={param} className="border-b border-border last:border-0">
-                    <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{param}</td>
-                    <td className="px-4 py-2">{hero}</td>
-                    <td className="px-4 py-2">{fixed}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </SpecBlock>
-
-        <SpecBlock title="Токены hero-навигации">
-          <div className="overflow-auto rounded-lg border border-border">
-            <table className="w-full text-[length:var(--text-14)]">
-              <thead>
-                <tr className="border-b border-border bg-rm-gray-2/30">
-                  <th className="text-left px-4 py-2 font-medium">Свойство</th>
-                  <th className="text-left px-4 py-2 font-medium">Токен / класс</th>
-                  <th className="text-left px-4 py-2 font-medium">Значение</th>
-                </tr>
-              </thead>
-              <tbody className="text-muted-foreground">
-                {[
-                  ["Контейнер",       "relative z-10 flex items-center",     "Обёртка RocketmindMenu"],
-                  ["Шрифт",           "font-mono text-[20px] uppercase",     "tracking-[0.36px], leading-[1.16]"],
-                  ["Layout",          "justify-end flex-wrap gap-x-7",       "Прижато вправо, переносит на новую строку"],
-                  ["Dropdown viewport","[&>div]:right-0 [&>div]:left-auto",  "Привязан к правому краю NavigationMenu (до AI-продукты)"],
-                  ["Dropdown ширина",  "w-[680px] / w-[420px]",              ">4 items → 680px 3-col, ≤4 → 420px 2-col"],
-                  ["Hover",           "hover:opacity-[0.88]",                "Затемнение триггеров"],
-                  ["Open state",      "data-[state=open]:opacity-[0.88]",    "Активный триггер"],
-                  ["Клик по триггеру","onClick → router.push(item.href)",    "Навигация на разводящую страницу (/consulting и т.д.)"],
-                ].map(([prop, token, value]) => (
-                  <tr key={prop} className="border-b border-border last:border-0">
-                    <td className="px-4 py-2 font-medium text-foreground">{prop}</td>
-                    <td className="px-4 py-2"><TokenChip>{token}</TokenChip></td>
-                    <td className="px-4 py-2">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </SpecBlock>
-
-        <SpecBlock title="Архитектура: RocketmindMenu">
+        <SpecBlock title="Компоненты навигации">
           <div className="space-y-4">
             <p className="text-[length:var(--text-14)] text-muted-foreground">
-              Общий компонент для hero и fixed-шапки. Разделяет nav-items на две группы:
-              пункты с dropdown (Radix NavigationMenu) и plain-ссылки (отдельный &lt;nav&gt;).
-              Это позволяет viewport привязать к правому краю последнего dropdown-триггера (AI-продукты),
-              а не к крайнему пункту меню (Медиа).
+              <strong className="text-foreground">RocketmindMenu</strong> — общий компонент для fixed-шапки и hero.
+              Разделяет пункты на dropdown (Radix NavigationMenu) и plain-ссылки (отдельный &lt;nav&gt;).
+              Viewport привязан к правому краю последнего dropdown-триггера (AI-продукты).
             </p>
-            <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
-              <p>{'import { RocketmindMenu } from "@/components/sections/RocketmindMenu";'}</p>
-              <p>&nbsp;</p>
-              <p className="text-muted-foreground/60">{'// Hero — крупный шрифт, прижато вправо'}</p>
-              <p>{'<RocketmindMenu className="w-full flex-wrap justify-end gap-x-7 gap-y-4" />'}</p>
-              <p>&nbsp;</p>
-              <p className="text-muted-foreground/60">{'// Fixed header — мельче, с gap'}</p>
-              <p>{'<RocketmindMenu className="ml-auto flex-1 justify-end gap-5 lg:gap-7" itemClassName="!text-[18px]" />'}</p>
-            </div>
-
             <div className="overflow-auto rounded-lg border border-border">
               <table className="w-full text-[length:var(--text-14)]">
                 <thead>
                   <tr className="border-b border-border bg-rm-gray-2/30">
                     <th className="text-left px-4 py-2 font-medium">Prop</th>
                     <th className="text-left px-4 py-2 font-medium">Тип</th>
-                    <th className="text-left px-4 py-2 font-medium">По умолчанию</th>
                     <th className="text-left px-4 py-2 font-medium">Описание</th>
                   </tr>
                 </thead>
                 <tbody className="text-muted-foreground">
                   {[
-                    ["className",     "string",  '""',   "Классы внешнего flex-контейнера (layout, gap, justify)"],
-                    ["itemClassName", "string",  '""',   "Классы каждого nav-item / trigger (размер шрифта)"],
-                    ["showDropdowns", "boolean", "true", "false — все пункты рендерятся как plain-ссылки"],
-                  ].map(([prop, type, def, desc]) => (
+                    ["className",     "string",  "Классы обёртки (layout, gap, justify)"],
+                    ["itemClassName", "string",  "Классы триггеров (размер шрифта)"],
+                    ["showDropdowns", "boolean", "false → все пункты как plain-ссылки"],
+                  ].map(([prop, type, desc]) => (
                     <tr key={prop} className="border-b border-border last:border-0">
                       <td className="px-4 py-2 font-medium text-foreground"><code>{prop}</code></td>
                       <td className="px-4 py-2"><TokenChip>{type}</TokenChip></td>
-                      <td className="px-4 py-2"><code>{def}</code></td>
                       <td className="px-4 py-2">{desc}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </div>
-        </SpecBlock>
-
-        {/* ═══════════════════════════════════════════════════════════════
-            3. МОБИЛЬНАЯ НАВИГАЦИЯ — MobileNav
-           ═══════════════════════════════════════════════════════════════ */}
-        <SubSection id="cross-header-mobile" title="MobileNav — Мобильная навигация" />
-        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
-          Полноэкранное мобильное меню с круговой анимацией раскрытия (clip-path circle) из точки бургера.
-          Белый фон, чёрный текст. Accordion-секции для dropdown-групп. Первый пункт в каждой группе — «Перейти к разделу».
-        </p>
-
-        {/* ── Static preview: mobile nav ── */}
-        <div className="rounded-lg border border-border overflow-hidden mb-8 isolate relative z-0">
-          <div className="bg-white p-5 max-w-[375px] mx-auto">
-            {/* Burger preview */}
-            <div className="flex items-center justify-between mb-8">
-              <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-black/30">Navigation</p>
-              <div className="relative h-[10px] w-[40px]">
-                <span className="absolute left-0 block h-[2px] w-full rounded-full bg-black top-[4px] rotate-45" />
-                <span className="absolute left-0 block h-[2px] w-full rounded-full bg-black top-[4px] -rotate-45" />
-              </div>
-            </div>
-            {/* Accordion items preview */}
-            <div className="space-y-0">
-              {[
-                { label: "Консалтинг и стратегии", expanded: true, items: ["Перейти к разделу", "Экосистемная стратегия", "Цифровая платформа"] },
-                { label: "Онлайн-школа", expanded: false, items: [] },
-                { label: "AI-продукты", expanded: false, items: [] },
-                { label: "О Rocketmind", expanded: false, items: [] },
-                { label: "Медиа", expanded: false, items: [] },
-              ].map(group => (
-                <div key={group.label} className="border-b border-black/10">
-                  <div className="flex w-full items-center justify-between gap-4 py-5">
-                    <span className="font-mono text-[22px] font-light uppercase leading-[1.16] tracking-[0.02em] text-black">{group.label}</span>
-                    {group.items.length > 0 || group.expanded ? (
-                      <svg width="12" height="7" viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-black/30 ${group.expanded ? "rotate-180" : ""}`}>
-                        <path d="M1 1L5 5L9 1" />
-                      </svg>
-                    ) : null}
-                  </div>
-                  {group.expanded && group.items.length > 0 && (
-                    <div className="grid gap-0.5 pb-5">
-                      {group.items.map((item, i) => (
-                        <div key={item} className={`rounded-sm px-3 py-3 ${i === 0 ? "border-b border-black/10 mb-1" : ""}`}>
-                          <span className={`block font-mono text-[13px] uppercase tracking-[0.06em] ${i === 0 ? "text-black/50" : "text-black"}`}>{item}</span>
-                          {i > 0 && <span className="mt-1 block text-[13px] leading-[1.45] text-black/50">Описание подпункта</span>}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <SpecBlock title="Поведение и анимация">
-          <div className="overflow-auto rounded-lg border border-border">
-            <table className="w-full text-[length:var(--text-14)]">
-              <thead>
-                <tr className="border-b border-border bg-rm-gray-2/30">
-                  <th className="text-left px-4 py-2 font-medium">Параметр</th>
-                  <th className="text-left px-4 py-2 font-medium">Значение</th>
-                </tr>
-              </thead>
-              <tbody className="text-muted-foreground">
-                {[
-                  ["Триггер",           "Бургер: 2 бара, w-[40px] h-[10px], bar h-[2px], gap 8px. Трансформируется в X при открытии"],
-                  ["Открытие",          "clip-path: circle() из центра бургера → 2000px. Duration 0.75s, ease [0.76, 0, 0.24, 1]"],
-                  ["Закрытие",          "clip-path: circle(2000px) → circle(0). Duration 0.65s"],
-                  ["Фон панели",        "bg-white (#FFFFFF), fixed inset-0, z-[55]"],
-                  ["Кнопка закрытия",   "Та же позиция что и бургер (top/right из getBoundingClientRect). X-иконка barClass='bg-black'"],
-                  ["Body scroll lock",  "document.body.style.overflow = 'hidden' при открытии"],
-                  ["Escape",            "Закрывает меню по нажатию Escape"],
-                  ["z-index бургера",   "z-[60] — поверх панели (z-[55])"],
-                ].map(([param, value]) => (
-                  <tr key={param} className="border-b border-border last:border-0">
-                    <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{param}</td>
-                    <td className="px-4 py-2">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </SpecBlock>
-
-        <SpecBlock title="Токены мобильного меню">
-          <div className="overflow-auto rounded-lg border border-border">
-            <table className="w-full text-[length:var(--text-14)]">
-              <thead>
-                <tr className="border-b border-border bg-rm-gray-2/30">
-                  <th className="text-left px-4 py-2 font-medium">Элемент</th>
-                  <th className="text-left px-4 py-2 font-medium">Токен / класс</th>
-                  <th className="text-left px-4 py-2 font-medium">Значение</th>
-                </tr>
-              </thead>
-              <tbody className="text-muted-foreground">
-                {[
-                  ["Контейнер",           "px-5 pb-16 pt-28 md:px-24",               "Отступы навигации внутри панели"],
-                  ["Заголовок",           "font-mono text-[11px] text-black/30",       "'Navigation', uppercase, tracking-[0.1em]"],
-                  ["Пункт меню",          "font-mono text-[22px] font-light",          "uppercase, tracking-[0.02em], text-black"],
-                  ["Разделитель",         "border-b border-black/10",                  "Между каждым пунктом"],
-                  ["Chevron",             "w-12 h-7 stroke-1.5",                       "text-black/30, rotate-180 при раскрытии"],
-                  ["«Перейти к разделу»", "font-mono text-[13px] text-black/50",       "Первый пункт в accordion, border-b, mb-1"],
-                  ["Подпункт title",      "font-mono text-[13px] text-black",          "uppercase, tracking-[0.06em]"],
-                  ["Подпункт desc",       "text-[13px] text-black/50",                 "leading-[1.45], mt-1"],
-                  ["Hover подпункта",     "hover:bg-black/5",                          "transition-colors duration-150"],
-                  ["Stagger анимация",    "delay: 0.25 + index * 0.07",                "Последовательное появление пунктов"],
-                  ["Accordion",           "height: 0 → auto, opacity: 0 → 1",          "duration 0.3s / 0.25s"],
-                ].map(([elem, token, value]) => (
-                  <tr key={elem} className="border-b border-border last:border-0">
-                    <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{elem}</td>
-                    <td className="px-4 py-2"><TokenChip>{token}</TokenChip></td>
-                    <td className="px-4 py-2">{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </SpecBlock>
-
-        <SpecBlock title="Структура компонента">
-          <div className="space-y-4">
+            <p className="text-[length:var(--text-14)] text-muted-foreground">
+              <strong className="text-foreground">MobileNav</strong> — полноэкранное меню (clip-path circle).
+              Белый фон, accordion-секции, stagger-анимация. Portal → document.body, z-[55].
+              Бургер: 2 бара w-[40px], трансформируется в X, z-[60].
+            </p>
             <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
-              <p>{'import { MobileNav } from "@/components/sections/MobileNav";'}</p>
-              <p>&nbsp;</p>
-              <p className="text-muted-foreground/60">{'// Файл: apps/site/src/components/sections/MobileNav.tsx'}</p>
-              <p className="text-muted-foreground/60">{'// Данные: импортирует HEADER_NAV из @/content/site-nav'}</p>
-              <p className="text-muted-foreground/60">{'// Рендер: React Portal → document.body'}</p>
-              <p className="text-muted-foreground/60">{'// Анимация: motion/react (Framer Motion)'}</p>
-              <p>&nbsp;</p>
-              <p>{'<MobileNav className="ml-auto" />'}</p>
+              <p className="text-muted-foreground/60">{'// apps/site/src/components/sections/'}</p>
+              <p>{'Header.tsx        → RocketmindMenu + MobileNav'}</p>
+              <p>{'RocketmindMenu.tsx → Radix NavigationMenu + plain links'}</p>
+              <p>{'MobileNav.tsx      → clip-path circle + accordions'}</p>
             </div>
           </div>
         </SpecBlock>
 
-        {/* ═══════════════════════════════════════════════════════════════
-            4. НАВИГАЦИОННЫЕ ДАННЫЕ
-           ═══════════════════════════════════════════════════════════════ */}
-        <SubSection id="cross-header-nav-data" title="Навигационные данные" />
-        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
-          Единый источник: <code className="text-foreground">apps/site/src/content/site-nav.ts</code>.
-          Используется в Header, RocketmindMenu, MobileNav и Footer.
-        </p>
+        <SpecBlock title="Dropdown">
+          <div className="overflow-auto rounded-lg border border-border">
+            <table className="w-full text-[length:var(--text-14)]">
+              <thead>
+                <tr className="border-b border-border bg-rm-gray-2/30">
+                  <th className="text-left px-4 py-2 font-medium">Свойство</th>
+                  <th className="text-left px-4 py-2 font-medium">Значение</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                {[
+                  ["Viewport",  "[&>div]:right-0 [&>div]:left-auto — привязан к правому краю (до AI-продукты)"],
+                  ["Ширина",    ">4 items → w-[680px] grid-cols-3, ≤4 → w-[420px] grid-cols-2"],
+                  ["Hover",     "hover:opacity-[0.88], data-[state=open]:opacity-[0.88]"],
+                  ["Клик",      "onClick → router.push(item.href) — навигация на разводящую страницу"],
+                ].map(([prop, value]) => (
+                  <tr key={prop} className="border-b border-border last:border-0">
+                    <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{prop}</td>
+                    <td className="px-4 py-2">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SpecBlock>
 
-        <SpecBlock title="HEADER_NAV">
+        <SpecBlock title="Навигационные данные (site-nav.ts)">
           <div className="overflow-auto rounded-lg border border-border">
             <table className="w-full text-[length:var(--text-14)]">
               <thead>
@@ -461,29 +233,35 @@ export default function CrossBlocksPage() {
           </div>
         </SpecBlock>
 
-        <SpecBlock title="Важные инструкции">
+        <SpecBlock title="Hero Header (доп. вариант)">
           <div className="space-y-4">
+            <p className="text-[length:var(--text-14)] text-muted-foreground">
+              Навигация внутри hero-секции главной. Не отдельная шапка — часть hero-контента.
+              Desktop: <code className="text-foreground">RocketmindMenu</code> прижат вправо (20px шрифт, gap-x-7), рядом статистика и бургер.
+              Mobile: только <code className="text-foreground">MobileNav</code>, меню скрыто. Появляется с motion fadeUp.
+            </p>
             <div className="overflow-auto rounded-lg border border-border">
               <table className="w-full text-[length:var(--text-14)]">
                 <thead>
                   <tr className="border-b border-border bg-rm-gray-2/30">
-                    <th className="text-left px-4 py-2 font-medium">Действие</th>
-                    <th className="text-left px-4 py-2 font-medium">Инструкция</th>
+                    <th className="text-left px-4 py-2 font-medium">Параметр</th>
+                    <th className="text-left px-4 py-2 font-medium">Hero Header</th>
+                    <th className="text-left px-4 py-2 font-medium">Fixed Header</th>
                   </tr>
                 </thead>
                 <tbody className="text-muted-foreground">
                   {[
-                    ["Добавить пункт меню",       "Добавить в HEADER_NAV в site-nav.ts. Если с dropdown — добавить массив items. Компоненты автоматически подхватят изменения"],
-                    ["Изменить порядок",           "Изменить порядок в массиве HEADER_NAV. Dropdown-пункты рендерятся в Radix NavigationMenu, plain-ссылки — в отдельный <nav>"],
-                    ["Viewport dropdown",          "Привязан к правому краю NavigationMenu (до последнего dropdown-триггера). Plain-ссылки вынесены за пределы NavigationMenu, чтобы viewport не уезжал под них"],
-                    ["Ширина dropdown",            "Авто: >4 items → w-[680px] grid-cols-3, ≤4 items → w-[420px] grid-cols-2. Изменяется в RocketmindMenu.tsx"],
-                    ["Мобайл: «Перейти к разделу»","Первый пункт в каждом accordion. Ведёт на item.href (разводящая страница). Стиль: text-black/50, border-b"],
-                    ["Клик по триггеру desktop",   "onClick → router.push(item.href). Hover открывает dropdown, клик — навигация"],
-                    ["Файлы компонентов",          "Header.tsx, RocketmindMenu.tsx, MobileNav.tsx — все в apps/site/src/components/sections/"],
-                  ].map(([action, instruction]) => (
-                    <tr key={action} className="border-b border-border last:border-0">
-                      <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap align-top">{action}</td>
-                      <td className="px-4 py-2">{instruction}</td>
+                    ["Позиция",    "Inline, часть hero",       "fixed top-0"],
+                    ["Фон",        "Прозрачный",               "bg-background"],
+                    ["Шрифт",      "20px",                     "18px"],
+                    ["Логотип",    "Большой wordmark hero",    "text_logo 144px"],
+                    ["Видимость",  "До скролла",               "После скролла 50vh"],
+                    ["Анимация",   "motion fadeUp",            "translate-y"],
+                  ].map(([param, hero, fixed]) => (
+                    <tr key={param} className="border-b border-border last:border-0">
+                      <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{param}</td>
+                      <td className="px-4 py-2">{hero}</td>
+                      <td className="px-4 py-2">{fixed}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -492,20 +270,97 @@ export default function CrossBlocksPage() {
           </div>
         </SpecBlock>
 
-        {/* ── Logo Marquee ── */}
+        {/* ═══════════════════════════════════════════════════════════════
+            2. ФУТЕР
+           ═══════════════════════════════════════════════════════════════ */}
+        <SubSection id="cross-footer" title="Footer — Футер" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+          Единый футер для всех страниц. Логотип с дескриптором, 4-колоночная навигация (2 на мобайле),
+          юридические ссылки, копирайт. Данные из <code className="text-foreground">site-nav.ts</code>.
+        </p>
+
+        {/* ── Live preview — static footer ── */}
+        <div className="rounded-lg border border-border overflow-hidden mb-8 isolate relative z-0">
+          <footer className="border-t border-border bg-background">
+            <div className="mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14">
+              <Link href="/" className="inline-flex items-center">
+                <img
+                  src={`${BASE_PATH}/with_descriptor_dark_background_en.svg`}
+                  alt="Rocketmind"
+                  className="h-14 w-auto"
+                />
+              </Link>
+              <div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12">
+                <div className="flex flex-col justify-between">
+                  <FooterCol title="Консалтинг" items={FOOTER_CONSULT_LEFT} />
+                  <p className="mt-8 text-[13px] text-muted-foreground/50 hidden md:block">&copy; 2026 Rocketmind</p>
+                </div>
+                <FooterCol title={"\u00A0"} items={FOOTER_CONSULT_RIGHT} />
+                <div className="flex flex-col gap-10">
+                  <FooterCol title="Онлайн-школа" items={FOOTER_ACADEMY} />
+                  <FooterCol title="AI-продукты" items={FOOTER_AI} />
+                </div>
+                <FooterCol title="Компания" items={FOOTER_COMPANY} />
+              </div>
+              <p className="mt-10 text-[13px] text-muted-foreground/50 md:hidden">&copy; 2026 Rocketmind</p>
+            </div>
+          </footer>
+        </div>
+
+        <SpecBlock title="Токены футера">
+          <div className="overflow-auto rounded-lg border border-border">
+            <table className="w-full text-[length:var(--text-14)]">
+              <thead>
+                <tr className="border-b border-border bg-rm-gray-2/30">
+                  <th className="text-left px-4 py-2 font-medium">Свойство</th>
+                  <th className="text-left px-4 py-2 font-medium">Значение</th>
+                </tr>
+              </thead>
+              <tbody className="text-muted-foreground">
+                {[
+                  ["Фон",           "bg-background, border-t border-border"],
+                  ["Контейнер",     "max-w-[1512px] mx-auto, px-5 md:px-8 xl:px-14, py-12 md:py-16"],
+                  ["Логотип",       "with_descriptor_dark_background_en.svg, h-14"],
+                  ["Сетка",         "grid-cols-2 gap-8 md:grid-cols-4 md:gap-12"],
+                  ["Заголовок",     "font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50"],
+                  ["Ссылка",        "text-[14px] leading-[1.5] text-muted-foreground hover:text-foreground"],
+                  ["Копирайт",      "text-[13px] text-muted-foreground/50. Desktop: в 1-й колонке. Mobile: под сеткой"],
+                  ["Данные",        "CONSULTING_SERVICES, ACADEMY_COURSES, AI_PRODUCTS, LEGAL_LINKS из site-nav.ts"],
+                ].map(([prop, value]) => (
+                  <tr key={prop} className="border-b border-border last:border-0">
+                    <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{prop}</td>
+                    <td className="px-4 py-2">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SpecBlock>
+
+        <SpecBlock title="Структура">
+          <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
+            <p className="text-muted-foreground/60">{'// apps/site/src/components/sections/Footer.tsx'}</p>
+            <p>{'import { Footer } from "@/components/sections/Footer";'}</p>
+            <p>&nbsp;</p>
+            <p>{'<Footer />'}</p>
+          </div>
+        </SpecBlock>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            3. БЕГУЩАЯ СТРОКА ЛОГОТИПОВ
+           ═══════════════════════════════════════════════════════════════ */}
         <SubSection id="cross-marquee" title="InfiniteLogoMarquee" />
         <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
           Бесконечная бегущая строка логотипов партнёров / клиентов. CSS-анимация (не JS), fade по краям через mask-image. Компонент из <code className="text-foreground">@rocketmind/ui</code>.
         </p>
 
-        {/* ── Live preview ── */}
         <div className="rounded-lg border border-border py-8 mb-8 bg-[#0A0A0A] overflow-hidden">
           <div className="mx-auto max-w-[1056px]">
             <InfiniteLogoMarquee logos={DEMO_LOGOS} reverse />
           </div>
         </div>
 
-        <SpecBlock title="Props и применение">
+        <SpecBlock title="Props">
           <div className="space-y-6">
             <div className="overflow-auto rounded-lg border border-border">
               <table className="w-full text-[length:var(--text-14)]">
@@ -519,13 +374,12 @@ export default function CrossBlocksPage() {
                 </thead>
                 <tbody className="text-muted-foreground">
                   {[
-                    ["logos",          "LogoMarqueeItem[]", "—",   "Массив логотипов { alt, src, width?, height? }"],
-                    ["speedSeconds",   "number",            "25",  "Длительность одного цикла анимации"],
-                    ["gap",           "number",            "67",  "Расстояние между логотипами (px)"],
-                    ["maxLogoHeight", "number",            "39",  "Максимальная высота логотипа (px)"],
-                    ["fadeWidth",     "number",            "44",  "Ширина fade-маски по краям (px)"],
-                    ["reverse",      "boolean",           "false", "Направление: true — слева направо"],
-                    ["className",    "string",            "—",   "Дополнительные классы контейнера"],
+                    ["logos",          "LogoMarqueeItem[]", "—",    "Массив { alt, src, width?, height? }"],
+                    ["speedSeconds",   "number",            "25",   "Длительность цикла"],
+                    ["gap",           "number",            "67",   "Расстояние между логотипами (px)"],
+                    ["maxLogoHeight", "number",            "39",   "Макс. высота логотипа (px)"],
+                    ["fadeWidth",     "number",            "44",   "Ширина fade-маски по краям (px)"],
+                    ["reverse",      "boolean",           "false", "Направление: true → слева направо"],
                   ].map(([prop, type, def, desc]) => (
                     <tr key={prop} className="border-b border-border last:border-0">
                       <td className="px-4 py-2 font-medium text-foreground"><code>{prop}</code></td>
@@ -539,34 +393,7 @@ export default function CrossBlocksPage() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] text-muted-foreground space-y-1">
               <p>{'import { InfiniteLogoMarquee } from "@rocketmind/ui";'}</p>
-              <p>&nbsp;</p>
               <p>{'<InfiniteLogoMarquee logos={logos} reverse />'}</p>
-            </div>
-            <div className="overflow-auto rounded-lg border border-border">
-              <table className="w-full text-[length:var(--text-14)]">
-                <thead>
-                  <tr className="border-b border-border bg-rm-gray-2/30">
-                    <th className="text-left px-4 py-2 font-medium">Действие</th>
-                    <th className="text-left px-4 py-2 font-medium">Инструкция</th>
-                  </tr>
-                </thead>
-                <tbody className="text-muted-foreground">
-                  {[
-                    ["Добавить логотип",   "Положить SVG в apps/site/public/clip-logos/. Имя = kebab-case slug, например sberbank.svg."],
-                    ["Удалить логотип",    "Удалить файл из apps/site/public/clip-logos/."],
-                    ["Изменить порядок",   "Отредактировать массив preferredOrder в apps/site/src/lib/partner-logos.ts."],
-                  ].map(([action, instruction]) => (
-                    <tr key={action} className="border-b border-border last:border-0">
-                      <td className="px-4 py-2 font-medium text-foreground whitespace-nowrap">{action}</td>
-                      <td className="px-4 py-2">{instruction}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="p-4 rounded-lg border border-border bg-rm-gray-2/30 text-[length:var(--text-14)] text-muted-foreground space-y-2">
-              <p><span className="text-foreground font-medium">Форматы:</span> SVG (рек.), PNG, WebP, AVIF, JPG. Монохромный белый/серый.</p>
-              <p><span className="text-foreground font-medium">Размер:</span> viewBox ~100-170px × 32-40px. Именование: kebab-case.</p>
             </div>
           </div>
         </SpecBlock>
@@ -574,5 +401,21 @@ export default function CrossBlocksPage() {
 
       <Separator />
     </>
+  )
+}
+
+/* ── Footer column for static preview ── */
+function FooterCol({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div>
+      <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50">{title}</p>
+      <ul className="mt-4 flex flex-col gap-2.5">
+        {items.map((label) => (
+          <li key={label}>
+            <span className="text-[14px] leading-[1.5] text-muted-foreground">{label}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
