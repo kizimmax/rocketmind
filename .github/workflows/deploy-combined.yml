@@ -1,4 +1,4 @@
-name: Deploy Site + Design System to GitHub Pages
+name: Deploy Site + Design System + Internal to GitHub Pages
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/site/**'
       - 'apps/design-system/**'
+      - 'apps/internal/**'
       - 'packages/ui/**'
   workflow_dispatch:
 
@@ -38,11 +39,16 @@ jobs:
         run: npm run build --workspace=apps/design-system
         env:
           NODE_ENV: production
+      - name: Build Internal (Gantt)
+        run: npm run build --workspace=apps/internal
+        env:
+          NODE_ENV: production
       - name: Combine outputs
         run: |
-          mkdir -p _out/ds
+          mkdir -p _out/ds _out/plan
           cp -r apps/site/out/. _out/
           cp -r apps/design-system/out/. _out/ds/
+          cp -r apps/internal/out/. _out/plan/
           touch _out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
