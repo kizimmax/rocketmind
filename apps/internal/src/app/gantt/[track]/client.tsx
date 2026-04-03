@@ -513,11 +513,17 @@ export default function GanttTrackClient() {
   const DB_PATH = `gantt_tracks/${track}`;
 
   const [trackValid, setTrackValid] = useState<boolean | null>(null);
+  const [trackName, setTrackName] = useState('');
 
   useEffect(() => {
     get(ref(db, 'gantt_config/tracks')).then((snap) => {
       const tracks: Record<string, { name: string }> | null = snap.val();
-      setTrackValid(!!tracks && track in tracks);
+      if (tracks && track in tracks) {
+        setTrackValid(true);
+        setTrackName(tracks[track].name);
+      } else {
+        setTrackValid(false);
+      }
     });
   }, [track]);
 
@@ -542,7 +548,7 @@ export default function GanttTrackClient() {
     );
   }
 
-  return <GanttBoard dbPath={DB_PATH} />;
+  return <GanttBoard dbPath={DB_PATH} trackName={trackName} />;
 }
 
 // ─── Undo / Redo types ───────────────────────────────────────────────────────
@@ -577,7 +583,7 @@ function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id
   );
 }
 
-function GanttBoard({ dbPath }: { dbPath: string }) {
+function GanttBoard({ dbPath, trackName }: { dbPath: string; trackName: string }) {
   const [weeks, setWeeks] = useState<Week[]>(INITIAL_WEEKS);
   const [rows, setRows] = useState<Row[]>(INITIAL_ROWS);
   const [title, setTitle] = useState(INITIAL_TITLE);
@@ -1166,7 +1172,7 @@ function GanttBoard({ dbPath }: { dbPath: string }) {
         <div className="max-w-[1400px] mx-auto flex items-center gap-3">
           <span className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] text-muted-foreground">Rocketmind</span>
           <span className="text-muted-foreground/30">·</span>
-          <span className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] text-muted-foreground">Сайт и Сервис</span>
+          <span className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] text-muted-foreground">{trackName}</span>
           <span className="text-muted-foreground/30">·</span>
           <SyncDot status={syncStatus} />
         </div>
