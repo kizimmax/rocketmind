@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { ref, onValue, get, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
+import GanttBoard from './GanttBoard';
 
 type TrackInfo = { name: string };
 
@@ -20,15 +20,63 @@ function slugify(name: string): string {
     .replace(/^-|-$/g, '');
 }
 
-export default function GanttIndexPage() {
+/** Extract track slug from URL pathname or ?track= query param */
+function getTrackFromURL(): string | null {
+  if (typeof window === 'undefined') return null;
+  // ?track=slug (from 404 redirect)
+  const params = new URLSearchParams(window.location.search);
+  const qTrack = params.get('track');
+  if (qTrack) return qTrack;
+  // /gantt/slug (direct path)
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const ganttIdx = parts.indexOf('gantt');
+  if (ganttIdx >= 0 && parts[ganttIdx + 1]) return parts[ganttIdx + 1];
+  return null;
+}
+
+export default function GanttPage() {
+  // ── Routing: determine if showing index or board ─────────────────────────
+  const [trackSlug, setTrackSlug] = useState<string | null>(null);
+  const [trackName, setTrackName] = useState('');
+  const [trackValid, setTrackValid] = useState<boolean | null>(null);
+  const [mode, setMode] = useState<'loading' | 'index' | 'board' | 'notfound'>('loading');
+
+  useEffect(() => {
+    const slug = getTrackFromURL();
+    if (!slug) {
+      setMode('index');
+      return;
+    }
+    setTrackSlug(slug);
+    // Validate track
+    get(ref(db, 'gantt_config/tracks')).then((snap) => {
+      const tracks: Record<string, TrackInfo> | null = snap.val();
+      if (tracks && slug in tracks) {
+        setTrackName(tracks[slug].name);
+        setTrackValid(true);
+        setMode('board');
+        // Clean URL: ensure path-based URL (not ?track=)
+        const base = window.location.pathname.replace(/\/$/, '');
+        const parts = base.split('/');
+        const ganttIdx = parts.indexOf('gantt');
+        if (!parts[ganttIdx + 1]) {
+          window.history.replaceState({}, '', `${base}/${slug}`);
+        }
+      } else {
+        setTrackValid(false);
+        setMode('notfound');
+      }
+    });
+  }, []);
+
+  // ── Auth state ───────────────────────────────────────────────────────────
   const [authed, setAuthed] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
   const pinRef = useRef<HTMLInputElement>(null);
 
+  // ── Track list state ─────────────────────────────────────────────────────
   const [tracks, setTracks] = useState<Record<string, TrackInfo> | null>(null);
-
-  // New track form
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newSlug, setNewSlug] = useState('');
@@ -43,70 +91,79 @@ export default function GanttIndexPage() {
   }, []);
 
   useEffect(() => {
-    if (authed) {
+    if (mode === 'index' && authed) {
       const unsub = onValue(ref(db, 'gantt_config/tracks'), (snap) => {
         setTracks(snap.val() ?? {});
       });
       return () => unsub();
     }
-  }, [authed]);
+  }, [mode, authed]);
 
   useEffect(() => {
-    if (authed && showForm) nameRef.current?.focus();
-  }, [authed, showForm]);
+    if (mode === 'index' && authed && showForm) nameRef.current?.focus();
+  }, [mode, authed, showForm]);
 
   useEffect(() => {
-    if (!authed) pinRef.current?.focus();
-  }, [authed]);
+    if (mode === 'index' && !authed) pinRef.current?.focus();
+  }, [mode, authed]);
 
-  // Auto-generate slug from name
   useEffect(() => {
-    if (!slugTouched && newName) {
-      setNewSlug(slugify(newName));
-    }
+    if (!slugTouched && newName) setNewSlug(slugify(newName));
   }, [newName, slugTouched]);
 
-  // Validate slug
   useEffect(() => {
     if (!newSlug) { setSlugError(''); return; }
-    if (!/^[a-z0-9-]+$/.test(newSlug)) {
-      setSlugError('Только строчные латинские буквы, цифры и дефис');
-      return;
-    }
-    if (tracks && newSlug in tracks) {
-      setSlugError('Такой slug уже занят');
-      return;
-    }
+    if (!/^[a-z0-9-]+$/.test(newSlug)) { setSlugError('Только строчные латинские буквы, цифры и дефис'); return; }
+    if (tracks && newSlug in tracks) { setSlugError('Такой slug уже занят'); return; }
     setSlugError('');
   }, [newSlug, tracks]);
 
-  const handlePinSubmit = () => {
-    if (pin === LOCK_PASSWORD) {
-      setAuthed(true);
-      setPinError(false);
-    } else {
-      setPinError(true);
-      setPin('');
-      pinRef.current?.focus();
-    }
-  };
+  const handlePinSubmit = useCallback(() => {
+    if (pin === LOCK_PASSWORD) { setAuthed(true); setPinError(false); }
+    else { setPinError(true); setPin(''); pinRef.current?.focus(); }
+  }, [pin]);
 
-  const handleCreate = async () => {
+  const handleCreate = useCallback(async () => {
     if (!newName.trim() || !newSlug || slugError) return;
     setCreating(true);
     const existing = await get(ref(db, `gantt_config/tracks/${newSlug}`));
-    if (existing.exists()) {
-      setSlugError('Такой slug уже занят');
-      setCreating(false);
-      return;
-    }
+    if (existing.exists()) { setSlugError('Такой slug уже занят'); setCreating(false); return; }
     await set(ref(db, `gantt_config/tracks/${newSlug}`), { name: newName.trim() });
-    setNewName('');
-    setNewSlug('');
-    setSlugTouched(false);
-    setShowForm(false);
-    setCreating(false);
-  };
+    setNewName(''); setNewSlug(''); setSlugTouched(false); setShowForm(false); setCreating(false);
+  }, [newName, newSlug, slugError]);
+
+  const navigateToTrack = useCallback((slug: string) => {
+    const base = window.location.pathname.replace(/\/$/, '');
+    window.location.href = `${base}/${slug}`;
+  }, []);
+
+  // ── Loading ──────────────────────────────────────────────────────────────
+  if (mode === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <p className="text-muted-foreground text-[length:var(--text-16)]">Загрузка…</p>
+      </div>
+    );
+  }
+
+  // ── Board mode ───────────────────────────────────────────────────────────
+  if (mode === 'board' && trackSlug) {
+    return <GanttBoard dbPath={`gantt_tracks/${trackSlug}`} trackName={trackName} />;
+  }
+
+  // ── Not found ────────────────────────────────────────────────────────────
+  if (mode === 'notfound') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-3">
+          <p className="text-foreground text-[length:var(--text-20)] font-bold">Трек не найден</p>
+          <p className="text-muted-foreground text-[length:var(--text-14)]">
+            «{trackSlug}» не зарегистрирован.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // ── PIN screen ───────────────────────────────────────────────────────────
   if (!authed) {
@@ -160,10 +217,10 @@ export default function GanttIndexPage() {
         ) : (
           <div className="space-y-3">
             {Object.entries(tracks).map(([slug, info]) => (
-              <Link
+              <button
                 key={slug}
-                href={`/gantt/${slug}`}
-                className="group block rounded-lg border border-border bg-card p-4 transition-colors hover:border-foreground/20"
+                onClick={() => navigateToTrack(slug)}
+                className="group block w-full text-left rounded-lg border border-border bg-card p-4 transition-colors hover:border-foreground/20"
               >
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground/60">Rocketmind</span>
@@ -173,10 +230,9 @@ export default function GanttIndexPage() {
                 <p className="mt-2 text-[length:var(--text-14)] text-muted-foreground">
                   /gantt/{slug}
                 </p>
-              </Link>
+              </button>
             ))}
 
-            {/* Add track */}
             {showForm ? (
               <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
                 <div className="space-y-1.5">

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { useParams } from 'next/navigation';
 import { ref, onValue, set, get } from 'firebase/database';
 import { db } from '@/lib/firebase';
 
@@ -506,50 +505,7 @@ function RefreshIcon({ className }: { className?: string }) {
 }
 
 
-// ─── Main page ────────────────────────────────────────────────────────────────
-
-export default function GanttTrackClient() {
-  const { track } = useParams<{ track: string }>();
-  const DB_PATH = `gantt_tracks/${track}`;
-
-  const [trackValid, setTrackValid] = useState<boolean | null>(null);
-  const [trackName, setTrackName] = useState('');
-
-  useEffect(() => {
-    get(ref(db, 'gantt_config/tracks')).then((snap) => {
-      const tracks: Record<string, { name: string }> | null = snap.val();
-      if (tracks && track in tracks) {
-        setTrackValid(true);
-        setTrackName(tracks[track].name);
-      } else {
-        setTrackValid(false);
-      }
-    });
-  }, [track]);
-
-  if (trackValid === null) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-muted-foreground text-[length:var(--text-16)]">Загрузка…</p>
-      </div>
-    );
-  }
-
-  if (!trackValid) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center space-y-3">
-          <p className="text-foreground text-[length:var(--text-20)] font-bold">Трек не найден</p>
-          <p className="text-muted-foreground text-[length:var(--text-14)]">
-            «{track}» не зарегистрирован. Добавьте его в Firebase: gantt_config/tracks.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return <GanttBoard dbPath={DB_PATH} trackName={trackName} />;
-}
+// ─── Main board (default export) ─────────────────────────────────────────────
 
 // ─── Undo / Redo types ───────────────────────────────────────────────────────
 
@@ -583,7 +539,7 @@ function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id
   );
 }
 
-function GanttBoard({ dbPath, trackName }: { dbPath: string; trackName: string }) {
+export default function GanttBoard({ dbPath, trackName }: { dbPath: string; trackName: string }) {
   const [weeks, setWeeks] = useState<Week[]>(INITIAL_WEEKS);
   const [rows, setRows] = useState<Row[]>(INITIAL_ROWS);
   const [title, setTitle] = useState(INITIAL_TITLE);
