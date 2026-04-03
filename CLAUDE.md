@@ -50,6 +50,16 @@
 
 Never update only one of them.
 
+### Blocks = shared components (zero duplication)
+
+Every live-preview block in DS Web sections «Маркетинг блоки» and «Сквозные блоки» **must** be a component exported from `@rocketmind/ui` (or a local DS-only demo wrapper around one). Inline markup for block previews is forbidden.
+
+When adding a new block:
+1. Create the component in `packages/ui/src/components/ui/`
+2. Export from `packages/ui/src/index.ts` (under `// Blocks`)
+3. Use in DS Web as `<ComponentName />` preview
+4. In `apps/site` (or other apps): import from `@rocketmind/ui` directly, or re-export from a local file if the app needs a wrapper
+
 ### Workflow
 - **Screen:** design in .pen → screenshot/approval → code
 - **Component:** check DS → add to system.pen as reusable → ref everywhere

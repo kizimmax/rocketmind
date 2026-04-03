@@ -272,6 +272,61 @@ declare function Tooltip({ ...props }: Tooltip$1.Root.Props): react_jsx_runtime.
 declare function TooltipTrigger({ ...props }: Tooltip$1.Trigger.Props): react_jsx_runtime.JSX.Element;
 declare function TooltipContent({ className, side, sideOffset, align, alignOffset, children, ...props }: Tooltip$1.Popup.Props & Pick<Tooltip$1.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">): react_jsx_runtime.JSX.Element;
 
+type AccordionFAQItem = {
+    id: string;
+    q: string;
+    a: string;
+};
+type AccordionFAQProps = {
+    items?: AccordionFAQItem[];
+    /** Which items are open by default (by id). Default: ["3"] */
+    defaultOpen?: string[];
+    className?: string;
+};
+declare function AccordionFAQ({ items, defaultOpen, className, }: AccordionFAQProps): react_jsx_runtime.JSX.Element;
+
+type CTASectionDarkProps = {
+    /** Heading text */
+    heading?: string;
+    /** Body text below heading */
+    body?: string;
+    /** Button label */
+    buttonText?: string;
+    /** Button href */
+    href?: string;
+    className?: string;
+};
+/**
+ * CTA Dark — тёмный блок с жёлтой кнопкой и декоративным кругом.
+ *
+ * Figma: 1400×424 px
+ * - Фон: #0A0A0A (dark bg)
+ * - Кнопка: --rm-yellow-100 (#FFCC00)
+ * - Декор: круг 789×789 px с dot-pattern и yellow radial glow
+ */
+declare function CTASectionDark({ heading, body, buttonText, href, className, }: CTASectionDarkProps): react_jsx_runtime.JSX.Element;
+
+type CTASectionYellowProps = {
+    /** Heading text */
+    heading?: string;
+    /** Body text below heading */
+    body?: string;
+    /** Button label */
+    buttonText?: string;
+    /** Button href */
+    href?: string;
+    className?: string;
+};
+/**
+ * CTA Yellow — жёлтый блок с золотым сечением.
+ *
+ * Figma: 458-436 (desktop 646×400) / 458-437 (mobile 353×571)
+ * - Фон: #FFCC00 (--rm-yellow-100)
+ * - Текст/кнопка: #0A0A0A
+ * - Спираль: #FFE066 (--rm-yellow-300)
+ */
+declare function CTASectionYellow({ heading, body, buttonText, href, className, }: CTASectionYellowProps): react_jsx_runtime.JSX.Element;
+
 type LogoMarqueeItem = {
     alt: string;
     src: string;
@@ -294,4 +349,45 @@ type InfiniteLogoMarqueeProps = {
 };
 declare function InfiniteLogoMarquee({ className, logos, speedSeconds, gap, maxLogoHeight, fadeWidth, reverse, }: InfiniteLogoMarqueeProps): react_jsx_runtime.JSX.Element | null;
 
-export { Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, Button, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, GlowingEffect, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, type LogoMarqueeItem, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, Radio, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, Skeleton, Slider, type SliderProps, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ThemeProvider, Toaster, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, tabsListVariants, textareaVariants };
+declare function MobileNav({ className }: {
+    className?: string;
+}): react_jsx_runtime.JSX.Element;
+
+/**
+ * Единый источник данных навигации сайта.
+ * Используется в Header (RocketmindMenu), MobileNav и Footer.
+ */
+type NavItem = {
+    href: string;
+    title: string;
+    description: string;
+};
+type NavSection = {
+    href: string;
+    label: string;
+    items?: NavItem[];
+};
+declare const HEADER_NAV: NavSection[];
+
+type RocketmindMenuProps = {
+    className?: string;
+    itemClassName?: string;
+    showDropdowns?: boolean;
+};
+declare function RocketmindMenu({ className, itemClassName, showDropdowns, }: RocketmindMenuProps): react_jsx_runtime.JSX.Element;
+
+type SiteFooterProps = {
+    /** Base path for static assets (logo). Default: "" */
+    basePath?: string;
+    className?: string;
+};
+declare function SiteFooter({ basePath, className }: SiteFooterProps): react_jsx_runtime.JSX.Element;
+
+type SiteHeaderProps = {
+    /** Base path for static assets (logo). Default: "" */
+    basePath?: string;
+    className?: string;
+};
+declare function SiteHeader({ basePath, className }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
+
+export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, Button, CTASectionDark, type CTASectionDarkProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, GlowingEffect, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, type LogoMarqueeItem, MobileNav, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, Radio, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderProps, Skeleton, Slider, type SliderProps, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ThemeProvider, Toaster, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, HEADER_NAV as rocketmindMenuItems, tabsListVariants, textareaVariants };

@@ -873,6 +873,18 @@ code {
   animation-name: hero-logo-marquee-ltr;
 }
 
+/* ── Accordion FAQ ── */
+.accordion-05-panel {
+  display: grid;
+  transition: grid-template-rows 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.accordion-05-panel[data-open] {
+  grid-template-rows: 1fr;
+}
+.accordion-05-panel[data-closed] {
+  grid-template-rows: 0fr;
+}
+
 /* ── Slider ── */
 @keyframes rm-slider-fill {
   from { width: 0; }

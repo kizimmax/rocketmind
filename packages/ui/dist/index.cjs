@@ -31,11 +31,14 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  AccordionFAQ: () => AccordionFAQ,
   Avatar: () => Avatar,
   AvatarFallback: () => AvatarFallback,
   AvatarImage: () => AvatarImage,
   Badge: () => Badge,
   Button: () => Button,
+  CTASectionDark: () => CTASectionDark,
+  CTASectionYellow: () => CTASectionYellow,
   Card: () => Card,
   CardAction: () => CardAction,
   CardContent: () => CardContent,
@@ -66,6 +69,7 @@ __export(index_exports, {
   InfiniteLogoMarquee: () => InfiniteLogoMarquee,
   Input: () => Input,
   InputOTP: () => InputOTP,
+  MobileNav: () => MobileNav,
   NavigationMenu: () => NavigationMenu,
   NavigationMenuContent: () => NavigationMenuContent,
   NavigationMenuItem: () => NavigationMenuItem,
@@ -78,12 +82,15 @@ __export(index_exports, {
   NoteEyebrow: () => NoteEyebrow,
   NoteTitle: () => NoteTitle,
   Radio: () => Radio,
+  RocketmindMenu: () => RocketmindMenu,
   ScrollArea: () => ScrollArea,
   ScrollBar: () => ScrollBar,
   SearchCombobox: () => SearchCombobox,
   Separator: () => Separator2,
   ShowMore: () => ShowMore,
   ShowMorePanel: () => ShowMorePanel,
+  SiteFooter: () => SiteFooter,
+  SiteHeader: () => SiteHeader,
   Skeleton: () => Skeleton,
   Slider: () => Slider,
   Switch: () => Switch,
@@ -114,6 +121,7 @@ __export(index_exports, {
   inputVariants: () => inputVariants,
   noteVariants: () => noteVariants,
   radioBaseClassName: () => radioBaseClassName,
+  rocketmindMenuItems: () => HEADER_NAV,
   tabsListVariants: () => tabsListVariants,
   textareaVariants: () => textareaVariants
 });
@@ -1952,23 +1960,196 @@ function TooltipContent({
   ) });
 }
 
-// src/components/ui/infinite-logo-marquee.tsx
+// src/components/ui/accordion-faq.tsx
+var import_react4 = require("@base-ui/react");
 var import_jsx_runtime27 = require("react/jsx-runtime");
+var DEFAULT_ITEMS = [
+  { id: "1", q: "\u0427\u0442\u043E \u0442\u0430\u043A\u043E\u0435 Rocketmind?", a: "Rocketmind \u2014 SaaS-\u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430 \u0441 \u0433\u043E\u0442\u043E\u0432\u044B\u043C\u0438 AI-\u0430\u0433\u0435\u043D\u0442\u0430\u043C\u0438 \u0434\u043B\u044F \u0432\u0435\u0434\u0435\u043D\u0438\u044F \u043A\u0435\u0439\u0441\u043E\u0432. \u041A\u0430\u0436\u0434\u044B\u0439 \u0430\u0433\u0435\u043D\u0442 \u0441\u043F\u0435\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u043D\u0430 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0439 \u0437\u0430\u0434\u0430\u0447\u0435: \u0430\u043D\u0430\u043B\u0438\u0437, \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u044F, \u0438\u0441\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u0435 \u0440\u044B\u043D\u043A\u0430, \u0442\u0435\u0441\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0433\u0438\u043F\u043E\u0442\u0435\u0437." },
+  { id: "2", q: "\u041A\u0430\u043A \u043D\u0430\u0447\u0430\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u0443?", a: "\u041F\u0435\u0440\u0435\u0439\u0434\u0438\u0442\u0435 \u043F\u043E \u0441\u0441\u044B\u043B\u043A\u0435 /a/{agent_slug}, \u0432\u0432\u0435\u0434\u0438\u0442\u0435 email \u2014 \u0438 \u0441\u0440\u0430\u0437\u0443 \u043D\u0430\u0447\u0438\u043D\u0430\u0439\u0442\u0435 \u0434\u0438\u0430\u043B\u043E\u0433. \u041D\u0438\u043A\u0430\u043A\u0438\u0445 \u0434\u043E\u043B\u0433\u0438\u0445 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0439 \u0438 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A." },
+  { id: "3", q: "\u0427\u0442\u043E \u0443\u043C\u0435\u044E\u0442 \u0430\u0433\u0435\u043D\u0442\u044B?", a: "\u0410\u0433\u0435\u043D\u0442\u044B \u0432\u0435\u0434\u0443\u0442 \u0441\u0442\u0440\u0443\u043A\u0442\u0443\u0440\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u0439 \u0434\u0438\u0430\u043B\u043E\u0433, \u0437\u0430\u0434\u0430\u044E\u0442 \u0443\u0442\u043E\u0447\u043D\u044F\u044E\u0449\u0438\u0435 \u0432\u043E\u043F\u0440\u043E\u0441\u044B \u0438 \u0432 \u043A\u043E\u043D\u0446\u0435 \u0444\u043E\u0440\u043C\u0438\u0440\u0443\u044E\u0442 \u0433\u043E\u0442\u043E\u0432\u044B\u0439 \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442: \u043E\u0442\u0447\u0451\u0442, \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u044E \u0438\u043B\u0438 \u0441\u0441\u044B\u043B\u043A\u0443 \u043D\u0430 \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u0448\u0430\u0433." },
+  { id: "4", q: "\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u044B \u043B\u0438 \u043C\u043E\u0438 \u0434\u0430\u043D\u043D\u044B\u0435?", a: "\u0412\u0441\u0435 \u0434\u0430\u043D\u043D\u044B\u0435 \u0437\u0430\u0448\u0438\u0444\u0440\u043E\u0432\u0430\u043D\u044B \u0438 \u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F \u0438\u0437\u043E\u043B\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u043E. \u0410\u0433\u0435\u043D\u0442 \u0432\u0438\u0434\u0438\u0442 \u0442\u043E\u043B\u044C\u043A\u043E \u0438\u0441\u0442\u043E\u0440\u0438\u044E \u0432\u0430\u0448\u0435\u0433\u043E \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0433\u043E \u043A\u0435\u0439\u0441\u0430 \u2014 \u043D\u0438\u0447\u0435\u0433\u043E \u0431\u043E\u043B\u044C\u0448\u0435." },
+  { id: "5", q: "\u041A\u0430\u043A\u0438\u0435 \u0442\u0430\u0440\u0438\u0444\u044B?", a: "\u041F\u0435\u0440\u0432\u044B\u0439 \u043A\u0435\u0439\u0441 \u2014 \u0431\u0435\u0441\u043F\u043B\u0430\u0442\u043D\u043E. \u0414\u0430\u043B\u0435\u0435 \u043F\u043E\u0434\u043F\u0438\u0441\u043A\u0430 \u043E\u0442 990 \u20BD/\u043C\u0435\u0441, \u0432\u043A\u043B\u044E\u0447\u0430\u0435\u0442 \u043D\u0435\u043E\u0433\u0440\u0430\u043D\u0438\u0447\u0435\u043D\u043D\u044B\u0435 \u0434\u0438\u0430\u043B\u043E\u0433\u0438 \u0441 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u044B\u043C\u0438 \u0430\u0433\u0435\u043D\u0442\u0430\u043C\u0438." }
+];
+function AccordionFAQ({
+  items = DEFAULT_ITEMS,
+  defaultOpen = ["3"],
+  className
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: cn("w-full max-w-3xl", className), children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_react4.Accordion.Root, { defaultValue: defaultOpen, className: "w-full", children: items.map((item) => /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+    import_react4.Accordion.Item,
+    {
+      value: item.id,
+      className: "border-b border-border",
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_react4.Accordion.Header, { children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_react4.Accordion.Trigger, { className: "w-full text-left py-5 pl-6 md:pl-14 flex items-start gap-4 cursor-pointer text-foreground/20 transition-colors duration-200 data-[panel-open]:text-primary hover:text-foreground/50", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] mt-2 shrink-0 tabular-nums", children: item.id }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "font-[family-name:var(--font-heading-family)] font-bold uppercase text-3xl md:text-[length:var(--text-52)] leading-none tracking-[-0.02em]", children: item.q })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_react4.Accordion.Panel, { className: "accordion-05-panel", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "pb-6 pl-6 md:px-20 text-[length:var(--text-14)] text-muted-foreground", children: item.a }) }) })
+      ]
+    },
+    item.id
+  )) }) });
+}
+
+// src/components/ui/cta-section-dark.tsx
+var import_jsx_runtime28 = require("react/jsx-runtime");
+function CTASectionDark({
+  heading = "\u0425\u043E\u0442\u0438\u0442\u0435 \u0443\u0432\u0438\u0434\u0435\u0442\u044C, \u043A\u0430\u043A \u043A\u043E\u043C\u0430\u043D\u0434\u0430 Rocketmind \u0440\u0435\u0448\u0438\u0442 \u0432\u0430\u0448\u0443 \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0447\u0435\u0441\u043A\u0443\u044E \u0437\u0430\u0434\u0430\u0447\u0443?",
+  body = "\u0417\u0430\u043F\u043E\u043B\u043D\u0438\u0442\u0435 \u0444\u043E\u0440\u043C\u0443 \u2014 \u043C\u044B \u043F\u0440\u043E\u0432\u0435\u0434\u0451\u043C \u044D\u043A\u0441\u043F\u0440\u0435\u0441\u0441\u2011\u043E\u0446\u0435\u043D\u043A\u0443 \u0441\u0438\u0442\u0443\u0430\u0446\u0438\u0438, \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0438\u043C \u0432\u043E\u0437\u043C\u043E\u0436\u043D\u044B\u0435 \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u0438 \u0440\u0435\u0448\u0435\u043D\u0438\u044F \u0438 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0438\u043C \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u0448\u0430\u0433",
+  buttonText = "\u041E\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u0437\u0430\u044F\u0432\u043A\u0443",
+  href = "#contact",
+  className
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("section", { className: cn("dark bg-background text-foreground", className), children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14 pb-14 xl:pb-20", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "relative overflow-hidden border border-border bg-[#0A0A0A] min-h-[320px] xl:min-h-[424px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      "div",
+      {
+        className: "absolute pointer-events-none",
+        style: {
+          width: 789,
+          height: 789,
+          left: "calc(39.6%)",
+          top: -182
+        },
+        children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          "div",
+          {
+            className: "w-full h-full rounded-full",
+            style: {
+              backgroundImage: [
+                "radial-gradient(circle at 50% 50%, transparent 86%, rgba(219,200,0,0.14) 100%)",
+                "radial-gradient(rgba(255,255,255,0.1) 1.5px, transparent 1.5px)"
+              ].join(", "),
+              backgroundSize: "100% 100%, 24px 24px",
+              backgroundRepeat: "no-repeat, repeat"
+            }
+          }
+        )
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+      "div",
+      {
+        className: "absolute inset-0 pointer-events-none",
+        style: {
+          background: "linear-gradient(90deg, rgba(10,10,10,1) 38%, rgba(10,10,10,0) 80%)"
+        }
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "relative z-10 flex flex-col gap-9 p-8 xl:p-14 xl:max-w-[764px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex flex-col gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h2", { className: "font-heading text-[28px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-foreground", children: heading }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "text-[15px] xl:text-[18px] leading-[1.2] text-muted-foreground xl:max-w-[672px]", children: body })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+        "a",
+        {
+          href,
+          className: "w-fit flex items-center gap-3 bg-[var(--rm-yellow-100)] text-[#0A0A0A] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-[4px] transition-opacity hover:opacity-85 active:opacity-70",
+          children: buttonText
+        }
+      )
+    ] })
+  ] }) }) });
+}
+
+// src/components/ui/cta-section-yellow.tsx
+var import_jsx_runtime29 = require("react/jsx-runtime");
+function SpiralMobile({ className }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+    "svg",
+    {
+      className,
+      viewBox: "0 0 353 571",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg",
+      children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+        "path",
+        {
+          d: "M0.722732 352.267L78.3109 352.267C79.9663 352.169 81.6264 352.119 83.2889 352.12C84.5725 352.12 85.8512 352.167 87.1229 352.26L135.225 352.26C135.25 352.26 135.274 352.263 135.297 352.267L352.099 352.267C351.495 157.943 194.439 0.882944 0.441071 0.882921L0.441071 -1.54108e-05C195.017 7.63774e-06 352.52 157.6 352.981 352.535C352.982 352.543 352.984 352.552 352.984 352.561L352.984 352.595C352.993 352.631 353 352.669 353 352.709C353 352.748 352.993 352.786 352.984 352.823L352.984 353.392C352.984 353.401 352.981 353.41 352.98 353.418C352.52 473.47 255.519 570.479 135.679 570.585C135.666 570.788 135.518 570.953 135.323 570.99C135.294 570.996 135.264 571 135.234 571C134.998 571 134.808 570.815 134.795 570.582C117.234 570.503 99.853 567.005 83.6222 560.271C67.1798 553.45 52.2405 543.446 39.6581 530.833C27.0749 518.22 17.0958 503.244 10.291 486.762C3.59834 470.552 0.108257 453.197 0.00519946 435.66C0.00324634 435.643 4.19933e-05 435.626 1.14765e-05 435.609L1.15128e-05 434.778C4.20312e-05 434.759 0.00382621 434.741 0.006054 434.723C0.113202 424.059 2.25676 413.51 6.32689 403.651C10.5104 393.519 16.6449 384.313 24.3797 376.559C32.1156 368.805 41.3003 362.655 51.4082 358.462C57.4569 355.952 63.7655 354.173 70.201 353.15L0.722732 353.15C0.479202 353.15 0.281692 352.953 0.281692 352.709C0.281692 352.465 0.479202 352.267 0.722732 352.267ZM78.3342 353.15C69.2049 353.696 60.2178 355.762 51.7459 359.277C41.7452 363.427 32.6581 369.51 25.0043 377.183C17.3513 384.854 11.281 393.963 7.14174 403.988C3.05504 413.888 0.931653 424.49 0.884655 435.201C0.884716 435.22 0.885449 435.239 0.88551 435.258L83.0718 435.258L83.0718 417.921C82.9238 416.909 82.847 415.882 82.847 414.847C82.847 414.12 82.9271 413.412 83.0787 412.729L83.0787 353.15L78.3342 353.15ZM83.5128 436.165C83.5076 436.165 83.5025 436.164 83.4973 436.163L0.890697 436.163C1.05699 453.414 4.52143 470.477 11.1058 486.425C17.8664 502.8 27.7805 517.679 40.2817 530.21C52.7822 542.741 67.6246 552.679 83.9599 559.455C100.083 566.144 117.348 569.621 134.793 569.7L134.793 436.165L83.5128 436.165ZM98.3545 435.281C94.8645 434.311 91.6484 432.452 89.0429 429.84C86.7192 427.51 84.993 424.695 83.9608 421.632L83.9608 435.281L98.3545 435.281ZM83.9608 415.511L83.9608 417.906C84.6075 422.163 86.5925 426.133 89.6674 429.216C93.3783 432.935 98.3804 435.063 103.618 435.162L103.618 415.511L83.9608 415.511ZM134.784 399.721C133.601 387.857 128.368 376.702 119.883 368.197C111.1 359.393 99.4854 354.081 87.1849 353.15L83.9616 353.15L83.9616 404.04L94.0751 404.04C94.078 404.04 94.0809 404.041 94.0837 404.041L104.05 404.041C104.053 404.041 104.056 404.04 104.059 404.04L134.784 404.041L134.784 399.721ZM93.6341 405.332C88.8365 405.51 84.9291 408.683 83.9616 412.839L83.9616 414.62L93.6341 414.62L93.6341 405.332ZM83.9616 404.924L83.9616 410.313C85.2959 407.754 87.7245 405.789 90.6735 404.924L83.9616 404.924ZM93.6384 353.15C103.743 355.182 113.112 360.16 120.508 367.573C127.771 374.854 132.691 384.043 134.784 393.965L134.784 353.15L93.6384 353.15ZM94.5161 404.924L94.5161 414.628L103.618 414.628L103.618 404.924L94.5161 404.924ZM104.5 404.924L104.5 414.981C104.505 415.009 104.508 415.039 104.508 415.07L104.508 435.161C112.557 435.029 120.248 431.768 125.95 426.054C130.825 421.167 133.91 414.821 134.784 408.04L134.784 404.924L104.5 404.924ZM134.784 412.518C133.331 417.826 130.525 422.717 126.574 426.677C122.255 431.006 116.826 433.967 110.957 435.281L134.784 435.281L134.784 412.518ZM135.675 353.15L135.675 399.768C135.81 401.159 135.891 402.558 135.915 403.965L135.923 404.051L135.923 404.881C135.923 404.919 135.917 404.955 135.908 404.99C135.878 406.012 135.801 407.028 135.675 408.035L135.675 435.651C135.678 435.674 135.682 435.698 135.682 435.722L135.682 569.702C255.121 569.595 351.784 472.838 352.1 353.15L135.675 353.15Z",
+          fill: "#FFE066"
+        }
+      )
+    }
+  );
+}
+function SpiralDesktop({ className }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+    "svg",
+    {
+      className,
+      viewBox: "0 0 647 401",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg",
+      children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+        "path",
+        {
+          d: "M399.155 399.564V311.561C399.043 309.683 398.986 307.8 398.988 305.915C398.988 304.459 399.041 303.009 399.147 301.566V247.007C399.147 246.979 399.15 246.952 399.155 246.925V1.02195C178.965 1.70684 1.00047 179.844 1.00046 399.883H0C1.64792e-05 179.19 178.577 0.543883 399.457 0.0214942C399.468 0.0208892 399.478 0.018565 399.488 0.0185631H399.526C399.567 0.00753993 399.61 0 399.655 0C399.7 0 399.743 0.00753993 399.784 0.0185631H400.429C400.439 0.0185631 400.449 0.0218754 400.459 0.0224712C536.489 0.543841 646.411 110.566 646.531 246.492C646.761 246.507 646.947 246.674 646.989 246.896C646.996 246.929 647.001 246.963 647.001 246.997C647.001 247.265 646.791 247.481 646.527 247.495C646.438 267.413 642.474 287.127 634.844 305.537C627.115 324.186 615.78 341.131 601.488 355.402C587.196 369.674 570.227 380.993 551.551 388.711C533.183 396.302 513.519 400.261 493.647 400.378C493.628 400.38 493.609 400.384 493.589 400.384H492.647C492.626 400.384 492.606 400.379 492.586 400.377C480.502 400.255 468.549 397.824 457.377 393.208C445.897 388.463 435.465 381.504 426.68 372.731C417.893 363.957 410.925 353.54 406.173 342.075C403.33 335.214 401.314 328.059 400.155 320.759V399.564C400.155 399.84 399.931 400.064 399.655 400.064C399.379 400.064 399.155 399.84 399.155 399.564ZM400.155 311.535C400.774 321.889 403.115 332.083 407.098 341.692C411.799 353.035 418.693 363.342 427.386 372.023C436.079 380.703 446.4 387.588 457.759 392.283C468.977 396.919 480.99 399.327 493.127 399.38C493.149 399.38 493.17 399.379 493.192 399.379V306.161H473.547C472.4 306.329 471.237 306.416 470.064 306.416C469.241 306.416 468.438 306.325 467.663 306.153H400.155V311.535ZM494.219 305.661C494.219 305.667 494.218 305.673 494.217 305.678V399.373C513.764 399.185 533.098 395.255 551.169 387.787C569.724 380.119 586.582 368.874 600.782 354.695C614.98 340.516 626.241 323.682 633.92 305.154C641.499 286.867 645.438 267.284 645.528 247.498H494.219V305.661ZM493.217 288.827C492.119 292.785 490.012 296.433 487.052 299.388C484.413 302.024 481.222 303.982 477.752 305.153H493.217V288.827ZM470.816 305.153H473.53C478.354 304.419 482.852 302.168 486.345 298.68C490.56 294.471 492.971 288.798 493.083 282.857H470.816V305.153ZM452.924 247.507C439.481 248.849 426.842 254.785 417.205 264.409C407.229 274.371 401.209 287.544 400.155 301.496V305.152H457.818V293.681C457.818 293.677 457.819 293.674 457.819 293.671V282.367C457.819 282.364 457.818 282.36 457.818 282.357L457.819 247.507H452.924ZM459.283 294.181C459.484 299.623 463.08 304.054 467.788 305.152H469.807V294.181H459.283ZM458.819 305.152H464.926C462.026 303.638 459.8 300.884 458.819 297.539V305.152ZM400.155 294.176C402.457 282.715 408.098 272.088 416.497 263.7C424.747 255.462 435.16 249.881 446.403 247.507H400.155V294.176ZM458.819 293.181H469.816V282.857H458.819V293.181ZM458.819 281.857H470.215C470.248 281.85 470.281 281.847 470.316 281.847H493.081C492.932 272.718 489.238 263.995 482.762 257.528C477.225 251.998 470.034 248.499 462.35 247.507H458.819V281.857ZM467.425 247.507C473.439 249.155 478.981 252.339 483.468 256.819C488.374 261.718 491.728 267.876 493.217 274.532V247.507H467.425ZM400.155 246.497H452.978C454.553 246.344 456.14 246.252 457.733 246.225L457.831 246.216H458.772C458.814 246.216 458.855 246.222 458.895 246.232C460.053 246.266 461.204 246.354 462.345 246.497H493.637C493.663 246.493 493.69 246.489 493.717 246.489H645.531C645.409 111.017 535.773 1.37951 400.155 1.02097V246.497Z",
+          fill: "#FFE066"
+        }
+      )
+    }
+  );
+}
+function CTASectionYellow({
+  heading = "\u0425\u043E\u0442\u0438\u0442\u0435 \u0443\u0432\u0438\u0434\u0435\u0442\u044C, \u043A\u0430\u043A \u043A\u043E\u043C\u0430\u043D\u0434\u0430 Rocketmind \u0440\u0435\u0448\u0438\u0442 \u0432\u0430\u0448\u0443 \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0447\u0435\u0441\u043A\u0443\u044E \u0437\u0430\u0434\u0430\u0447\u0443?",
+  body = "\u0417\u0430\u043F\u043E\u043B\u043D\u0438\u0442\u0435 \u0444\u043E\u0440\u043C\u0443 \u2014 \u043C\u044B \u043F\u0440\u043E\u0432\u0435\u0434\u0451\u043C \u044D\u043A\u0441\u043F\u0440\u0435\u0441\u0441\u2011\u043E\u0446\u0435\u043D\u043A\u0443 \u0441\u0438\u0442\u0443\u0430\u0446\u0438\u0438, \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0438\u043C \u0432\u043E\u0437\u043C\u043E\u0436\u043D\u044B\u0435 \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u0438 \u0440\u0435\u0448\u0435\u043D\u0438\u044F \u0438 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0438\u043C \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u0448\u0430\u0433",
+  buttonText = "\u043E\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u0437\u0430\u044F\u0432\u043A\u0443",
+  href = "#contact",
+  className
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("section", { className: cn("px-5 md:px-8 xl:px-14 pb-5 md:pb-8 xl:pb-14", className), children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "mx-auto max-w-[1512px]", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "bg-[#FFCC00] relative overflow-hidden rounded-none aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      "div",
+      {
+        className: "absolute inset-0 pointer-events-none md:hidden",
+        "aria-hidden": "true",
+        children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SpiralMobile, { className: "w-full h-full object-cover object-center" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      "div",
+      {
+        className: "absolute right-0 top-0 bottom-0 pointer-events-none hidden md:flex items-center",
+        "aria-hidden": "true",
+        children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(SpiralDesktop, { className: "h-full w-auto object-contain" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "relative z-10 p-5 md:px-8 md:py-11 xl:px-14", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex flex-col gap-9 md:max-w-[75%] lg:max-w-[50%]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex flex-col gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]", children: heading }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A]", children: body })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+        "a",
+        {
+          href,
+          className: "w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-sm transition-opacity hover:opacity-85 active:opacity-70",
+          children: buttonText
+        }
+      )
+    ] }) })
+  ] }) }) });
+}
+
+// src/components/ui/infinite-logo-marquee.tsx
+var import_jsx_runtime30 = require("react/jsx-runtime");
 function LogoSequence({
   logos,
   gap,
   maxLogoHeight
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
     "div",
     {
       className: "flex shrink-0 items-center py-[10px]",
       style: { gap: `${gap}px`, paddingRight: `${gap}px` },
-      children: logos.map((logo) => /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+      children: logos.map((logo) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
         "div",
         {
           className: "flex shrink-0 items-center justify-center opacity-90",
-          children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+          children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             "img",
             {
               src: logo.src,
@@ -2006,7 +2187,7 @@ function InfiniteLogoMarquee({
   const marqueeStyle = {
     "--hero-marquee-duration": `${speedSeconds}s`
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
     "div",
     {
       className: cn(
@@ -2014,20 +2195,556 @@ function InfiniteLogoMarquee({
         className
       ),
       style: buildFadeMask(fadeWidth),
-      children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: `partner-logo-marquee-track${reverse ? " partner-logo-marquee-track--ltr" : ""}`, style: marqueeStyle, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LogoSequence, { logos, gap, maxLogoHeight }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(LogoSequence, { logos, gap, maxLogoHeight })
+      children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: `partner-logo-marquee-track${reverse ? " partner-logo-marquee-track--ltr" : ""}`, style: marqueeStyle, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(LogoSequence, { logos, gap, maxLogoHeight }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(LogoSequence, { logos, gap, maxLogoHeight })
+      ] })
+    }
+  );
+}
+
+// src/components/ui/mobile-nav.tsx
+var import_react5 = require("react");
+var import_react_dom = require("react-dom");
+var import_react6 = require("motion/react");
+var import_link = __toESM(require("next/link"), 1);
+
+// src/content/site-nav.ts
+var CONSULTING_SERVICES = [
+  {
+    href: "/consulting/ecosystem-strategy",
+    title: "\u042D\u043A\u043E\u0441\u0438\u0441\u0442\u0435\u043C\u043D\u0430\u044F \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u044F",
+    description: "\u041F\u0435\u0440\u0435\u0445\u043E\u0434 \u043E\u0442 \u043B\u0438\u043D\u0435\u0439\u043D\u043E\u0439 \u043C\u043E\u0434\u0435\u043B\u0438 \u043A \u044D\u043A\u043E\u0441\u0438\u0441\u0442\u0435\u043C\u043D\u043E\u0439 \u0430\u0440\u0445\u0438\u0442\u0435\u043A\u0442\u0443\u0440\u0435 \u0440\u043E\u0441\u0442\u0430."
+  },
+  {
+    href: "/consulting/digital-platform",
+    title: "\u0426\u0438\u0444\u0440\u043E\u0432\u0430\u044F \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430",
+    description: "\u0412\u043D\u0435\u0434\u0440\u0435\u043D\u0438\u0435 \u0446\u0438\u0444\u0440\u043E\u0432\u043E\u0439 \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u044B \u0432 \u0432\u0430\u0448 \u0431\u0438\u0437\u043D\u0435\u0441."
+  },
+  {
+    href: "/consulting/smart-analytics",
+    title: "\u0423\u043C\u043D\u0430\u044F \u0430\u043D\u0430\u043B\u0438\u0442\u0438\u043A\u0430",
+    description: "\u0410\u043D\u0430\u043B\u0438\u0442\u0438\u043A\u0430 \u0434\u043B\u044F \u0440\u0430\u0437\u0432\u0438\u0442\u0438\u044F \u0431\u0438\u0437\u043D\u0435\u0441\u0430 \u043D\u0430 \u043E\u0441\u043D\u043E\u0432\u0435 \u0434\u0430\u043D\u043D\u044B\u0445."
+  },
+  {
+    href: "/consulting/team-readiness",
+    title: "\u0413\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u044C \u043A\u043E\u043C\u0430\u043D\u0434\u044B",
+    description: "\u0414\u0438\u0430\u0433\u043D\u043E\u0441\u0442\u0438\u043A\u0430 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u043A\u043E\u043C\u0430\u043D\u0434\u044B \u043A \u0442\u0440\u0430\u043D\u0441\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438."
+  },
+  {
+    href: "/consulting/strategy-sessions",
+    title: "\u0421\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0441\u0435\u0441\u0441\u0438\u0438",
+    description: "\u0421\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0447\u0435\u0441\u043A\u0438\u0435 \u0438 \u0434\u0438\u0437\u0430\u0439\u043D-\u0441\u0435\u0441\u0441\u0438\u0438 \u0434\u043B\u044F \u0432\u0430\u0448\u0435\u0439 \u043A\u043E\u043C\u0430\u043D\u0434\u044B."
+  },
+  {
+    href: "/consulting/design-sprints",
+    title: "\u0414\u0438\u0437\u0430\u0439\u043D-\u0441\u043F\u0440\u0438\u043D\u0442\u044B",
+    description: "\u041E\u0440\u0433\u0430\u043D\u0438\u0437\u0430\u0446\u0438\u044F \u0434\u0438\u0437\u0430\u0439\u043D-\u0441\u043F\u0440\u0438\u043D\u0442\u043E\u0432 \u0434\u043B\u044F \u0431\u044B\u0441\u0442\u0440\u043E\u0433\u043E \u0442\u0435\u0441\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0438\u0434\u0435\u0439."
+  },
+  {
+    href: "/consulting/skolkovo",
+    title: "\u0420\u0435\u0437\u0438\u0434\u0435\u043D\u0442 \u0421\u043A\u043E\u043B\u043A\u043E\u0432\u043E",
+    description: "\u041F\u043E\u043C\u043E\u0449\u044C \u0432 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u0438 \u0441\u0442\u0430\u0442\u0443\u0441\u0430 \u0440\u0435\u0437\u0438\u0434\u0435\u043D\u0442\u0430 \u0421\u043A\u043E\u043B\u043A\u043E\u0432\u043E."
+  },
+  {
+    href: "/consulting/business-readiness",
+    title: "\u0413\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u044C \u0431\u0438\u0437\u043D\u0435\u0441\u0430",
+    description: "\u0414\u0438\u0430\u0433\u043D\u043E\u0441\u0442\u0438\u043A\u0430 \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438 \u0431\u0438\u0437\u043D\u0435\u0441\u0430 \u043A \u0442\u0440\u0430\u043D\u0441\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u0438."
+  }
+];
+var ACADEMY_COURSES = [
+  {
+    href: "/academy/business-design-teams",
+    title: "\u0411\u0438\u0437\u043D\u0435\u0441-\u0434\u0438\u0437\u0430\u0439\u043D \u0434\u043B\u044F \u043A\u043E\u043C\u0430\u043D\u0434",
+    description: "\u041F\u0440\u0430\u043A\u0442\u0438\u043A\u0443\u043C \u043F\u043E \u0431\u0438\u0437\u043D\u0435\u0441-\u0434\u0438\u0437\u0430\u0439\u043D\u0443 \u0434\u043B\u044F \u043A\u043E\u043C\u0430\u043D\u0434."
+  },
+  {
+    href: "/academy/business-design-quickstart",
+    title: "\u0411\u0438\u0437\u043D\u0435\u0441-\u0434\u0438\u0437\u0430\u0439\u043D. \u0411\u044B\u0441\u0442\u0440\u044B\u0439 \u0441\u0442\u0430\u0440\u0442",
+    description: "\u0418\u043D\u0442\u0435\u043D\u0441\u0438\u0432\u043D\u044B\u0439 \u043A\u0443\u0440\u0441 \u043F\u043E \u043E\u0441\u043D\u043E\u0432\u0430\u043C \u0431\u0438\u0437\u043D\u0435\u0441-\u0434\u0438\u0437\u0430\u0439\u043D\u0430."
+  }
+];
+var AI_PRODUCTS = [
+  {
+    href: "/ai-products/hypothesis-testing",
+    title: "\u0422\u0435\u0441\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0433\u0438\u043F\u043E\u0442\u0435\u0437",
+    description: "\u0418\u0418-\u0430\u0433\u0435\u043D\u0442 \u043F\u043E \u0442\u0435\u0441\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044E \u0431\u0438\u0437\u043D\u0435\u0441-\u0433\u0438\u043F\u043E\u0442\u0435\u0437."
+  },
+  {
+    href: "/ai-products/business-modeling",
+    title: "\u041C\u043E\u0434\u0435\u043B\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0431\u0438\u0437\u043D\u0435\u0441\u0430",
+    description: "SaaS \u0418\u0418-\u0441\u0435\u0440\u0432\u0438\u0441 \u043C\u043E\u0434\u0435\u043B\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F \u0431\u0438\u0437\u043D\u0435\u0441\u0430."
+  }
+];
+var HEADER_NAV = [
+  {
+    href: "/consulting",
+    label: "\u041A\u043E\u043D\u0441\u0430\u043B\u0442\u0438\u043D\u0433 \u0438 \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0438",
+    items: CONSULTING_SERVICES
+  },
+  {
+    href: "/academy",
+    label: "\u041E\u043D\u043B\u0430\u0439\u043D-\u0448\u043A\u043E\u043B\u0430",
+    items: ACADEMY_COURSES
+  },
+  {
+    href: "/ai-products",
+    label: "AI-\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B",
+    items: AI_PRODUCTS
+  },
+  { href: "/about", label: "\u041E Rocketmind" },
+  { href: "/media", label: "\u041C\u0435\u0434\u0438\u0430" }
+];
+var LEGAL_LINKS = [
+  { href: "/legal/privacy-policy", label: "\u041F\u043E\u043B\u0438\u0442\u0438\u043A\u0430 \u043A\u043E\u043D\u0444\u0438\u0434\u0435\u043D\u0446\u0438\u0430\u043B\u044C\u043D\u043E\u0441\u0442\u0438" },
+  { href: "/legal/data-consent", label: "\u041E\u0431\u0440\u0430\u0431\u043E\u0442\u043A\u0430 \u043F\u0435\u0440\u0441\u043E\u043D\u0430\u043B\u044C\u043D\u044B\u0445 \u0434\u0430\u043D\u043D\u044B\u0445" },
+  { href: "/legal/marketing-consent", label: "\u0420\u0435\u043A\u043B\u0430\u043C\u043D\u043E\u0435 \u0441\u043E\u0433\u043B\u0430\u0441\u0438\u0435" }
+];
+
+// src/components/ui/mobile-nav.tsx
+var import_jsx_runtime31 = require("react/jsx-runtime");
+function BurgerIcon({
+  open,
+  barClass = "bg-foreground"
+}) {
+  const bar = cn(
+    "absolute left-0 block h-[2px] w-full rounded-full transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+    barClass
+  );
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "relative h-[10px] w-[40px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: cn(bar, open ? "top-[4px] rotate-45" : "top-0") }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: cn(bar, open ? "top-[4px] -rotate-45" : "top-[8px]") })
+  ] });
+}
+function MobileNav({ className }) {
+  const [isOpen, setIsOpen] = (0, import_react5.useState)(false);
+  const [accordions, setAccordions] = (0, import_react5.useState)({});
+  const [mounted, setMounted] = (0, import_react5.useState)(false);
+  const [origin, setOrigin] = (0, import_react5.useState)(null);
+  const triggerRef = (0, import_react5.useRef)(null);
+  (0, import_react5.useEffect)(() => setMounted(true), []);
+  const open = (0, import_react5.useCallback)(() => {
+    if (triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect();
+      setOrigin({
+        cx: r.left + r.width / 2,
+        cy: r.top + r.height / 2,
+        top: r.top,
+        right: window.innerWidth - r.right
+      });
+    }
+    setAccordions({});
+    setIsOpen(true);
+  }, []);
+  const close = (0, import_react5.useCallback)(() => {
+    setIsOpen(false);
+    window.scrollTo(0, 0);
+  }, []);
+  const toggleAccordion = (0, import_react5.useCallback)((label) => {
+    setAccordions((prev) => ({ ...prev, [label]: !prev[label] }));
+  }, []);
+  (0, import_react5.useEffect)(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+  (0, import_react5.useEffect)(() => {
+    if (!isOpen) return;
+    const handler = (e) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isOpen, close]);
+  const cx = origin?.cx ?? (typeof window !== "undefined" ? window.innerWidth - 28 : 360);
+  const cy = origin?.cy ?? 28;
+  const clipOrigin = `${cx}px ${cy}px`;
+  const overlay = mounted ? (0, import_react_dom.createPortal)(
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(import_react6.AnimatePresence, { children: isOpen && /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+      import_react6.motion.div,
+      {
+        initial: { clipPath: `circle(0px at ${clipOrigin})` },
+        animate: {
+          clipPath: `circle(2000px at ${clipOrigin})`,
+          transition: { duration: 0.75, ease: [0.76, 0, 0.24, 1] }
+        },
+        exit: {
+          clipPath: `circle(0px at ${clipOrigin})`,
+          transition: { duration: 0.65, ease: [0.76, 0, 0.24, 1] }
+        },
+        className: "fixed inset-0 z-[55] overflow-y-auto bg-white",
+        children: [
+          origin && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+            "button",
+            {
+              type: "button",
+              onClick: close,
+              className: "absolute flex h-7 w-10 items-center justify-center",
+              style: { top: origin.top, right: origin.right },
+              "aria-label": "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E",
+              children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(BurgerIcon, { open: true, barClass: "bg-black" })
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+            "nav",
+            {
+              className: "flex flex-col px-5 pb-16 pt-28 md:px-24",
+              "aria-label": "\u041C\u043E\u0431\u0438\u043B\u044C\u043D\u0430\u044F \u043D\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044F",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "mb-6 font-mono text-[11px] uppercase tracking-[0.1em] text-black/30", children: "Navigation" }),
+                HEADER_NAV.map((item, index) => {
+                  const hasDropdown = item.items && item.items.length > 0;
+                  const isExpanded = accordions[item.label] ?? false;
+                  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+                    import_react6.motion.div,
+                    {
+                      initial: { opacity: 0, y: 16 },
+                      animate: { opacity: 1, y: 0 },
+                      transition: {
+                        delay: 0.25 + index * 0.07,
+                        duration: 0.5,
+                        ease: [0.23, 1, 0.32, 1]
+                      },
+                      className: "border-b border-black/10",
+                      children: hasDropdown ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_jsx_runtime31.Fragment, { children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => toggleAccordion(item.label),
+                            className: "flex w-full items-center justify-between gap-4 py-5 font-mono text-[22px] font-light uppercase leading-[1.16] tracking-[0.02em] text-black",
+                            "aria-expanded": isExpanded,
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: item.label }),
+                              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+                                "svg",
+                                {
+                                  xmlns: "http://www.w3.org/2000/svg",
+                                  width: "12",
+                                  height: "7",
+                                  viewBox: "0 0 10 6",
+                                  fill: "none",
+                                  stroke: "currentColor",
+                                  strokeWidth: "1.5",
+                                  strokeLinecap: "round",
+                                  strokeLinejoin: "round",
+                                  className: cn(
+                                    "shrink-0 text-black/30 transition-transform duration-300",
+                                    isExpanded && "rotate-180"
+                                  ),
+                                  children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("path", { d: "M1 1L5 5L9 1" })
+                                }
+                              )
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(import_react6.AnimatePresence, { initial: false, children: isExpanded && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+                          import_react6.motion.div,
+                          {
+                            initial: { height: 0, opacity: 0 },
+                            animate: { height: "auto", opacity: 1 },
+                            exit: { height: 0, opacity: 0 },
+                            transition: {
+                              height: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+                              opacity: { duration: 0.25 }
+                            },
+                            className: "overflow-hidden",
+                            children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "grid gap-0.5 pb-5", children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+                                import_link.default,
+                                {
+                                  href: item.href,
+                                  onClick: close,
+                                  className: "rounded-sm px-3 py-3 transition-colors duration-150 hover:bg-black/5 border-b border-black/10 mb-1",
+                                  children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black/50", children: "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u043A \u0440\u0430\u0437\u0434\u0435\u043B\u0443" })
+                                }
+                              ),
+                              item.items.map((sub) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+                                import_link.default,
+                                {
+                                  href: sub.href,
+                                  onClick: close,
+                                  className: "rounded-sm px-3 py-3 transition-colors duration-150 hover:bg-black/5",
+                                  children: [
+                                    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black", children: sub.title }),
+                                    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "mt-1 block text-[13px] leading-[1.45] text-black/50", children: sub.description })
+                                  ]
+                                },
+                                sub.href
+                              ))
+                            ] })
+                          }
+                        ) })
+                      ] }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+                        import_link.default,
+                        {
+                          href: item.href,
+                          onClick: close,
+                          className: "block py-5 font-mono text-[22px] font-light uppercase leading-[1.16] tracking-[0.02em] text-black",
+                          children: item.label
+                        }
+                      )
+                    },
+                    item.label
+                  );
+                })
+              ]
+            }
+          )
+        ]
+      },
+      "mobile-nav-circle"
+    ) }),
+    document.body
+  ) : null;
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: cn("hero-burger", className), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+      "button",
+      {
+        ref: triggerRef,
+        type: "button",
+        onClick: isOpen ? close : open,
+        className: "relative z-[60] flex h-7 w-10 items-center justify-center",
+        "aria-label": isOpen ? "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E" : "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E",
+        "aria-expanded": isOpen,
+        children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(BurgerIcon, { open: isOpen })
+      }
+    ),
+    overlay
+  ] });
+}
+
+// src/components/ui/rocketmind-menu.tsx
+var import_link2 = __toESM(require("next/link"), 1);
+var import_navigation = require("next/navigation");
+var import_jsx_runtime32 = require("react/jsx-runtime");
+function RocketmindMenu({
+  className,
+  itemClassName,
+  showDropdowns = true
+}) {
+  const dropdownItems = showDropdowns ? HEADER_NAV.filter((item) => item.items && item.items.length > 0) : [];
+  const plainItems = HEADER_NAV.filter(
+    (item) => !showDropdowns || !item.items || item.items.length === 0
+  );
+  const linkClass = cn(
+    "inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-sm",
+    "font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px]",
+    "text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88]",
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+    itemClassName
+  );
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: cn("relative z-10 flex items-center", className), children: [
+    dropdownItems.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+      NavigationMenu,
+      {
+        className: cn(
+          "relative flex max-w-max items-center",
+          "[&>div]:left-auto [&>div]:right-0 [&>div]:justify-end"
+        ),
+        children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(NavigationMenuList, { className: "flex list-none items-center gap-0.5", children: dropdownItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+          DropdownSection,
+          {
+            item,
+            itemClassName
+          },
+          item.label
+        )) })
+      }
+    ),
+    plainItems.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("nav", { className: "flex list-none items-center gap-0.5", children: plainItems.map((item) => /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_link2.default, { href: item.href, className: linkClass, children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { children: item.label }) }, item.label)) })
+  ] });
+}
+function DropdownSection({
+  item,
+  itemClassName
+}) {
+  const router = (0, import_navigation.useRouter)();
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(NavigationMenuItem, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+      NavigationMenuTrigger,
+      {
+        className: cn(
+          "inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-sm",
+          "font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px]",
+          "text-foreground bg-transparent hover:bg-transparent hover:opacity-[0.88]",
+          "data-[state=open]:bg-transparent data-[state=open]:opacity-[0.88]",
+          "transition-[color,opacity] duration-150 cursor-pointer select-none",
+          itemClassName
+        ),
+        onClick: () => router.push(item.href),
+        children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { children: item.label })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(NavigationMenuContent, { children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+      "ul",
+      {
+        className: cn(
+          "grid gap-0.5 p-2",
+          item.items.length > 4 ? "w-[680px] grid-cols-3" : "w-[420px] grid-cols-2"
+        ),
+        children: item.items.map((navItem) => /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(NavigationMenuLink, { asChild: true, children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
+          import_link2.default,
+          {
+            href: navItem.href,
+            className: "flex flex-col rounded-sm px-2.5 py-2 text-left transition-[background-color,color,opacity] duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "font-mono text-[11px] uppercase tracking-[0.08em] text-foreground", children: navItem.title }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "mt-0.5 text-[12px] leading-[1.4] text-muted-foreground", children: navItem.description })
+            ]
+          }
+        ) }) }, navItem.href))
+      }
+    ) })
+  ] });
+}
+
+// src/components/ui/site-footer.tsx
+var import_link3 = __toESM(require("next/link"), 1);
+var import_lucide_react6 = require("lucide-react");
+var import_jsx_runtime33 = require("react/jsx-runtime");
+var COMPANY_LINKS = [
+  { href: "/about", label: "\u041E Rocketmind" },
+  { href: "/cases", label: "\u041A\u0435\u0439\u0441\u044B" },
+  { href: "/media", label: "\u041C\u0435\u0434\u0438\u0430" },
+  ...LEGAL_LINKS.map((l) => ({ href: l.href, label: l.label }))
+];
+function FooterColumn({ title, links }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50", children: title }),
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("ul", { className: "mt-4 flex flex-col gap-2.5", children: links.map((link) => /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+      import_link3.default,
+      {
+        href: link.href,
+        scroll: false,
+        onClick: () => window.scrollTo(0, 0),
+        className: "text-[14px] leading-[1.5] text-muted-foreground transition-colors duration-150 hover:text-foreground",
+        children: link.label
+      }
+    ) }, link.href)) })
+  ] });
+}
+function SiteFooter({ basePath = "", className }) {
+  const consultingLinks = CONSULTING_SERVICES.map((s) => ({
+    href: s.href,
+    label: s.title
+  }));
+  const academyLinks = ACADEMY_COURSES.map((s) => ({
+    href: s.href,
+    label: s.title
+  }));
+  const aiProductLinks = AI_PRODUCTS.map((s) => ({
+    href: s.href,
+    label: s.title
+  }));
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("footer", { className: className ?? "border-t border-border bg-background", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_link3.default, { href: "/", className: "inline-flex items-center", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+        "img",
+        {
+          src: `${basePath}/with_descriptor_dark_background_en.svg`,
+          alt: "Rocketmind",
+          className: "h-[42px] w-auto"
+        }
+      ) }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+        "button",
+        {
+          type: "button",
+          onClick: () => window.scrollTo({ top: 0 }),
+          "aria-label": "\u041D\u0430\u0432\u0435\u0440\u0445",
+          className: "inline-flex items-center justify-center w-10 h-10 rounded-sm bg-secondary text-secondary-foreground transition-opacity duration-150 hover:opacity-[0.88] cursor-pointer",
+          children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_lucide_react6.ChevronUp, { size: 20, strokeWidth: 2 })
+        }
+      )
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "flex flex-col justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(FooterColumn, { title: "\u041A\u043E\u043D\u0441\u0430\u043B\u0442\u0438\u043D\u0433", links: consultingLinks.slice(0, 4) }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("p", { className: "mt-8 text-[13px] text-muted-foreground/50 hidden md:block", children: [
+          "\xA9 ",
+          (/* @__PURE__ */ new Date()).getFullYear(),
+          " Rocketmind"
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(FooterColumn, { title: "\xA0", links: consultingLinks.slice(4) }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "flex flex-col gap-10", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(FooterColumn, { title: "\u041E\u043D\u043B\u0430\u0439\u043D-\u0448\u043A\u043E\u043B\u0430", links: academyLinks }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(FooterColumn, { title: "AI-\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B", links: aiProductLinks })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(FooterColumn, { title: "\u041A\u043E\u043C\u043F\u0430\u043D\u0438\u044F", links: COMPANY_LINKS })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("p", { className: "mt-10 text-[13px] text-muted-foreground/50 md:hidden", children: [
+      "\xA9 ",
+      (/* @__PURE__ */ new Date()).getFullYear(),
+      " Rocketmind"
+    ] })
+  ] }) });
+}
+
+// src/components/ui/site-header.tsx
+var import_react7 = require("react");
+var import_link4 = __toESM(require("next/link"), 1);
+var import_navigation2 = require("next/navigation");
+var import_jsx_runtime34 = require("react/jsx-runtime");
+function SiteHeader({ basePath = "", className }) {
+  const pathname = (0, import_navigation2.usePathname)();
+  const isHome = pathname === "/";
+  const [isVisible, setIsVisible] = (0, import_react7.useState)(!isHome);
+  (0, import_react7.useEffect)(() => {
+    if (!isHome) {
+      setIsVisible(true);
+      return;
+    }
+    const handleScroll = () => {
+      const heroMidpoint = window.innerHeight / 2;
+      setIsVisible(window.scrollY > heroMidpoint);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHome]);
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+    "header",
+    {
+      className: cn(
+        "fixed top-0 left-0 right-0 z-50 w-full h-16 bg-background border-b border-border flex items-center transition-all duration-300",
+        isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none",
+        className
+      ),
+      children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "mx-auto flex w-full max-w-[1512px] items-center justify-between gap-6 px-5 md:px-8 xl:px-14", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_link4.default, { href: "/", className: "flex items-center", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+          "img",
+          {
+            src: `${basePath}/text_logo_dark_background_en.svg`,
+            alt: "Rocketmind",
+            className: "h-auto w-[120px] md:w-[144px]"
+          }
+        ) }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
+          RocketmindMenu,
+          {
+            className: "hero-menu-desktop ml-auto flex-1 items-center justify-end gap-5 lg:gap-7",
+            itemClassName: "!text-[18px]",
+            showDropdowns: true
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(MobileNav, { className: "ml-auto" })
       ] })
     }
   );
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AccordionFAQ,
   Avatar,
   AvatarFallback,
   AvatarImage,
   Badge,
   Button,
+  CTASectionDark,
+  CTASectionYellow,
   Card,
   CardAction,
   CardContent,
@@ -2058,6 +2775,7 @@ function InfiniteLogoMarquee({
   InfiniteLogoMarquee,
   Input,
   InputOTP,
+  MobileNav,
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
@@ -2070,12 +2788,15 @@ function InfiniteLogoMarquee({
   NoteEyebrow,
   NoteTitle,
   Radio,
+  RocketmindMenu,
   ScrollArea,
   ScrollBar,
   SearchCombobox,
   Separator,
   ShowMore,
   ShowMorePanel,
+  SiteFooter,
+  SiteHeader,
   Skeleton,
   Slider,
   Switch,
@@ -2106,6 +2827,7 @@ function InfiniteLogoMarquee({
   inputVariants,
   noteVariants,
   radioBaseClassName,
+  rocketmindMenuItems,
   tabsListVariants,
   textareaVariants
 });

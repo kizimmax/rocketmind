@@ -32,4 +32,11 @@ export * from './components/ui/slider';
 export * from './components/ui/tooltip';
 
 // Blocks
+export * from './components/ui/accordion-faq';
+export * from './components/ui/cta-section-dark';
+export * from './components/ui/cta-section-yellow';
 export * from './components/ui/infinite-logo-marquee';
+export * from './components/ui/mobile-nav';
+export * from './components/ui/rocketmind-menu';
+export * from './components/ui/site-footer';
+export * from './components/ui/site-header';

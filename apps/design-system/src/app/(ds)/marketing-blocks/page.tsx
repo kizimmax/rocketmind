@@ -1,13 +1,10 @@
 "use client"
 
 import React from "react"
-import { Separator } from "@rocketmind/ui"
+import { Separator, CTASectionDark, CTASectionYellow, AccordionFAQ } from "@rocketmind/ui"
 import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
-import { Accordion05Demo } from "@/components/ds/shared"
 import { CasesSectionShowcase } from "@/components/ds/cases-section-showcase"
-
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
 
 export default function MarketingBlocksPage() {
   return (
@@ -23,7 +20,7 @@ export default function MarketingBlocksPage() {
           Аккордион для секций FAQ и «Часто задаваемые вопросы». Числа слева — порядковые метки. Заголовок раскрытого пункта подсвечивается акцентным жёлтым. Плавное открытие через <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-caption-family)]">grid-template-rows</code> (200ms, ease-standard).
         </p>
         <div className="-mx-5 md:-mx-10 border-y border-border py-10 px-5 md:px-10 mb-8">
-          <Accordion05Demo />
+          <AccordionFAQ />
         </div>
         <SpecBlock title="Токены">
           <div className="overflow-auto rounded-lg border border-border">
@@ -64,31 +61,7 @@ export default function MarketingBlocksPage() {
         </p>
         {/* Live preview */}
         <div className="mb-8">
-          {/* Inline replica to avoid cross-app import */}
-          <div className="dark bg-[#0A0A0A] relative overflow-hidden min-h-[280px] border border-border">
-            {/* Decorative circle */}
-            <div className="absolute pointer-events-none" style={{ width: 560, height: 560, left: "calc(40%)", top: -130 }}>
-              <div className="w-full h-full rounded-full" style={{
-                backgroundImage: ["radial-gradient(circle at 50% 50%, transparent 86%, rgba(219,200,0,0.14) 100%)", "radial-gradient(rgba(255,255,255,0.1) 1.5px, transparent 1.5px)"].join(", "),
-                backgroundSize: "100% 100%, 24px 24px",
-                backgroundRepeat: "no-repeat, repeat",
-              }} />
-            </div>
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, rgba(10,10,10,1) 38%, rgba(10,10,10,0) 80%)" }} />
-            <div className="relative z-10 flex flex-col gap-6 p-8 xl:p-14 xl:max-w-[640px]">
-              <div className="flex flex-col gap-3">
-                <div className="font-heading text-[22px] md:text-[36px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-white">
-                  Хотите увидеть, как команда Rocketmind решит вашу стратегическую задачу?
-                </div>
-                <p className="text-[13px] md:text-[15px] leading-[1.2] text-white/50">
-                  Заполните форму — мы проведём экспресс‑оценку ситуации, обозначим возможные сценарии решения и предложим следующий шаг
-                </p>
-              </div>
-              <div className="w-fit inline-flex items-center gap-3 bg-[#FFCC00] text-[#0A0A0A] px-6 py-[12px] font-['Loos_Condensed',sans-serif] text-[14px] font-medium uppercase tracking-[0.04em] rounded-[4px]">
-                Оставить заявку
-              </div>
-            </div>
-          </div>
+          <CTASectionDark className="!pb-0" />
         </div>
         <SpecBlock title="Токены">
           <div className="overflow-auto rounded-lg border border-border">
@@ -129,51 +102,7 @@ export default function MarketingBlocksPage() {
         </p>
         {/* Live preview */}
         <div className="mb-8">
-          <div className="bg-[#FFCC00] relative overflow-hidden rounded-none aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]">
-
-            {/* Mobile spiral — full-frame 353×571, below content */}
-            <div
-              className="absolute inset-0 pointer-events-none md:hidden"
-              aria-hidden="true"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`${BASE_PATH}/images/cta/golden-spiral-mobile.svg`}
-                alt=""
-                className="w-full h-full object-cover object-center"
-              />
-            </div>
-
-            {/* Desktop spiral — right ~47%, Figma 646×400 in 1400px frame */}
-            <div
-              className="absolute right-0 top-0 h-full w-[47%] pointer-events-none hidden md:block"
-              aria-hidden="true"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`${BASE_PATH}/images/cta/golden-spiral-desktop.svg`}
-                alt=""
-                className="w-full h-full object-contain object-right"
-              />
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 p-5 md:px-8 md:py-11 xl:px-14">
-              <div className="flex flex-col gap-9 max-w-[764px]">
-                <div className="flex flex-col gap-4">
-                  <div className="font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]">
-                    Хотите увидеть, как команда Rocketmind решит вашу стратегическую задачу?
-                  </div>
-                  <p className="text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A] xl:max-w-[672px]">
-                    Заполните форму — мы проведём экспресс‑оценку ситуации, обозначим возможные сценарии решения и предложим следующий шаг
-                  </p>
-                </div>
-                <div className="w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-sm cursor-pointer transition-opacity hover:opacity-85">
-                  оставить заявку
-                </div>
-              </div>
-            </div>
-          </div>
+          <CTASectionYellow className="!px-0 !pb-0" />
         </div>
         <SpecBlock title="Токены">
           <div className="overflow-auto rounded-lg border border-border">
@@ -191,7 +120,7 @@ export default function MarketingBlocksPage() {
                   ["Заголовок",        "#0A0A0A",                          "H2, 52px desktop / H4 24px mobile"],
                   ["Описание",         "#0A0A0A",                          "18px desktop / 14px mobile"],
                   ["Кнопка",          "#0A0A0A, text #F0F0F0",            "Инверсия; mobile w-full, desktop w-fit (hug)"],
-                  ["Декор-спираль",    "SVG белая, right 47%, h-full",     "Спираль золотого сечения"],
+                  ["Декор-спираль",    "#FFE066 (--rm-yellow-300), right 47%, h-full", "Спираль золотого сечения"],
                   ["Высота desktop",   "min-h-[400px]",                    "1401×400 px по Figma"],
                   ["Типографика кнопки","Loos Condensed 500, 16px, +4%",  "uppercase, border-radius 4px"],
                 ].map(([prop, val, desc]) => (
