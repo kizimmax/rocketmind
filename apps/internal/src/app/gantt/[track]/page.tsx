@@ -544,6 +544,38 @@ export default function GanttPage() {
   return <GanttBoard dbPath={DB_PATH} />;
 }
 
+// ─── Undo / Redo types ───────────────────────────────────────────────────────
+
+type Snapshot = { weeks: Week[]; rows: Row[]; title: string; subtitle: string; locked: boolean };
+const MAX_HISTORY = 50;
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+
+type Toast = { id: number; message: string; onUndo?: () => void };
+let toastId = 0;
+
+function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
+  if (toasts.length === 0) return null;
+  return (
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none">
+      {toasts.map(t => (
+        <div key={t.id} className="pointer-events-auto flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-2.5 shadow-lg text-[length:var(--text-14)] text-foreground animate-[slideUp_200ms_ease-out]">
+          <span>{t.message}</span>
+          {t.onUndo && (
+            <button
+              onClick={() => { t.onUndo!(); onDismiss(t.id); }}
+              className="font-bold text-[color:var(--rm-yellow-100)] hover:underline"
+            >
+              Отменить
+            </button>
+          )}
+          <button onClick={() => onDismiss(t.id)} className="text-muted-foreground hover:text-foreground ml-1">✕</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function GanttBoard({ dbPath }: { dbPath: string }) {
   const [weeks, setWeeks] = useState<Week[]>(INITIAL_WEEKS);
   const [rows, setRows] = useState<Row[]>(INITIAL_ROWS);
@@ -552,6 +584,67 @@ function GanttBoard({ dbPath }: { dbPath: string }) {
   const [locked, setLocked] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'error' | 'loading'>('loading');
+
+  // ── Undo / Redo ───────────────────────────────────────────────────────────
+  const history = useRef<Snapshot[]>([]);
+  const future = useRef<Snapshot[]>([]);
+  const skipHistory = useRef(false);
+
+  const snap = useCallback((): Snapshot => ({ weeks, rows, title, subtitle, locked }), [weeks, rows, title, subtitle, locked]);
+
+  const pushHistory = useCallback((s: Snapshot) => {
+    history.current = [...history.current.slice(-(MAX_HISTORY - 1)), s];
+    future.current = [];
+  }, []);
+
+  const canUndo = history.current.length > 0;
+  const canRedo = future.current.length > 0;
+
+  const persistRef = useRef<typeof persist>(null!);
+
+  const applySnapshot = useCallback((s: Snapshot) => {
+    skipHistory.current = true;
+    setWeeks(s.weeks); setRows(s.rows); setTitle(s.title); setSubtitle(s.subtitle); setLocked(s.locked);
+    persistRef.current(s.weeks, s.rows, s.title, s.subtitle, s.locked);
+  }, []);
+
+  const undo = useCallback(() => {
+    if (history.current.length === 0) return;
+    future.current = [snap(), ...future.current];
+    const prev = history.current[history.current.length - 1];
+    history.current = history.current.slice(0, -1);
+    applySnapshot(prev);
+  }, [snap, applySnapshot]);
+
+  const redo = useCallback(() => {
+    if (future.current.length === 0) return;
+    history.current = [...history.current, snap()];
+    const next = future.current[0];
+    future.current = future.current.slice(1);
+    applySnapshot(next);
+  }, [snap, applySnapshot]);
+
+  // ── Toasts ────────────────────────────────────────────────────────────────
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const dismissToast = useCallback((id: number) => setToasts(ts => ts.filter(t => t.id !== id)), []);
+  const showToast = useCallback((message: string, onUndo?: () => void) => {
+    const id = ++toastId;
+    setToasts(ts => [...ts, { id, message, onUndo }]);
+    setTimeout(() => setToasts(ts => ts.filter(t => t.id !== id)), 5000);
+  }, []);
+
+  // ── Keyboard shortcuts (undo/redo) ────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement)?.tagName === 'TEXTAREA' || (e.target as HTMLElement)?.tagName === 'INPUT') return;
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      if (mod && e.key === 'z' && e.shiftKey)  { e.preventDefault(); redo(); }
+      if (mod && e.key === 'y')                 { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [undo, redo]);
 
   // Week navigation — start near current week to avoid flash
   const [visibleStartIdx, setVisibleStartIdx] = useState(() => {
@@ -698,12 +791,21 @@ function GanttBoard({ dbPath }: { dbPath: string }) {
         .catch(() => setSyncStatus('error'));
     }, 600);
   }, []);
+  persistRef.current = persist;
 
   // ── Helpers that update state AND persist ─────────────────────────────────
 
-  const updateWeeks = (next: Week[]) => { setWeeks(next); persist(next, rows, title, subtitle, locked); };
-  const updateRows  = (next: Row[])  => { setRows(next);  persist(weeks, next, title, subtitle, locked); };
-  const updateLocked = (v: boolean)  => { setLocked(v);   persist(weeks, rows, title, subtitle, v); };
+  const updateWeeks = (next: Week[]) => {
+    if (!skipHistory.current) pushHistory(snap());
+    skipHistory.current = false;
+    setWeeks(next); persist(next, rows, title, subtitle, locked);
+  };
+  const updateRows = (next: Row[]) => {
+    if (!skipHistory.current) pushHistory(snap());
+    skipHistory.current = false;
+    setRows(next); persist(weeks, next, title, subtitle, locked);
+  };
+  const updateLocked = (v: boolean) => { setLocked(v); persist(weeks, rows, title, subtitle, v); };
 
   // ── Row drag ──────────────────────────────────────────────────────────────
   const dragRowIdx = useRef<number | null>(null);
@@ -811,12 +913,14 @@ function GanttBoard({ dbPath }: { dbPath: string }) {
   };
 
   const removeCard = (rowId: string, weekId: string, cardId: string) => {
+    const prev = snap();
     const next = rows.map(r =>
       r.id === rowId
         ? { ...r, cells: { ...r.cells, [weekId]: (r.cells[weekId] ?? []).filter(c => c.id !== cardId) } }
         : r
     );
     updateRows(next);
+    showToast('Карточка удалена', () => { applySnapshot(prev); });
   };
 
   const updateCardLabel = (rowId: string, weekId: string, cardId: string, val: string) => {
@@ -870,7 +974,11 @@ function GanttBoard({ dbPath }: { dbPath: string }) {
     updateRows([...rows, { id, label: 'Новый раздел', cells }]);
   };
 
-  const removeRow = (rowId: string) => updateRows(rows.filter(r => r.id !== rowId));
+  const removeRow = (rowId: string) => {
+    const prev = snap();
+    updateRows(rows.filter(r => r.id !== rowId));
+    showToast('Строка удалена', () => { applySnapshot(prev); });
+  };
 
   // ── Add week ──────────────────────────────────────────────────────────────
 
@@ -1070,6 +1178,26 @@ function GanttBoard({ dbPath }: { dbPath: string }) {
           <span className="font-heading text-[length:var(--text-16)] md:text-[length:var(--text-20)] font-bold uppercase tracking-wide mr-auto">
             План работ
           </span>
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted disabled:opacity-25 disabled:pointer-events-none"
+            title="Отменить (Ctrl+Z)"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h7a3 3 0 0 1 0 6H8" /><path d="M6 3L3 6l3 3" />
+            </svg>
+          </button>
+          <button
+            onClick={redo}
+            disabled={!canRedo}
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted disabled:opacity-25 disabled:pointer-events-none"
+            title="Повторить (Ctrl+Shift+Z)"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M13 6H6a3 3 0 0 0 0 6h2" /><path d="M10 3l3 3-3 3" />
+            </svg>
+          </button>
           <button
             onClick={() => {
               const html = document.documentElement;
@@ -1383,6 +1511,11 @@ function GanttBoard({ dbPath }: { dbPath: string }) {
           onUnlock={() => { updateLocked(false); setShowLockModal(false); }}
         />
       )}
+
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {/* slideUp animation for toasts */}
+      <style>{`@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
     </div>
   );
