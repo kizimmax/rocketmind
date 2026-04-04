@@ -478,7 +478,8 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
   const [title, setTitle] = useState(tmpl.title);
   const [subtitle, setSubtitle] = useState(tmpl.subtitle);
   const [locked, setLocked] = useState(false);
-  const [weekOffset, setWeekOffset] = useState(0); // global week index of first week in array
+  const [weekOffset, setWeekOffset] = useState(0);
+  const weekOffsetRef = useRef(0); // ref for persist closure
   const [showLockModal, setShowLockModal] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'error' | 'loading'>('loading');
 
@@ -635,7 +636,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
           if (data.title) setTitle(data.title);
           if (data.subtitle) setSubtitle(data.subtitle);
           if (data.locked !== undefined) setLocked(data.locked);
-          if (data.weekOffset !== undefined) setWeekOffset(data.weekOffset);
+          if (data.weekOffset !== undefined) { setWeekOffset(data.weekOffset); weekOffsetRef.current = data.weekOffset; }
           // Auto-scroll to current week on first load
           if (!didInitialScroll.current && data.weeks?.length > 0) {
             didInitialScroll.current = true;
@@ -655,7 +656,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
         } else {
           // Empty track — save template to Firebase
           const t = createTemplate(trackColor as ColorToken);
-          setWeekOffset(t.startWeekIdx);
+          setWeekOffset(t.startWeekIdx); weekOffsetRef.current = t.startWeekIdx;
           set(ref(db, dbPath), {
             weeks: t.weeks, rows: t.rows,
             title: t.title, subtitle: t.subtitle, locked: false,
@@ -695,7 +696,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
         title: nextTitle,
         subtitle: nextSubtitle,
         locked: nextLocked,
-        weekOffset,
+        weekOffset: weekOffsetRef.current,
       })
         .then(() => setSyncStatus('synced'))
         .catch(() => setSyncStatus('error'));
