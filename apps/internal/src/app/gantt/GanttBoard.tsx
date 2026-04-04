@@ -94,17 +94,22 @@ function card(label: string, done = false): Card {
 }
 
 function createTemplate(color: ColorToken) {
-  const weeks: Week[] = [
-    { id: 'w1', label: 'Неделя 1', dates: formatWeekDates(0), theme: '', color },
-    { id: 'w2', label: 'Неделя 2', dates: formatWeekDates(1), theme: '', color },
-    { id: 'w3', label: 'Неделя 3', dates: formatWeekDates(2), theme: '', color },
-    { id: 'w4', label: 'Неделя 4', dates: formatWeekDates(3), theme: '', color },
-  ];
+  const cwIdx = getCurrentWeekIndex();
+  const startIdx = Math.max(0, cwIdx);
+  const weeks: Week[] = Array.from({ length: 4 }, (_, i) => ({
+    id: `w${i + 1}`,
+    label: `Неделя ${i + 1}`,
+    dates: formatWeekDates(startIdx + i),
+    theme: '',
+    color,
+  }));
+  const emptyCells: Record<string, Card[]> = {};
+  weeks.forEach(w => { emptyCells[w.id] = []; });
   const rows: Row[] = [
-    { id: 'r1', label: 'Согласование', cells: { w1: [], w2: [], w3: [], w4: [] } },
-    { id: 'r2', label: 'Процессные задачи', cells: { w1: [card('Заполнить план работ')], w2: [], w3: [], w4: [] } },
+    { id: 'r1', label: 'Согласование', cells: { ...emptyCells } },
+    { id: 'r2', label: 'Процессные задачи', cells: { ...emptyCells, w1: [card('Заполнить план работ')] } },
   ];
-  return { weeks, rows, title: 'План работ', subtitle: '' };
+  return { weeks, rows, title: 'План работ', subtitle: '', startWeekIdx: startIdx };
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -473,6 +478,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
   const [title, setTitle] = useState(tmpl.title);
   const [subtitle, setSubtitle] = useState(tmpl.subtitle);
   const [locked, setLocked] = useState(false);
+  const [weekOffset, setWeekOffset] = useState(0); // global week index of first week in array
   const [showLockModal, setShowLockModal] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'error' | 'loading'>('loading');
 
@@ -608,9 +614,9 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
   }, [animating, canGoBack, canGoForward, weeks.length, effectiveCount]);
 
   // Effective color: current week = yellow, others = neutral
-  const getEffectiveColor = useCallback((globalIdx: number): ColorToken => {
-    return globalIdx === currentWeekIdx ? (trackColor as ColorToken) : 'neutral';
-  }, [currentWeekIdx, trackColor]);
+  const getEffectiveColor = useCallback((localIdx: number): ColorToken => {
+    return (weekOffset + localIdx) === currentWeekIdx ? (trackColor as ColorToken) : 'neutral';
+  }, [currentWeekIdx, trackColor, weekOffset]);
 
   // ── Auto-scroll to current week on first Firebase load ──────────────────────
   // (handled inside onValue callback to avoid racing with initial state)
@@ -625,19 +631,22 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
         remoteUpdate.current = true;
         if (data) {
           if (data.weeks) setWeeks(data.weeks);
-          if (data.rows) setRows(data.rows);
+          if (data.rows) setRows(data.rows.map((r: Row) => ({ ...r, cells: r.cells ?? {} })));
           if (data.title) setTitle(data.title);
           if (data.subtitle) setSubtitle(data.subtitle);
           if (data.locked !== undefined) setLocked(data.locked);
+          if (data.weekOffset !== undefined) setWeekOffset(data.weekOffset);
           // Auto-scroll to current week on first load
           if (!didInitialScroll.current && data.weeks?.length > 0) {
             didInitialScroll.current = true;
             const wLen = data.weeks.length;
+            const offset = data.weekOffset ?? 0;
+            const localCurrent = currentWeekIdx - offset;
             const mobile = window.matchMedia('(max-width: 768px)').matches;
             const count = mobile ? 1 : VISIBLE_COUNT;
-            if (currentWeekIdx >= 0 && currentWeekIdx < wLen) {
+            if (localCurrent >= 0 && localCurrent < wLen) {
               const maxStart = Math.max(0, wLen - count);
-              const ideal = mobile ? currentWeekIdx : Math.max(0, currentWeekIdx - 1);
+              const ideal = mobile ? localCurrent : Math.max(0, localCurrent - 1);
               setVisibleStartIdx(Math.min(ideal, maxStart));
             } else if (wLen > count) {
               setVisibleStartIdx(wLen - count);
@@ -646,9 +655,11 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
         } else {
           // Empty track — save template to Firebase
           const t = createTemplate(trackColor as ColorToken);
+          setWeekOffset(t.startWeekIdx);
           set(ref(db, dbPath), {
             weeks: t.weeks, rows: t.rows,
             title: t.title, subtitle: t.subtitle, locked: false,
+            weekOffset: t.startWeekIdx,
           });
         }
         initialized.current = true;
@@ -684,6 +695,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
         title: nextTitle,
         subtitle: nextSubtitle,
         locked: nextLocked,
+        weekOffset,
       })
         .then(() => setSyncStatus('synced'))
         .catch(() => setSyncStatus('error'));
@@ -886,7 +898,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
     const newWeek: Week = {
       id: newId,
       label: `Неделя ${idx + 1}`,
-      dates: formatWeekDates(idx),
+      dates: formatWeekDates(weekOffset + idx),
       theme: '',
       color: trackColor as ColorToken,
     };
@@ -1155,7 +1167,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
                 </div>
                 {shownWeeks.map((w, localIdx) => {
                   const globalIdx = visibleStartIdx + localIdx;
-                  const isCurrent = globalIdx === currentWeekIdx;
+                  const isCurrent = (weekOffset + globalIdx) === currentWeekIdx;
                   const effColor = getEffectiveColor(globalIdx);
                   return (
                     <div
@@ -1163,7 +1175,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
                       className="flex-1 px-2 py-2 md:px-3 md:py-2.5 border-r border-border last:border-r-0 relative overflow-hidden"
                       style={{
                         minWidth: isMobile ? 0 : 240,
-                        backgroundColor: isCurrent ? cssVar('yellow', '900') : undefined,
+                        backgroundColor: isCurrent ? cssVar(effColor, '900') : undefined,
                         borderTop: `2px solid ${cssVar(effColor, '100')}`,
                       }}
                     >
@@ -1172,13 +1184,13 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
                         <div className="font-mono text-[length:var(--text-12)] font-bold uppercase tracking-wide" style={{ color: cssVar(effColor, '100') }}>
                           <EditableText value={w.label} onChange={v => updateWeekLabel(w.id, v)} />
                         </div>
-                        <div className="font-mono text-[length:var(--text-12)]" style={{ color: isCurrent ? cssVar('yellow', '500') : 'var(--muted-foreground)' }}>
+                        <div className="font-mono text-[length:var(--text-12)]" style={{ color: isCurrent ? cssVar(effColor, '500') : 'var(--muted-foreground)' }}>
                           <EditableText value={w.dates} onChange={v => updateWeekDates(w.id, v)} />
                         </div>
                         {isCurrent && (
                           <span
                             className="ml-auto px-1.5 py-0.5 rounded text-[length:9px] font-mono uppercase tracking-wider flex-shrink-0"
-                            style={{ backgroundColor: cssVar('yellow', '100'), color: cssVar('yellow', 'fg') }}
+                            style={{ backgroundColor: cssVar(effColor, '100'), color: cssVar(effColor, 'fg') }}
                           >
                             сейчас
                           </span>
@@ -1253,7 +1265,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
                   {/* Week cells */}
                   {shownWeeks.map((w, localIdx) => {
                     const globalIdx = visibleStartIdx + localIdx;
-                    const isCurrent = globalIdx === currentWeekIdx;
+                    const isCurrent = (weekOffset + globalIdx) === currentWeekIdx;
                     const effColor = getEffectiveColor(globalIdx);
                     const cards = row.cells?.[w.id] ?? [];
                     return (
@@ -1262,7 +1274,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
                         className="flex-1 px-1.5 py-1.5 md:px-2 md:py-2 border-r border-border/40 last:border-r-0"
                         style={{
                           minWidth: isMobile ? 0 : 240,
-                          backgroundColor: isCurrent ? `color-mix(in srgb, ${cssVar('yellow', '900')}, transparent 60%)` : undefined,
+                          backgroundColor: isCurrent ? `color-mix(in srgb, ${cssVar(effColor, '900')}, transparent 60%)` : undefined,
                         }}
                         onDragOver={e => onCardDragOver(e, row.id, w.id, null)}
                         onDrop={e => onCardDrop(e, row.id, w.id, null)}
