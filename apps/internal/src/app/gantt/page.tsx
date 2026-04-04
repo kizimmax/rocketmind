@@ -1,13 +1,24 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { ref, onValue, get, set } from 'firebase/database';
+import { ref, onValue, get, set, update } from 'firebase/database';
 import { db } from '@/lib/firebase';
 import GanttBoard from './GanttBoard';
 
-type TrackInfo = { name: string };
+type TrackInfo = { name: string; color?: string; archived?: boolean };
 
 const LOCK_PASSWORD = '2345';
+
+const ACCENT_COLORS = [
+  { token: 'yellow',     label: 'Жёлтый',     css100: 'var(--rm-yellow-100)',     css900: 'var(--rm-yellow-900)' },
+  { token: 'violet',     label: 'Фиолетовый', css100: 'var(--rm-violet-100)',     css900: 'var(--rm-violet-900)' },
+  { token: 'sky',        label: 'Голубой',     css100: 'var(--rm-sky-100)',        css900: 'var(--rm-sky-900)' },
+  { token: 'terracotta', label: 'Терракота',   css100: 'var(--rm-terracotta-100)', css900: 'var(--rm-terracotta-900)' },
+  { token: 'pink',       label: 'Розовый',     css100: 'var(--rm-pink-100)',       css900: 'var(--rm-pink-900)' },
+  { token: 'blue',       label: 'Синий',       css100: 'var(--rm-blue-100)',       css900: 'var(--rm-blue-900)' },
+  { token: 'red',        label: 'Красный',     css100: 'var(--rm-red-100)',        css900: 'var(--rm-red-900)' },
+  { token: 'green',      label: 'Зелёный',     css100: 'var(--rm-green-100)',      css900: 'var(--rm-green-900)' },
+] as const;
 
 function slugify(name: string): string {
   const map: Record<string, string> = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'shch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' };
@@ -20,69 +31,61 @@ function slugify(name: string): string {
     .replace(/^-|-$/g, '');
 }
 
-/** Extract track slug from URL pathname or ?track= query param */
 function getTrackFromURL(): string | null {
   if (typeof window === 'undefined') return null;
-  // ?track=slug (from 404 redirect)
   const params = new URLSearchParams(window.location.search);
   const qTrack = params.get('track');
   if (qTrack) return qTrack;
-  // /gantt/slug (direct path)
   const parts = window.location.pathname.split('/').filter(Boolean);
   const ganttIdx = parts.indexOf('gantt');
   if (ganttIdx >= 0 && parts[ganttIdx + 1]) return parts[ganttIdx + 1];
   return null;
 }
 
+function accentCSS(color?: string) {
+  return ACCENT_COLORS.find(c => c.token === color) ?? ACCENT_COLORS[0];
+}
+
 export default function GanttPage() {
-  // ── Routing: determine if showing index or board ─────────────────────────
   const [trackSlug, setTrackSlug] = useState<string | null>(null);
   const [trackName, setTrackName] = useState('');
-  const [trackValid, setTrackValid] = useState<boolean | null>(null);
   const [mode, setMode] = useState<'loading' | 'index' | 'board' | 'notfound'>('loading');
 
   useEffect(() => {
     const slug = getTrackFromURL();
-    if (!slug) {
-      setMode('index');
-      return;
-    }
+    if (!slug) { setMode('index'); return; }
     setTrackSlug(slug);
-    // Validate track
     get(ref(db, 'gantt_config/tracks')).then((snap) => {
       const tracks: Record<string, TrackInfo> | null = snap.val();
-      if (tracks && slug in tracks) {
+      if (tracks && slug in tracks && !tracks[slug].archived) {
         setTrackName(tracks[slug].name);
-        setTrackValid(true);
         setMode('board');
-        // Clean URL: ensure path-based URL (not ?track=)
         const base = window.location.pathname.replace(/\/$/, '');
         const parts = base.split('/');
         const ganttIdx = parts.indexOf('gantt');
-        if (!parts[ganttIdx + 1]) {
-          window.history.replaceState({}, '', `${base}/${slug}`);
-        }
+        if (!parts[ganttIdx + 1]) window.history.replaceState({}, '', `${base}/${slug}`);
       } else {
-        setTrackValid(false);
         setMode('notfound');
       }
     });
   }, []);
 
-  // ── Auth state ───────────────────────────────────────────────────────────
+  // ── Auth ─────────────────────────────────────────────────────────────────
   const [authed, setAuthed] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
   const pinRef = useRef<HTMLInputElement>(null);
 
-  // ── Track list state ─────────────────────────────────────────────────────
+  // ── Track list ───────────────────────────────────────────────────────────
   const [tracks, setTracks] = useState<Record<string, TrackInfo> | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newSlug, setNewSlug] = useState('');
+  const [newColor, setNewColor] = useState('yellow');
   const [slugTouched, setSlugTouched] = useState(false);
   const [slugError, setSlugError] = useState('');
   const [creating, setCreating] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -128,14 +131,30 @@ export default function GanttPage() {
     setCreating(true);
     const existing = await get(ref(db, `gantt_config/tracks/${newSlug}`));
     if (existing.exists()) { setSlugError('Такой slug уже занят'); setCreating(false); return; }
-    await set(ref(db, `gantt_config/tracks/${newSlug}`), { name: newName.trim() });
-    setNewName(''); setNewSlug(''); setSlugTouched(false); setShowForm(false); setCreating(false);
-  }, [newName, newSlug, slugError]);
+    await set(ref(db, `gantt_config/tracks/${newSlug}`), { name: newName.trim(), color: newColor });
+    setNewName(''); setNewSlug(''); setNewColor('yellow'); setSlugTouched(false); setShowForm(false); setCreating(false);
+  }, [newName, newSlug, newColor, slugError]);
+
+  const archiveTrack = useCallback(async (slug: string) => {
+    await update(ref(db, `gantt_config/tracks/${slug}`), { archived: true });
+  }, []);
+
+  const restoreTrack = useCallback(async (slug: string) => {
+    await update(ref(db, `gantt_config/tracks/${slug}`), { archived: false });
+  }, []);
 
   const navigateToTrack = useCallback((slug: string) => {
     const base = window.location.pathname.replace(/\/$/, '');
     window.location.href = `${base}/${slug}`;
   }, []);
+
+  const resetForm = useCallback(() => {
+    setShowForm(false); setNewName(''); setNewSlug(''); setNewColor('yellow'); setSlugTouched(false);
+  }, []);
+
+  // ── Derived ──────────────────────────────────────────────────────────────
+  const activeTracks = tracks ? Object.entries(tracks).filter(([, t]) => !t.archived) : [];
+  const archivedTracks = tracks ? Object.entries(tracks).filter(([, t]) => t.archived) : [];
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (mode === 'loading') {
@@ -157,9 +176,7 @@ export default function GanttPage() {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center space-y-3">
           <p className="text-foreground text-[length:var(--text-20)] font-bold">Трек не найден</p>
-          <p className="text-muted-foreground text-[length:var(--text-14)]">
-            «{trackSlug}» не зарегистрирован.
-          </p>
+          <p className="text-muted-foreground text-[length:var(--text-14)]">«{trackSlug}» не зарегистрирован.</p>
         </div>
       </div>
     );
@@ -189,10 +206,7 @@ export default function GanttPage() {
               autoComplete="off"
             />
             {pinError && <p className="text-[length:var(--text-12)] text-destructive">Неверный PIN</p>}
-            <button
-              onClick={handlePinSubmit}
-              className="w-full rounded-lg bg-foreground text-background py-2 text-[length:var(--text-14)] font-medium hover:opacity-90 transition-opacity"
-            >
+            <button onClick={handlePinSubmit} className="w-full rounded-lg bg-foreground text-background py-2 text-[length:var(--text-14)] font-medium hover:opacity-90 transition-opacity">
               Войти
             </button>
           </div>
@@ -216,27 +230,47 @@ export default function GanttPage() {
           <p className="text-muted-foreground text-[length:var(--text-14)]">Загрузка…</p>
         ) : (
           <div className="space-y-3">
-            {Object.entries(tracks).map(([slug, info]) => (
-              <button
-                key={slug}
-                onClick={() => navigateToTrack(slug)}
-                className="group block w-full text-left rounded-lg border border-border bg-card p-4 transition-colors hover:border-foreground/20"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground/60">Rocketmind</span>
-                  <span className="text-muted-foreground/20">·</span>
-                  <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground">{info.name}</span>
+            {/* Active tracks */}
+            {activeTracks.map(([slug, info]) => {
+              const accent = accentCSS(info.color);
+              return (
+                <div
+                  key={slug}
+                  className="group flex rounded-lg border border-border bg-card overflow-hidden transition-colors hover:border-foreground/20"
+                >
+                  {/* Color accent bar */}
+                  <div className="w-1 flex-shrink-0" style={{ backgroundColor: accent.css100 }} />
+                  <button
+                    onClick={() => navigateToTrack(slug)}
+                    className="flex-1 text-left p-4"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground/60">Rocketmind</span>
+                      <span className="text-muted-foreground/20">·</span>
+                      <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground">{info.name}</span>
+                    </div>
+                    <p className="mt-2 text-[length:var(--text-14)] text-muted-foreground">/gantt/{slug}</p>
+                  </button>
+                  <button
+                    onClick={() => archiveTrack(slug)}
+                    className="px-3 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/40 hover:text-muted-foreground text-[length:var(--text-12)] flex-shrink-0"
+                    title="Архивировать"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="3" width="12" height="3" rx="0.5" />
+                      <path d="M3 6v6.5a1 1 0 001 1h8a1 1 0 001-1V6" />
+                      <path d="M6.5 9h3" />
+                    </svg>
+                  </button>
                 </div>
-                <p className="mt-2 text-[length:var(--text-14)] text-muted-foreground">
-                  /gantt/{slug}
-                </p>
-              </button>
-            ))}
+              );
+            })}
 
+            {/* Add track form */}
             {showForm ? (
               <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
                 <div className="space-y-1.5">
-                  <label className="block text-[length:var(--text-12)] text-muted-foreground font-mono uppercase tracking-wide">Название трека</label>
+                  <label className="block text-[length:var(--text-12)] text-muted-foreground font-mono uppercase tracking-wide">Название</label>
                   <input
                     ref={nameRef}
                     value={newName}
@@ -251,6 +285,33 @@ export default function GanttPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Color picker */}
+                <div className="space-y-1.5">
+                  <label className="block text-[length:var(--text-12)] text-muted-foreground font-mono uppercase tracking-wide">Цвет</label>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {ACCENT_COLORS.map(c => (
+                      <button
+                        key={c.token}
+                        onClick={() => setNewColor(c.token)}
+                        className="w-7 h-7 rounded-full transition-all flex items-center justify-center"
+                        style={{
+                          backgroundColor: c.css100,
+                          boxShadow: newColor === c.token ? `0 0 0 2px var(--background), 0 0 0 4px ${c.css100}` : 'none',
+                        }}
+                        title={c.label}
+                      >
+                        {newColor === c.token && (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--background)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M2.5 6l2.5 2.5 4.5-5" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Slug */}
                 <div className="space-y-1.5">
                   <label className="block text-[length:var(--text-12)] text-muted-foreground font-mono uppercase tracking-wide">Slug (URL)</label>
                   <div className="flex items-center gap-0 rounded-lg border border-border overflow-hidden transition-colors focus-within:border-foreground">
@@ -264,11 +325,9 @@ export default function GanttPage() {
                   </div>
                   {slugError && <p className="text-[length:var(--text-12)] text-destructive">{slugError}</p>}
                 </div>
+
                 <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={() => { setShowForm(false); setNewName(''); setNewSlug(''); setSlugTouched(false); }}
-                    className="px-3 py-1.5 rounded-lg text-[length:var(--text-13)] text-muted-foreground hover:bg-muted transition-colors"
-                  >
+                  <button onClick={resetForm} className="px-3 py-1.5 rounded-lg text-[length:var(--text-13)] text-muted-foreground hover:bg-muted transition-colors">
                     Отмена
                   </button>
                   <button
@@ -287,6 +346,57 @@ export default function GanttPage() {
               >
                 + Добавить трек
               </button>
+            )}
+
+            {/* Archived tracks accordion */}
+            {archivedTracks.length > 0 && (
+              <div className="pt-2">
+                <button
+                  onClick={() => setShowArchived(v => !v)}
+                  className="flex items-center gap-2 text-[length:var(--text-12)] text-muted-foreground/60 hover:text-muted-foreground transition-colors font-mono uppercase tracking-wide"
+                >
+                  <svg
+                    width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                    className="transition-transform" style={{ transform: showArchived ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  >
+                    <path d="M4.5 2.5l4 3.5-4 3.5" />
+                  </svg>
+                  Архив ({archivedTracks.length})
+                </button>
+                {showArchived && (
+                  <div className="mt-2 space-y-2">
+                    {archivedTracks.map(([slug, info]) => {
+                      const accent = accentCSS(info.color);
+                      return (
+                        <div
+                          key={slug}
+                          className="group flex rounded-lg border border-border/50 bg-card/50 overflow-hidden"
+                        >
+                          <div className="w-1 flex-shrink-0 opacity-40" style={{ backgroundColor: accent.css100 }} />
+                          <div className="flex-1 p-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground/40">Rocketmind</span>
+                              <span className="text-muted-foreground/15">·</span>
+                              <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground/40">{info.name}</span>
+                            </div>
+                            <p className="mt-1 text-[length:var(--text-13)] text-muted-foreground/40">/gantt/{slug}</p>
+                          </div>
+                          <button
+                            onClick={() => restoreTrack(slug)}
+                            className="px-3 text-muted-foreground/40 hover:text-foreground transition-colors text-[length:var(--text-12)] flex-shrink-0"
+                            title="Восстановить"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M2.5 6h4" /><path d="M2.5 6l2-2.5" /><path d="M2.5 6l2 2.5" />
+                              <path d="M4.5 6a5 5 0 1 1 .5 4" />
+                            </svg>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
