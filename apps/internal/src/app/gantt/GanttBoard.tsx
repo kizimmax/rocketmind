@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { ref, onValue, set, get } from 'firebase/database';
+import { ref, onValue, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -61,7 +61,6 @@ type Row = {
 const PROJECT_START = new Date(2026, 2, 9); // 9 марта 2026 (понедельник)
 const VISIBLE_COUNT = 4;
 const MONTH_SHORT = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-const WEEK_COLORS: ColorToken[] = ['violet', 'sky', 'terracotta', 'yellow', 'pink', 'blue', 'red', 'green'];
 
 function getWeekRange(weekIndex: number): { start: Date; end: Date } {
   const start = new Date(PROJECT_START);
@@ -85,6 +84,28 @@ function getCurrentWeekIndex(): number {
   const diffMs = now.getTime() - PROJECT_START.getTime();
   if (diffMs < 0) return -1;
   return Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
+}
+
+/** Find local index of the week that contains today, by parsing week dates */
+function findCurrentWeekLocal(weeks: Week[]): number {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  for (let i = 0; i < weeks.length; i++) {
+    const globalIdx = parseWeekGlobalIndex(weeks[i].dates);
+    if (globalIdx < 0) continue;
+    const { start, end } = getWeekRange(globalIdx);
+    if (now >= start && now <= end) return i;
+  }
+  return -1;
+}
+
+/** Recover global week index from formatted dates string */
+function parseWeekGlobalIndex(dates: string): number {
+  // Brute-force: compare formatted string against known week indices
+  for (let i = 0; i < 200; i++) {
+    if (formatWeekDates(i) === dates) return i;
+  }
+  return -1;
 }
 
 // ─── Template for new tracks ─────────────────────────────────────────────────
@@ -478,8 +499,6 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
   const [title, setTitle] = useState(tmpl.title);
   const [subtitle, setSubtitle] = useState(tmpl.subtitle);
   const [locked, setLocked] = useState(false);
-  const [weekOffset, setWeekOffset] = useState(tmpl.startWeekIdx);
-  const weekOffsetRef = useRef(tmpl.startWeekIdx);
   const [showLockModal, setShowLockModal] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'saving' | 'error' | 'loading'>('loading');
 
@@ -544,15 +563,8 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
     return () => window.removeEventListener('keydown', handler);
   }, [undo, redo]);
 
-  // Week navigation — start near current week to avoid flash
-  const [visibleStartIdx, setVisibleStartIdx] = useState(() => {
-    const localCurrent = getCurrentWeekIndex() - tmpl.startWeekIdx;
-    const mobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
-    const count = mobile ? 1 : VISIBLE_COUNT;
-    const maxStart = Math.max(0, tmpl.weeks.length - count);
-    const ideal = mobile ? localCurrent : Math.max(0, localCurrent - 1);
-    return localCurrent >= 0 ? Math.min(ideal, maxStart) : 0;
-  });
+  // Week navigation — start at 0, auto-scroll on first Firebase load
+  const [visibleStartIdx, setVisibleStartIdx] = useState(0);
 
   // Summary loading
   const [summaryLoading, setSummaryLoading] = useState<string | null>(null);
@@ -569,8 +581,8 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
   // Track initial scroll
   const didInitialScroll = useRef(false);
 
-  // ── Current week index ─────────────────────────────────────────────────────
-  const currentWeekIdx = useMemo(() => getCurrentWeekIndex(), []);
+  // ── Current week (local index, calendar-based) ─────────────────────────────
+  const currentWeekIdx = useMemo(() => findCurrentWeekLocal(weeks), [weeks]);
 
   // ── Mobile detection ─────────────────────────────────────────────────────
   const [isMobile, setIsMobile] = useState(() =>
@@ -614,10 +626,10 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
     }, 250);
   }, [animating, canGoBack, canGoForward, weeks.length, effectiveCount]);
 
-  // Effective color: current week = yellow, others = neutral
+  // Effective color: current week = track color, others = neutral
   const getEffectiveColor = useCallback((localIdx: number): ColorToken => {
-    return (weekOffset + localIdx) === currentWeekIdx ? (trackColor as ColorToken) : 'neutral';
-  }, [currentWeekIdx, trackColor, weekOffset]);
+    return localIdx === currentWeekIdx ? (trackColor as ColorToken) : 'neutral';
+  }, [currentWeekIdx, trackColor]);
 
   // ── Auto-scroll to current week on first Firebase load ──────────────────────
   // (handled inside onValue callback to avoid racing with initial state)
@@ -636,13 +648,11 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
           if (data.title) setTitle(data.title);
           if (data.subtitle) setSubtitle(data.subtitle);
           if (data.locked !== undefined) setLocked(data.locked);
-          if (data.weekOffset !== undefined) { setWeekOffset(data.weekOffset); weekOffsetRef.current = data.weekOffset; }
           // Auto-scroll to current week on first load
           if (!didInitialScroll.current && data.weeks?.length > 0) {
             didInitialScroll.current = true;
+            const localCurrent = findCurrentWeekLocal(data.weeks);
             const wLen = data.weeks.length;
-            const offset = data.weekOffset ?? 0;
-            const localCurrent = currentWeekIdx - offset;
             const mobile = window.matchMedia('(max-width: 768px)').matches;
             const count = mobile ? 1 : VISIBLE_COUNT;
             if (localCurrent >= 0 && localCurrent < wLen) {
@@ -656,11 +666,9 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
         } else {
           // Empty track — save template to Firebase
           const t = createTemplate(trackColor as ColorToken);
-          setWeekOffset(t.startWeekIdx); weekOffsetRef.current = t.startWeekIdx;
           set(ref(db, dbPath), {
             weeks: t.weeks, rows: t.rows,
             title: t.title, subtitle: t.subtitle, locked: false,
-            weekOffset: t.startWeekIdx,
           });
         }
         initialized.current = true;
@@ -696,7 +704,6 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
         title: nextTitle,
         subtitle: nextSubtitle,
         locked: nextLocked,
-        weekOffset: weekOffsetRef.current,
       })
         .then(() => setSyncStatus('synced'))
         .catch(() => setSyncStatus('error'));
@@ -896,10 +903,12 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
   const addWeek = () => {
     const idx = weeks.length;
     const newId = `w${idx + 1}`;
+    // Derive global index from the last week's dates + 1
+    const lastGlobal = weeks.length > 0 ? parseWeekGlobalIndex(weeks[weeks.length - 1].dates) + 1 : getCurrentWeekIndex() + idx;
     const newWeek: Week = {
       id: newId,
       label: `Неделя ${idx + 1}`,
-      dates: formatWeekDates(weekOffset + idx),
+      dates: formatWeekDates(lastGlobal),
       theme: '',
       color: trackColor as ColorToken,
     };
@@ -1168,7 +1177,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
                 </div>
                 {shownWeeks.map((w, localIdx) => {
                   const globalIdx = visibleStartIdx + localIdx;
-                  const isCurrent = (weekOffset + globalIdx) === currentWeekIdx;
+                  const isCurrent = globalIdx === currentWeekIdx;
                   const effColor = getEffectiveColor(globalIdx);
                   return (
                     <div
@@ -1266,7 +1275,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow' }:
                   {/* Week cells */}
                   {shownWeeks.map((w, localIdx) => {
                     const globalIdx = visibleStartIdx + localIdx;
-                    const isCurrent = (weekOffset + globalIdx) === currentWeekIdx;
+                    const isCurrent = globalIdx === currentWeekIdx;
                     const effColor = getEffectiveColor(globalIdx);
                     const cards = row.cells?.[w.id] ?? [];
                     return (
