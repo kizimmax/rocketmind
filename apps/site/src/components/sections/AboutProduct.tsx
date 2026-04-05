@@ -6,18 +6,22 @@ import type { AccordionItem } from "@/lib/products";
 
 // ── Accordion ──────────────────────────────────────────────────────────────────
 
-function PlusIcon({ className }: { className?: string }) {
+function AccordionIcon({ isOpen }: { isOpen: boolean }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={className}>
-      <path d="M8 1V15M1 8H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function MinusIcon({ className }: { className?: string }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={className}>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0 mt-0.5 text-[#F0F0F0]">
+      {/* Horizontal line (always visible) */}
       <path d="M1 8H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      {/* Vertical line (animated: visible when closed, hidden when open) */}
+      <path
+        d="M8 1V15"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        className="origin-center transition-transform duration-200 ease-out"
+        style={{
+          transform: isOpen ? "scaleY(0)" : "scaleY(1)",
+        }}
+      />
     </svg>
   );
 }
@@ -46,19 +50,24 @@ function ProductAccordion({
             }`}
             onClick={() => setOpenIndex(isOpen ? -1 : i)}
           >
-            <div className="flex flex-col gap-4 flex-1 min-w-0">
-              <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] md:text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]">
+            <div className="flex flex-col flex-1 min-w-0">
+              <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]">
                 {item.title}
               </span>
-              {isOpen && item.description && (
-                <p className="text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]">
-                  {item.description}
-                </p>
-              )}
+              <div
+                className="grid transition-[grid-template-rows] duration-200 ease-out"
+                style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+              >
+                <div className="overflow-hidden">
+                  {item.description && (
+                    <p className="pt-4 text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]">
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="shrink-0 mt-0.5 text-[#F0F0F0]">
-              {isOpen ? <MinusIcon /> : <PlusIcon />}
-            </div>
+            <AccordionIcon isOpen={isOpen} />
           </button>
         );
       })}
