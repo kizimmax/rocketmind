@@ -74,7 +74,7 @@ export function ProductHero({
   coverImage,
 }: ProductHeroProps) {
   return (
-    <section className="relative w-full bg-[#0A0A0A]">
+    <section className="relative w-full bg-[#0A0A0A] pt-16">
       {/* ── Desktop layout ── */}
       <div className="hidden lg:flex mx-auto max-w-[1400px]">
         {/* Left: content area with dot grid background */}
@@ -82,7 +82,7 @@ export function ProductHero({
           {/* Dot Grid Lens background */}
           <DotGridLens
             accentColor
-            className="absolute inset-0 z-0 pointer-events-auto"
+            className="absolute inset-0 z-0"
             style={{ width: "100%", height: "100%" }}
           />
 
@@ -129,7 +129,7 @@ export function ProductHero({
         <div className="relative min-h-[400px]">
           <DotGridLens
             accentColor
-            className="absolute inset-0 z-0 pointer-events-auto"
+            className="absolute inset-0 z-0"
             style={{ width: "100%", height: "100%" }}
           />
           <div className="relative z-10 p-8 pt-16">
@@ -171,7 +171,7 @@ export function ProductHero({
         <div className="relative min-h-[200px]">
           <DotGridLens
             accentColor
-            className="absolute inset-0 z-0 pointer-events-auto"
+            className="absolute inset-0 z-0"
             style={{ width: "100%", height: "100%" }}
           />
           <div className="relative z-10 px-5 pt-[70px]">

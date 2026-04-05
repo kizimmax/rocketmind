@@ -439,7 +439,7 @@ function DotGridLens({
     {
       ref: containerRef,
       className,
-      style: { position: "relative", overflow: "hidden", ...style },
+      style: { overflow: "hidden", ...style },
       children: /* @__PURE__ */ jsx7("canvas", { ref: canvasRef, style: { display: "block" } })
     }
   );

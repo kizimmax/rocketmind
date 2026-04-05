@@ -154,7 +154,7 @@ export function DotGridLens({
     <div
       ref={containerRef}
       className={className}
-      style={{ position: "relative", overflow: "hidden", ...style }}
+      style={{ overflow: "hidden", ...style }}
     >
       <canvas ref={canvasRef} style={{ display: "block" }} />
     </div>
