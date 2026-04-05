@@ -308,7 +308,9 @@ function CardItem({
 
       {/* Top row: checkbox + days + remove */}
       <div className="flex items-center gap-2" style={{ '--checkbox-accent': cssVar(weekColor, '100'), '--checkbox-accent-fg': cssVar(weekColor, 'fg') } as React.CSSProperties}>
-        <Checkbox className="flex-shrink-0" checked={c.done} onChange={onToggleDone} />
+        <span className="flex-shrink-0 flex items-center justify-center" style={{ width: 20, height: 20 }}>
+          <Checkbox checked={c.done} onChange={onToggleDone} />
+        </span>
 
         {!zoomIn && (
           <div className="flex-1 flex items-center gap-1">
