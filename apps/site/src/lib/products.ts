@@ -57,6 +57,7 @@ export type ProductData = {
 
 const PRODUCTS_DIR = path.join(process.cwd(), "content", "products");
 const PUBLIC_DIR = path.join(process.cwd(), "public");
+const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind" : "";
 
 /**
  * Auto-resolve product image by role.
@@ -75,7 +76,7 @@ function resolveImage(
   const base = `/images/products/${category}/${slug}/${role}`;
   for (const ext of [".svg", ".png", ".jpg", ".webp"]) {
     if (fs.existsSync(path.join(PUBLIC_DIR, base + ext))) {
-      return base + ext;
+      return BASE_PATH + base + ext;
     }
   }
   return null;
@@ -92,7 +93,7 @@ export function getProductBySlug(slug: string): ProductData | null {
 
   const coverImage =
     resolveImage(data.category, data.slug, "cover") ??
-    `/images/products/${data.category}/${data.slug}/cover.svg`;
+    `${BASE_PATH}/images/products/${data.category}/${data.slug}/cover.svg`;
 
   const aboutImage = resolveImage(data.category, data.slug, "about");
 
