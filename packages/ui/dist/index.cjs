@@ -554,14 +554,14 @@ function DotGridLens({
       draw();
       return () => ro.disconnect();
     }
-    container.addEventListener("mousemove", onMouseMove);
-    container.addEventListener("mouseleave", onMouseLeave);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseleave", onMouseLeave);
     loop();
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
-      container.removeEventListener("mousemove", onMouseMove);
-      container.removeEventListener("mouseleave", onMouseLeave);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseleave", onMouseLeave);
     };
   }, [gridGap, baseRadius, maxScale, lensRadius, accentColor]);
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
