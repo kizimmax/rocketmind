@@ -72,7 +72,7 @@ export function ProductHero({
   return (
     <section className="relative w-full bg-[#0A0A0A] pt-16">
       {/* ── Desktop layout ── */}
-      <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
+      <div className="hidden lg:flex mx-auto max-w-[1512px] pl-5 md:pl-8 xl:pl-14">
         {/* Left: content area with dot grid background */}
         <div className="relative flex-1 min-h-[756px]">
           {/* Dot Grid Lens background — extends beyond padding */}
