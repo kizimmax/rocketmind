@@ -177,6 +177,23 @@ export default function ComponentsPage() {
                 <span className={`text-[10px] text-muted-foreground ${mono}`}>opacity-90</span>
               </div>
             </div>
+            <p className="px-4 pb-2 text-[10px] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/60">Disabled</p>
+            <div className="flex flex-wrap items-end gap-4 px-4 pb-4">
+              {[
+                { label: "Primary",     cls: "bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)]" },
+                { label: "Secondary",   cls: "border border-transparent bg-secondary text-secondary-foreground" },
+                { label: "Ghost",       cls: "border border-border bg-[var(--rm-gray-1)] text-foreground" },
+              ].map(b => (
+                <div key={b.label} className="flex flex-col items-start gap-1.5">
+                  <button disabled className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm ${mono} text-[length:var(--text-13)] uppercase tracking-[0.08em] ${b.cls} opacity-50 cursor-not-allowed`}>{b.label}</button>
+                  <span className={`text-[10px] text-muted-foreground ${mono}`}>opacity 0.5 + cursor not-allowed</span>
+                </div>
+              ))}
+              <div className="flex flex-col items-start gap-1.5">
+                <button disabled className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm bg-destructive text-white opacity-50 cursor-not-allowed ${mono} text-[length:var(--text-13)] uppercase tracking-[0.08em]`}><Trash2 size={13} /> Destructive</button>
+                <span className={`text-[10px] text-muted-foreground ${mono}`}>opacity 0.5 + cursor not-allowed</span>
+              </div>
+            </div>
             <p className="px-4 pb-2 text-[10px] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/60">Loading</p>
             <div className="flex flex-wrap items-end gap-4 px-4 pb-4">
               <div className="flex flex-col items-start gap-1.5">
