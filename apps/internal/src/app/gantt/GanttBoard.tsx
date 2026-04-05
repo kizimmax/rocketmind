@@ -308,15 +308,10 @@ function CardItem({
 
       {/* Top row: checkbox + days + remove */}
       <div className="flex items-center gap-2" style={{ '--checkbox-accent': cssVar(weekColor, '100'), '--checkbox-accent-fg': cssVar(weekColor, 'fg') } as React.CSSProperties}>
-        <Tooltip>
-          <TooltipTrigger render={<span className="flex-shrink-0" />}>
-            <Checkbox checked={c.done} onChange={onToggleDone} />
-          </TooltipTrigger>
-          <TooltipContent>{c.done ? 'Готово' : 'Отметить как готово'}</TooltipContent>
-        </Tooltip>
+        <Checkbox className="flex-shrink-0" checked={c.done} onChange={onToggleDone} />
 
         {!zoomIn && (
-          <div className="flex-1 grid grid-cols-5 gap-1">
+          <div className="flex-1 flex items-center gap-1">
             {DAYS.map(day => {
               const active = (c.days ?? []).includes(day);
               const isNeutral = weekColor === 'neutral';
@@ -324,7 +319,7 @@ function CardItem({
                 <button
                   key={day}
                   onClick={() => onToggleDay(day)}
-                  className="font-medium transition-colors w-full text-center flex items-center justify-center"
+                  className="flex-1 font-medium transition-colors text-center flex items-center justify-center"
                   style={{
                     fontFamily: 'Roboto, sans-serif',
                     fontSize: 8,
@@ -352,14 +347,9 @@ function CardItem({
           </div>
         )}
         {!locked && !zoomIn && (
-          <Tooltip>
-            <TooltipTrigger render={
-              <button onClick={onRemove} className="flex-shrink-0 flex items-center justify-center rounded-[4px] opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-[11px]" style={{ width: 20, height: 20, border: '0.5px solid var(--border)' }} />
-            }>
-              ×
-            </TooltipTrigger>
-            <TooltipContent>Удалить задачу</TooltipContent>
-          </Tooltip>
+          <button onClick={onRemove} className="flex-shrink-0 flex items-center justify-center rounded-[4px] opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-[11px]" style={{ width: 20, height: 20, border: '0.5px solid var(--border)' }}>
+            ×
+          </button>
         )}
       </div>
 
