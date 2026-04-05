@@ -324,9 +324,11 @@ function CardItem({
                 <button
                   key={day}
                   onClick={() => onToggleDay(day)}
-                  className="font-medium font-body transition-colors leading-none w-full text-center"
+                  className="font-medium transition-colors w-full text-center"
                   style={{
+                    fontFamily: 'Roboto, sans-serif',
                     fontSize: 8,
+                    lineHeight: '8px',
                     padding: '6px 5px',
                     borderRadius: 4,
                     letterSpacing: '0.015em',
@@ -352,7 +354,7 @@ function CardItem({
         {!locked && !zoomIn && (
           <Tooltip>
             <TooltipTrigger render={
-              <Button variant="ghost" size="icon-micro" onClick={onRemove} className="flex-shrink-0 opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive" />
+              <button onClick={onRemove} className="flex-shrink-0 size-5 flex items-center justify-center rounded-[4px] opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-[11px]" style={{ border: '0.5px solid var(--border)' }} />
             }>
               ×
             </TooltipTrigger>
