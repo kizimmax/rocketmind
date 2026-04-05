@@ -282,12 +282,12 @@ function CardItem({
       onDragEnd={onDragEnd}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className="rounded-lg px-2.5 pt-1.5 pb-2 group/card relative transition-colors duration-300"
+      className="rounded-lg px-1 pt-1 pb-2 group/card relative transition-colors duration-300 flex flex-col gap-2"
       style={{
         backgroundColor: c.done
           ? 'transparent'
           : cssVar(weekColor, '900'),
-        border: `1px solid ${c.done
+        border: `0.5px solid ${c.done
           ? `color-mix(in srgb, ${cssVar(weekColor, '300')}, transparent 60%)`
           : cssVar(weekColor, '300')}`,
         cursor: editing ? 'default' : 'grab',
@@ -307,7 +307,7 @@ function CardItem({
       )}
 
       {/* Top row: checkbox + days + remove */}
-      <div className="flex items-center gap-1.5 mb-[4px]" style={{ '--checkbox-accent': cssVar(weekColor, '100'), '--checkbox-accent-fg': cssVar(weekColor, 'fg') } as React.CSSProperties}>
+      <div className="flex items-center gap-2" style={{ '--checkbox-accent': cssVar(weekColor, '100'), '--checkbox-accent-fg': cssVar(weekColor, 'fg') } as React.CSSProperties}>
         <Tooltip>
           <TooltipTrigger render={<span className="flex-shrink-0" />}>
             <Checkbox checked={c.done} onChange={onToggleDone} />
@@ -324,11 +324,12 @@ function CardItem({
                 <button
                   key={day}
                   onClick={() => onToggleDay(day)}
-                  className="font-mono transition-colors leading-none w-full"
+                  className="font-medium font-body transition-colors leading-none w-full text-center"
                   style={{
-                    fontSize: 9,
-                    height: 16,
-                    borderRadius: 3,
+                    fontSize: 8,
+                    padding: '6px 5px',
+                    borderRadius: 4,
+                    letterSpacing: '0.015em',
                     backgroundColor: active
                       ? (isNeutral && !c.done ? 'var(--foreground)' : cssVar(weekColor, '100'))
                       : cssVar(weekColor, '900'),
@@ -336,7 +337,7 @@ function CardItem({
                       ? (isNeutral && !c.done ? 'var(--background)' : cssVar(weekColor, 'fg'))
                       : cssVar(weekColor, 'fg-subtle'),
                     opacity: active ? 1 : 0.6,
-                    border: `1px solid ${active
+                    border: `0.5px solid ${active
                       ? (isNeutral && !c.done ? 'var(--foreground)' : cssVar(weekColor, '100'))
                       : cssVar(weekColor, '300')}`,
                   }}
@@ -364,8 +365,8 @@ function CardItem({
         <textarea
           ref={taRef}
           defaultValue={c.label}
-          className={`w-full bg-transparent outline-none resize-none leading-snug ${zoomIn ? 'text-[length:var(--text-14)]' : 'text-[length:var(--text-12)]'}`}
-          style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : cssCardText(weekColor), minHeight: 32 }}
+          className={`w-full bg-transparent outline-none resize-none px-1 ${zoomIn ? 'text-[length:var(--text-14)] leading-snug' : 'text-[11px] leading-[1.39]'}`}
+          style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : cssCardText(weekColor), letterSpacing: zoomIn ? undefined : '-0.01em', minHeight: 20 }}
           rows={Math.max(lines.length, 1)}
           onInput={e => autoResize(e.currentTarget)}
           onBlur={e => {
@@ -379,14 +380,14 @@ function CardItem({
         />
       ) : (
         <div
-          className="space-y-0.5 cursor-text"
+          className="space-y-0.5 cursor-text px-1"
           onDoubleClick={locked ? undefined : startEdit}
           title={locked ? undefined : 'Двойной клик — редактировать'}
         >
           {(lines.length > 0 ? lines : [c.label]).map((line, i) => {
             const openColor = cssCardText(weekColor);
             return (
-            <p key={i} className={`leading-snug ${zoomIn ? 'text-[length:var(--text-14)]' : 'text-[length:var(--text-12)]'}`} style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : openColor }}>
+            <p key={i} className={zoomIn ? 'text-[length:var(--text-14)] leading-snug' : 'text-[11px] leading-[1.39]'} style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : openColor, letterSpacing: zoomIn ? undefined : '-0.01em' }}>
               {line}
             </p>
             );
