@@ -1,6 +1,7 @@
 import { PageBottom } from "@/components/sections/PageBottom";
 import { ProductHero } from "@/components/sections/ProductHero";
 import { AboutProduct } from "@/components/sections/AboutProduct";
+import { LogoMarqueeSection } from "@/components/sections/LogoMarqueeSection";
 import type { ProductData } from "@/lib/products";
 
 /**
@@ -26,7 +27,7 @@ type ServicePageTemplateProps =
   | { product: ProductData }
   | { title: string; subtitle: string };
 
-export function ServicePageTemplate(props: ServicePageTemplateProps) {
+export async function ServicePageTemplate(props: ServicePageTemplateProps) {
   const hasProduct = "product" in props;
 
   return (
@@ -57,14 +58,8 @@ export function ServicePageTemplate(props: ServicePageTemplateProps) {
         </section>
       )}
 
-      {/* 2. Социальное доказательство */}
-      <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
-          <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Социальное доказательство — заполнить
-          </p>
-        </div>
-      </section>
+      {/* 2. Социальное доказательство — логотипы партнёров */}
+      <LogoMarqueeSection />
 
       {/* 3. О продукте */}
       {hasProduct && props.product.about ? (

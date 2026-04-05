@@ -19,18 +19,18 @@ type ProductHeroProps = {
 
 function FactoidCard({ number, label, text }: Factoid) {
   return (
-    <div className="flex flex-col justify-between gap-7 border-b border-r border-[#404040] p-5 md:p-7 h-[126px] md:h-[189px]">
-      <div className="flex items-center gap-5">
-        <span className="h2 md:h2 !text-[length:var(--text-32)] md:!text-[length:var(--text-52)] !leading-[1.08] !font-bold font-[family-name:var(--font-heading-family)] uppercase tracking-[-0.02em] text-[#F0F0F0]">
-          {number}
-        </span>
-        <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]">
-          {label}
-        </span>
+    <div className="flex flex-col p-5 md:p-7 h-[126px] md:h-[189px] border-b border-l border-r border-[#404040]">
+      <div className="flex flex-col justify-between gap-7 h-full">
+        <div className="flex items-center gap-5">
+          <span className="h2 text-[#F0F0F0]">{number}</span>
+          <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0] w-[127px]">
+            {label}
+          </span>
+        </div>
+        <p className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]">
+          {text}
+        </p>
       </div>
-      <p className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]">
-        {text}
-      </p>
     </div>
   );
 }
@@ -87,7 +87,7 @@ export function ProductHero({
           />
 
           {/* Left fade gradient */}
-          <div className="absolute left-0 top-0 bottom-0 w-11 z-[1] pointer-events-none" style={{ background: "linear-gradient(90deg, #0A0A0A 0%, transparent 100%)" }} />
+          <div className="absolute left-0 top-0 bottom-0 w-[180px] z-[1] pointer-events-none" style={{ background: "linear-gradient(90deg, #0A0A0A 0%, transparent 100%)" }} />
 
           {/* Content overlay */}
           <div className="relative z-10 flex flex-col justify-end h-full">
