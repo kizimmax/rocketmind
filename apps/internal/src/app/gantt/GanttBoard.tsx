@@ -298,7 +298,7 @@ function CardItem({
       {zoomIn && !locked && (
         <Tooltip>
           <TooltipTrigger render={
-            <Button variant="ghost" size="icon-xs" onClick={onRemove} className="absolute top-1 right-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive z-10" />
+            <Button variant="ghost" size="icon-micro" onClick={onRemove} className="absolute top-1.5 right-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive z-10" />
           }>
             ×
           </TooltipTrigger>
@@ -351,7 +351,7 @@ function CardItem({
         {!locked && !zoomIn && (
           <Tooltip>
             <TooltipTrigger render={
-              <Button variant="ghost" size="icon-xs" onClick={onRemove} className="opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive" />
+              <Button variant="ghost" size="icon-micro" onClick={onRemove} className="flex-shrink-0 opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive" />
             }>
               ×
             </TooltipTrigger>
@@ -1412,7 +1412,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                   return (
                     <div
                       key={w.id}
-                      className="flex-1 px-2 py-2 md:px-3 md:py-2.5 border-r border-border last:border-r-0 relative overflow-hidden"
+                      className="group/week flex-1 px-2 py-2 md:px-3 md:py-2.5 border-r border-border last:border-r-0 relative overflow-hidden"
                       style={{
                         minWidth: 0,
                         backgroundColor: isCurrent ? cssVar(effColor, '900') : undefined,
@@ -1430,7 +1430,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                         <span className="ml-auto flex-shrink-0">
                           <Tooltip>
                             <TooltipTrigger render={
-                              <Button variant="ghost" size="icon-xs" onClick={() => generateWeekSummary(w.id)} disabled={summaryLoading === w.id} className="text-muted-foreground/40 hover:text-muted-foreground" />
+                              <Button variant="ghost" size="icon-micro" onClick={() => generateWeekSummary(w.id)} disabled={summaryLoading === w.id} className={`text-muted-foreground/40 hover:text-muted-foreground transition-opacity ${summaryLoading === w.id ? '' : 'opacity-0 group-hover/week:opacity-100'}`} />
                             }>
                               {summaryLoading === w.id ? (
                                 <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
@@ -1540,7 +1540,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                     {!isMobile && (
                       <Tooltip>
                         <TooltipTrigger render={
-                          <Button variant="ghost" size="icon-xs" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />
+                          <Button variant="ghost" size="icon-micro" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />
                         }>
                           ×
                         </TooltipTrigger>
@@ -1672,7 +1672,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                           <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                         </span>
                         <Tooltip>
-                          <TooltipTrigger render={<Button variant="ghost" size="icon-xs" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />}>×</TooltipTrigger>
+                          <TooltipTrigger render={<Button variant="ghost" size="icon-micro" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />}>×</TooltipTrigger>
                           <TooltipContent>Удалить строку</TooltipContent>
                         </Tooltip>
                       </div>

@@ -39,7 +39,7 @@ declare function Badge({ className, variant, size, ...props }: React.ComponentPr
 
 declare const buttonVariants: (props?: ({
     variant?: "link" | "default" | "secondary" | "destructive" | "outline" | "ghost" | null | undefined;
-    size?: "xs" | "sm" | "lg" | "default" | "icon" | "icon-xs" | "icon-sm" | "icon-lg" | null | undefined;
+    size?: "xs" | "sm" | "lg" | "default" | "icon" | "icon-micro" | "icon-xs" | "icon-sm" | "icon-lg" | null | undefined;
 } & class_variance_authority_types.ClassProp) | undefined) => string;
 declare function Button({ className, variant, size, ...props }: Button$1.Props & VariantProps<typeof buttonVariants>): react_jsx_runtime.JSX.Element;
 

@@ -187,6 +187,37 @@ export default function ComponentsPage() {
               </div>
             </div>
           </div>
+
+          {/* Icon buttons */}
+          <div className="border border-border rounded-lg overflow-hidden mt-6">
+            <div className="px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border">
+              <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Icon buttons — размеры</p>
+            </div>
+            <div className="p-6 flex flex-wrap items-end gap-6">
+              {([
+                { size: "icon-micro" as const, label: "Micro / 16px", desc: "Inline-контролы: удалить карточку, обновить саммери, close-tag. Выровнен с checkbox 16×16." },
+                { size: "icon-xs" as const, label: "XS / 24px", desc: "Компактные действия в плотных списках и карточках." },
+                { size: "icon-sm" as const, label: "SM / 28px", desc: "Toolbar-кнопки рядом с SM-текстовыми кнопками." },
+                { size: "icon" as const, label: "Default / 32px", desc: "Основные icon-кнопки: undo, redo, навигация." },
+                { size: "icon-lg" as const, label: "LG / 36px", desc: "Крупные icon-кнопки для hero-секций и standalone-действий." },
+              ]).map(({ size, label, desc }) => (
+                <div key={size} className="flex flex-col items-center gap-2">
+                  <button className={`inline-flex items-center justify-center rounded-sm border border-border bg-[var(--rm-gray-1)] text-foreground transition-all duration-150 hover:bg-[var(--rm-gray-2)] cursor-pointer ${
+                    size === 'icon-micro' ? 'size-4 text-[10px]' :
+                    size === 'icon-xs' ? 'size-6 text-[length:var(--text-12)]' :
+                    size === 'icon-sm' ? 'size-7 text-[length:var(--text-12)]' :
+                    size === 'icon-lg' ? 'size-9 text-[length:var(--text-14)]' :
+                    'size-8 text-[length:var(--text-14)]'
+                  }`}>×</button>
+                  <div className="text-center">
+                    <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>{label}</p>
+                    <p className="text-[10px] text-muted-foreground/60 max-w-[140px] mt-0.5">{desc}</p>
+                  </div>
+                  <CopyButton value={`<Button variant="ghost" size="${size}" />`} label={size} />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* ── Бейджи ── */}
