@@ -99,7 +99,7 @@ export function AboutProduct({
     <section className="w-full border-t border-border py-14">
       {/* ── Desktop with image ── */}
       {hasImage && (
-        <div className="hidden lg:flex mx-auto max-w-[1400px]">
+        <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
           {/* Left: text + accordion */}
           <div className="w-[560px] shrink-0 flex flex-col justify-between gap-28 py-14">
             <div className="flex flex-col gap-6">
@@ -130,7 +130,7 @@ export function AboutProduct({
 
       {/* ── Desktop without image ── */}
       {!hasImage && (
-        <div className="hidden lg:flex mx-auto max-w-[1400px] gap-[140px] py-0">
+        <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14 gap-[140px] py-0">
           {/* Left: text */}
           <div className="w-[560px] shrink-0 flex flex-col gap-6">
             <div className="flex flex-col gap-2">
