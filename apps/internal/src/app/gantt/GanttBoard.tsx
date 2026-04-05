@@ -1427,32 +1427,26 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                         <div className="font-mono text-[length:var(--text-12)]" style={{ color: isCurrent ? cssVar(effColor, '500') : 'var(--muted-foreground)' }}>
                           <EditableText value={w.dates} onChange={v => updateWeekDates(w.id, v)} />
                         </div>
-                        {isCurrent && (
-                          <span
-                            className="ml-auto px-1.5 py-0.5 rounded text-[length:9px] font-mono uppercase tracking-wider flex-shrink-0"
-                            style={{ backgroundColor: cssVar(effColor, '100'), color: cssVar(effColor, 'fg') }}
-                          >
-                            сейчас
-                          </span>
-                        )}
+                        <span className="ml-auto flex-shrink-0">
+                          <Tooltip>
+                            <TooltipTrigger render={
+                              <Button variant="ghost" size="icon-xs" onClick={() => generateWeekSummary(w.id)} disabled={summaryLoading === w.id} className="text-muted-foreground/40 hover:text-muted-foreground" />
+                            }>
+                              {summaryLoading === w.id ? (
+                                <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <RefreshIcon className="w-3.5 h-3.5" />
+                              )}
+                            </TooltipTrigger>
+                            <TooltipContent>Сгенерировать итог недели</TooltipContent>
+                          </Tooltip>
+                        </span>
                       </div>
-                      {/* Row 2: theme/summary + refresh */}
-                      <div className="flex items-start gap-1 mt-1">
-                        <p className="text-[length:var(--text-12)] leading-snug flex-1 min-w-0" style={{ color: cssVar(effColor, 'fg-subtle') }}>
-                          <EditableText value={w.theme} onChange={v => { updateWeekTheme(w.id, v); setSummaryReady(null); }} startEditing={summaryReady === w.id} placeholder="сгенерировать саммери →" />
+                      {/* Row 2: theme/summary */}
+                      <div className="mt-1">
+                        <p className="text-[length:var(--text-12)] leading-snug min-w-0" style={{ color: cssVar(effColor, 'fg-subtle') }}>
+                          <EditableText value={w.theme} onChange={v => { updateWeekTheme(w.id, v); setSummaryReady(null); }} startEditing={summaryReady === w.id} placeholder="саммери" />
                         </p>
-                        <Tooltip>
-                          <TooltipTrigger render={
-                            <Button variant="ghost" size="icon-xs" onClick={() => generateWeekSummary(w.id)} disabled={summaryLoading === w.id} className="flex-shrink-0 text-muted-foreground/40 hover:text-muted-foreground mt-0.5" />
-                          }>
-                            {summaryLoading === w.id ? (
-                              <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <RefreshIcon className="w-3.5 h-3.5" />
-                            )}
-                          </TooltipTrigger>
-                          <TooltipContent>Сгенерировать итог недели</TooltipContent>
-                        </Tooltip>
                       </div>
                     </div>
                   );
