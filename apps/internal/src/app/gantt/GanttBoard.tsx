@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { ref, onValue, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import { Button, Tabs, TabsList, TabsTrigger, Tooltip, TooltipTrigger, TooltipContent, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@rocketmind/ui';
+import { Button, Checkbox, Tabs, TabsList, TabsTrigger, Tooltip, TooltipTrigger, TooltipContent, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@rocketmind/ui';
 import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -307,23 +307,10 @@ function CardItem({
       )}
 
       {/* Top row: checkbox + days + remove */}
-      <div className="flex items-center gap-1.5 mb-1">
+      <div className="flex items-center gap-1.5 mb-[4px]" style={{ '--checkbox-accent': cssVar(weekColor, '100'), '--checkbox-accent-fg': cssVar(weekColor, 'fg') } as React.CSSProperties}>
         <Tooltip>
-          <TooltipTrigger render={
-            <button
-              onClick={onToggleDone}
-              className="flex-shrink-0 w-3.5 h-3.5 rounded-sm border transition-colors"
-              style={{
-                borderColor: c.done ? cssVar(weekColor, '100') : cssVar(weekColor, '300'),
-                backgroundColor: c.done ? cssVar(weekColor, '100') : 'transparent',
-              }}
-            />
-          }>
-            {c.done && (
-              <svg viewBox="0 0 10 10" className="w-full h-full text-white" fill="none">
-                <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
+          <TooltipTrigger render={<span className="flex-shrink-0" />}>
+            <Checkbox checked={c.done} onChange={onToggleDone} />
           </TooltipTrigger>
           <TooltipContent>{c.done ? 'Готово' : 'Отметить как готово'}</TooltipContent>
         </Tooltip>
@@ -391,7 +378,7 @@ function CardItem({
           }}
         />
       ) : (
-        <ul
+        <div
           className="space-y-0.5 cursor-text"
           onDoubleClick={locked ? undefined : startEdit}
           title={locked ? undefined : 'Двойной клик — редактировать'}
@@ -399,13 +386,12 @@ function CardItem({
           {(lines.length > 0 ? lines : [c.label]).map((line, i) => {
             const openColor = cssCardText(weekColor);
             return (
-            <li key={i} className={`flex items-start gap-1.5 leading-snug ${zoomIn ? 'text-[length:var(--text-14)]' : 'text-[length:var(--text-12)]'}`}>
-              <span className="flex-shrink-0 mt-[3px] w-1 h-1 rounded-full" style={{ backgroundColor: openColor, opacity: c.done ? 0.4 : 0.7 }} />
-              <span style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : openColor }}>{line}</span>
-            </li>
+            <p key={i} className={`leading-snug ${zoomIn ? 'text-[length:var(--text-14)]' : 'text-[length:var(--text-12)]'}`} style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : openColor }}>
+              {line}
+            </p>
             );
           })}
-        </ul>
+        </div>
       )}
 
       {/* Resize handles — zoom-in mode */}
@@ -1504,16 +1490,19 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                         )}
                       </div>
                       {/* Day column headers */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', backgroundColor: awIsCurrent ? cssVar(awColor, '900') : undefined }}>
                         {DAY_COL_LABELS.map((label, i) => (
                           <div
                             key={i}
-                            className="px-2 py-1.5 border-r border-border/40 last:border-r-0 text-[length:var(--text-11)] font-mono uppercase tracking-wide text-muted-foreground text-center"
-                            style={i === 0 ? {
-                              backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 4px, var(--border) 4px, var(--border) 5px)',
-                              backgroundSize: '100% 100%',
-                              opacity: 0.7,
-                            } : undefined}
+                            className="px-2 py-1.5 border-r border-border/40 last:border-r-0 text-[length:var(--text-11)] font-mono uppercase tracking-wide text-center"
+                            style={{
+                              color: awIsCurrent ? cssVar(awColor, 'fg-subtle') : 'var(--muted-foreground)',
+                              ...(i === 0 ? {
+                                backgroundImage: `repeating-linear-gradient(135deg, transparent, transparent 4px, ${awIsCurrent ? cssVar(awColor, '700') : 'var(--border)'} 4px, ${awIsCurrent ? cssVar(awColor, '700') : 'var(--border)'} 5px)`,
+                                backgroundSize: '100% 100%',
+                                opacity: 0.7,
+                              } : {}),
+                            }}
                           >
                             {label}
                           </div>
@@ -1542,7 +1531,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                 >
                   {/* Left column */}
                   <div
-                    className="flex-shrink-0 flex items-start gap-1 px-2 py-2 md:gap-2 md:px-3 md:py-3 border-r border-border bg-background"
+                    className="group/row flex-shrink-0 flex items-start gap-1 px-2 py-2 md:gap-2 md:px-3 md:py-3 border-r border-border bg-background"
                     style={isMobile ? { width: '30%', minWidth: 0 } : { width: COL_W, minWidth: COL_W }}
                   >
                     {!isMobile && (
@@ -1557,7 +1546,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                     {!isMobile && (
                       <Tooltip>
                         <TooltipTrigger render={
-                          <Button variant="ghost" size="icon-xs" onClick={() => removeRow(row.id)} className="flex-shrink-0 text-muted-foreground/20 hover:text-destructive mt-0.5" />
+                          <Button variant="ghost" size="icon-xs" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />
                         }>
                           ×
                         </TooltipTrigger>
@@ -1678,7 +1667,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                     >
                       {/* Left column */}
                       <div
-                        className="flex-shrink-0 flex items-start gap-2 px-3 py-3 border-r border-border bg-background"
+                        className="group/row flex-shrink-0 flex items-start gap-2 px-3 py-3 border-r border-border bg-background"
                         style={{ width: COL_W, minWidth: COL_W }}
                       >
                         <Tooltip>
@@ -1689,7 +1678,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                           <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                         </span>
                         <Tooltip>
-                          <TooltipTrigger render={<Button variant="ghost" size="icon-xs" onClick={() => removeRow(row.id)} className="flex-shrink-0 text-muted-foreground/20 hover:text-destructive mt-0.5" />}>×</TooltipTrigger>
+                          <TooltipTrigger render={<Button variant="ghost" size="icon-xs" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />}>×</TooltipTrigger>
                           <TooltipContent>Удалить строку</TooltipContent>
                         </Tooltip>
                       </div>
