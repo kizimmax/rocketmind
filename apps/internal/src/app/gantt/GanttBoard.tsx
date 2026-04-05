@@ -292,6 +292,17 @@ function CardItem({
         opacity: c.done ? 0.45 : 1,
       }}
     >
+      {/* Zoom-in: delete button top-right */}
+      {zoomIn && !locked && (
+        <button
+          onClick={onRemove}
+          className="absolute top-1 right-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-[length:var(--text-14)] leading-none z-10"
+          title="Удалить задачу"
+        >
+          ×
+        </button>
+      )}
+
       {/* Top row: checkbox + days + remove */}
       <div className="flex items-center gap-1.5 mb-1">
         <button
@@ -343,11 +354,11 @@ function CardItem({
             })}
           </div>
         )}
-        {!locked && (
+        {!locked && !zoomIn && (
           <button
             onClick={onRemove}
             className="opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-[length:var(--text-14)] leading-none"
-            title="Удалить карточку"
+            title="Удалить задачу"
           >
             ×
           </button>
@@ -358,7 +369,7 @@ function CardItem({
         <textarea
           ref={taRef}
           defaultValue={c.label}
-          className="w-full bg-transparent outline-none resize-none text-[length:var(--text-12)] leading-snug"
+          className={`w-full bg-transparent outline-none resize-none leading-snug ${zoomIn ? 'text-[length:var(--text-14)]' : 'text-[length:var(--text-12)]'}`}
           style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : cssCardText(weekColor), minHeight: 32 }}
           rows={Math.max(lines.length, 1)}
           onInput={e => autoResize(e.currentTarget)}
@@ -380,7 +391,7 @@ function CardItem({
           {(lines.length > 0 ? lines : [c.label]).map((line, i) => {
             const openColor = cssCardText(weekColor);
             return (
-            <li key={i} className="flex items-start gap-1.5 text-[length:var(--text-12)] leading-snug">
+            <li key={i} className={`flex items-start gap-1.5 leading-snug ${zoomIn ? 'text-[length:var(--text-14)]' : 'text-[length:var(--text-12)]'}`}>
               <span className="flex-shrink-0 mt-[3px] w-1 h-1 rounded-full" style={{ backgroundColor: openColor, opacity: c.done ? 0.4 : 0.7 }} />
               <span style={{ color: c.done ? cssVar(weekColor, 'fg-subtle') : openColor }}>{line}</span>
             </li>
@@ -693,7 +704,9 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
   const shownWeeks = isMobile ? weeks.slice(visibleStartIdx, visibleStartIdx + 1) : visibleWeeks;
 
   const canGoBack = visibleStartIdx > 0;
-  const canGoForward = visibleStartIdx + effectiveCount < weeks.length;
+  // In zoom-in mode only 1 week is shown at a time
+  const visibleSpan = (!isMobile && zoomMode === 'in') ? 1 : effectiveCount;
+  const canGoForward = visibleStartIdx + visibleSpan < weeks.length;
 
   // Slide animation direction
   const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null);
@@ -708,12 +721,12 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
     setAnimating(true);
     if (slideTimerRef.current !== null) clearTimeout(slideTimerRef.current);
     slideTimerRef.current = window.setTimeout(() => {
-      const maxIdx = Math.max(0, weeks.length - effectiveCount);
+      const maxIdx = Math.max(0, weeks.length - visibleSpan);
       setVisibleStartIdx(i => dir === 'left' ? Math.max(0, i - 1) : Math.min(maxIdx, i + 1));
       setSlideDir(null);
       setAnimating(false);
     }, 250);
-  }, [animating, canGoBack, canGoForward, weeks.length, effectiveCount]);
+  }, [animating, canGoBack, canGoForward, weeks.length, visibleSpan]);
 
   // Effective color: current week = track color, others = neutral
   const getEffectiveColor = useCallback((localIdx: number): ColorToken => {
@@ -901,6 +914,76 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
     updateRows(next);
     dragCard.current = null;
     isCardDragging.current = false;
+  };
+
+  // ── Zoom-in card drag (column-aware) ──────────────────────────────────────
+  const [zoomInDropCol, setZoomInDropCol] = useState<{ rowId: string; col: number } | null>(null);
+
+  const onZoomInDragOver = (e: React.DragEvent, rowId: string, gridEl: HTMLDivElement | null) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!dragCard.current || !gridEl) return;
+    const rect = gridEl.getBoundingClientRect();
+    const col = Math.max(1, Math.min(5, Math.floor((e.clientX - rect.left) / (rect.width / 6))));
+    setZoomInDropCol({ rowId, col });
+  };
+
+  const onZoomInDrop = (e: React.DragEvent, toRowId: string, weekId: string, gridEl: HTMLDivElement | null) => {
+    e.preventDefault(); e.stopPropagation();
+    setCardDropTarget(null);
+    setZoomInDropCol(null);
+    const from = dragCard.current;
+    if (!from || !gridEl) return;
+
+    // Find source card to preserve span width
+    const srcRow = rows.find(r => r.id === from.rowId);
+    const srcCard = srcRow?.cells[from.weekId]?.find(c => c.id === from.cardId);
+    if (!srcCard) return;
+
+    const srcDays = srcCard.days ?? [];
+    const srcIndices = srcDays.map(d => DAYS.indexOf(d)).filter(i => i >= 0).sort((a, b) => a - b);
+    const spanWidth = srcIndices.length > 0 ? srcIndices[srcIndices.length - 1] - srcIndices[0] + 1 : 1;
+
+    // Compute target column from mouse position (skip col 0 = "Без дня")
+    const rect = gridEl.getBoundingClientRect();
+    let targetCol = Math.floor((e.clientX - rect.left) / (rect.width / 6));
+    targetCol = Math.max(1, Math.min(5, targetCol));
+
+    // New days: preserve span width, clamp to пт
+    const startDayIdx = targetCol - 1;
+    const endDayIdx = Math.min(startDayIdx + spanWidth - 1, 4);
+    const newDays: Day[] = ([...DAYS] as Day[]).slice(startDayIdx, endDayIdx + 1);
+
+    // Same row + same days → skip
+    if (from.rowId === toRowId && from.weekId === weekId && JSON.stringify(srcDays.sort()) === JSON.stringify(newDays.sort())) return;
+
+    // Move card: remove from source, add to target with new days
+    let movedCard: Card | null = null;
+    let next = rows.map(row => {
+      if (row.id !== from.rowId) return row;
+      const cards = row.cells[from.weekId] ?? [];
+      const idx = cards.findIndex(c => c.id === from.cardId);
+      if (idx === -1) return row;
+      movedCard = { ...cards[idx], days: newDays };
+      return { ...row, cells: { ...row.cells, [from.weekId]: cards.filter(c => c.id !== from.cardId) } };
+    });
+    if (!movedCard) return;
+
+    next = next.map(row => {
+      if (row.id !== toRowId) return row;
+      return { ...row, cells: { ...row.cells, [weekId]: [...(row.cells[weekId] ?? []), movedCard!] } };
+    });
+
+    updateRows(next);
+    dragCard.current = null;
+    isCardDragging.current = false;
+  };
+
+  const onZoomInDragLeave = (e: React.DragEvent) => {
+    // Only clear if leaving the grid entirely
+    const related = e.relatedTarget as HTMLElement | null;
+    if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
+      setZoomInDropCol(null);
+    }
   };
 
   // ── Mutations ─────────────────────────────────────────────────────────────
@@ -1331,7 +1414,13 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                 Out
               </button>
               <button
-                onClick={() => setZoomMode('in')}
+                onClick={() => {
+                  setZoomMode('in');
+                  // Jump to current week when switching to In
+                  if (currentWeekIdx >= 0 && currentWeekIdx < weeks.length) {
+                    setVisibleStartIdx(currentWeekIdx);
+                  }
+                }}
                 className={`h-full px-2.5 text-[length:var(--text-11)] font-mono uppercase tracking-wide transition-colors ${zoomMode === 'in' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-muted'}`}
                 title="Дни недели"
               >
@@ -1471,7 +1560,15 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                       {/* Day column headers */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }}>
                         {DAY_COL_LABELS.map((label, i) => (
-                          <div key={i} className="px-2 py-1.5 border-r border-border/40 last:border-r-0 text-[length:var(--text-11)] font-mono uppercase tracking-wide text-muted-foreground text-center">
+                          <div
+                            key={i}
+                            className="px-2 py-1.5 border-r border-border/40 last:border-r-0 text-[length:var(--text-11)] font-mono uppercase tracking-wide text-muted-foreground text-center"
+                            style={i === 0 ? {
+                              backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 4px, var(--border) 4px, var(--border) 5px)',
+                              backgroundSize: '100% 100%',
+                              opacity: 0.7,
+                            } : undefined}
+                          >
                             {label}
                           </div>
                         ))}
@@ -1556,7 +1653,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.35'; }}
                             title="Добавить задачу"
                           >
-                            + задача
+                            +
                           </button>
                         )}
 
@@ -1644,10 +1741,22 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
 
                       {/* Day grid */}
                       <div className="flex-1 relative" style={{ backgroundColor: awIsCurrent ? `color-mix(in srgb, ${cssVar(awColor, '900')}, transparent 60%)` : undefined }}>
-                        {/* Column borders (background layer) */}
+                        {/* Column borders + hatched "Без дня" + drop highlight */}
                         <div className="absolute inset-0 pointer-events-none" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }}>
                           {[0,1,2,3,4,5].map(i => (
-                            <div key={i} className={i < 5 ? 'border-r border-border/20' : ''} />
+                            <div
+                              key={i}
+                              className={i < 5 ? 'border-r border-border/20' : ''}
+                              style={{
+                                ...(i === 0 ? {
+                                  backgroundImage: 'repeating-linear-gradient(135deg, transparent, transparent 4px, var(--border) 4px, var(--border) 5px)',
+                                  opacity: 0.25,
+                                } : {}),
+                                ...(zoomInDropCol?.rowId === row.id && zoomInDropCol?.col === i ? {
+                                  backgroundColor: `color-mix(in srgb, ${cssVar(awColor, '100')}, transparent 85%)`,
+                                } : {}),
+                              }}
+                            />
                           ))}
                         </div>
 
@@ -1682,8 +1791,9 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                           ref={el => { if (el) gridRefsMap.current.set(row.id, el); else gridRefsMap.current.delete(row.id); }}
                           style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gridAutoRows: 'auto' }}
                           className="py-1"
-                          onDragOver={e => onCardDragOver(e, row.id, aw.id, null)}
-                          onDrop={e => onCardDrop(e, row.id, aw.id, null)}
+                          onDragOver={e => onZoomInDragOver(e, row.id, gridRefsMap.current.get(row.id) ?? null)}
+                          onDrop={e => onZoomInDrop(e, row.id, aw.id, gridRefsMap.current.get(row.id) ?? null)}
+                          onDragLeave={onZoomInDragLeave}
                         >
                           {placed.map(({ card: c, colStart, colEnd, gridRow: gr }) => (
                             <div
@@ -1700,9 +1810,9 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                                 onRemove={() => removeCard(row.id, aw.id, c.id)}
                                 draggable={!locked}
                                 onDragStart={e => onCardDragStart(e, row.id, aw.id, c.id)}
-                                onDragEnd={onCardDragEnd}
+                                onDragEnd={() => { onCardDragEnd(); setZoomInDropCol(null); }}
                                 onDragOver={e => e.preventDefault()}
-                                onDrop={e => onCardDrop(e, row.id, aw.id, null)}
+                                onDrop={e => e.preventDefault()}
                                 onToggleDay={day => toggleCardDay(row.id, aw.id, c.id, day)}
                                 zoomIn
                                 onResizeStart={(e, side) => startCardResize(e, side, c.id, row.id, aw.id)}
