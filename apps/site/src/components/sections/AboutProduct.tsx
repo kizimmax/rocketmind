@@ -87,7 +87,7 @@ export function AboutProduct({
   const hasImage = !!aboutImage;
 
   return (
-    <section className="w-full border-t border-border">
+    <section className="w-full border-t border-border py-14">
       {/* ── Desktop with image ── */}
       {hasImage && (
         <div className="hidden lg:flex mx-auto max-w-[1400px]">
