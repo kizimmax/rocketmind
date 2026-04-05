@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@rocketmind/ui";
+import { ThemeProvider, Toaster, TooltipProvider } from "@rocketmind/ui";
 
 export const metadata: Metadata = {
   title: "Rocketmind Internal",
@@ -21,7 +21,10 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          {children}
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

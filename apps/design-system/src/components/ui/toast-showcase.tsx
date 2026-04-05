@@ -3,6 +3,7 @@
 import * as React from "react"
 import { toast } from "sonner"
 import { Badge } from "@rocketmind/ui"
+import { CopyButton } from "@/components/copy-button"
 import { SpecBlock } from "@/components/ds/shared"
 
 export function ToastShowcase() {
@@ -11,8 +12,9 @@ export function ToastShowcase() {
   return (
     <div className="space-y-8">
       <div className="rounded-lg border border-border overflow-hidden">
-        <div className="px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border">
+        <div className="px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border flex items-center justify-between">
           <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Нажмите кнопку для демонстрации</p>
+          <CopyButton value={`import { Toaster } from "@rocketmind/ui"\nimport { toast } from "sonner"`} label="Toast import" />
         </div>
 
         <div className="p-6 flex flex-wrap gap-3">

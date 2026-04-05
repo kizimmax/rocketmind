@@ -6,7 +6,7 @@ import { BellRing, LayoutGrid, LayoutList, Moon, ShieldCheck, Sun } from "lucide
 import { CopyButton } from "@/components/copy-button"
 import { Badge, Switch, Tabs, TabsList, TabsTrigger } from "@rocketmind/ui"
 
-const SWITCH_CODE = `relative inline-flex items-center rounded-sm border border-border bg-rm-gray-1 p-[1px] transition-[background-color,border-color,box-shadow,opacity] duration-150 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 data-checked:border-[var(--rm-yellow-100)] data-checked:bg-[var(--rm-yellow-100)] data-disabled:opacity-40`
+const SWITCH_IMPORT = `import { Switch } from "@rocketmind/ui"`
 
 function SwitchRow({
   icon,
@@ -120,7 +120,7 @@ export function SwitchShowcase() {
                 Tabs с двумя пунктами. Стилизация идентична default Tabs.
               </p>
             </div>
-            <CopyButton value={SWITCH_CODE} label="Switch styles" />
+            <CopyButton value={SWITCH_IMPORT} label="Switch import" />
           </div>
 
           <div className="space-y-4">

@@ -6,7 +6,7 @@ import { CopyButton } from "@/components/copy-button"
 import { SpecBlock } from "@/components/ds/shared"
 import { Badge, Checkbox } from "@rocketmind/ui"
 
-const CHECKBOX_CODE = `relative inline-flex size-4 items-center justify-center > input[type="checkbox"] { appearance: none; width: 16px; height: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--rm-gray-1); } input:checked, input:indeterminate { border-color: var(--rm-yellow-100); background: var(--rm-yellow-100); } input:focus-visible { border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent); } input:disabled { opacity: 0.4; }`
+const CHECKBOX_IMPORT = `import { Checkbox } from "@rocketmind/ui"`
 
 function CheckboxRow({
   label,
@@ -107,7 +107,7 @@ export function CheckboxShowcase() {
                 Основной паттерн: checkbox + label + короткое пояснение.
               </p>
             </div>
-            <CopyButton value={CHECKBOX_CODE} label="Checkbox styles" />
+            <CopyButton value={CHECKBOX_IMPORT} label="Checkbox import" />
           </div>
 
           <div className="space-y-3">

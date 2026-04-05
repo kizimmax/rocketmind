@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react"
 import { Search } from "lucide-react"
 
+import { CopyButton } from "@/components/copy-button"
 import { SpecBlock } from "@/components/ds/shared"
 import { SearchCombobox, type SearchComboboxOption } from "@rocketmind/ui"
 
@@ -54,9 +55,12 @@ export function SearchComboboxShowcase() {
               Полноценный поиск по агентам, кейсам и системным действиям
             </h4>
           </div>
-          <span className="shrink-0 rounded-sm border border-border bg-rm-gray-1 px-2 py-1 font-[family-name:var(--font-mono-family)] text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-            Новый паттерн
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="rounded-sm border border-border bg-rm-gray-1 px-2 py-1 font-[family-name:var(--font-mono-family)] text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              Новый паттерн
+            </span>
+            <CopyButton value={`import { SearchCombobox } from "@rocketmind/ui"`} label="SearchCombobox import" />
+          </div>
         </div>
 
         <p className="max-w-3xl text-[length:var(--text-14)] leading-relaxed text-muted-foreground">

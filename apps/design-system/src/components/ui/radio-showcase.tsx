@@ -6,7 +6,7 @@ import { CopyButton } from "@/components/copy-button"
 import { SpecBlock } from "@/components/ds/shared"
 import { Badge, Radio } from "@rocketmind/ui"
 
-const RADIO_CODE = `input[type="radio"] { appearance: none; width: 16px; height: 16px; border-radius: 9999px; border: 1px solid var(--border); background: var(--rm-gray-1); } input:checked { border-color: var(--rm-yellow-100); background: var(--background); } input:checked + .dot { opacity: 1; background: var(--rm-yellow-100); } input:focus-visible { border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 50%, transparent); } input:disabled { opacity: 0.4; }`
+const RADIO_IMPORT = `import { Radio } from "@rocketmind/ui"`
 
 function RadioRow({
   label,
@@ -114,7 +114,7 @@ export function RadioShowcase() {
                 Control живёт внутри более крупной строки выбора.
               </p>
             </div>
-            <CopyButton value={RADIO_CODE} label="Radio styles" />
+            <CopyButton value={RADIO_IMPORT} label="Radio import" />
           </div>
 
           <div className="space-y-3">

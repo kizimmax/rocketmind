@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from "@rocketmind/ui";
 
 export function AcademySection() {
     return (
@@ -27,9 +28,9 @@ export function AcademySection() {
                             <p className="font-body text-[length:var(--text-16)] text-muted-foreground leading-[1.618] flex-grow">
                                 Навыки стратегического развития бизнеса — от поиска бизнес-модели до проектирования платформ и экосистем.
                             </p>
-                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm border border-[var(--rm-violet-300)] bg-transparent text-[var(--rm-violet-100)] font-mono text-[length:var(--text-12)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                            <Button variant="outline" className="mt-4 w-full border-[var(--rm-violet-300)] text-[var(--rm-violet-100)] hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:shadow-glow-violet">
                                 Подробнее
-                            </button>
+                            </Button>
                         </div>
 
                         <div className="relative flex flex-col gap-4 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] dark:hover:shadow-glow-subtle cursor-pointer group">
@@ -39,9 +40,9 @@ export function AcademySection() {
                             <p className="font-body text-[length:var(--text-16)] text-muted-foreground leading-[1.618] flex-grow">
                                 Онлайн-курс, который поможет быстро понять суть бизнес-дизайна и начать мыслить как стратег.
                             </p>
-                            <button className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-sm border border-[var(--rm-violet-300)] bg-transparent text-[var(--rm-violet-100)] font-mono text-[length:var(--text-12)] uppercase tracking-[0.08em] transition-all duration-150 hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:outline-none focus-visible:shadow-glow-violet disabled:opacity-40 disabled:pointer-events-none mt-4 w-full">
+                            <Button variant="outline" className="mt-4 w-full border-[var(--rm-violet-300)] text-[var(--rm-violet-100)] hover:bg-[var(--rm-violet-900)] hover:shadow-glow-violet focus-visible:shadow-glow-violet">
                                 Подробнее
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

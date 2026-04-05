@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ShowMore, ShowMorePanel, Badge } from "@rocketmind/ui"
+import { CopyButton } from "@/components/copy-button"
 import { SpecBlock } from "@/components/ds/shared"
 
 const mono = "font-[family-name:var(--font-mono-family)]"
@@ -27,6 +28,10 @@ export function ShowMoreShowcase() {
 
       {/* ── States grid ── */}
       <div className="rounded-lg border border-border overflow-hidden">
+        <div className="px-4 py-2 bg-[var(--rm-gray-1)] border-b border-border flex items-center justify-between">
+          <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Варианты</p>
+          <CopyButton value={`import { ShowMore, ShowMorePanel } from "@rocketmind/ui"`} label="ShowMore import" />
+        </div>
         <div className="grid gap-px bg-border md:grid-cols-[160px_1fr_1fr]">
           <div className="bg-muted/60 px-4 py-3" />
           {["Collapsed", "Expanded"].map((state) => (

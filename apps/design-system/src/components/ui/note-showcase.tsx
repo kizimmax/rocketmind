@@ -6,7 +6,7 @@ import { Badge, Button, Note, NoteDescription, NoteEyebrow, NoteTitle } from "@r
 import { CopyButton } from "@/components/copy-button"
 import { SpecBlock } from "@/components/ds/shared"
 
-const NOTE_CODE = `rounded-lg border p-4 transition-[border-color,background-color,color,opacity] duration-150`
+const NOTE_IMPORT = `import { Note, NoteTitle, NoteDescription, NoteEyebrow } from "@rocketmind/ui"`
 
 type NoteTone = "soft" | "filled"
 type NoteVariant = "neutral" | "info" | "success" | "warning" | "error" | "action"
@@ -138,7 +138,7 @@ export function NoteShowcase() {
                 Основной режим для пояснений внутри карточек, форм и системных панелей.
               </p>
             </div>
-            <CopyButton value={NOTE_CODE} label="Note base styles" />
+            <CopyButton value={NOTE_IMPORT} label="Note import" />
           </div>
 
           <div className="space-y-3">

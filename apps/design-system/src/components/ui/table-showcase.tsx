@@ -4,6 +4,7 @@ import * as React from "react"
 import { ArrowRight, ChevronsUpDown, Download, FolderOpen, Search } from "lucide-react"
 
 import { Badge, Checkbox } from "@rocketmind/ui"
+import { CopyButton } from "@/components/copy-button"
 import { SpecBlock } from "@/components/ds/shared"
 
 const OUTLINE_XS_BUTTON =
@@ -152,11 +153,12 @@ export function TableShowcase() {
       <div className="rounded-lg border border-border overflow-hidden">
         <div className="grid gap-px bg-border md:grid-cols-[180px_repeat(3,minmax(0,1fr))]">
           <div className="bg-muted/60 px-4 py-3" />
-          {["Паттерн", "Вариант", "Правило"].map((label) => (
-            <div key={label} className="bg-muted/60 px-4 py-3">
+          {["Паттерн", "Вариант", "Правило"].map((label, i) => (
+            <div key={label} className="bg-muted/60 px-4 py-3 flex items-center justify-between">
               <p className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)] uppercase tracking-wider">
                 {label}
               </p>
+              {i === 2 && <CopyButton value={`import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@rocketmind/ui"`} label="Table import" />}
             </div>
           ))}
 

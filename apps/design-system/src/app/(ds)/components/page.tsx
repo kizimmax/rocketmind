@@ -191,7 +191,10 @@ export default function ComponentsPage() {
 
         {/* ── Бейджи ── */}
         <div className="mb-12">
-          <SubSection id="components-badges" title="Бейджи" />
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <SubSection id="components-badges" title="Бейджи" />
+            <CopyButton value={`import { Badge } from "@rocketmind/ui"`} label="Badge import" />
+          </div>
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Лейблы для статусов, категорий и тегов. Шрифт — Loos Latin Condensed Medium, uppercase. Три размера: SM (20px) / MD (24px) / LG (28px).
           </p>
@@ -266,7 +269,10 @@ export default function ComponentsPage() {
 
         {/* ── Табы ── */}
         <div className="mb-12">
-          <SubSection id="components-tabs" title="Табы" />
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <SubSection id="components-tabs" title="Табы" />
+            <CopyButton value={`import { Tabs, TabsList, TabsTrigger, TabsContent } from "@rocketmind/ui"`} label="Tabs import" />
+          </div>
           <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
             Tabs переключают соседние панели без смены экрана. <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">default</code> для равноправных наборов данных, <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded">secondary</code> для локальной навигации.
           </p>

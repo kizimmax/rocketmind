@@ -4,9 +4,7 @@ import { CopyButton } from "@/components/copy-button"
 import { SpecBlock } from "@/components/ds/shared"
 import { Badge, Button, Textarea } from "@rocketmind/ui"
 
-const DEFAULT_TEXTAREA_CODE = `min-h-[120px] resize-y px-4 py-3 rounded-sm border border-border bg-rm-gray-1 text-foreground text-[length:var(--text-14)] leading-[1.5] placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:opacity-40 disabled:cursor-not-allowed aria-invalid:border-destructive`
-
-const CHAT_TEXTAREA_CODE = `min-h-[48px] max-h-[200px] resize-none overflow-auto px-4 py-3 rounded-sm border border-border bg-rm-gray-1 text-foreground text-[length:var(--text-16)] leading-[1.618] placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:opacity-40 disabled:cursor-not-allowed aria-invalid:border-destructive`
+const TEXTAREA_IMPORT = `import { Textarea } from "@rocketmind/ui"`
 
 export function TextareaShowcase() {
   return (
@@ -69,7 +67,7 @@ export function TextareaShowcase() {
                 Основной textarea для форм, briefs и длинных ответов.
               </p>
             </div>
-            <CopyButton value={DEFAULT_TEXTAREA_CODE} label="Textarea Default" />
+            <CopyButton value={TEXTAREA_IMPORT} label="Textarea import" />
           </div>
 
           <div className="space-y-1.5 max-w-xl">
@@ -88,7 +86,7 @@ export function TextareaShowcase() {
                 Компактный composer для чата: поле сверху, action-ряд снизу.
               </p>
             </div>
-            <CopyButton value={CHAT_TEXTAREA_CODE} label="Textarea Chat" />
+            <CopyButton value={TEXTAREA_IMPORT} label="Textarea import" />
           </div>
 
           <div className="max-w-xl rounded-lg border border-border bg-background p-3">

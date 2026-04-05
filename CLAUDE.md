@@ -60,6 +60,16 @@ When adding a new block:
 3. Use in DS Web as `<ComponentName />` preview
 4. In `apps/site` (or other apps): import from `@rocketmind/ui` directly, or re-export from a local file if the app needs a wrapper
 
+### No component without DS check
+
+**Algorithm for any UI element (button, input, dialog, tooltip, toast, switch, etc.):**
+1. **Check** `packages/ui/src/index.ts` for existing component
+2. **Found** → import from `@rocketmind/ui` and use
+3. **Not found → STOP.** Write in chat: "Need component [X] for [situation]. Create in @rocketmind/ui and add to DS Web?" — wait for confirmation
+4. **After confirmation:** create in `packages/ui`, export from `index.ts`, add showcase to DS Web, then use in app
+
+**Forbidden without check:** inline `<button>`, `<input>`, `<dialog>`, custom modals, custom toasts, custom tooltips (`title` attributes), or any UI primitive that has an equivalent in `@rocketmind/ui`.
+
 ### Workflow
 - **Screen:** design in .pen → screenshot/approval → code
 - **Component:** check DS → add to system.pen as reusable → ref everywhere

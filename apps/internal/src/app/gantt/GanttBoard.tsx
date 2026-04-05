@@ -3,6 +3,8 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { ref, onValue, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
+import { Button, Tabs, TabsList, TabsTrigger, Tooltip, TooltipTrigger, TooltipContent, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@rocketmind/ui';
+import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -294,32 +296,37 @@ function CardItem({
     >
       {/* Zoom-in: delete button top-right */}
       {zoomIn && !locked && (
-        <button
-          onClick={onRemove}
-          className="absolute top-1 right-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-[length:var(--text-14)] leading-none z-10"
-          title="Удалить задачу"
-        >
-          ×
-        </button>
+        <Tooltip>
+          <TooltipTrigger render={
+            <Button variant="ghost" size="icon-xs" onClick={onRemove} className="absolute top-1 right-1.5 opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive z-10" />
+          }>
+            ×
+          </TooltipTrigger>
+          <TooltipContent>Удалить задачу</TooltipContent>
+        </Tooltip>
       )}
 
       {/* Top row: checkbox + days + remove */}
       <div className="flex items-center gap-1.5 mb-1">
-        <button
-          onClick={onToggleDone}
-          className="flex-shrink-0 w-3.5 h-3.5 rounded-sm border transition-colors"
-          style={{
-            borderColor: c.done ? cssVar(weekColor, '100') : cssVar(weekColor, '300'),
-            backgroundColor: c.done ? cssVar(weekColor, '100') : 'transparent',
-          }}
-          title={c.done ? 'Готово' : 'Отметить как готово'}
-        >
-          {c.done && (
-            <svg viewBox="0 0 10 10" className="w-full h-full text-white" fill="none">
-              <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          )}
-        </button>
+        <Tooltip>
+          <TooltipTrigger render={
+            <button
+              onClick={onToggleDone}
+              className="flex-shrink-0 w-3.5 h-3.5 rounded-sm border transition-colors"
+              style={{
+                borderColor: c.done ? cssVar(weekColor, '100') : cssVar(weekColor, '300'),
+                backgroundColor: c.done ? cssVar(weekColor, '100') : 'transparent',
+              }}
+            />
+          }>
+            {c.done && (
+              <svg viewBox="0 0 10 10" className="w-full h-full text-white" fill="none">
+                <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </TooltipTrigger>
+          <TooltipContent>{c.done ? 'Готово' : 'Отметить как готово'}</TooltipContent>
+        </Tooltip>
 
         {!zoomIn && (
           <div className="flex-1 grid grid-cols-5 gap-1">
@@ -355,13 +362,14 @@ function CardItem({
           </div>
         )}
         {!locked && !zoomIn && (
-          <button
-            onClick={onRemove}
-            className="opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-[length:var(--text-14)] leading-none"
-            title="Удалить задачу"
-          >
-            ×
-          </button>
+          <Tooltip>
+            <TooltipTrigger render={
+              <Button variant="ghost" size="icon-xs" onClick={onRemove} className="opacity-0 group-hover/card:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive" />
+            }>
+              ×
+            </TooltipTrigger>
+            <TooltipContent>Удалить задачу</TooltipContent>
+          </Tooltip>
         )}
       </div>
 
@@ -421,65 +429,40 @@ function CardItem({
 
 const LOCK_PASSWORD = '2345';
 
-function LockModal({ onClose, onUnlock }: { onClose: () => void; onUnlock: () => void }) {
+function LockModal({ open, onClose, onUnlock }: { open: boolean; onClose: () => void; onUnlock: () => void }) {
   const [val, setVal] = useState('');
   const [err, setErr] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { inputRef.current?.focus(); }, []);
 
   const submit = () => {
-    if (val === LOCK_PASSWORD) { onUnlock(); }
+    if (val === LOCK_PASSWORD) { onUnlock(); setVal(''); }
     else { setErr(true); setVal(''); setTimeout(() => setErr(false), 1200); }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'var(--rm-gray-alpha-600)' }}
-      onClick={onClose}
-    >
-      <div
-        className="bg-background border border-border rounded-2xl p-6 w-80 shadow-lg"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="text-center mb-4">
+    <Dialog open={open} onOpenChange={v => { if (!v) { onClose(); setVal(''); } }}>
+      <DialogContent className="max-w-[320px]">
+        <DialogHeader className="text-center items-center">
           <div className="text-[length:var(--text-25)] mb-1">🔒</div>
-          <div className="font-heading font-bold text-[length:var(--text-16)]">Введите пароль</div>
-          <div className="text-[length:var(--text-12)] text-muted-foreground mt-0.5">для разблокировки редактирования</div>
-        </div>
-        <input
-          ref={inputRef}
+          <DialogTitle>Введите пароль</DialogTitle>
+          <DialogDescription>для разблокировки редактирования</DialogDescription>
+        </DialogHeader>
+        <Input
+          autoFocus
           type="password"
           value={val}
           onChange={e => setVal(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') onClose(); }}
-          className="w-full border rounded-lg px-3 py-2 text-[length:var(--text-14)] outline-none transition-colors"
-          style={{
-            borderColor: err ? 'var(--rm-red-100)' : 'var(--border)',
-            backgroundColor: err ? 'var(--rm-red-900)' : 'var(--background)',
-          }}
+          onKeyDown={e => { if (e.key === 'Enter') submit(); }}
+          aria-invalid={err || undefined}
           placeholder="Пароль"
           autoComplete="off"
         />
-        {err && <p className="text-[length:var(--text-12)] text-[var(--rm-red-100)] mt-1.5">Неверный пароль</p>}
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={onClose}
-            className="flex-1 border border-border rounded-lg py-2 text-[length:var(--text-14)] hover:bg-muted transition-colors"
-          >
-            Отмена
-          </button>
-          <button
-            onClick={submit}
-            className="flex-1 rounded-lg py-2 text-[length:var(--text-14)] font-medium transition-colors"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)' }}
-          >
-            Войти
-          </button>
-        </div>
-      </div>
-    </div>
+        {err && <p className="text-[length:var(--text-12)] text-destructive mt-1.5">Неверный пароль</p>}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => { onClose(); setVal(''); }}>Отмена</Button>
+          <Button onClick={submit}>Войти</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -494,7 +477,10 @@ function SyncDot({ status }: { status: 'synced' | 'saving' | 'error' | 'loading'
   };
   const { color, label } = map[status];
   return (
-    <span className="w-2 h-2 rounded-full flex-shrink-0 inline-block" style={{ backgroundColor: color }} title={label} />
+    <Tooltip>
+      <TooltipTrigger render={<span className="w-2 h-2 rounded-full flex-shrink-0 inline-block" style={{ backgroundColor: color }} />} />
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -535,32 +521,7 @@ function RefreshIcon({ className }: { className?: string }) {
 type Snapshot = { weeks: Week[]; rows: Row[]; title: string; subtitle: string; locked: boolean };
 const MAX_HISTORY = 50;
 
-// ─── Toast ───────────────────────────────────────────────────────────────────
-
-type Toast = { id: number; message: string; onUndo?: () => void };
-let toastId = 0;
-
-function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
-  if (toasts.length === 0) return null;
-  return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none">
-      {toasts.map(t => (
-        <div key={t.id} className="pointer-events-auto flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-2.5 shadow-lg text-[length:var(--text-14)] text-foreground animate-[slideUp_200ms_ease-out]">
-          <span>{t.message}</span>
-          {t.onUndo && (
-            <button
-              onClick={() => { t.onUndo!(); onDismiss(t.id); }}
-              className="font-bold text-[color:var(--rm-yellow-100)] hover:underline"
-            >
-              Отменить
-            </button>
-          )}
-          <button onClick={() => onDismiss(t.id)} className="text-muted-foreground hover:text-foreground ml-1">✕</button>
-        </div>
-      ))}
-    </div>
-  );
-}
+// ─── Toast (via DS Toaster + sonner) ────────────────────────────────────────
 
 export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', startWeekIdx }: { dbPath: string; trackName: string; trackColor?: string; startWeekIdx?: number }) {
   const COL_W = 154;
@@ -624,13 +585,13 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
     applySnapshot(next);
   }, [snap, applySnapshot]);
 
-  // ── Toasts ────────────────────────────────────────────────────────────────
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const dismissToast = useCallback((id: number) => setToasts(ts => ts.filter(t => t.id !== id)), []);
+  // ── Toasts (sonner) ───────────────────────────────────────────────────────
   const showToast = useCallback((message: string, onUndo?: () => void) => {
-    const id = ++toastId;
-    setToasts(ts => [...ts, { id, message, onUndo }]);
-    setTimeout(() => setToasts(ts => ts.filter(t => t.id !== id)), 5000);
+    if (onUndo) {
+      toast(message, { action: { label: 'Отменить', onClick: onUndo } });
+    } else {
+      toast(message);
+    }
   }, []);
 
   // ── Keyboard shortcuts (undo/redo) ────────────────────────────────────────
@@ -1325,33 +1286,33 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
   return (
     <div className="min-h-screen bg-background text-foreground font-body">
 
-      {/* API Key input overlay */}
-      {showKeyInput && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => { setShowKeyInput(false); setPendingWeekId(null); }}>
-          <div className="bg-background border border-border rounded-lg p-6 shadow-xl max-w-sm w-full mx-4" onClick={e => e.stopPropagation()}>
-            <p className="font-heading text-[length:var(--text-16)] font-bold mb-1">{AI_PROVIDERS[aiProvider].label}</p>
-            <p className="text-muted-foreground text-[length:var(--text-12)] mb-3">{AI_PROVIDERS[aiProvider].keyHint} <a href={AI_PROVIDERS[aiProvider].keyUrl} target="_blank" rel="noopener" style={{textDecoration:'underline'}}>{AI_PROVIDERS[aiProvider].keyUrl.replace('https://', '')}</a></p>
-            <div className="flex gap-1 mb-3">
-              {(Object.keys(AI_PROVIDERS) as AiProvider[]).map(p => (
-                <button key={p} onClick={() => { setAiProvider(p); set(ref(db, 'gantt_config/ai_provider'), p); setKeyValue(''); }} className={`px-2 py-1 rounded text-[length:var(--text-11)] font-mono ${aiProvider === p ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground'}`}>{p}</button>
-              ))}
-            </div>
-            <input
-              autoFocus
-              type="password"
-              placeholder={`${AI_PROVIDERS[aiProvider].keyPrefix}...`}
-              value={keyValue}
-              onChange={e => setKeyValue(e.target.value)}
-              className="w-full px-3 py-2 rounded border border-border bg-background text-foreground font-mono text-[length:var(--text-14)] mb-3 outline-none focus:border-muted-foreground"
-              onKeyDown={e => { if (e.key === 'Enter') handleKeySubmit(); }}
-            />
-            <div className="flex gap-2 justify-end">
-              <button onClick={() => { setShowKeyInput(false); setPendingWeekId(null); }} className="px-3 py-1.5 rounded text-[length:var(--text-12)] text-muted-foreground hover:bg-muted">Отмена</button>
-              <button onClick={handleKeySubmit} className="px-3 py-1.5 rounded text-[length:var(--text-12)] bg-foreground text-background font-medium hover:opacity-90">Сохранить</button>
-            </div>
+      {/* API Key input dialog */}
+      <Dialog open={showKeyInput} onOpenChange={v => { if (!v) { setShowKeyInput(false); setPendingWeekId(null); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{AI_PROVIDERS[aiProvider].label}</DialogTitle>
+            <DialogDescription>{AI_PROVIDERS[aiProvider].keyHint} <a href={AI_PROVIDERS[aiProvider].keyUrl} target="_blank" rel="noopener" className="underline">{AI_PROVIDERS[aiProvider].keyUrl.replace('https://', '')}</a></DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-1 mb-1">
+            {(Object.keys(AI_PROVIDERS) as AiProvider[]).map(p => (
+              <Button key={p} variant={aiProvider === p ? 'default' : 'ghost'} size="xs" onClick={() => { setAiProvider(p); set(ref(db, 'gantt_config/ai_provider'), p); setKeyValue(''); }}>{p}</Button>
+            ))}
           </div>
-        </div>
-      )}
+          <Input
+            autoFocus
+            type="password"
+            placeholder={`${AI_PROVIDERS[aiProvider].keyPrefix}...`}
+            value={keyValue}
+            onChange={e => setKeyValue(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleKeySubmit(); }}
+            className="font-mono"
+          />
+          <DialogFooter>
+            <Button variant="ghost" size="sm" onClick={() => { setShowKeyInput(false); setPendingWeekId(null); }}>Отмена</Button>
+            <Button size="sm" onClick={handleKeySubmit}>Сохранить</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Header bar */}
       <div className="border-b border-border px-4 py-3 md:px-8">
@@ -1371,87 +1332,72 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
           <span className="font-heading text-[length:var(--text-16)] md:text-[length:var(--text-20)] font-bold uppercase tracking-wide mr-auto">
             План работ
           </span>
-          <button
-            onClick={undo}
-            disabled={!canUndo}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted disabled:opacity-25 disabled:pointer-events-none"
-            title="Отменить (Ctrl+Z)"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 6h7a3 3 0 0 1 0 6H8" /><path d="M6 3L3 6l3 3" />
-            </svg>
-          </button>
-          <button
-            onClick={redo}
-            disabled={!canRedo}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted disabled:opacity-25 disabled:pointer-events-none"
-            title="Повторить (Ctrl+Shift+Z)"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13 6H6a3 3 0 0 0 0 6h2" /><path d="M10 3l3 3-3 3" />
-            </svg>
-          </button>
-          <button
-            onClick={() => {
-              const html = document.documentElement;
-              const isDark = html.classList.contains('dark');
-              html.classList.toggle('dark', !isDark);
-              html.classList.toggle('light', isDark);
-            }}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted text-[length:var(--text-14)]"
-            title="Сменить тему"
-          >
-            ◐
-          </button>
-          {/* Zoom In / Out switch — desktop & tablet only */}
+          <Tooltip>
+            <TooltipTrigger render={<Button variant="outline" size="icon" onClick={undo} disabled={!canUndo} />}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h7a3 3 0 0 1 0 6H8" /><path d="M6 3L3 6l3 3" />
+              </svg>
+            </TooltipTrigger>
+            <TooltipContent>Отменить (Ctrl+Z)</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger render={<Button variant="outline" size="icon" onClick={redo} disabled={!canRedo} />}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 6H6a3 3 0 0 0 0 6h2" /><path d="M10 3l3 3-3 3" />
+              </svg>
+            </TooltipTrigger>
+            <TooltipContent>Повторить (Ctrl+Shift+Z)</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger render={
+              <Button variant="outline" size="icon" onClick={() => {
+                const html = document.documentElement;
+                const isDark = html.classList.contains('dark');
+                html.classList.toggle('dark', !isDark);
+                html.classList.toggle('light', isDark);
+              }} />
+            }>
+              ◐
+            </TooltipTrigger>
+            <TooltipContent>Сменить тему</TooltipContent>
+          </Tooltip>
+          {/* Zoom In / Out switch — desktop & tablet only (DS Text Switch via Tabs) */}
           {!isMobile && (
-            <div className="flex items-center h-8 rounded-lg border border-border overflow-hidden">
-              <button
-                onClick={() => setZoomMode('out')}
-                className={`h-full px-2.5 text-[length:var(--text-11)] font-mono uppercase tracking-wide transition-colors ${zoomMode === 'out' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-muted'}`}
-                title="Недели"
-              >
-                Out
-              </button>
-              <button
-                onClick={() => {
-                  setZoomMode('in');
-                  // Jump to current week when switching to In
-                  if (currentWeekIdx >= 0 && currentWeekIdx < weeks.length) {
-                    setVisibleStartIdx(currentWeekIdx);
-                  }
-                }}
-                className={`h-full px-2.5 text-[length:var(--text-11)] font-mono uppercase tracking-wide transition-colors ${zoomMode === 'in' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-muted'}`}
-                title="Дни недели"
-              >
-                In
-              </button>
-            </div>
-          )}
-          <button
-            onClick={() => navigateWeeks('left')}
-            disabled={!canGoBack || animating}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted disabled:opacity-25 disabled:pointer-events-none"
-            title="Предыдущая неделя"
-          >
-            <ChevronLeftIcon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => navigateWeeks('right')}
-            disabled={!canGoForward || animating}
-            className="w-8 h-8 flex items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted disabled:opacity-25 disabled:pointer-events-none"
-            title="Следующая неделя"
-          >
-            <ChevronRightIcon className="w-4 h-4" />
-          </button>
-          {!locked && (
-            <button
-              onClick={addWeek}
-              className="h-8 px-3 flex items-center gap-1 rounded-lg border border-border text-[length:var(--text-12)] font-mono transition-colors hover:bg-muted"
-              title="Добавить неделю"
+            <Tabs
+              value={zoomMode}
+              onValueChange={(v: string | number | null) => {
+                const mode = v as 'out' | 'in';
+                setZoomMode(mode);
+                if (mode === 'in' && currentWeekIdx >= 0 && currentWeekIdx < weeks.length) {
+                  setVisibleStartIdx(currentWeekIdx);
+                }
+              }}
             >
-              + неделя
-            </button>
+              <TabsList>
+                <TabsTrigger value="out">Out</TabsTrigger>
+                <TabsTrigger value="in">In</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+          <Tooltip>
+            <TooltipTrigger render={<Button variant="outline" size="icon" onClick={() => navigateWeeks('left')} disabled={!canGoBack || animating} />}>
+              <ChevronLeftIcon className="w-4 h-4" />
+            </TooltipTrigger>
+            <TooltipContent>Предыдущая неделя</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger render={<Button variant="outline" size="icon" onClick={() => navigateWeeks('right')} disabled={!canGoForward || animating} />}>
+              <ChevronRightIcon className="w-4 h-4" />
+            </TooltipTrigger>
+            <TooltipContent>Следующая неделя</TooltipContent>
+          </Tooltip>
+          {!locked && (
+            <Tooltip>
+              <TooltipTrigger render={<Button variant="outline" size="sm" onClick={addWeek} />}>
+                + неделя
+              </TooltipTrigger>
+              <TooltipContent>Добавить неделю</TooltipContent>
+            </Tooltip>
           )}
         </div>
 
@@ -1509,18 +1455,18 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                         <p className="text-[length:var(--text-12)] leading-snug flex-1 min-w-0" style={{ color: cssVar(effColor, 'fg-subtle') }}>
                           <EditableText value={w.theme} onChange={v => { updateWeekTheme(w.id, v); setSummaryReady(null); }} startEditing={summaryReady === w.id} placeholder="сгенерировать саммери →" />
                         </p>
-                        <button
-                          onClick={() => generateWeekSummary(w.id)}
-                          disabled={summaryLoading === w.id}
-                          className="flex-shrink-0 inline-flex items-center justify-center w-5 h-5 rounded transition-colors text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted mt-0.5"
-                          title="Сгенерировать итог недели"
-                        >
-                          {summaryLoading === w.id ? (
-                            <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <RefreshIcon className="w-3.5 h-3.5" />
-                          )}
-                        </button>
+                        <Tooltip>
+                          <TooltipTrigger render={
+                            <Button variant="ghost" size="icon-xs" onClick={() => generateWeekSummary(w.id)} disabled={summaryLoading === w.id} className="flex-shrink-0 text-muted-foreground/40 hover:text-muted-foreground mt-0.5" />
+                          }>
+                            {summaryLoading === w.id ? (
+                              <span className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <RefreshIcon className="w-3.5 h-3.5" />
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>Сгенерировать итог недели</TooltipContent>
+                        </Tooltip>
                       </div>
                     </div>
                   );
@@ -1600,24 +1546,23 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                     style={isMobile ? { width: '30%', minWidth: 0 } : { width: COL_W, minWidth: COL_W }}
                   >
                     {!isMobile && (
-                      <span
-                        className="cursor-grab text-muted-foreground/30 hover:text-muted-foreground transition-colors select-none flex-shrink-0 mt-0.5 text-[length:var(--text-16)] leading-none"
-                        title="Перетащить строку"
-                      >
-                        ⠿
-                      </span>
+                      <Tooltip>
+                        <TooltipTrigger render={<span className="cursor-grab text-muted-foreground/30 hover:text-muted-foreground transition-colors select-none flex-shrink-0 mt-0.5 text-[length:var(--text-16)] leading-none" />}>⠿</TooltipTrigger>
+                        <TooltipContent>Перетащить строку</TooltipContent>
+                      </Tooltip>
                     )}
                     <span className="text-[length:var(--text-12)] font-medium text-foreground flex-1 min-w-0 mt-0.5">
                       <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                     </span>
                     {!isMobile && (
-                      <button
-                        onClick={() => removeRow(row.id)}
-                        className="flex-shrink-0 text-muted-foreground/20 hover:text-destructive transition-colors text-[length:var(--text-14)] leading-none mt-0.5"
-                        title="Удалить строку"
-                      >
-                        ×
-                      </button>
+                      <Tooltip>
+                        <TooltipTrigger render={
+                          <Button variant="ghost" size="icon-xs" onClick={() => removeRow(row.id)} className="flex-shrink-0 text-muted-foreground/20 hover:text-destructive mt-0.5" />
+                        }>
+                          ×
+                        </TooltipTrigger>
+                        <TooltipContent>Удалить строку</TooltipContent>
+                      </Tooltip>
                     )}
                   </div>
 
@@ -1639,22 +1584,26 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                         onDrop={e => onCardDrop(e, row.id, w.id, null)}
                       >
                         {!locked && (
-                          <button
-                            onClick={() => addCard(row.id, w.id)}
-                            className="w-full mb-1.5 flex items-center justify-center gap-1 rounded text-[length:var(--text-12)] font-mono uppercase tracking-wide transition-colors"
-                            style={{
-                              height: 18,
-                              color: cssVar(effColor, 'fg-subtle'),
-                              opacity: 0.35,
-                              backgroundColor: cssVar(effColor, '900'),
-                              border: `1px dashed ${cssVar(effColor, '300')}`,
-                            }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.35'; }}
-                            title="Добавить задачу"
-                          >
-                            +
-                          </button>
+                          <Tooltip>
+                            <TooltipTrigger render={
+                              <button
+                                onClick={() => addCard(row.id, w.id)}
+                                className="w-full mb-1.5 flex items-center justify-center gap-1 rounded text-[length:var(--text-12)] font-mono uppercase tracking-wide transition-colors"
+                                style={{
+                                  height: 18,
+                                  color: cssVar(effColor, 'fg-subtle'),
+                                  opacity: 0.35,
+                                  backgroundColor: cssVar(effColor, '900'),
+                                  border: `1px dashed ${cssVar(effColor, '300')}`,
+                                }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.35'; }}
+                              />
+                            }>
+                              +
+                            </TooltipTrigger>
+                            <TooltipContent>Добавить задачу</TooltipContent>
+                          </Tooltip>
                         )}
 
                         <div className="flex flex-col gap-0">
@@ -1732,11 +1681,17 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                         className="flex-shrink-0 flex items-start gap-2 px-3 py-3 border-r border-border bg-background"
                         style={{ width: COL_W, minWidth: COL_W }}
                       >
-                        <span className="cursor-grab text-muted-foreground/30 hover:text-muted-foreground transition-colors select-none flex-shrink-0 mt-0.5 text-[length:var(--text-16)] leading-none" title="Перетащить строку">⠿</span>
+                        <Tooltip>
+                          <TooltipTrigger render={<span className="cursor-grab text-muted-foreground/30 hover:text-muted-foreground transition-colors select-none flex-shrink-0 mt-0.5 text-[length:var(--text-16)] leading-none" />}>⠿</TooltipTrigger>
+                          <TooltipContent>Перетащить строку</TooltipContent>
+                        </Tooltip>
                         <span className="text-[length:var(--text-12)] font-medium text-foreground flex-1 min-w-0 mt-0.5">
                           <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                         </span>
-                        <button onClick={() => removeRow(row.id)} className="flex-shrink-0 text-muted-foreground/20 hover:text-destructive transition-colors text-[length:var(--text-14)] leading-none mt-0.5" title="Удалить строку">×</button>
+                        <Tooltip>
+                          <TooltipTrigger render={<Button variant="ghost" size="icon-xs" onClick={() => removeRow(row.id)} className="flex-shrink-0 text-muted-foreground/20 hover:text-destructive mt-0.5" />}>×</TooltipTrigger>
+                          <TooltipContent>Удалить строку</TooltipContent>
+                        </Tooltip>
                       </div>
 
                       {/* Day grid */}
@@ -1765,22 +1720,26 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }} className="px-0.5 pt-1.5">
                             {([undefined, ...DAYS] as (Day | undefined)[]).map((day, i) => (
                               <div key={i} className="px-0.5">
-                                <button
-                                  onClick={() => addCard(row.id, aw.id, day)}
-                                  className="w-full flex items-center justify-center rounded text-[length:var(--text-11)] font-mono uppercase tracking-wide transition-colors"
-                                  style={{
-                                    height: 18,
-                                    color: cssVar(awColor, 'fg-subtle'),
-                                    opacity: 0.35,
-                                    backgroundColor: cssVar(awColor, '900'),
-                                    border: `1px dashed ${cssVar(awColor, '300')}`,
-                                  }}
-                                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
-                                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.35'; }}
-                                  title="Добавить задачу"
-                                >
-                                  +
-                                </button>
+                                <Tooltip>
+                                  <TooltipTrigger render={
+                                    <button
+                                      onClick={() => addCard(row.id, aw.id, day)}
+                                      className="w-full flex items-center justify-center rounded text-[length:var(--text-11)] font-mono uppercase tracking-wide transition-colors"
+                                      style={{
+                                        height: 18,
+                                        color: cssVar(awColor, 'fg-subtle'),
+                                        opacity: 0.35,
+                                        backgroundColor: cssVar(awColor, '900'),
+                                        border: `1px dashed ${cssVar(awColor, '300')}`,
+                                      }}
+                                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
+                                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.35'; }}
+                                    />
+                                  }>
+                                    +
+                                  </TooltipTrigger>
+                                  <TooltipContent>Добавить задачу</TooltipContent>
+                                </Tooltip>
                               </div>
                             ))}
                           </div>
@@ -1869,12 +1828,9 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
         {/* Bottom controls */}
         <div className="flex items-center gap-3 md:gap-4 text-[length:var(--text-12)] text-muted-foreground font-mono pb-2">
           {!locked && (
-            <button
-              onClick={addRow}
-              className="border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors text-foreground flex-shrink-0"
-            >
+            <Button variant="outline" size="sm" onClick={addRow} className="flex-shrink-0">
               + строка
-            </button>
+            </Button>
           )}
           <div className="hidden md:flex items-center gap-4 flex-1">
             {!locked && (
@@ -1887,31 +1843,27 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
             {locked && <span className="text-muted-foreground/60">Редактирование заблокировано</span>}
           </div>
           <div className="flex-1 md:hidden" />
-          <button
-            onClick={() => {
-              if (locked) { setShowLockModal(true); }
-              else { updateLocked(true); }
-            }}
-            className="flex-shrink-0 flex items-center gap-1.5 border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors text-foreground"
-            title={locked ? 'Разблокировать' : 'Заблокировать редактирование'}
-          >
-            <span className="text-[length:var(--text-14)]">{locked ? '🔒' : '🔓'}</span>
-            <span>{locked ? 'Заблокировано' : 'Заблокировать'}</span>
-          </button>
+          <Tooltip>
+            <TooltipTrigger render={
+              <Button variant="outline" size="sm" className="flex-shrink-0 gap-1.5" onClick={() => {
+                if (locked) { setShowLockModal(true); }
+                else { updateLocked(true); }
+              }} />
+            }>
+              <span className="text-[length:var(--text-14)]">{locked ? '🔒' : '🔓'}</span>
+              <span>{locked ? 'Заблокировано' : 'Заблокировать'}</span>
+            </TooltipTrigger>
+            <TooltipContent>{locked ? 'Разблокировать' : 'Заблокировать редактирование'}</TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
-      {showLockModal && (
-        <LockModal
-          onClose={() => setShowLockModal(false)}
-          onUnlock={() => { updateLocked(false); setShowLockModal(false); }}
-        />
-      )}
+      <LockModal
+        open={showLockModal}
+        onClose={() => setShowLockModal(false)}
+        onUnlock={() => { updateLocked(false); setShowLockModal(false); }}
+      />
 
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
-
-      {/* slideUp animation for toasts */}
-      <style>{`@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
     </div>
   );
