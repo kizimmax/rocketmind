@@ -1,4 +1,7 @@
 import { PageBottom } from "@/components/sections/PageBottom";
+import { ProductHero } from "@/components/sections/ProductHero";
+import { AboutProduct } from "@/components/sections/AboutProduct";
+import type { ProductData } from "@/lib/products";
 
 /**
  * Шаблон страницы услуги консалтинга / AI-продукта.
@@ -19,35 +22,40 @@ import { PageBottom } from "@/components/sections/PageBottom";
  * 13. CTA
  */
 
-type ServicePageTemplateProps = {
-  /** Заголовок H1 */
-  title: string;
-  /** Подзаголовок / оффер */
-  subtitle: string;
-};
+type ServicePageTemplateProps =
+  | { product: ProductData }
+  | { title: string; subtitle: string };
 
-export function ServicePageTemplate({
-  title,
-  subtitle,
-}: ServicePageTemplateProps) {
+export function ServicePageTemplate(props: ServicePageTemplateProps) {
+  const hasProduct = "product" in props;
+
   return (
     <div className="flex flex-col">
       {/* 1. Hero + CTA */}
-      <section className="flex min-h-[60vh] flex-col items-center justify-center px-5 py-24 text-center md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
-          <h1 className="font-heading text-4xl font-bold md:text-6xl">
-            {title}
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-            {subtitle}
-          </p>
-          <div className="mt-10">
-            <span className="inline-block rounded-sm bg-foreground px-8 py-3 font-mono text-sm uppercase tracking-wider text-background">
-              Оставить заявку
-            </span>
+      {hasProduct ? (
+        <ProductHero
+          caption={props.product.hero.caption}
+          title={props.product.hero.title}
+          description={props.product.hero.description}
+          ctaText={props.product.hero.ctaText}
+          factoids={props.product.hero.factoids}
+          coverImage={props.product.coverImage}
+        />
+      ) : (
+        <section className="flex min-h-[60vh] flex-col items-center justify-center px-5 py-24 text-center md:px-8 xl:px-14">
+          <div className="mx-auto max-w-[1512px]">
+            <h1 className="h1 text-foreground">{props.title}</h1>
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+              {props.subtitle}
+            </p>
+            <div className="mt-10">
+              <span className="inline-block rounded-sm bg-foreground px-8 py-3 font-mono text-sm uppercase tracking-wider text-background">
+                Оставить заявку
+              </span>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 2. Социальное доказательство */}
       <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
@@ -59,13 +67,23 @@ export function ServicePageTemplate({
       </section>
 
       {/* 3. О продукте */}
-      <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
-          <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            О продукте — заполнить
-          </p>
-        </div>
-      </section>
+      {hasProduct && props.product.about ? (
+        <AboutProduct
+          caption={props.product.about.caption}
+          title={props.product.about.title}
+          description={props.product.about.description}
+          accordion={props.product.about.accordion}
+          aboutImage={props.product.aboutImage}
+        />
+      ) : (
+        <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
+          <div className="mx-auto max-w-[1512px]">
+            <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              О продукте — заполнить
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* 4. Для кого */}
       <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">

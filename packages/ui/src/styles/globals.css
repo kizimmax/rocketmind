@@ -562,14 +562,14 @@ code {
  * Usage:  <h1 class="h1">…</h1>
  * Mobile (< 768px): smaller size. Desktop (≥ 768px): nominal size.
  *
- * .h1 — 80/40px, H1 Hero
+ * .h1 — 80/32px, H1 Hero
  * .h2 — 52/32px, H2, заголовки страниц
  * .h3 — 32/28px, H3, подзаголовки секций
  * .h4 — 24px,    H4, заголовки карточек
  */
 .h1 {
   font-family: var(--font-heading-family);
-  font-size: var(--text-40);   /* 40px mobile */
+  font-size: var(--text-32);   /* 32px mobile */
   font-weight: 800;
   line-height: 1.0;
   letter-spacing: -0.02em;

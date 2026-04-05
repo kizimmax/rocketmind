@@ -58,6 +58,29 @@ declare const Checkbox: React$1.ForwardRefExoticComponent<Omit<React$1.InputHTML
     indeterminate?: boolean;
 } & React$1.RefAttributes<HTMLInputElement>>;
 
+declare const DOT_GRID_LENS_DEFAULTS: {
+    readonly gridGap: 20;
+    readonly baseRadius: 1.5;
+    readonly maxScale: 3.3;
+    readonly lensRadius: 120;
+    readonly accentColor: false;
+};
+interface DotGridLensProps {
+    /** Grid step in px (min 16 recommended for performance). Default: 20 */
+    gridGap?: number;
+    /** Base dot radius in px. Default: 1.5 */
+    baseRadius?: number;
+    /** Dot scale multiplier at lens center. Default: 3.3 */
+    maxScale?: number;
+    /** Lens influence radius in px. Default: 120 */
+    lensRadius?: number;
+    /** Enable yellow accent color interpolation on hover (hero variant). Default: false */
+    accentColor?: boolean;
+    className?: string;
+    style?: React.CSSProperties;
+}
+declare function DotGridLens({ gridGap, baseRadius, maxScale, lensRadius, accentColor, className, style, }: DotGridLensProps): react_jsx_runtime.JSX.Element;
+
 declare const Dialog: React$1.FC<DialogPrimitive.DialogProps>;
 declare const DialogTrigger: React$1.ForwardRefExoticComponent<DialogPrimitive.DialogTriggerProps & React$1.RefAttributes<HTMLButtonElement>>;
 declare const DialogClose: React$1.ForwardRefExoticComponent<DialogPrimitive.DialogCloseProps & React$1.RefAttributes<HTMLButtonElement>>;
@@ -121,7 +144,7 @@ declare const NavigationMenuViewport: React$1.ForwardRefExoticComponent<Omit<Nav
 
 declare const noteVariants: (props?: ({
     variant?: "neutral" | "error" | "info" | "success" | "warning" | "action" | null | undefined;
-    tone?: "soft" | "filled" | null | undefined;
+    tone?: "filled" | "soft" | null | undefined;
     disabled?: boolean | null | undefined;
 } & class_variance_authority_types.ClassProp) | undefined) => string;
 declare function Note({ className, variant, tone, disabled, ...props }: React$1.ComponentProps<"div"> & VariantProps<typeof noteVariants>): react_jsx_runtime.JSX.Element;
@@ -273,6 +296,19 @@ declare function Tooltip({ ...props }: Tooltip$1.Root.Props): react_jsx_runtime.
 declare function TooltipTrigger({ ...props }: Tooltip$1.Trigger.Props): react_jsx_runtime.JSX.Element;
 declare function TooltipContent({ className, side, sideOffset, align, alignOffset, children, ...props }: Tooltip$1.Popup.Props & Pick<Tooltip$1.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">): react_jsx_runtime.JSX.Element;
 
+interface ProductCardProps {
+    /** Product title (H4, uppercase) */
+    title: string;
+    /** Short description */
+    description: string;
+    /** Cover image element (Next.js Image or plain img) */
+    image?: React$1.ReactNode;
+    /** Link href for the card */
+    href?: string;
+    className?: string;
+}
+declare function ProductCard({ title, description, image, href, className, }: ProductCardProps): react_jsx_runtime.JSX.Element;
+
 type AccordionFAQItem = {
     id: string;
     q: string;
@@ -391,4 +427,4 @@ type SiteHeaderProps = {
 };
 declare function SiteHeader({ basePath, className }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
 
-export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, Button, CTASectionDark, type CTASectionDarkProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, GlowingEffect, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, type LogoMarqueeItem, MobileNav, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, Radio, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderProps, Skeleton, Slider, type SliderProps, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ThemeProvider, Toaster, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, HEADER_NAV as rocketmindMenuItems, tabsListVariants, textareaVariants };
+export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, Button, CTASectionDark, type CTASectionDarkProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, GlowingEffect, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, type LogoMarqueeItem, MobileNav, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, ProductCard, type ProductCardProps, Radio, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderProps, Skeleton, Slider, type SliderProps, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ThemeProvider, Toaster, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, HEADER_NAV as rocketmindMenuItems, tabsListVariants, textareaVariants };

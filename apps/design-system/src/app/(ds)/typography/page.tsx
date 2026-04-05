@@ -61,7 +61,7 @@ export default function TypographyPage() {
                 <span className="w-8 shrink-0" />
               </div>
               {[
-                { label: "H1",         size: "80px", mobileSize: "40px", weight: "800", cls: "h1", tailwind: "h1" },
+                { label: "H1",         size: "80px", mobileSize: "32px", weight: "800", cls: "h1", tailwind: "h1" },
                 { label: "H2",         size: "52px", mobileSize: "32px", weight: "700", cls: "h2", tailwind: "h2" },
                 { label: "H3",         size: "32px", mobileSize: "28px", weight: "700", cls: "h3", tailwind: "h3" },
                 { label: "H4",         size: "24px", mobileSize: "20px", weight: "700", cls: "h4", tailwind: "h4" },
@@ -100,7 +100,7 @@ export default function TypographyPage() {
           <TabsContent value="specimens">
             <div className="border border-border rounded-lg overflow-hidden">
               {[
-                { label: "H1", text: "Запускайте AI-агентов быстро", cls: "h1", size: "80px", mobileSize: "40px", letterSpacing: "-0.02em", figmaSpacing: "-2%", lineHeight: "1.0", figmaLineHeight: "100%", twCopy: "h1" },
+                { label: "H1", text: "Запускайте AI-агентов быстро", cls: "h1", size: "80px", mobileSize: "32px", letterSpacing: "-0.02em", figmaSpacing: "-2%", lineHeight: "1.0", figmaLineHeight: "100%", twCopy: "h1" },
                 { label: "H2", text: "AI-агенты для вашего бизнеса", cls: "h2", size: "52px", mobileSize: "32px", letterSpacing: "-0.02em", figmaSpacing: "-2%", lineHeight: "1.08", figmaLineHeight: "108%", twCopy: "h2" },
                 { label: "H3", text: "Аналитика и маркетинг без команды", cls: "h3", size: "32px", mobileSize: "28px", letterSpacing: "-0.015em", figmaSpacing: "-1.5%", lineHeight: "1.16", figmaLineHeight: "116%", twCopy: "h3" },
                 { label: "H4", text: "Выберите агента под задачу", cls: "h4", size: "24px", mobileSize: "20px", letterSpacing: "-0.01em", figmaSpacing: "-1%", lineHeight: "1.2", figmaLineHeight: "120%", twCopy: "h4" },

@@ -19,6 +19,7 @@ import { DialogShowcase } from "@/components/ui/dialog-showcase"
 import { DropdownMenuShowcase } from "@/components/ui/dropdown-menu-showcase"
 import { ToastShowcase } from "@/components/ui/toast-showcase"
 import { ShowMoreShowcase } from "@/components/ui/show-more-showcase"
+import { AccordionShowcase } from "@/components/ui/accordion-showcase"
 import {
   Rocket, User, Gem, BookOpen, Search,
   Loader2, Trash2, ArrowRight, Wrench, GraduationCap
@@ -1499,6 +1500,20 @@ export default function ComponentsPage() {
             </div>
           </div>
         </div>
+
+          {/* ── Аккордеон ── */}
+          <SubSection id="components-accordion" title="Аккордеон" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Минимальный аккордеон для продуктовых страниц. Иконки +/−, бордер <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">#404040</code>, заголовок — Label 16, контент — Copy 14. Одновременно открыт только один элемент.
+          </p>
+          <div className="flex flex-col gap-8">
+            <div>
+              <p className="text-[length:var(--text-12)] text-muted-foreground mb-3">Интерактивный пример</p>
+              <div className="p-6 border border-border rounded-sm bg-background max-w-[700px]">
+                <AccordionShowcase />
+              </div>
+            </div>
+          </div>
       </Section>
 
       <Separator />

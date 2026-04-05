@@ -6,7 +6,7 @@ import { Sparkles } from "lucide-react";
 import { useMessages } from "@/lib/hooks";
 import { MessageBubble } from "./message";
 import { ChatInput } from "./chat-input";
-import { DotGridLens } from "./dot-grid-lens";
+import { DotGridLens } from "@rocketmind/ui";
 import type { Agent } from "@/lib/types";
 import { getInitials } from "@/lib/utils";
 

@@ -309,7 +309,7 @@ export default function AnimationsPage() {
               {[
                 { token: "--dot-size",         value: "3px",     desc: "Базовый диаметр точки" },
                 { token: "--dot-size-max",     value: "10px",    desc: "Максимальный диаметр в центре линзы" },
-                { token: "--dot-gap",          value: "28px",    desc: "Шаг сетки (расстояние между центрами)" },
+                { token: "--dot-gap",          value: "20px",    desc: "Шаг сетки (расстояние между центрами)" },
                 { token: "--lens-radius",      value: "120px",   desc: "Радиус влияния курсора" },
                 { token: "--dot-color",        value: "#CBCBCB / #404040", desc: "Цвет точек (= --border токен)" },
                 { token: "--dot-color-accent", value: "#FFCC00", desc: "Акцентный цвет точек в центре линзы" },

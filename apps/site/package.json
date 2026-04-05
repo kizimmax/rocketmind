@@ -9,8 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@rocketmind/ui": "*",
     "@radix-ui/react-navigation-menu": "^1.2.14",
+    "@rocketmind/ui": "*",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.577.0",
     "motion": "^12.36.0",
     "next": "16.1.6",
