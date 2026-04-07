@@ -2180,26 +2180,34 @@ function ForWhomSection({
 // src/components/ui/process-section.tsx
 var import_react5 = require("react");
 var import_jsx_runtime30 = require("react/jsx-runtime");
-function TimelineMark({ isActive, isLast }) {
+function TimelineMark({
+  isActive,
+  isLast,
+  lineFill
+}) {
   return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "relative w-4 shrink-0 flex flex-col items-center", children: [
     /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "w-px h-[2px] bg-[#404040]" }),
     /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
       "div",
       {
-        className: cn(
-          "w-4 h-4 border-2 transition-colors duration-500",
-          isActive ? "bg-[#F0F0F0] border-[#F0F0F0]" : "bg-[#0A0A0A] border-[#404040]"
-        )
+        className: "w-4 h-4 border-2 transition-colors duration-300",
+        style: {
+          backgroundColor: isActive ? "#F0F0F0" : "#0A0A0A",
+          borderColor: isActive ? "#F0F0F0" : "#404040"
+        }
       }
     ),
-    !isLast && /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "w-px flex-1 min-h-[40px] relative", children: [
+    !isLast && /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "w-px flex-1 min-h-[40px] relative overflow-hidden", children: [
       /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "absolute inset-0 bg-[#404040]" }),
-      isActive && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
         "div",
         {
-          className: "absolute inset-0 transition-opacity duration-500",
+          className: "absolute top-0 left-0 right-0 origin-top",
           style: {
-            background: "linear-gradient(180deg, #F0F0F0 0%, #404040 90%)"
+            height: "100%",
+            background: "linear-gradient(180deg, #F0F0F0 0%, #F0F0F0 70%, #404040 100%)",
+            transform: `scaleY(${lineFill})`,
+            transition: "transform 0.15s ease-out"
           }
         }
       )
@@ -2210,29 +2218,26 @@ function StepCard({
   step,
   isActive,
   isLast,
+  lineFill,
   onRef
 }) {
   return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { ref: onRef, className: "flex gap-10 max-w-[364px]", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(TimelineMark, { isActive, isLast }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(TimelineMark, { isActive, isLast, lineFill }),
     /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex flex-col gap-3 pb-16", children: [
       /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex flex-col gap-2", children: [
         /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "span",
           {
-            className: cn(
-              "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] transition-colors duration-500",
-              isActive ? "text-[#F0F0F0]" : "text-[#404040]"
-            ),
+            className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] transition-colors duration-300",
+            style: { color: isActive ? "#F0F0F0" : "#404040" },
             children: step.number
           }
         ),
         /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "h3",
           {
-            className: cn(
-              "h3 transition-colors duration-500",
-              isActive ? "text-[#F0F0F0]" : "text-[#939393]"
-            ),
+            className: "h3 transition-colors duration-300",
+            style: { color: isActive ? "#F0F0F0" : "#939393" },
             children: step.title
           }
         )
@@ -2240,20 +2245,16 @@ function StepCard({
       /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
         "p",
         {
-          className: cn(
-            "text-[length:var(--text-16)] leading-[1.28] transition-colors duration-500",
-            isActive ? "text-[#939393]" : "text-[#939393]/50"
-          ),
+          className: "text-[length:var(--text-16)] leading-[1.28] transition-colors duration-300",
+          style: { color: isActive ? "#939393" : "rgba(147,147,147,0.5)" },
           children: step.text
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
         "span",
         {
-          className: cn(
-            "font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] transition-colors duration-500",
-            isActive ? "text-[#FFCC00]" : "text-[#939393]"
-          ),
+          className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] transition-colors duration-300",
+          style: { color: isActive ? "#FFCC00" : "#939393" },
           children: step.duration
         }
       )
@@ -2283,28 +2284,53 @@ function ProcessSection({
   className
 }) {
   const [activeIndex, setActiveIndex] = (0, import_react5.useState)(0);
+  const [lineFills, setLineFills] = (0, import_react5.useState)(() => Array(steps.length).fill(0));
   const stepRefs = (0, import_react5.useRef)([]);
   const sectionRef = (0, import_react5.useRef)(null);
+  const rafRef = (0, import_react5.useRef)(0);
   if (stepRefs.current.length !== steps.length) {
     stepRefs.current = Array(steps.length).fill(null);
   }
-  (0, import_react5.useEffect)(() => {
-    const observers = [];
+  const updateProgress = (0, import_react5.useCallback)(() => {
+    const viewportCenter = window.innerHeight * 0.45;
+    let newActive = 0;
+    const newFills = Array(steps.length).fill(0);
     stepRefs.current.forEach((el, i) => {
       if (!el) return;
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActiveIndex(i);
-          }
-        },
-        { threshold: 0.6, rootMargin: "-30% 0px -30% 0px" }
-      );
-      observer.observe(el);
-      observers.push(observer);
+      const rect = el.getBoundingClientRect();
+      const stepTop = rect.top;
+      if (stepTop < viewportCenter) {
+        newActive = i;
+      }
+      const nextEl = stepRefs.current[i + 1];
+      if (nextEl && i <= newActive) {
+        const nextRect = nextEl.getBoundingClientRect();
+        const totalDistance = nextRect.top - stepTop;
+        if (totalDistance > 0) {
+          const scrolled = viewportCenter - stepTop;
+          const progress = Math.max(0, Math.min(1, scrolled / totalDistance));
+          newFills[i] = progress;
+        }
+      }
+      if (i < newActive) {
+        newFills[i] = 1;
+      }
     });
-    return () => observers.forEach((o) => o.disconnect());
+    setActiveIndex(newActive);
+    setLineFills(newFills);
   }, [steps.length]);
+  (0, import_react5.useEffect)(() => {
+    function onScroll() {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(updateProgress);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    updateProgress();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [updateProgress]);
   const hasParticipants = participants && participants.length > 0 && participantsTag;
   return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
     "section",
@@ -2330,6 +2356,7 @@ function ProcessSection({
               step,
               isActive: i <= activeIndex,
               isLast: i === steps.length - 1,
+              lineFill: lineFills[i],
               onRef: (el) => {
                 stepRefs.current[i] = el;
               }
@@ -2354,6 +2381,7 @@ function ProcessSection({
               step,
               isActive: i <= activeIndex,
               isLast: i === steps.length - 1,
+              lineFill: lineFills[i],
               onRef: (el) => {
                 stepRefs.current[i] = el;
               }
