@@ -35,6 +35,7 @@ export * from './components/ui/tooltip';
 export * from './components/ui/product-card';
 
 export * from './components/ui/for-whom-section';
+export * from './components/ui/process-section';
 
 // Blocks
 export * from './components/ui/accordion-faq';

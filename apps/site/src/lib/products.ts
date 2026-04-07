@@ -45,6 +45,28 @@ export type ForWhomData = {
   wideColumn?: "left" | "right";
 };
 
+export type ProcessStep = {
+  number: string;
+  title: string;
+  text: string;
+  duration: string;
+};
+
+export type ProcessParticipant = {
+  role: string;
+  text: string;
+};
+
+export type ProcessData = {
+  tag: string;
+  title: string;
+  subtitle: string;
+  description?: string;
+  steps: ProcessStep[];
+  participantsTag?: string;
+  participants?: ProcessParticipant[];
+};
+
 export type ProductData = {
   slug: string;
   category: string;
@@ -63,6 +85,8 @@ export type ProductData = {
   about: AboutProductData | null;
   // For whom
   audience: ForWhomData | null;
+  // Process
+  process: ProcessData | null;
   // Image paths (auto-resolved)
   coverImage: string;
   aboutImage: string | null;
@@ -137,6 +161,7 @@ export function getProductBySlug(slug: string): ProductData | null {
     },
     about,
     audience: data.audience ?? null,
+    process: data.process ?? null,
     coverImage,
     aboutImage,
   };

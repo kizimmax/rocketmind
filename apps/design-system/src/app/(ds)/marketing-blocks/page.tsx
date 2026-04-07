@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Separator, CTASectionDark, CTASectionYellow, AccordionFAQ, ForWhomSection } from "@rocketmind/ui"
+import { Separator, CTASectionDark, CTASectionYellow, AccordionFAQ, ForWhomSection, ProcessSection } from "@rocketmind/ui"
 import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
 import { CasesSectionShowcase } from "@/components/ds/cases-section-showcase"
@@ -194,6 +194,32 @@ export default function MarketingBlocksPage() {
               { title: "Крупные корпорации", text: "Выстроят единую и прозрачную стратегию для всего портфеля продуктов" },
               { title: "Платформы", text: "Создадут интегрированный клиентский опыт и масштабировать влияние" },
               { title: "Растущие компании", text: "Поймут устройство своей рыночной ниши и найдут новые источники монетизации" },
+            ]}
+          />
+        </div>
+
+        {/* ── Process — Прозрачный процесс ── */}
+        <SubSection id="marketing-blocks-process" title="Прозрачный процесс (этапы)" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+          Блок с этапами работы. Левая колонка sticky на desktop, правая — шаги с таймлайном. Шаги подсвечиваются при скролле через <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-caption-family)]">IntersectionObserver</code>. Опциональный блок участников внизу.
+        </p>
+        <div className="-mx-5 md:-mx-10 border-y border-border mb-8">
+          <ProcessSection
+            tag="этапы"
+            title="Прозрачный процесс"
+            subtitle="Общий срок проекта: ~10 недель"
+            description="Бизнес-дизайн сессии проходят очно или онлайн 1 раз в неделю."
+            steps={[
+              { number: "01", title: "Образовательный практикум", text: "Погружение команды в методологию", duration: "1 неделя" },
+              { number: "02", title: "Сессии бизнес-дизайна", text: "Аудит текущего состояния и поиск точек роста", duration: "6 недель" },
+              { number: "03", title: "Разработка стратегии", text: "Проектирование связей и партнерств", duration: "2 недели" },
+              { number: "04", title: "Завершение и поддержка", text: "Выбираем подходящую бизнес-модель", duration: "1 неделя" },
+            ]}
+            participantsTag="кого важно включить в процесс"
+            participants={[
+              { role: "Руководство", text: "Принимает стратегические решения и задаёт вектор развития" },
+              { role: "Топ-менеджеры", text: "Согласовывают и внедряют экосистемные инициативы" },
+              { role: "Лидеры направлений", text: "Отвечают за интеграцию новых решений" },
             ]}
           />
         </div>

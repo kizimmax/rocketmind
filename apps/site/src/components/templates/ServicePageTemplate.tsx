@@ -2,7 +2,7 @@ import { PageBottom } from "@/components/sections/PageBottom";
 import { ProductHero } from "@/components/sections/ProductHero";
 import { AboutProduct } from "@/components/sections/AboutProduct";
 import { LogoMarqueeSection } from "@/components/sections/LogoMarqueeSection";
-import { ForWhomSection } from "@rocketmind/ui";
+import { ForWhomSection, ProcessSection } from "@rocketmind/ui";
 import type { ProductData } from "@/lib/products";
 
 /**
@@ -119,13 +119,25 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
       </section>
 
       {/* 7. Прозрачный процесс (этапы) */}
-      <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
-          <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Прозрачный процесс — заполнить
-          </p>
-        </div>
-      </section>
+      {hasProduct && props.product.process ? (
+        <ProcessSection
+          tag={props.product.process.tag}
+          title={props.product.process.title}
+          subtitle={props.product.process.subtitle}
+          description={props.product.process.description}
+          steps={props.product.process.steps}
+          participantsTag={props.product.process.participantsTag}
+          participants={props.product.process.participants}
+        />
+      ) : (
+        <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
+          <div className="mx-auto max-w-[1512px]">
+            <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              Прозрачный процесс — заполнить
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* 8. Продолжительность (опционально) */}
       <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
