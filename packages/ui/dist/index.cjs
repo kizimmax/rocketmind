@@ -2122,7 +2122,7 @@ function FactCard({ title, text }) {
   return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex flex-col gap-4", children: [
     /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h4", { className: "h4 text-[#0A0A0A]", children: title }),
     /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "h-0 w-full border-t border-[#404040]" }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A]", children: text })
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]", children: text })
   ] });
 }
 function ForWhomSection({
@@ -2156,8 +2156,8 @@ function ForWhomSection({
       /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex flex-col gap-2", children: [
         /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
         /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex gap-8", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "h2 text-[#0A0A0A]", children: title }),
-          subtitle && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex-1 flex items-end", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: subtitle }) })
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "h2 text-[#0A0A0A] w-1/2 shrink-0", children: title }),
+          subtitle && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "w-1/2 flex flex-col justify-start", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]", children: subtitle }) })
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex gap-8", children: [
