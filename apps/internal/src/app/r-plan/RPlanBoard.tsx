@@ -1571,7 +1571,7 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                     <span className="text-[length:var(--text-12)] font-medium text-foreground flex-1 min-w-0 mt-0.5">
                       <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                     </span>
-                    {!isMobile && (
+                    {!isMobile && !locked && (
                       <Tooltip>
                         <TooltipTrigger render={
                           <Button variant="ghost" size="icon-micro" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />
@@ -1705,10 +1705,12 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                         <span className="text-[length:var(--text-12)] font-medium text-foreground flex-1 min-w-0 mt-0.5">
                           <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                         </span>
-                        <Tooltip>
-                          <TooltipTrigger render={<Button variant="ghost" size="icon-micro" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />}>×</TooltipTrigger>
-                          <TooltipContent>Удалить строку</TooltipContent>
-                        </Tooltip>
+                        {!locked && (
+                          <Tooltip>
+                            <TooltipTrigger render={<Button variant="ghost" size="icon-micro" onClick={() => removeRow(row.id)} className="flex-shrink-0 opacity-0 group-hover/row:opacity-100 transition-opacity text-muted-foreground/20 hover:text-destructive mt-0.5" />}>×</TooltipTrigger>
+                            <TooltipContent>Удалить строку</TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
 
                       {/* Day grid */}
