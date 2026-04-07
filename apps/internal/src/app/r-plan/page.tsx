@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { ref, onValue, get, set, update, remove } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import GanttBoard, { getCurrentWeekIndex, formatWeekDates } from './GanttBoard';
+import RPlanBoard, { getCurrentWeekIndex, formatWeekDates } from './RPlanBoard';
 
 type TrackInfo = { name: string; color?: string; archived?: boolean; startWeek?: number };
 
@@ -31,8 +31,8 @@ function getTrackFromURL(): string | null {
   const qTrack = params.get('track');
   if (qTrack) return qTrack;
   const parts = window.location.pathname.split('/').filter(Boolean);
-  const ganttIdx = parts.indexOf('gantt');
-  if (ganttIdx >= 0 && parts[ganttIdx + 1]) return parts[ganttIdx + 1];
+  const planIdx = parts.indexOf('r-plan');
+  if (planIdx >= 0 && parts[planIdx + 1]) return parts[planIdx + 1];
   return null;
 }
 
@@ -117,7 +117,7 @@ function WeekSelect({ value, onChange }: { value: number; onChange: (v: number) 
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 
-export default function GanttPage() {
+export default function RPlanPage() {
   const [trackSlug, setTrackSlug] = useState<string | null>(null);
   const [trackName, setTrackName] = useState('');
   const [trackColor, setTrackColor] = useState('yellow');
@@ -128,7 +128,7 @@ export default function GanttPage() {
     const slug = getTrackFromURL();
     if (!slug) { setMode('index'); return; }
     setTrackSlug(slug);
-    get(ref(db, 'gantt_config/tracks')).then((snap) => {
+    get(ref(db, 'rplan_config/tracks')).then((snap) => {
       const tracks: Record<string, TrackInfo> | null = snap.val();
       if (tracks && slug in tracks && !tracks[slug].archived) {
         setTrackName(tracks[slug].name);
@@ -137,8 +137,8 @@ export default function GanttPage() {
         setMode('board');
         const base = window.location.pathname.replace(/\/$/, '');
         const parts = base.split('/');
-        const ganttIdx = parts.indexOf('gantt');
-        if (!parts[ganttIdx + 1]) window.history.replaceState({}, '', `${base}/${slug}`);
+        const planIdx = parts.indexOf('r-plan');
+        if (!parts[planIdx + 1]) window.history.replaceState({}, '', `${base}/${slug}`);
       } else {
         setMode('notfound');
       }
@@ -192,7 +192,7 @@ export default function GanttPage() {
 
   useEffect(() => {
     if (mode === 'index' && authed) {
-      const unsub = onValue(ref(db, 'gantt_config/tracks'), (snap) => {
+      const unsub = onValue(ref(db, 'rplan_config/tracks'), (snap) => {
         setTracks(snap.val() ?? {});
       });
       return () => unsub();
@@ -237,18 +237,18 @@ export default function GanttPage() {
   const handleCreate = useCallback(async () => {
     if (!newName.trim() || !newSlug || slugError) return;
     setCreating(true);
-    const existing = await get(ref(db, `gantt_config/tracks/${newSlug}`));
+    const existing = await get(ref(db, `rplan_config/tracks/${newSlug}`));
     if (existing.exists()) { setSlugError('Такой slug уже занят'); setCreating(false); return; }
-    await set(ref(db, `gantt_config/tracks/${newSlug}`), { name: newName.trim(), color: newColor, startWeek: newStartWeek });
+    await set(ref(db, `rplan_config/tracks/${newSlug}`), { name: newName.trim(), color: newColor, startWeek: newStartWeek });
     setNewName(''); setNewSlug(''); setNewColor('yellow'); setNewStartWeek(getCurrentWeekIndex()); setSlugTouched(false); setShowForm(false); setCreating(false);
   }, [newName, newSlug, newColor, newStartWeek, slugError]);
 
   const archiveTrack = useCallback(async (slug: string) => {
-    await update(ref(db, `gantt_config/tracks/${slug}`), { archived: true });
+    await update(ref(db, `rplan_config/tracks/${slug}`), { archived: true });
   }, []);
 
   const restoreTrack = useCallback(async (slug: string) => {
-    await update(ref(db, `gantt_config/tracks/${slug}`), { archived: false });
+    await update(ref(db, `rplan_config/tracks/${slug}`), { archived: false });
   }, []);
 
   const startEdit = useCallback((slug: string, info: TrackInfo) => {
@@ -264,16 +264,16 @@ export default function GanttPage() {
     const newData = { name: editName.trim(), color: editColor, startWeek: editStartWeek };
     if (editSlug !== editingSlug) {
       // Rename: copy track config + data to new slug, delete old
-      const oldTrack = await get(ref(db, `gantt_config/tracks/${editingSlug}`));
-      await set(ref(db, `gantt_config/tracks/${editSlug}`), { ...oldTrack.val(), ...newData });
-      await remove(ref(db, `gantt_config/tracks/${editingSlug}`));
-      const dataSnap = await get(ref(db, `gantt_tracks/${editingSlug}`));
+      const oldTrack = await get(ref(db, `rplan_config/tracks/${editingSlug}`));
+      await set(ref(db, `rplan_config/tracks/${editSlug}`), { ...oldTrack.val(), ...newData });
+      await remove(ref(db, `rplan_config/tracks/${editingSlug}`));
+      const dataSnap = await get(ref(db, `rplan_tracks/${editingSlug}`));
       if (dataSnap.exists()) {
-        await set(ref(db, `gantt_tracks/${editSlug}`), dataSnap.val());
-        await remove(ref(db, `gantt_tracks/${editingSlug}`));
+        await set(ref(db, `rplan_tracks/${editSlug}`), dataSnap.val());
+        await remove(ref(db, `rplan_tracks/${editingSlug}`));
       }
     } else {
-      await update(ref(db, `gantt_config/tracks/${editingSlug}`), newData);
+      await update(ref(db, `rplan_config/tracks/${editingSlug}`), newData);
     }
     setEditingSlug(null);
   }, [editingSlug, editName, editSlug, editSlugError, editColor, editStartWeek]);
@@ -284,19 +284,19 @@ export default function GanttPage() {
     if (!tracks) return;
     const trackInfo = tracks[slug];
     // Read track data for backup
-    const dataSnap = await get(ref(db, `gantt_tracks/${slug}`));
+    const dataSnap = await get(ref(db, `rplan_tracks/${slug}`));
     const trackData = dataSnap.val();
     // Store backup in memory
     deletedBackups.current[slug] = { track: trackInfo, data: trackData };
     // Delete from Firebase
-    await remove(ref(db, `gantt_config/tracks/${slug}`));
-    if (trackData) await remove(ref(db, `gantt_tracks/${slug}`));
+    await remove(ref(db, `rplan_config/tracks/${slug}`));
+    if (trackData) await remove(ref(db, `rplan_tracks/${slug}`));
     // Toast with undo
     showToast(`Трек «${trackInfo.name}» удалён`, async () => {
       const backup = deletedBackups.current[slug];
       if (!backup) return;
-      await set(ref(db, `gantt_config/tracks/${slug}`), backup.track);
-      if (backup.data) await set(ref(db, `gantt_tracks/${slug}`), backup.data);
+      await set(ref(db, `rplan_config/tracks/${slug}`), backup.track);
+      if (backup.data) await set(ref(db, `rplan_tracks/${slug}`), backup.data);
       delete deletedBackups.current[slug];
     }, 10000);
   }, [tracks, showToast]);
@@ -325,7 +325,7 @@ export default function GanttPage() {
 
   // ── Board mode ───────────────────────────────────────────────────────────
   if (mode === 'board' && trackSlug) {
-    return <GanttBoard dbPath={`gantt_tracks/${trackSlug}`} trackName={trackName} trackColor={trackColor} startWeekIdx={trackStartWeek} />;
+    return <RPlanBoard dbPath={`rplan_tracks/${trackSlug}`} trackName={trackName} trackColor={trackColor} startWeekIdx={trackStartWeek} />;
   }
 
   // ── Not found ────────────────────────────────────────────────────────────
@@ -348,7 +348,7 @@ export default function GanttPage() {
           <div className="space-y-1">
             <span className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] text-muted-foreground">Rocketmind</span>
             <h1 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase tracking-tight text-foreground">
-              Gantt-треки
+              R-Plan треки
             </h1>
           </div>
           <div className="space-y-2">
@@ -380,7 +380,7 @@ export default function GanttPage() {
         <div className="space-y-1">
           <span className="font-mono text-[length:var(--text-12)] uppercase tracking-[0.12em] text-muted-foreground">Rocketmind</span>
           <h1 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase tracking-tight text-foreground">
-            Gantt-треки
+            R-Plan треки
           </h1>
         </div>
 
@@ -417,7 +417,7 @@ export default function GanttPage() {
                     <div className="space-y-1.5">
                       <label className="block text-[length:var(--text-12)] text-muted-foreground font-mono uppercase tracking-wide">Slug (URL)</label>
                       <div className="flex items-center gap-0 rounded-lg border border-border overflow-hidden transition-colors focus-within:border-foreground">
-                        <span className="text-[length:var(--text-14)] text-muted-foreground/50 pl-3 flex-shrink-0">/gantt/</span>
+                        <span className="text-[length:var(--text-14)] text-muted-foreground/50 pl-3 flex-shrink-0">/r-plan/</span>
                         <input
                           value={editSlug}
                           onChange={e => setEditSlug(e.target.value.toLowerCase())}
@@ -452,7 +452,7 @@ export default function GanttPage() {
                       <span className="text-muted-foreground/20">·</span>
                       <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground">{info.name}</span>
                     </div>
-                    <p className="mt-2 text-[length:var(--text-14)] text-muted-foreground">/gantt/{slug}</p>
+                    <p className="mt-2 text-[length:var(--text-14)] text-muted-foreground">/r-plan/{slug}</p>
                   </button>
                   <div className="flex flex-col justify-center gap-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
@@ -510,7 +510,7 @@ export default function GanttPage() {
                 <div className="space-y-1.5">
                   <label className="block text-[length:var(--text-12)] text-muted-foreground font-mono uppercase tracking-wide">Slug (URL)</label>
                   <div className="flex items-center gap-0 rounded-lg border border-border overflow-hidden transition-colors focus-within:border-foreground">
-                    <span className="text-[length:var(--text-14)] text-muted-foreground/50 pl-3 flex-shrink-0">/gantt/</span>
+                    <span className="text-[length:var(--text-14)] text-muted-foreground/50 pl-3 flex-shrink-0">/r-plan/</span>
                     <input
                       value={newSlug}
                       onChange={e => { setNewSlug(e.target.value.toLowerCase()); setSlugTouched(true); }}
@@ -570,7 +570,7 @@ export default function GanttPage() {
                               <span className="text-muted-foreground/15">·</span>
                               <span className="font-mono text-[length:var(--text-11)] uppercase tracking-[0.08em] text-muted-foreground/40">{info.name}</span>
                             </div>
-                            <p className="mt-1 text-[length:var(--text-13)] text-muted-foreground/40">/gantt/{slug}</p>
+                            <p className="mt-1 text-[length:var(--text-13)] text-muted-foreground/40">/r-plan/{slug}</p>
                           </div>
                           <div className="flex items-center gap-0.5 px-2">
                             <button

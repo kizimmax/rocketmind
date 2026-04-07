@@ -1,8 +1,8 @@
 /**
- * One-time migration: copies Firebase data from `gantt` → `gantt_tracks/siteandsaas`
- * and registers the track in `gantt_config/tracks`.
+ * One-time migration: copies Firebase data from `rplan` → `rplan_tracks/siteandsaas`
+ * and registers the track in `rplan_config/tracks`.
  *
- * Usage: node scripts/migrate-gantt-to-tracks.mjs
+ * Usage: node scripts/migrate-rplan-to-tracks.mjs
  */
 
 import { initializeApp } from 'firebase/app';
@@ -20,34 +20,34 @@ const db = getDatabase(app);
 
 async function migrate() {
   // 1. Read existing data
-  const snap = await get(ref(db, 'gantt'));
+  const snap = await get(ref(db, 'rplan'));
   if (!snap.exists()) {
-    console.log('No data at "gantt" — nothing to migrate.');
+    console.log('No data at "rplan" — nothing to migrate.');
     process.exit(0);
   }
   const data = snap.val();
   console.log(`Found data: ${Object.keys(data).join(', ')}`);
 
   // 2. Check if target already has data
-  const targetSnap = await get(ref(db, 'gantt_tracks/siteandsaas'));
+  const targetSnap = await get(ref(db, 'rplan_tracks/siteandsaas'));
   if (targetSnap.exists()) {
-    console.log('Target "gantt_tracks/siteandsaas" already has data. Aborting to avoid overwrite.');
+    console.log('Target "rplan_tracks/siteandsaas" already has data. Aborting to avoid overwrite.');
     process.exit(1);
   }
 
   // 3. Copy data to new path
-  await set(ref(db, 'gantt_tracks/siteandsaas'), data);
-  console.log('Copied gantt → gantt_tracks/siteandsaas');
+  await set(ref(db, 'rplan_tracks/siteandsaas'), data);
+  console.log('Copied rplan → rplan_tracks/siteandsaas');
 
   // 4. Register track
-  await set(ref(db, 'gantt_config/tracks/siteandsaas'), { name: 'Сайт и SaaS' });
-  console.log('Registered track "siteandsaas" in gantt_config/tracks');
+  await set(ref(db, 'rplan_config/tracks/siteandsaas'), { name: 'Сайт и SaaS' });
+  console.log('Registered track "siteandsaas" in rplan_config/tracks');
 
   // 5. Verify
-  const verify = await get(ref(db, 'gantt_tracks/siteandsaas'));
+  const verify = await get(ref(db, 'rplan_tracks/siteandsaas'));
   console.log(`Verification: ${verify.exists() ? 'OK' : 'FAILED'}`);
 
-  console.log('\nDone! Old data at "gantt" is preserved. Delete it manually after confirming.');
+  console.log('\nDone! Old data at "rplan" is preserved. Delete it manually after confirming.');
   process.exit(0);
 }
 

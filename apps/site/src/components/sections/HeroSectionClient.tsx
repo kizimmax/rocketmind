@@ -18,7 +18,7 @@ import { RoundGlassLens } from "@/components/ui/round-glass-lens";
 import { rocketmindHeroRotatingLines } from "@/content/rocketmind-hero";
 import type { PartnerLogo } from "@/lib/partner-logos";
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind" : "";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 import { MobileNav } from "./MobileNav";
 import { RocketmindMenu } from "./RocketmindMenu";

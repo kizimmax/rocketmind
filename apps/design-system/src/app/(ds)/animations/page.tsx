@@ -9,6 +9,7 @@ import {
   ToggleAnimCard, LinkCTADemo,
 } from "@/components/ds/shared"
 import { DotGridDemo, AnimatedGridLinesDemo, LensShowcase } from "@/components/ds/animation-demos"
+import { SceneHero, SceneGradient, SceneMinimal, LensPropsTable } from "@/components/ds/LensDemoScenes"
 
 export default function AnimationsPage() {
   return (
@@ -446,6 +447,91 @@ export default function AnimationsPage() {
           к краю.
         </p>
         <LensShowcase storageKey="ds:lens:8.12:main" size={280} />
+
+        {/* Примеры сцен */}
+        <SpecBlock title="Примеры использования">
+          <div className="space-y-8">
+            <div className="space-y-3">
+              <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-widest text-muted-foreground">
+                Пример 1 — anchorRef + motion
+              </p>
+              <SceneHero storageKey="ds:lens:8.12:hero" />
+              <pre className="rounded-xl bg-muted p-5 text-sm overflow-x-auto">
+                <code>{`<RoundGlassLens
+  sceneRef={sceneRef}
+  anchorRef={anchorRef}
+  size={280}
+  xOffset={60}
+  yOffset={18}
+  motionParallax
+/>`}</code>
+              </pre>
+            </div>
+
+            <div className="space-y-3">
+              <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-widest text-muted-foreground">
+                Пример 2 — Custom optical settings
+              </p>
+              <SceneGradient storageKey="ds:lens:8.12:gradient" />
+              <pre className="rounded-xl bg-muted p-5 text-sm overflow-x-auto">
+                <code>{`<RoundGlassLens
+  sceneRef={sceneRef}
+  size={220}
+  xOffset={-40}
+  refraction={0.04}
+  depth={0.22}
+  dispersion={0.55}
+  distortionRadius={1.1}
+  blur={0.22}
+  gradientAngle={135}
+  motionParallax
+/>`}</code>
+              </pre>
+            </div>
+
+            <div className="space-y-3">
+              <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-widest text-muted-foreground">
+                Пример 3 — Subtle / no shadow
+              </p>
+              <SceneMinimal storageKey="ds:lens:8.12:minimal" />
+              <pre className="rounded-xl bg-muted p-5 text-sm overflow-x-auto">
+                <code>{`<RoundGlassLens
+  sceneRef={sceneRef}
+  size={180}
+  refraction={0.025}
+  depth={0.14}
+  dispersion={0.28}
+  blur={0.12}
+  shadowEnabled={false}
+  motionParallax
+/>`}</code>
+              </pre>
+            </div>
+          </div>
+        </SpecBlock>
+
+        {/* Props reference */}
+        <SpecBlock title="Props">
+          <LensPropsTable />
+        </SpecBlock>
+
+        {/* Dev workflow */}
+        <SpecBlock title="Dev-воркфлоу">
+          <ol className="space-y-3 text-sm text-muted-foreground">
+            <li className="flex gap-3">
+              <span className="font-mono text-xs font-bold text-foreground bg-muted rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">1</span>
+              <span>Добавьте <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">showControls storageKey=&quot;my-page:lens&quot;</code> в компонент.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="font-mono text-xs font-bold text-foreground bg-muted rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">2</span>
+              <span>Настраивайте параметры в плавающей панели. Нажмите <strong className="text-foreground">COPY</strong> — в буфере обмена JSX-пропсы.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="font-mono text-xs font-bold text-foreground bg-muted rounded-full w-6 h-6 flex items-center justify-center shrink-0 mt-0.5">3</span>
+              <span>Вставьте пропсы в код, уберите <code className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">showControls storageKey</code>.</span>
+            </li>
+          </ol>
+        </SpecBlock>
 
         <SpecBlock title="Токены, алгоритм и правила">
           <div className="space-y-6">

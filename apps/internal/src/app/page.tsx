@@ -1,8 +1,7 @@
 import Link from "next/link";
 
 const routes = [
-  { href: "/gantt", label: "Gantt — План работ", description: "Мульти-трек, Firebase Realtime DB, drag & drop" },
-  { href: "/lens-demo", label: "Lens Demo", description: "WebGL Round Glass Lens эксперимент" },
+  { href: "/r-plan", label: "R-Plan — План работ", description: "Мульти-трек, Firebase Realtime DB, drag & drop" },
 ];
 
 export default function InternalIndexPage() {

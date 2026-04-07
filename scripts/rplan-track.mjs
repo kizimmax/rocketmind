@@ -1,10 +1,10 @@
 /**
- * Manage gantt tracks in Firebase.
+ * Manage R-Plan tracks in Firebase.
  *
  * Usage:
- *   node scripts/gantt-track.mjs add <slug> <name>   — register a new track
- *   node scripts/gantt-track.mjs list                 — list all tracks
- *   node scripts/gantt-track.mjs remove <slug>        — remove track registration (data stays)
+ *   node scripts/rplan-track.mjs add <slug> <name>   — register a new track
+ *   node scripts/rplan-track.mjs list                 — list all tracks
+ *   node scripts/rplan-track.mjs remove <slug>        — remove track registration (data stays)
  */
 
 import { initializeApp } from 'firebase/app';
@@ -23,7 +23,7 @@ const db = getDatabase(app);
 const [,, cmd, ...args] = process.argv;
 
 async function list() {
-  const snap = await get(ref(db, 'gantt_config/tracks'));
+  const snap = await get(ref(db, 'rplan_config/tracks'));
   const tracks = snap.val();
   if (!tracks || Object.keys(tracks).length === 0) {
     console.log('No tracks registered.');
@@ -37,35 +37,35 @@ async function list() {
 
 async function add(slug, name) {
   if (!slug || !name) {
-    console.error('Usage: node scripts/gantt-track.mjs add <slug> <name>');
+    console.error('Usage: node scripts/rplan-track.mjs add <slug> <name>');
     process.exit(1);
   }
   if (!/^[a-z0-9-]+$/.test(slug)) {
     console.error('Slug must be lowercase alphanumeric with dashes only.');
     process.exit(1);
   }
-  const existing = await get(ref(db, `gantt_config/tracks/${slug}`));
+  const existing = await get(ref(db, `rplan_config/tracks/${slug}`));
   if (existing.exists()) {
     console.error(`Track "${slug}" already exists: ${existing.val().name}`);
     process.exit(1);
   }
-  await set(ref(db, `gantt_config/tracks/${slug}`), { name });
+  await set(ref(db, `rplan_config/tracks/${slug}`), { name });
   console.log(`Track added: /${slug} — ${name}`);
-  console.log(`Open: http://localhost:3003/gantt/${slug}`);
+  console.log(`Open: http://localhost:3003/r-plan/${slug}`);
 }
 
 async function rm(slug) {
   if (!slug) {
-    console.error('Usage: node scripts/gantt-track.mjs remove <slug>');
+    console.error('Usage: node scripts/rplan-track.mjs remove <slug>');
     process.exit(1);
   }
-  const existing = await get(ref(db, `gantt_config/tracks/${slug}`));
+  const existing = await get(ref(db, `rplan_config/tracks/${slug}`));
   if (!existing.exists()) {
     console.error(`Track "${slug}" not found.`);
     process.exit(1);
   }
-  await remove(ref(db, `gantt_config/tracks/${slug}`));
-  console.log(`Track "${slug}" unregistered. Data at gantt_tracks/${slug} is preserved.`);
+  await remove(ref(db, `rplan_config/tracks/${slug}`));
+  console.log(`Track "${slug}" unregistered. Data at rplan_tracks/${slug} is preserved.`);
 }
 
 switch (cmd) {
@@ -74,9 +74,9 @@ switch (cmd) {
   case 'remove': case 'rm': await rm(args[0]); break;
   default:
     console.log('Usage:');
-    console.log('  node scripts/gantt-track.mjs list');
-    console.log('  node scripts/gantt-track.mjs add <slug> <name>');
-    console.log('  node scripts/gantt-track.mjs remove <slug>');
+    console.log('  node scripts/rplan-track.mjs list');
+    console.log('  node scripts/rplan-track.mjs add <slug> <name>');
+    console.log('  node scripts/rplan-track.mjs remove <slug>');
 }
 
 process.exit(0);

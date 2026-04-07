@@ -14,7 +14,7 @@
 │   ├── design-system/        # DS documentation (Next.js, port 3000)
 │   ├── site/                 # Marketing site (Next.js, port 3001)
 │   ├── saas/                 # SaaS app shell (Next.js, port 3002)
-│   └── internal/             # Internal tools: gantt, lens-demo (Next.js, port 3003)
+│   └── internal/             # Internal tools: r-plan (Next.js, port 3003)
 ├── design/
 │   ├── design-system.md      # Source of truth — design system spec
 │   ├── system.pen / landing.pen / auth.pen / app.pen
@@ -28,7 +28,7 @@
 - **`@rocketmind/design-system`** (`apps/design-system`) — DS web docs
 - **`@rocketmind/site`** (`apps/site`) — Marketing landing
 - **`@rocketmind/saas`** (`apps/saas`) — SaaS product (login, agents, cases)
-- **`@rocketmind/internal`** (`apps/internal`) — Internal tools (gantt + firebase, lens-demo)
+- **`@rocketmind/internal`** (`apps/internal`) — R-Plan (firebase)
 
 ---
 

@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Canvas3DCarousel } from "@/components/blocks/Canvas3DCarousel";
 import { MascotCarousel } from "@/components/blocks/MascotCarousel";
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind" : "";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 /* ─────────────────────────────────────────────────────────────
    Figma source of truth:

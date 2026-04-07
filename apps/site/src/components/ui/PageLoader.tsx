@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind" : ""
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ""
 
 export function PageLoader() {
   const [progress, setProgress] = useState(0)

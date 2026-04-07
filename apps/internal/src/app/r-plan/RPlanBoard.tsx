@@ -504,7 +504,7 @@ const MAX_HISTORY = 50;
 
 // ─── Toast (via DS Toaster + sonner) ────────────────────────────────────────
 
-export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', startWeekIdx }: { dbPath: string; trackName: string; trackColor?: string; startWeekIdx?: number }) {
+export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', startWeekIdx }: { dbPath: string; trackName: string; trackColor?: string; startWeekIdx?: number }) {
   const COL_W = 154;
   const tmpl = createTemplate(trackColor as ColorToken, startWeekIdx);
   const [weeks, setWeeks] = useState<Week[]>(tmpl.weeks);
@@ -517,6 +517,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
 
   // ── Zoom mode (desktop/tablet only) ──────────────────────────────────────
   const [zoomMode, setZoomMode] = useState<'out' | 'in'>('out');
+  const [outColumns, setOutColumns] = useState<2 | 3 | 4>(3);
 
   // ── Resize state (zoom-in card resizing) ─────────────────────────────────
   const resizeRef = useRef<{
@@ -639,7 +640,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
   }, []);
 
   // ── Visible weeks ──────────────────────────────────────────────────────────
-  const effectiveCount = isMobile ? 1 : fittingCount;
+  const effectiveCount = isMobile ? 1 : (zoomMode === 'out' ? outColumns : fittingCount);
   const visibleWeeks = useMemo(() => {
     return weeks.slice(visibleStartIdx, visibleStartIdx + effectiveCount);
   }, [weeks, visibleStartIdx, effectiveCount]);
@@ -1185,7 +1186,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
       if (!res.ok) {
         const errBody = await res.text().catch(() => '');
         if (res.status === 401) {
-          set(ref(db, `gantt_config/${provider}_api_key`), null);
+          set(ref(db, `rplan_config/${provider}_api_key`), null);
           setAiKey(null);
           updateWeekTheme(weekId, 'Неверный ключ');
           setPendingWeekId(weekId);
@@ -1224,7 +1225,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
 
   // Load AI provider + key from Firebase on mount
   useEffect(() => {
-    const provRef = ref(db, 'gantt_config/ai_provider');
+    const provRef = ref(db, 'rplan_config/ai_provider');
     const unsub1 = onValue(provRef, (snap) => {
       const val = snap.val() as AiProvider | null;
       if (val && AI_PROVIDERS[val]) setAiProvider(val);
@@ -1233,7 +1234,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
   }, []);
 
   useEffect(() => {
-    const keyRef = ref(db, `gantt_config/${aiProvider}_api_key`);
+    const keyRef = ref(db, `rplan_config/${aiProvider}_api_key`);
     const unsub = onValue(keyRef, (snap) => {
       const val = snap.val();
       setAiKey(val ?? null);
@@ -1254,7 +1255,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
   const handleKeySubmit = () => {
     const val = keyValue.trim();
     if (!val || !pendingWeekId) return;
-    set(ref(db, `gantt_config/${aiProvider}_api_key`), val);
+    set(ref(db, `rplan_config/${aiProvider}_api_key`), val);
     setAiKey(val);
     setShowKeyInput(false);
     const wid = pendingWeekId;
@@ -1276,7 +1277,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
           </DialogHeader>
           <div className="flex gap-1 mb-1">
             {(Object.keys(AI_PROVIDERS) as AiProvider[]).map(p => (
-              <Button key={p} variant={aiProvider === p ? 'default' : 'ghost'} size="xs" onClick={() => { setAiProvider(p); set(ref(db, 'gantt_config/ai_provider'), p); setKeyValue(''); }}>{p}</Button>
+              <Button key={p} variant={aiProvider === p ? 'default' : 'ghost'} size="xs" onClick={() => { setAiProvider(p); set(ref(db, 'rplan_config/ai_provider'), p); setKeyValue(''); }}>{p}</Button>
             ))}
           </div>
           <Input
@@ -1360,6 +1361,19 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
               </TabsList>
             </Tabs>
           )}
+          {/* Column count selector — out mode only, desktop */}
+          {!isMobile && zoomMode === 'out' && (
+            <Tabs
+              value={String(outColumns)}
+              onValueChange={(v: string | number | null) => setOutColumns(Number(v) as 2 | 3 | 4)}
+            >
+              <TabsList size="sm">
+                <TabsTrigger value="2">2</TabsTrigger>
+                <TabsTrigger value="3">3</TabsTrigger>
+                <TabsTrigger value="4">4</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
           <Tooltip>
             <TooltipTrigger render={<Button variant="outline" size="icon" onClick={() => navigateWeeks('left')} disabled={!canGoBack || animating} />}>
               <ChevronLeftIcon className="w-4 h-4" />
@@ -1382,7 +1396,7 @@ export default function GanttBoard({ dbPath, trackName, trackColor = 'yellow', s
           )}
         </div>
 
-        {/* Gantt table */}
+        {/* R-Plan table */}
         <div ref={containerRef} className="border border-border rounded-xl overflow-hidden relative">
           <div style={{ overflow: 'hidden' }}>
             <div style={{

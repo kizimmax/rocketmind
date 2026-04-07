@@ -35,14 +35,17 @@ jobs:
         run: npm run build --workspace=apps/site
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_BASE_PATH: /rocketmind
       - name: Build Design System
         run: npm run build --workspace=apps/design-system
         env:
           NODE_ENV: production
-      - name: Build Internal (Gantt)
+          NEXT_PUBLIC_BASE_PATH: /rocketmind/ds
+      - name: Build Internal (R-Plan)
         run: npm run build --workspace=apps/internal
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_BASE_PATH: /rocketmind/plan
       - name: Combine outputs
         run: |
           mkdir -p _out/ds _out/plan
@@ -56,8 +59,8 @@ jobs:
           <!DOCTYPE html><html><head><meta charset="utf-8"><title>Redirect</title><script>
           (function(){
             var p = window.location.pathname;
-            var m = p.match(/^\/rocketmind\/plan\/gantt\/([a-z0-9-]+)\/?$/);
-            if (m) { window.location.replace('/rocketmind/plan/gantt/?track=' + m[1]); }
+            var m = p.match(/^\/rocketmind\/plan\/r-plan\/([a-z0-9-]+)\/?$/);
+            if (m) { window.location.replace('/rocketmind/plan/r-plan/?track=' + m[1]); }
           })();
           </script></head><body><p>Page not found.</p></body></html>
           HTML

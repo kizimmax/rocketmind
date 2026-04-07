@@ -19,6 +19,7 @@ jobs:
         run: npm run build --workspace=apps/saas
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_BASE_PATH: /rocketmind-saas
       - name: Deploy to rocketmind-saas
         uses: peaceiris/actions-gh-pages@v4
         with:

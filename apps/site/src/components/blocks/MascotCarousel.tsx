@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import Image from "next/image";
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind" : "";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 /* ─── Agent data ─────────────────────────────────────────────
    All 8 agents with front-facing (base) images.

@@ -134,7 +134,7 @@ export async function getPartnerLogos(): Promise<PartnerLogo[]> {
       return leftIndex - rightIndex;
     });
 
-  const BASE = process.env.NODE_ENV === "production" ? "/rocketmind" : "";
+  const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
   return Promise.all(
     filenames.map(async (filename) => {
