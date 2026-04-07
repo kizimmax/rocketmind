@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY . .
 
-# Copy env for R-Plan Firebase config (if provided as build arg)
+# Firebase config (passed as build args)
 ARG NEXT_PUBLIC_FIREBASE_API_KEY
 ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
 ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID
@@ -19,15 +19,15 @@ RUN npm install --ignore-scripts && npm run postinstall
 # Build UI package
 RUN npm run build --workspace=packages/ui
 
-# Build site (root path)
+# Build site (root)
 RUN npm run build --workspace=apps/site
 
-# Build saas (served at /app)
+# Build SaaS (served at /app)
 ENV NEXT_PUBLIC_BASE_PATH=/app
 RUN npm run build --workspace=apps/saas
 
-# Build R-Plan (served at /plan)
-ENV NEXT_PUBLIC_BASE_PATH=/plan
+# Build R-Plan (merged into site root, route = /r-plan)
+ENV NEXT_PUBLIC_BASE_PATH=
 RUN npm run build --workspace=apps/internal
 
 # ── Stage 2: Serve via nginx ──
@@ -36,9 +36,15 @@ FROM nginx:alpine
 RUN rm /etc/nginx/conf.d/default.conf
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY --from=builder /app/apps/site/out     /var/www/site
-COPY --from=builder /app/apps/saas/out     /var/www/saas
-COPY --from=builder /app/apps/internal/out /var/www/rplan
+# Site as base
+COPY --from=builder /app/apps/site/out /var/www/site
+
+# Merge R-Plan into site (routes don't conflict)
+COPY --from=builder /app/apps/internal/out/r-plan /var/www/site/r-plan
+COPY --from=builder /app/apps/internal/out/_next/. /var/www/site/_next/
+
+# SaaS separate (has /app basePath)
+COPY --from=builder /app/apps/saas/out /var/www/saas
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

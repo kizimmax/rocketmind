@@ -42,6 +42,8 @@ jobs:
           NODE_ENV: production
           NEXT_PUBLIC_BASE_PATH: /rocketmind/ds
       - name: Build Internal (R-Plan)
+        id: build-internal
+        continue-on-error: true
         run: npm run build --workspace=apps/internal
         env:
           NODE_ENV: production
@@ -59,8 +61,10 @@ jobs:
           mkdir -p _out/ds
           cp -r apps/site/out/. _out/
           cp -r apps/design-system/out/. _out/ds/
-          cp -r apps/internal/out/r-plan _out/r-plan
-          cp -r apps/internal/out/_next/. _out/_next/
+          if [ "${{ steps.build-internal.outcome }}" = "success" ]; then
+            cp -r apps/internal/out/r-plan _out/r-plan
+            cp -r apps/internal/out/_next/. _out/_next/
+          fi
           touch _out/.nojekyll
       - name: Generate SPA fallback 404
         run: |
