@@ -79,15 +79,17 @@ export function ForWhomSection({
     <section className={cn("w-full bg-[#F0F0F0]", className)}>
       {/* ── Desktop ── */}
       <div className="hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14 py-8">
-        {/* Header */}
+        {/* Header — 2 halves */}
         <div className="flex flex-col gap-2">
           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]">
             {tag}
           </span>
-          <div className="flex gap-8">
-            <h2 className="h2 text-[#0A0A0A] w-1/2 shrink-0">{title}</h2>
+          <div className="flex">
+            <div className="w-1/2 shrink-0 pr-8">
+              <h2 className="h2 text-[#0A0A0A]">{title}</h2>
+            </div>
             {subtitle && (
-              <div className="w-1/2 flex flex-col justify-start">
+              <div className="w-1/2">
                 <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]">
                   {subtitle}
                 </p>
@@ -96,18 +98,16 @@ export function ForWhomSection({
           </div>
         </div>
 
-        {/* Cards — 2 columns */}
-        <div className="flex gap-8">
-          {/* Column 1 */}
-          <div className="flex gap-8 shrink-0">
+        {/* Cards — 2 halves */}
+        <div className="flex">
+          <div className="w-1/2 shrink-0 pr-8 flex gap-8">
             {col1.map((f, i) => (
-              <div key={i} className="w-[310px]">
+              <div key={i} className="flex-1">
                 <FactCard {...f} />
               </div>
             ))}
           </div>
-          {/* Column 2 */}
-          <div className="flex-1 flex gap-8">
+          <div className="w-1/2 flex gap-8">
             {col2.map((f, i) => (
               <div key={i} className="flex-1">
                 <FactCard {...f} />

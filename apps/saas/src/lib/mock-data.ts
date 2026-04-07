@@ -1,5 +1,7 @@
 import type { Agent, Case, Conversation, Message, User } from "./types";
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 // --- Mock User ---
 export const mockUser: User = {
   id: "u_1",
@@ -16,7 +18,7 @@ export const mockAgents: Agent[] = [
     name: "Стратег",
     description:
       "AI-консультант по бизнес-стратегии. Анализирует рынок, конкурентов и помогает сформулировать стратегию роста.",
-    avatar_url: "/ai-mascots/alex/alex_base.png",
+    avatar_url: `${BASE_PATH}/ai-mascots/alex/alex_base.png`,
     greeting: "Привет! Я помогу выстроить стратегию для вашего бизнеса.",
     suggestions: [
       "Проанализируй конкурентов в моей нише",
@@ -32,7 +34,7 @@ export const mockAgents: Agent[] = [
     name: "Копирайтер",
     description:
       "Пишет тексты для сайтов, рассылок и соцсетей. Адаптирует tone of voice под вашу аудиторию.",
-    avatar_url: "/ai-mascots/kate/kate_base.png",
+    avatar_url: `${BASE_PATH}/ai-mascots/kate/kate_base.png`,
     greeting: "Привет! Давайте создадим тексты, которые зацепят вашу аудиторию.",
     suggestions: [
       "Напиши hero-текст для лендинга",
@@ -48,7 +50,7 @@ export const mockAgents: Agent[] = [
     name: "Аналитик",
     description:
       "Помогает анализировать данные, строить отчёты и находить инсайты для принятия решений.",
-    avatar_url: "/ai-mascots/sergey/sergey_base.png",
+    avatar_url: `${BASE_PATH}/ai-mascots/sergey/sergey_base.png`,
     greeting: "Привет! Готов помочь разобраться в данных и найти инсайты.",
     suggestions: [
       "Проанализируй трафик за месяц",

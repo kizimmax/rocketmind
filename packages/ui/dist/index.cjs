@@ -2155,14 +2155,14 @@ function ForWhomSection({
     /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14 py-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex flex-col gap-2", children: [
         /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex gap-8", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "h2 text-[#0A0A0A] w-1/2 shrink-0", children: title }),
-          subtitle && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "w-1/2 flex flex-col justify-start", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]", children: subtitle }) })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "h2 text-[#0A0A0A]", children: title }) }),
+          subtitle && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "w-1/2", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]", children: subtitle }) })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex gap-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex gap-8 shrink-0", children: col1.map((f, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "w-[310px]", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FactCard, { ...f }) }, i)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex-1 flex gap-8", children: col2.map((f, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FactCard, { ...f }) }, i)) })
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "w-1/2 shrink-0 pr-8 flex gap-8", children: col1.map((f, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FactCard, { ...f }) }, i)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "w-1/2 flex gap-8", children: col2.map((f, i) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(FactCard, { ...f }) }, i)) })
       ] })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8 py-10", children: [
