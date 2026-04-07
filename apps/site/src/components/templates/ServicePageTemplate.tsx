@@ -2,6 +2,7 @@ import { PageBottom } from "@/components/sections/PageBottom";
 import { ProductHero } from "@/components/sections/ProductHero";
 import { AboutProduct } from "@/components/sections/AboutProduct";
 import { LogoMarqueeSection } from "@/components/sections/LogoMarqueeSection";
+import { ForWhomSection } from "@rocketmind/ui";
 import type { ProductData } from "@/lib/products";
 
 /**
@@ -81,13 +82,23 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
       )}
 
       {/* 4. Для кого */}
-      <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
-          <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Для кого это решение — заполнить
-          </p>
-        </div>
-      </section>
+      {hasProduct && props.product.audience ? (
+        <ForWhomSection
+          tag={props.product.audience.tag}
+          title={props.product.audience.title}
+          subtitle={props.product.audience.subtitle}
+          facts={props.product.audience.facts}
+          wideColumn={props.product.audience.wideColumn}
+        />
+      ) : (
+        <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
+          <div className="mx-auto max-w-[1512px]">
+            <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              Для кого это решение — заполнить
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* 5. Инструменты (опционально) */}
       <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">

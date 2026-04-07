@@ -32,6 +32,19 @@ export type AboutProductData = {
   hasImage: boolean;
 };
 
+export type ForWhomFact = {
+  title: string;
+  text: string;
+};
+
+export type ForWhomData = {
+  tag: string;
+  title: string;
+  subtitle?: string;
+  facts: ForWhomFact[];
+  wideColumn?: "left" | "right";
+};
+
 export type ProductData = {
   slug: string;
   category: string;
@@ -48,6 +61,8 @@ export type ProductData = {
   hero: ProductHeroData;
   // About product
   about: AboutProductData | null;
+  // For whom
+  audience: ForWhomData | null;
   // Image paths (auto-resolved)
   coverImage: string;
   aboutImage: string | null;
@@ -121,6 +136,7 @@ export function getProductBySlug(slug: string): ProductData | null {
       title: (data.hero.title as string).trimEnd(),
     },
     about,
+    audience: data.audience ?? null,
     coverImage,
     aboutImage,
   };

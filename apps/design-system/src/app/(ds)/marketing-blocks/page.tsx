@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Separator, CTASectionDark, CTASectionYellow, AccordionFAQ } from "@rocketmind/ui"
+import { Separator, CTASectionDark, CTASectionYellow, AccordionFAQ, ForWhomSection } from "@rocketmind/ui"
 import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
 import { CasesSectionShowcase } from "@/components/ds/cases-section-showcase"
@@ -178,6 +178,25 @@ export default function MarketingBlocksPage() {
             </table>
           </div>
         </SpecBlock>
+
+        {/* ── For Whom — Для кого ── */}
+        <SubSection id="marketing-blocks-for-whom" title="Для кого (белый блок с фактами)" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+          Блок с белым фоном для секции «Для кого это решение». Поддерживает 2–4 факта с автоматической раскладкой по 2 колонкам. При 3 фактах можно выбрать, какая колонка содержит широкую карточку (<code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-caption-family)]">wideColumn</code>).
+        </p>
+        <div className="-mx-5 md:-mx-10 border-y border-border mb-8">
+          <ForWhomSection
+            tag="для кого"
+            title="От продуктовой модели к партнерской среде"
+            subtitle="Мы помогаем перейти от классической продуктовой модели к созданию комплексной партнерской среды."
+            wideColumn="right"
+            facts={[
+              { title: "Крупные корпорации", text: "Выстроят единую и прозрачную стратегию для всего портфеля продуктов" },
+              { title: "Платформы", text: "Создадут интегрированный клиентский опыт и масштабировать влияние" },
+              { title: "Растущие компании", text: "Поймут устройство своей рыночной ниши и найдут новые источники монетизации" },
+            ]}
+          />
+        </div>
 
         {/* ── PageBottom — Состав ── */}
         <SubSection id="marketing-blocks-page-bottom" title="Состав PageBottom" />

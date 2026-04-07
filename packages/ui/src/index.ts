@@ -34,6 +34,8 @@ export * from './components/ui/tooltip';
 
 export * from './components/ui/product-card';
 
+export * from './components/ui/for-whom-section';
+
 // Blocks
 export * from './components/ui/accordion-faq';
 export * from './components/ui/cta-section-dark';

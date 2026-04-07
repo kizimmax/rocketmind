@@ -56,9 +56,22 @@ about:
     - title: "Объединяет партнеров, клиентов и технологии"
       description: "Подробное описание..."
 
+# ── Для кого ───────────────────────────────────────────────
+# Optional. White background section with 2–4 fact cards.
+# wideColumn: "left" or "right" (only for 3 facts — which column gets the single wide card)
+audience:
+  tag: "для кого"
+  title: "Заголовок секции"
+  subtitle: "Подзаголовок (опционально)"
+  wideColumn: "right"
+  facts:
+    - title: "Факт 1"
+      text: "Описание факта..."
+    - title: "Факт 2"
+      text: "Описание факта..."
+
 # ── Other Sections (to be filled) ──────────────────────────
 socialProof: null       # 2. Социальное доказательство
-audience: null          # 4. Для кого это решение
 tools: null             # 5. Инструменты (опционально)
 results: null           # 6. Твёрдые результаты
 process: null           # 7. Прозрачный процесс (этапы)
