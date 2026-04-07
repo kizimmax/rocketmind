@@ -6,6 +6,7 @@ on:
     paths:
       - 'apps/site/**'
       - 'apps/design-system/**'
+      - 'apps/saas/**'
       - 'apps/internal/**'
       - 'packages/ui/**'
   workflow_dispatch:
@@ -41,6 +42,11 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_PUBLIC_BASE_PATH: /rocketmind/ds
+      - name: Build SaaS
+        run: npm run build --workspace=apps/saas
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_BASE_PATH: /rocketmind/app
       - name: Build Internal (R-Plan)
         id: build-internal
         continue-on-error: true
@@ -58,9 +64,10 @@ jobs:
           NEXT_PUBLIC_FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
       - name: Combine outputs
         run: |
-          mkdir -p _out/ds
+          mkdir -p _out/ds _out/app
           cp -r apps/site/out/. _out/
           cp -r apps/design-system/out/. _out/ds/
+          cp -r apps/saas/out/. _out/app/
           if [ "${{ steps.build-internal.outcome }}" = "success" ]; then
             cp -r apps/internal/out/r-plan _out/r-plan
             cp -r apps/internal/out/_next/. _out/_next/

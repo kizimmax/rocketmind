@@ -1116,10 +1116,17 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
 
   type AiProvider = 'openrouter' | 'groq';
 
+  const OPENROUTER_MODELS = [
+    'qwen/qwen3.6-plus:free',
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'qwen/qwen3-next-80b-a3b-instruct:free',
+    'openai/gpt-oss-120b:free',
+  ];
+
   const AI_PROVIDERS: Record<AiProvider, { url: string; model: string; label: string; keyPrefix: string; keyHint: string; keyUrl: string }> = {
     openrouter: {
       url: 'https://openrouter.ai/api/v1/chat/completions',
-      model: 'qwen/qwen3.6-plus:free',
+      model: OPENROUTER_MODELS[0],
       label: 'OpenRouter API Key',
       keyPrefix: 'sk-or-',
       keyHint: 'Бесплатно на',
@@ -1169,48 +1176,66 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
     const blockText = Object.entries(blocks).map(([name, tasks]) => `— ${name}: ${tasks.join(', ')}`).join('\n');
     const cfg = AI_PROVIDERS[provider];
 
-    try {
-      const res = await fetch(cfg.url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: cfg.model,
-          max_tokens: 100,
-          messages: SUMMARY_MESSAGES(week.dates, blockText),
-        }),
-      });
+    // Build model list: for openrouter use fallback chain, for groq just one model
+    const models = provider === 'openrouter' ? OPENROUTER_MODELS : [cfg.model];
 
-      if (!res.ok) {
-        const errBody = await res.text().catch(() => '');
-        if (res.status === 401) {
-          set(ref(db, `rplan_config/${provider}_api_key`), null);
-          setAiKey(null);
-          updateWeekTheme(weekId, 'Неверный ключ');
-          setPendingWeekId(weekId);
-          setKeyValue('');
-          setShowKeyInput(true);
-        } else {
+    for (let i = 0; i < models.length; i++) {
+      const model = models[i];
+      const isLast = i === models.length - 1;
+      try {
+        const res = await fetch(cfg.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model,
+            max_tokens: 100,
+            messages: SUMMARY_MESSAGES(week.dates, blockText),
+          }),
+        });
+
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => '');
+          if (res.status === 401) {
+            set(ref(db, `rplan_config/${provider}_api_key`), null);
+            setAiKey(null);
+            updateWeekTheme(weekId, 'Неверный ключ');
+            setPendingWeekId(weekId);
+            setKeyValue('');
+            setShowKeyInput(true);
+            setSummaryLoading(null);
+            return;
+          }
+          if (res.status === 429 && !isLast) {
+            console.warn(`Rate limit on ${model}, trying next…`);
+            updateWeekTheme(weekId, `Лимит ${model.split('/')[0]}, пробую другую…`);
+            continue;
+          }
           updateWeekTheme(weekId, `Ошибка API: ${res.status}`);
           console.error('AI summary error:', errBody);
+          setSummaryLoading(null);
+          return;
         }
+
+        const data = await res.json();
+        const text = data.choices?.[0]?.message?.content?.trim() ?? '';
+        updateWeekTheme(weekId, text || 'Пустой ответ от AI');
+        setSummaryReady(weekId);
         setSummaryLoading(null);
         return;
+      } catch (e: unknown) {
+        if (!isLast) {
+          console.warn(`Error on ${model}, trying next…`, e);
+          continue;
+        }
+        const msg = e instanceof Error ? e.message : String(e);
+        updateWeekTheme(weekId, `Ошибка: ${msg}`);
+        console.error('AI summary error:', e);
       }
-
-      const data = await res.json();
-      const text = data.choices?.[0]?.message?.content?.trim() ?? '';
-      updateWeekTheme(weekId, text || 'Пустой ответ от AI');
-      setSummaryReady(weekId);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      updateWeekTheme(weekId, `Ошибка: ${msg}`);
-      console.error('AI summary error:', e);
-    } finally {
-      setSummaryLoading(null);
     }
+    setSummaryLoading(null);
   };
 
   const [keyValue, setKeyValue] = useState('');
