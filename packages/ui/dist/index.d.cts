@@ -346,12 +346,9 @@ type ProcessParticipant = {
 type ProcessSectionProps = {
     tag: string;
     title: string;
-    /** e.g. "Общий срок проекта: ~10 недель" */
     subtitle: string;
-    /** Secondary description */
     description?: string;
     steps: ProcessStep[];
-    /** Optional "who to include" block */
     participantsTag?: string;
     participants?: ProcessParticipant[];
     className?: string;

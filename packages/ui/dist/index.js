@@ -2050,12 +2050,12 @@ import { useEffect as useEffect5, useRef as useRef6, useState as useState2 } fro
 import { jsx as jsx30, jsxs as jsxs13 } from "react/jsx-runtime";
 function TimelineMark({ isActive, isLast }) {
   return /* @__PURE__ */ jsxs13("div", { className: "relative w-4 shrink-0 flex flex-col items-center", children: [
-    /* @__PURE__ */ jsx30("div", { className: "w-px h-2 bg-[#404040]" }),
+    /* @__PURE__ */ jsx30("div", { className: "w-px h-[2px] bg-[#404040]" }),
     /* @__PURE__ */ jsx30(
       "div",
       {
         className: cn(
-          "w-4 h-4 rounded-full border-2 transition-colors duration-500",
+          "w-4 h-4 border-2 transition-colors duration-500",
           isActive ? "bg-[#F0F0F0] border-[#F0F0F0]" : "bg-[#0A0A0A] border-[#404040]"
         )
       }
@@ -2080,9 +2080,7 @@ function StepCard({
   isLast,
   onRef
 }) {
-  const activeText = isActive ? "text-[#F0F0F0]" : "text-[#939393]";
-  const activeNumber = isActive ? "text-[#F0F0F0]" : "text-[#404040]";
-  return /* @__PURE__ */ jsxs13("div", { ref: onRef, className: "flex gap-10", children: [
+  return /* @__PURE__ */ jsxs13("div", { ref: onRef, className: "flex gap-10 max-w-[364px]", children: [
     /* @__PURE__ */ jsx30(TimelineMark, { isActive, isLast }),
     /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-3 pb-16", children: [
       /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-2", children: [
@@ -2091,7 +2089,7 @@ function StepCard({
           {
             className: cn(
               "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] transition-colors duration-500",
-              activeNumber
+              isActive ? "text-[#F0F0F0]" : "text-[#404040]"
             ),
             children: step.number
           }
@@ -2101,7 +2099,7 @@ function StepCard({
           {
             className: cn(
               "h3 transition-colors duration-500",
-              activeText
+              isActive ? "text-[#F0F0F0]" : "text-[#939393]"
             ),
             children: step.title
           }
@@ -2134,7 +2132,7 @@ function ParticipantsBlock({
   tag,
   participants
 }) {
-  return /* @__PURE__ */ jsxs13("div", { className: "bg-[#121212] rounded p-8 flex flex-col gap-8", children: [
+  return /* @__PURE__ */ jsxs13("div", { className: "bg-[#121212] rounded p-8 flex flex-col gap-8 max-w-[648px]", children: [
     /* @__PURE__ */ jsx30("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
     /* @__PURE__ */ jsx30("div", { className: "flex flex-col gap-5", children: participants.map((p, i) => /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-2", children: [
       /* @__PURE__ */ jsx30("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]", children: p.role }),
@@ -2175,6 +2173,7 @@ function ProcessSection({
     });
     return () => observers.forEach((o) => o.disconnect());
   }, [steps.length]);
+  const hasParticipants = participants && participants.length > 0 && participantsTag;
   return /* @__PURE__ */ jsxs13(
     "section",
     {
@@ -2190,23 +2189,21 @@ function ProcessSection({
             /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-1", children: [
               /* @__PURE__ */ jsx30("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]", children: subtitle }),
               description && /* @__PURE__ */ jsx30("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: description })
-            ] })
+            ] }),
+            hasParticipants && /* @__PURE__ */ jsx30(ParticipantsBlock, { tag: participantsTag, participants })
           ] }) }) }),
-          /* @__PURE__ */ jsxs13("div", { className: "w-1/2 pt-10", children: [
-            /* @__PURE__ */ jsx30("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ jsx30(
-              StepCard,
-              {
-                step,
-                isActive: i <= activeIndex,
-                isLast: i === steps.length - 1,
-                onRef: (el) => {
-                  stepRefs.current[i] = el;
-                }
-              },
-              i
-            )) }),
-            participants && participants.length > 0 && participantsTag && /* @__PURE__ */ jsx30("div", { className: "mt-4 mb-14", children: /* @__PURE__ */ jsx30(ParticipantsBlock, { tag: participantsTag, participants }) })
-          ] })
+          /* @__PURE__ */ jsx30("div", { className: "w-1/2 pt-10 pb-14", children: /* @__PURE__ */ jsx30("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ jsx30(
+            StepCard,
+            {
+              step,
+              isActive: i <= activeIndex,
+              isLast: i === steps.length - 1,
+              onRef: (el) => {
+                stepRefs.current[i] = el;
+              }
+            },
+            i
+          )) }) })
         ] }),
         /* @__PURE__ */ jsxs13("div", { className: "flex lg:hidden flex-col px-5 md:px-8 py-10", children: [
           /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-4 mb-10", children: [
@@ -2231,7 +2228,7 @@ function ProcessSection({
             },
             i
           )) }),
-          participants && participants.length > 0 && participantsTag && /* @__PURE__ */ jsx30("div", { className: "mt-4", children: /* @__PURE__ */ jsx30(ParticipantsBlock, { tag: participantsTag, participants }) })
+          hasParticipants && /* @__PURE__ */ jsx30("div", { className: "mt-4", children: /* @__PURE__ */ jsx30(ParticipantsBlock, { tag: participantsTag, participants }) })
         ] })
       ]
     }

@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
 
@@ -21,28 +20,24 @@ export type ProcessParticipant = {
 export type ProcessSectionProps = {
   tag: string;
   title: string;
-  /** e.g. "Общий срок проекта: ~10 недель" */
   subtitle: string;
-  /** Secondary description */
   description?: string;
   steps: ProcessStep[];
-  /** Optional "who to include" block */
   participantsTag?: string;
   participants?: ProcessParticipant[];
   className?: string;
 };
 
-// ── Timeline dot + line ────────────────────────────────────────────────────────
+// ── Timeline mark (square dot + line) ──────────────────────────────────────────
 
 function TimelineMark({ isActive, isLast }: { isActive: boolean; isLast: boolean }) {
   return (
     <div className="relative w-4 shrink-0 flex flex-col items-center">
-      {/* Top line */}
-      <div className="w-px h-2 bg-[#404040]" />
-      {/* Dot */}
+      <div className="w-px h-[2px] bg-[#404040]" />
+      {/* Square dot */}
       <div
         className={cn(
-          "w-4 h-4 rounded-full border-2 transition-colors duration-500",
+          "w-4 h-4 border-2 transition-colors duration-500",
           isActive
             ? "bg-[#F0F0F0] border-[#F0F0F0]"
             : "bg-[#0A0A0A] border-[#404040]",
@@ -79,18 +74,15 @@ function StepCard({
   isLast: boolean;
   onRef: (el: HTMLDivElement | null) => void;
 }) {
-  const activeText = isActive ? "text-[#F0F0F0]" : "text-[#939393]";
-  const activeNumber = isActive ? "text-[#F0F0F0]" : "text-[#404040]";
-
   return (
-    <div ref={onRef} className="flex gap-10">
+    <div ref={onRef} className="flex gap-10 max-w-[364px]">
       <TimelineMark isActive={isActive} isLast={isLast} />
       <div className="flex flex-col gap-3 pb-16">
         <div className="flex flex-col gap-2">
           <span
             className={cn(
               "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] transition-colors duration-500",
-              activeNumber,
+              isActive ? "text-[#F0F0F0]" : "text-[#404040]",
             )}
           >
             {step.number}
@@ -98,7 +90,7 @@ function StepCard({
           <h3
             className={cn(
               "h3 transition-colors duration-500",
-              activeText,
+              isActive ? "text-[#F0F0F0]" : "text-[#939393]",
             )}
           >
             {step.title}
@@ -135,7 +127,7 @@ function ParticipantsBlock({
   participants: ProcessParticipant[];
 }) {
   return (
-    <div className="bg-[#121212] rounded p-8 flex flex-col gap-8">
+    <div className="bg-[#121212] rounded p-8 flex flex-col gap-8 max-w-[648px]">
       <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
         {tag}
       </span>
@@ -171,12 +163,10 @@ export function ProcessSection({
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  // Ensure refs array matches steps length
   if (stepRefs.current.length !== steps.length) {
     stepRefs.current = Array(steps.length).fill(null);
   }
 
-  // Scroll-based activation using IntersectionObserver
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
 
@@ -197,6 +187,8 @@ export function ProcessSection({
     return () => observers.forEach((o) => o.disconnect());
   }, [steps.length]);
 
+  const hasParticipants = participants && participants.length > 0 && participantsTag;
+
   return (
     <section
       ref={sectionRef}
@@ -204,7 +196,7 @@ export function ProcessSection({
     >
       {/* ── Desktop ── */}
       <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
-        {/* Left: sticky header */}
+        {/* Left: sticky header + participants */}
         <div className="w-1/2 shrink-0 pr-8">
           <div className="sticky top-24 py-14">
             <div className="flex flex-col gap-8 max-w-[560px]">
@@ -224,12 +216,16 @@ export function ProcessSection({
                   </p>
                 )}
               </div>
+              {/* Participants — inside sticky on desktop */}
+              {hasParticipants && (
+                <ParticipantsBlock tag={participantsTag} participants={participants} />
+              )}
             </div>
           </div>
         </div>
 
-        {/* Right: steps + participants */}
-        <div className="w-1/2 pt-10">
+        {/* Right: steps only */}
+        <div className="w-1/2 pt-10 pb-14">
           <div className="flex flex-col">
             {steps.map((step, i) => (
               <StepCard
@@ -241,17 +237,11 @@ export function ProcessSection({
               />
             ))}
           </div>
-          {participants && participants.length > 0 && participantsTag && (
-            <div className="mt-4 mb-14">
-              <ParticipantsBlock tag={participantsTag} participants={participants} />
-            </div>
-          )}
         </div>
       </div>
 
       {/* ── Mobile / Tablet ── */}
       <div className="flex lg:hidden flex-col px-5 md:px-8 py-10">
-        {/* Header */}
         <div className="flex flex-col gap-4 mb-10">
           <div className="flex flex-col gap-2">
             <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
@@ -271,7 +261,6 @@ export function ProcessSection({
           </div>
         </div>
 
-        {/* Steps */}
         <div className="flex flex-col">
           {steps.map((step, i) => (
             <StepCard
@@ -284,8 +273,7 @@ export function ProcessSection({
           ))}
         </div>
 
-        {/* Participants */}
-        {participants && participants.length > 0 && participantsTag && (
+        {hasParticipants && (
           <div className="mt-4">
             <ParticipantsBlock tag={participantsTag} participants={participants} />
           </div>
