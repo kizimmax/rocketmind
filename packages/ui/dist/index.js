@@ -2205,7 +2205,7 @@ function ProcessSection({
       children: [
         /* @__PURE__ */ jsxs13("div", { className: "hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
           /* @__PURE__ */ jsxs13("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col", children: [
-            /* @__PURE__ */ jsx30("div", { className: "flex-1", children: /* @__PURE__ */ jsx30("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-8 max-w-[560px]", children: [
+            /* @__PURE__ */ jsx30("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx30("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-8 max-w-[560px]", children: [
               /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-2", children: [
                 /* @__PURE__ */ jsx30("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
                 /* @__PURE__ */ jsx30("h2", { className: "h2 text-[#F0F0F0]", children: title })

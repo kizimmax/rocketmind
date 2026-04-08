@@ -237,7 +237,7 @@ export function ProcessSection({
       <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
         {/* Left: sticky header at top, participants at bottom */}
         <div className="w-1/2 shrink-0 pr-8 flex flex-col">
-          <div className="flex-1">
+          <div className="flex-1 pb-10">
             <div className="sticky top-24">
               <div className="flex flex-col gap-8 max-w-[560px]">
                 <div className="flex flex-col gap-2">
