@@ -291,38 +291,38 @@ export function ProcessSection({
 
       {/* ── Tablet (md → lg) — two-column layout ── */}
       <div className="hidden md:flex lg:hidden gap-10 px-8">
-        {/* Left: header + participants at bottom */}
+        {/* Left: sticky header at top, participants at bottom */}
         <div className="w-[45%] shrink-0 flex flex-col">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
-                {tag}
-              </span>
-              <h2 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]">
-                {title}
-              </h2>
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]">
-                {subtitle}
-              </p>
-              {description && (
-                <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]">
-                  {description}
-                </p>
-              )}
+          <div className="flex-1 pb-10">
+            <div className="sticky top-24">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
+                    {tag}
+                  </span>
+                  <h2 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]">
+                    {title}
+                  </h2>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]">
+                    {subtitle}
+                  </p>
+                  {description && (
+                    <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]">
+                      {description}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-
           {hasParticipants && (
-            <>
-              <div className="flex-1" />
-              <ParticipantsBlock
-                tag={participantsTag}
-                participants={participants}
-                className="p-5 max-w-none"
-              />
-            </>
+            <ParticipantsBlock
+              tag={participantsTag}
+              participants={participants}
+              className="p-5 max-w-none"
+            />
           )}
         </div>
 

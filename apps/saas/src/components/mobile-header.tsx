@@ -174,10 +174,11 @@ export function MobileHeader() {
     touchRef.current = { startX: 0, startY: 0, dx: 0, swiping: false };
   }
 
+  const bp = process.env.NEXT_PUBLIC_BASE_PATH || "";
   const iconSrc =
     resolvedTheme === "dark"
-      ? "/icon_dark_background.svg"
-      : "/icon_light_background.svg";
+      ? `${bp}/icon_dark_background.svg`
+      : `${bp}/icon_light_background.svg`;
 
   const drawer = mounted
     ? createPortal(

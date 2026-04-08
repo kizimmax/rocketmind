@@ -2365,7 +2365,7 @@ function ProcessSection({
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "hidden md:flex lg:hidden gap-10 px-8", children: [
           /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "w-[45%] shrink-0 flex flex-col", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex flex-col gap-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "sticky top-24", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex flex-col gap-4", children: [
               /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex flex-col gap-2", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
                 /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: title })
@@ -2374,18 +2374,15 @@ function ProcessSection({
                 /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]", children: subtitle }),
                 description && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: description })
               ] })
-            ] }),
-            hasParticipants && /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(import_jsx_runtime30.Fragment, { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex-1" }),
-              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
-                ParticipantsBlock,
-                {
-                  tag: participantsTag,
-                  participants,
-                  className: "p-5 max-w-none"
-                }
-              )
-            ] })
+            ] }) }) }),
+            hasParticipants && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+              ParticipantsBlock,
+              {
+                tag: participantsTag,
+                participants,
+                className: "p-5 max-w-none"
+              }
+            )
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex-1 pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { "data-step": true, children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             StepCard,

@@ -544,10 +544,11 @@ function Collapsible({ open, children }: { open: boolean; children: React.ReactN
 
 function LogoHeader({ onClose }: { onClose?: () => void }) {
   const { resolvedTheme } = useTheme();
+  const bp = process.env.NEXT_PUBLIC_BASE_PATH || "";
   const src =
     resolvedTheme === "dark"
-      ? "/text_logo_dark_background_en.svg"
-      : "/text_logo_light_background_en.svg";
+      ? `${bp}/text_logo_dark_background_en.svg`
+      : `${bp}/text_logo_light_background_en.svg`;
 
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-border">

@@ -2047,7 +2047,7 @@ function ForWhomSection({
 
 // src/components/ui/process-section.tsx
 import { useEffect as useEffect5, useRef as useRef6, useState as useState2, useCallback as useCallback2 } from "react";
-import { Fragment as Fragment2, jsx as jsx30, jsxs as jsxs13 } from "react/jsx-runtime";
+import { jsx as jsx30, jsxs as jsxs13 } from "react/jsx-runtime";
 function TimelineColumn({
   isActive,
   isLast,
@@ -2232,7 +2232,7 @@ function ProcessSection({
         ] }),
         /* @__PURE__ */ jsxs13("div", { className: "hidden md:flex lg:hidden gap-10 px-8", children: [
           /* @__PURE__ */ jsxs13("div", { className: "w-[45%] shrink-0 flex flex-col", children: [
-            /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-4", children: [
+            /* @__PURE__ */ jsx30("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx30("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-4", children: [
               /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-2", children: [
                 /* @__PURE__ */ jsx30("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
                 /* @__PURE__ */ jsx30("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: title })
@@ -2241,18 +2241,15 @@ function ProcessSection({
                 /* @__PURE__ */ jsx30("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]", children: subtitle }),
                 description && /* @__PURE__ */ jsx30("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: description })
               ] })
-            ] }),
-            hasParticipants && /* @__PURE__ */ jsxs13(Fragment2, { children: [
-              /* @__PURE__ */ jsx30("div", { className: "flex-1" }),
-              /* @__PURE__ */ jsx30(
-                ParticipantsBlock,
-                {
-                  tag: participantsTag,
-                  participants,
-                  className: "p-5 max-w-none"
-                }
-              )
-            ] })
+            ] }) }) }),
+            hasParticipants && /* @__PURE__ */ jsx30(
+              ParticipantsBlock,
+              {
+                tag: participantsTag,
+                participants,
+                className: "p-5 max-w-none"
+              }
+            )
           ] }),
           /* @__PURE__ */ jsx30("div", { className: "flex-1 pt-10", children: /* @__PURE__ */ jsx30("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ jsx30("div", { "data-step": true, children: /* @__PURE__ */ jsx30(
             StepCard,
@@ -2823,7 +2820,7 @@ var LEGAL_LINKS = [
 ];
 
 // src/components/ui/mobile-nav.tsx
-import { Fragment as Fragment3, jsx as jsx36, jsxs as jsxs19 } from "react/jsx-runtime";
+import { Fragment as Fragment2, jsx as jsx36, jsxs as jsxs19 } from "react/jsx-runtime";
 function BurgerIcon({
   open,
   barClass = "bg-foreground"
@@ -2928,7 +2925,7 @@ function MobileNav({ className }) {
                         ease: [0.23, 1, 0.32, 1]
                       },
                       className: "border-b border-black/10",
-                      children: hasDropdown ? /* @__PURE__ */ jsxs19(Fragment3, { children: [
+                      children: hasDropdown ? /* @__PURE__ */ jsxs19(Fragment2, { children: [
                         /* @__PURE__ */ jsxs19(
                           "button",
                           {
