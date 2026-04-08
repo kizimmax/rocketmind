@@ -164,7 +164,7 @@ export function ProcessSection({
   participants,
   className,
 }: ProcessSectionProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const [lineFills, setLineFills] = useState<number[]>(() => Array(steps.length).fill(0));
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -176,7 +176,7 @@ export function ProcessSection({
 
   const updateProgress = useCallback(() => {
     const viewportCenter = window.innerHeight * 0.45;
-    let newActive = 0;
+    let newActive = -1;
     const newFills = Array(steps.length).fill(0);
 
     stepRefs.current.forEach((el, i) => {
@@ -263,8 +263,8 @@ export function ProcessSection({
           </div>
         </div>
 
-        {/* Right: steps */}
-        <div className="w-1/2 pt-10 pb-14">
+        {/* Right: steps — pt-[80px] for 40px offset from section top */}
+        <div className="w-1/2 pt-[80px] pb-14">
           <div className="flex flex-col">
             {steps.map((step, i) => (
               <StepCard

@@ -2151,7 +2151,7 @@ function ProcessSection({
   participants,
   className
 }) {
-  const [activeIndex, setActiveIndex] = useState2(0);
+  const [activeIndex, setActiveIndex] = useState2(-1);
   const [lineFills, setLineFills] = useState2(() => Array(steps.length).fill(0));
   const stepRefs = useRef6([]);
   const sectionRef = useRef6(null);
@@ -2161,7 +2161,7 @@ function ProcessSection({
   }
   const updateProgress = useCallback2(() => {
     const viewportCenter = window.innerHeight * 0.45;
-    let newActive = 0;
+    let newActive = -1;
     const newFills = Array(steps.length).fill(0);
     stepRefs.current.forEach((el, i) => {
       if (!el) return;
@@ -2218,7 +2218,7 @@ function ProcessSection({
             ] }),
             hasParticipants && /* @__PURE__ */ jsx30(ParticipantsBlock, { tag: participantsTag, participants })
           ] }) }) }),
-          /* @__PURE__ */ jsx30("div", { className: "w-1/2 pt-10 pb-14", children: /* @__PURE__ */ jsx30("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ jsx30(
+          /* @__PURE__ */ jsx30("div", { className: "w-1/2 pt-[80px] pb-14", children: /* @__PURE__ */ jsx30("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ jsx30(
             StepCard,
             {
               step,

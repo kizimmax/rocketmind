@@ -2283,7 +2283,7 @@ function ProcessSection({
   participants,
   className
 }) {
-  const [activeIndex, setActiveIndex] = (0, import_react5.useState)(0);
+  const [activeIndex, setActiveIndex] = (0, import_react5.useState)(-1);
   const [lineFills, setLineFills] = (0, import_react5.useState)(() => Array(steps.length).fill(0));
   const stepRefs = (0, import_react5.useRef)([]);
   const sectionRef = (0, import_react5.useRef)(null);
@@ -2293,7 +2293,7 @@ function ProcessSection({
   }
   const updateProgress = (0, import_react5.useCallback)(() => {
     const viewportCenter = window.innerHeight * 0.45;
-    let newActive = 0;
+    let newActive = -1;
     const newFills = Array(steps.length).fill(0);
     stepRefs.current.forEach((el, i) => {
       if (!el) return;
@@ -2350,7 +2350,7 @@ function ProcessSection({
             ] }),
             hasParticipants && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(ParticipantsBlock, { tag: participantsTag, participants })
           ] }) }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "w-1/2 pt-10 pb-14", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "w-1/2 pt-[80px] pb-14", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             StepCard,
             {
               step,
