@@ -106,6 +106,7 @@ export function ResultsSection({
             {cards.map((card, i) => {
               const isDescended = i < activeCount;
               const isCurrent = i === activeCount - 1;
+              const isPast = isDescended && !isCurrent;
               const offset = isDescended ? 0 : -i * STEP_OFFSET;
 
               return (
@@ -125,7 +126,11 @@ export function ResultsSection({
                     <h3
                       className={cn(
                         "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] transition-colors duration-500",
-                        isCurrent ? "text-[#0A0A0A]" : "text-[#F0F0F0]",
+                        isCurrent
+                          ? "text-[#0A0A0A]"
+                          : isPast
+                            ? "text-[#FFCC00]"
+                            : "text-[#F0F0F0]",
                       )}
                     >
                       {card.title}
