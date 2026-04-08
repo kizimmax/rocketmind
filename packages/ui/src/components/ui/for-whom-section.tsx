@@ -33,12 +33,16 @@ export type ForWhomSectionProps = {
 
 function FactCard({ title, text }: ForWhomFact) {
   return (
-    <div className="flex flex-col gap-4">
-      <h4 className="h4 text-[#0A0A0A]">{title}</h4>
+    <div className="flex flex-col gap-4 h-full">
+      <div className="flex-1 flex items-end">
+        <h4 className="h4 text-[#0A0A0A]">{title}</h4>
+      </div>
       <div className="h-0 w-full border-t border-[#404040]" />
-      <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]">
-        {text}
-      </p>
+      <div className="flex-1">
+        <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]">
+          {text}
+        </p>
+      </div>
     </div>
   );
 }
