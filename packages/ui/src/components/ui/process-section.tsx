@@ -231,14 +231,14 @@ export function ProcessSection({
   return (
     <section
       ref={containerRef}
-      className={cn("w-full bg-[#0A0A0A] border-t border-border", className)}
+      className={cn("w-full bg-[#0A0A0A] border-t border-border py-10 lg:py-20", className)}
     >
       {/* ── Desktop ── */}
       <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
         {/* Left: sticky header at top, participants at bottom */}
         <div className="w-1/2 shrink-0 pr-8 flex flex-col">
           <div className="flex-1">
-            <div className="sticky top-24 py-14">
+            <div className="sticky top-24">
               <div className="flex flex-col gap-8 max-w-[560px]">
                 <div className="flex flex-col gap-2">
                   <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
@@ -260,14 +260,14 @@ export function ProcessSection({
             </div>
           </div>
           {hasParticipants && (
-            <div className="pb-14 max-w-[648px]">
+            <div className="max-w-[648px]">
               <ParticipantsBlock tag={participantsTag} participants={participants} />
             </div>
           )}
         </div>
 
         {/* Right: steps */}
-        <div className="w-1/2 pt-[80px] pb-14">
+        <div className="w-1/2 pt-10">
           <div className="flex flex-col">
             {steps.map((step, i) => (
               <div key={i} data-step>
@@ -284,7 +284,7 @@ export function ProcessSection({
       </div>
 
       {/* ── Mobile / Tablet ── */}
-      <div className="flex lg:hidden flex-col px-5 md:px-8 py-10">
+      <div className="flex lg:hidden flex-col px-5 md:px-8">
         <div className="flex flex-col gap-4 mb-10">
           <div className="flex flex-col gap-2">
             <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">

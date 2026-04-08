@@ -96,12 +96,12 @@ export function AboutProduct({
   const hasImage = !!aboutImage;
 
   return (
-    <section className="w-full border-t border-border py-14">
+    <section className="w-full border-t border-border py-10 lg:py-20">
       {/* ── Desktop with image ── */}
       {hasImage && (
         <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
           {/* Left: text + accordion */}
-          <div className="w-[560px] shrink-0 flex flex-col justify-between gap-28 py-14">
+          <div className="w-[560px] shrink-0 flex flex-col justify-between gap-28">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
                 <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
@@ -154,7 +154,7 @@ export function AboutProduct({
       )}
 
       {/* ── Tablet ── */}
-      <div className="hidden md:flex lg:hidden flex-col mx-auto max-w-[768px] px-8 py-10">
+      <div className="hidden md:flex lg:hidden flex-col mx-auto max-w-[768px] px-8">
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex flex-col gap-2">
             <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
@@ -175,7 +175,7 @@ export function AboutProduct({
       </div>
 
       {/* ── Mobile ── */}
-      <div className="flex md:hidden flex-col px-5 py-8">
+      <div className="flex md:hidden flex-col px-5">
         <div className="flex flex-col gap-4 mb-4">
           <div className="flex flex-col gap-2">
             <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">

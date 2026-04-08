@@ -99,10 +99,10 @@ export function ResultsSection({
   return (
     <section
       ref={sectionRef}
-      className={cn("w-full bg-[#0A0A0A] border-t border-border", className)}
+      className={cn("w-full bg-[#0A0A0A] border-t border-border py-10 lg:py-20", className)}
     >
       {/* ── Desktop ── */}
-      <div className="hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14 pt-[88px] pb-14">
+      <div className="hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
         {/* Header + cards share the same vertical space */}
         <div className="relative" style={{ minHeight: `${contentHeight}px` }}>
           {/* Header — top left */}
@@ -171,7 +171,7 @@ export function ResultsSection({
       </div>
 
       {/* ── Mobile / Tablet ── */}
-      <div className="flex lg:hidden flex-col px-5 md:px-8 py-10">
+      <div className="flex lg:hidden flex-col px-5 md:px-8">
         {/* Header */}
         <div className="flex flex-col gap-2 mb-6">
           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">

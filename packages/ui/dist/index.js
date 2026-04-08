@@ -2020,8 +2020,8 @@ function ForWhomSection({
     col1 = facts.slice(0, mid);
     col2 = facts.slice(mid);
   }
-  return /* @__PURE__ */ jsxs12("section", { className: cn("w-full bg-[#F0F0F0]", className), children: [
-    /* @__PURE__ */ jsxs12("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14 py-8", children: [
+  return /* @__PURE__ */ jsxs12("section", { className: cn("w-full bg-[#F0F0F0] py-10 lg:py-20", className), children: [
+    /* @__PURE__ */ jsxs12("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
       /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-2", children: [
         /* @__PURE__ */ jsx29("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
         /* @__PURE__ */ jsxs12("div", { className: "flex", children: [
@@ -2034,7 +2034,7 @@ function ForWhomSection({
         /* @__PURE__ */ jsx29("div", { className: "w-1/2 flex gap-8", children: col2.map((f, i) => /* @__PURE__ */ jsx29("div", { className: "flex-1", children: /* @__PURE__ */ jsx29(FactCard, { ...f }) }, i)) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs12("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8 py-10", children: [
+    /* @__PURE__ */ jsxs12("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
       /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-2", children: [
         /* @__PURE__ */ jsx29("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
         /* @__PURE__ */ jsx29("h2", { className: "h3 text-[#0A0A0A]", children: title }),
@@ -2201,11 +2201,11 @@ function ProcessSection({
     "section",
     {
       ref: containerRef,
-      className: cn("w-full bg-[#0A0A0A] border-t border-border", className),
+      className: cn("w-full bg-[#0A0A0A] border-t border-border py-10 lg:py-20", className),
       children: [
         /* @__PURE__ */ jsxs13("div", { className: "hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
           /* @__PURE__ */ jsxs13("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col", children: [
-            /* @__PURE__ */ jsx30("div", { className: "flex-1", children: /* @__PURE__ */ jsx30("div", { className: "sticky top-24 py-14", children: /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-8 max-w-[560px]", children: [
+            /* @__PURE__ */ jsx30("div", { className: "flex-1", children: /* @__PURE__ */ jsx30("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-8 max-w-[560px]", children: [
               /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-2", children: [
                 /* @__PURE__ */ jsx30("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
                 /* @__PURE__ */ jsx30("h2", { className: "h2 text-[#F0F0F0]", children: title })
@@ -2215,9 +2215,9 @@ function ProcessSection({
                 description && /* @__PURE__ */ jsx30("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: description })
               ] })
             ] }) }) }),
-            hasParticipants && /* @__PURE__ */ jsx30("div", { className: "pb-14 max-w-[648px]", children: /* @__PURE__ */ jsx30(ParticipantsBlock, { tag: participantsTag, participants }) })
+            hasParticipants && /* @__PURE__ */ jsx30("div", { className: "max-w-[648px]", children: /* @__PURE__ */ jsx30(ParticipantsBlock, { tag: participantsTag, participants }) })
           ] }),
-          /* @__PURE__ */ jsx30("div", { className: "w-1/2 pt-[80px] pb-14", children: /* @__PURE__ */ jsx30("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ jsx30("div", { "data-step": true, children: /* @__PURE__ */ jsx30(
+          /* @__PURE__ */ jsx30("div", { className: "w-1/2 pt-10", children: /* @__PURE__ */ jsx30("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ jsx30("div", { "data-step": true, children: /* @__PURE__ */ jsx30(
             StepCard,
             {
               step,
@@ -2227,7 +2227,7 @@ function ProcessSection({
             }
           ) }, i)) }) })
         ] }),
-        /* @__PURE__ */ jsxs13("div", { className: "flex lg:hidden flex-col px-5 md:px-8 py-10", children: [
+        /* @__PURE__ */ jsxs13("div", { className: "flex lg:hidden flex-col px-5 md:px-8", children: [
           /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-4 mb-10", children: [
             /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-2", children: [
               /* @__PURE__ */ jsx30("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
@@ -2325,9 +2325,9 @@ function ResultsSection({
     "section",
     {
       ref: sectionRef,
-      className: cn("w-full bg-[#0A0A0A] border-t border-border", className),
+      className: cn("w-full bg-[#0A0A0A] border-t border-border py-10 lg:py-20", className),
       children: [
-        /* @__PURE__ */ jsx31("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14 pt-[88px] pb-14", children: /* @__PURE__ */ jsxs14("div", { className: "relative", style: { minHeight: `${contentHeight}px` }, children: [
+        /* @__PURE__ */ jsx31("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs14("div", { className: "relative", style: { minHeight: `${contentHeight}px` }, children: [
           /* @__PURE__ */ jsxs14("div", { className: "flex flex-col gap-2 max-w-[560px]", children: [
             /* @__PURE__ */ jsx31("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
             /* @__PURE__ */ jsxs14("div", { className: "flex flex-col gap-6", children: [
@@ -2381,7 +2381,7 @@ function ResultsSection({
             );
           }) })
         ] }) }),
-        /* @__PURE__ */ jsxs14("div", { className: "flex lg:hidden flex-col px-5 md:px-8 py-10", children: [
+        /* @__PURE__ */ jsxs14("div", { className: "flex lg:hidden flex-col px-5 md:px-8", children: [
           /* @__PURE__ */ jsxs14("div", { className: "flex flex-col gap-2 mb-6", children: [
             /* @__PURE__ */ jsx31("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
             /* @__PURE__ */ jsxs14("div", { className: "flex flex-col gap-4", children: [
