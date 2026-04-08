@@ -19,10 +19,10 @@ type ProductHeroProps = {
 
 function FactoidCard({ number, label, text, stretch, className }: Factoid & { stretch?: boolean; className?: string }) {
   return (
-    <div className={`flex flex-col p-5 md:p-7 ${stretch ? "flex-1" : "h-[126px] md:h-[189px]"} ${className ?? ""}`}>
+    <div className={`flex flex-col p-5 md:p-7 ${stretch ? "flex-1" : "md:h-[189px]"} ${className ?? ""}`}>
       <div className="flex flex-col justify-between gap-7 h-full">
         <div className="flex items-center gap-5">
-          <span className="h2 text-[#F0F0F0]">{number}</span>
+          <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-40)] md:text-[length:var(--text-52)] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0]">{number}</span>
           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0] w-[127px]">
             {label}
           </span>
@@ -214,9 +214,9 @@ export function ProductHero({
         </div>
 
         {/* Factoids stacked */}
-        <div className="flex flex-col px-5 border-t border-[#404040]">
-          {factoids.map((f) => (
-            <FactoidCard key={f.number} {...f} className="border-b border-l border-r border-[#404040]" />
+        <div className="flex flex-col px-5">
+          {factoids.map((f, i) => (
+            <FactoidCard key={f.number} {...f} className={i === 0 ? "border border-[#404040]" : "border-l border-r border-b border-[#404040]"} />
           ))}
         </div>
       </div>
