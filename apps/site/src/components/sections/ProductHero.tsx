@@ -145,20 +145,12 @@ export function ProductHero({
 
         {/* Cards: 2-col grid — [CTA, F1] / [F2, F3] */}
         <div className="grid grid-cols-2 px-10">
-          {/* Row 1: CTA + first factoid */}
-          <div className="border-b border-[#404040]">
-            <HeroCTA text={ctaText} />
-          </div>
-          <div className="border-b border-l border-[#404040]">
-            <FactoidCard {...factoids[0]} />
-          </div>
-          {/* Row 2: remaining factoids */}
-          <div className="border-l border-[#404040]">
-            <FactoidCard {...factoids[1]} />
-          </div>
-          <div className="border-l border-[#404040]">
-            <FactoidCard {...factoids[2]} />
-          </div>
+          {/* Row 1 */}
+          <HeroCTA text={ctaText} />
+          <FactoidCard {...factoids[0]} className="border border-[#404040]" />
+          {/* Row 2 */}
+          <FactoidCard {...factoids[1]} className="border border-[#404040]" />
+          <FactoidCard {...factoids[2]} className="border-r border-b border-[#404040]" />
         </div>
       </div>
 
