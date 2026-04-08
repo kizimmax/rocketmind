@@ -129,8 +129,9 @@ export function ProductHero({
         <div className="relative min-h-[400px]">
           <DotGridLens
             accentColor
-            className="absolute inset-0 z-0"
-            style={{ width: "100%", height: "100%" }}
+            baseRadius={0.75}
+            maxScale={4.2}
+            className="absolute inset-0 z-0 opacity-50"
           />
           <div className="relative z-10 p-8 pt-16">
             <Image
@@ -171,8 +172,9 @@ export function ProductHero({
         <div className="relative min-h-[200px]">
           <DotGridLens
             accentColor
-            className="absolute inset-0 z-0"
-            style={{ width: "100%", height: "100%" }}
+            baseRadius={0.75}
+            maxScale={4.2}
+            className="absolute inset-0 z-0 opacity-50"
           />
           <div className="relative z-10 px-5 pt-[70px]">
             <Image
