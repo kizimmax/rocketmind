@@ -78,7 +78,9 @@ export function ProductHero({
           {/* Dot Grid Lens background — extends beyond padding */}
           <DotGridLens
             accentColor
-            className="absolute -left-14 top-0 bottom-0 right-0 z-0"
+            baseRadius={0.75}
+            maxScale={2.5}
+            className="absolute -left-14 top-0 bottom-0 right-0 z-0 opacity-50"
           />
 
           {/* Left fade gradient */}
