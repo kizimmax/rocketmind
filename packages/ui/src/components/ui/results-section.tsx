@@ -170,8 +170,45 @@ export function ResultsSection({
         </div>
       </div>
 
-      {/* ── Mobile / Tablet ── */}
-      <div className="flex lg:hidden flex-col px-5 md:px-8">
+      {/* ── Tablet (md → lg) — 2×2 grid ── */}
+      <div className="hidden md:flex lg:hidden flex-col px-8">
+        {/* Header */}
+        <div className="flex flex-col gap-2 mb-6">
+          <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
+            {tag}
+          </span>
+          <div className="flex flex-col gap-4">
+            <h2 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]">
+              {title}
+            </h2>
+            {description && (
+              <p className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]">
+                {description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Cards — 2×2 grid */}
+        <div className="grid grid-cols-2 gap-2">
+          {cards.map((card, i) => (
+            <div
+              key={i}
+              className="bg-[#FFCC00] flex flex-col justify-between p-5 h-[240px]"
+            >
+              <h3 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]">
+                {card.title}
+              </h3>
+              <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A]">
+                {card.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Mobile ── */}
+      <div className="flex md:hidden flex-col px-5">
         {/* Header */}
         <div className="flex flex-col gap-2 mb-6">
           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
@@ -189,10 +226,10 @@ export function ResultsSection({
 
         {/* Cards — horizontal carousel 2×N */}
         <div
-          className="overflow-x-auto -mx-5 md:-mx-8"
+          className="overflow-x-auto -mx-5"
           style={{ scrollbarWidth: "none" }}
         >
-          <div className="px-5 md:px-8 w-fit">
+          <div className="px-5 w-fit">
             <div
               className="grid grid-rows-2 gap-2"
               style={{

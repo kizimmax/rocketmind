@@ -2363,7 +2363,7 @@ function ProcessSection({
             }
           ) }, i)) }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "hidden md:flex lg:hidden gap-10 px-10", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "hidden md:flex lg:hidden gap-10 px-8", children: [
           /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "w-[45%] shrink-0 flex flex-col", children: [
             /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex flex-col gap-4", children: [
               /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex flex-col gap-2", children: [
@@ -2553,7 +2553,27 @@ function ResultsSection({
             );
           }) })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex lg:hidden flex-col px-5 md:px-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "hidden md:flex lg:hidden flex-col px-8", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex flex-col gap-2 mb-6", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex flex-col gap-4", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: title }),
+              description && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393]", children: description })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "grid grid-cols-2 gap-2", children: cards.map((card, i) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+            "div",
+            {
+              className: "bg-[#FFCC00] flex flex-col justify-between p-5 h-[240px]",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
+                /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A]", children: card.text })
+              ]
+            },
+            i
+          )) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex md:hidden flex-col px-5", children: [
           /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex flex-col gap-2 mb-6", children: [
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex flex-col gap-4", children: [
@@ -2564,9 +2584,9 @@ function ResultsSection({
           /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
             "div",
             {
-              className: "overflow-x-auto -mx-5 md:-mx-8",
+              className: "overflow-x-auto -mx-5",
               style: { scrollbarWidth: "none" },
-              children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "px-5 md:px-8 w-fit", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "px-5 w-fit", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
                 "div",
                 {
                   className: "grid grid-rows-2 gap-2",

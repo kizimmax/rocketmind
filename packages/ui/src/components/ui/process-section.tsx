@@ -290,7 +290,7 @@ export function ProcessSection({
       </div>
 
       {/* ── Tablet (md → lg) — two-column layout ── */}
-      <div className="hidden md:flex lg:hidden gap-10 px-10">
+      <div className="hidden md:flex lg:hidden gap-10 px-8">
         {/* Left: header + participants at bottom */}
         <div className="w-[45%] shrink-0 flex flex-col">
           <div className="flex flex-col gap-4">
