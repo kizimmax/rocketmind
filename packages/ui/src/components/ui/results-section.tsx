@@ -18,12 +18,18 @@ export type ResultsSectionProps = {
   className?: string;
 };
 
-// ── Scroll hook — staircase activation ─────────────────────────────────────────
+// ── Scroll hook — staircase with staggered continuous progress ─────────────────
 
 const STEP_OFFSET = 88; // px per staircase step
+const STAGGER = 0.06;   // tiny delay between each card starting (6% of scroll range)
+const CARD_DURATION = 0.45; // each card takes 45% of scroll range to fully descend
 
 function useResultsScroll(cardCount: number) {
-  const [activeCount, setActiveCount] = useState(1);
+  const [progresses, setProgresses] = useState<number[]>(() => {
+    const arr = Array(cardCount).fill(0);
+    arr[0] = 1; // first card always descended
+    return arr;
+  });
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const update = useCallback(() => {
@@ -32,16 +38,23 @@ function useResultsScroll(cardCount: number) {
 
     const rect = el.getBoundingClientRect();
     const trigger = window.innerHeight * 0.45;
-    const progress = Math.max(
+    const scrollProgress = Math.max(
       0,
       Math.min(1, (trigger - rect.top) / rect.height),
     );
 
-    const count = Math.max(
-      1,
-      Math.min(cardCount, 1 + Math.floor(progress * cardCount)),
-    );
-    setActiveCount(count);
+    const newProgresses: number[] = [];
+    for (let i = 0; i < cardCount; i++) {
+      if (i === 0) {
+        newProgresses.push(1);
+        continue;
+      }
+      const start = (i - 1) * STAGGER;
+      const p = Math.max(0, Math.min(1, (scrollProgress - start) / CARD_DURATION));
+      newProgresses.push(p);
+    }
+
+    setProgresses(newProgresses);
   }, [cardCount]);
 
   useEffect(() => {
@@ -62,7 +75,7 @@ function useResultsScroll(cardCount: number) {
     };
   }, [update]);
 
-  return { activeCount, sectionRef };
+  return { progresses, sectionRef };
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
@@ -74,8 +87,14 @@ export function ResultsSection({
   cards,
   className,
 }: ResultsSectionProps) {
-  const { activeCount, sectionRef } = useResultsScroll(cards.length);
+  const { progresses, sectionRef } = useResultsScroll(cards.length);
   const contentHeight = STEP_OFFSET * (cards.length - 1) + 240;
+
+  // Current yellow card = last fully descended
+  let currentIndex = 0;
+  for (let j = cards.length - 1; j >= 0; j--) {
+    if (progresses[j] >= 1) { currentIndex = j; break; }
+  }
 
   return (
     <section
@@ -104,20 +123,20 @@ export function ResultsSection({
           {/* Cards — staircase, pinned to bottom */}
           <div className="absolute bottom-0 left-0 right-0 flex">
             {cards.map((card, i) => {
-              const isDescended = i < activeCount;
-              const isCurrent = i === activeCount - 1;
-              const isPast = isDescended && !isCurrent;
-              const offset = isDescended ? 0 : -i * STEP_OFFSET;
+              const progress = progresses[i];
+              const offset = i === 0 ? 0 : -i * STEP_OFFSET * (1 - progress);
+              const isCurrent = i === currentIndex;
+              const isPast = progress >= 1 && !isCurrent;
 
               return (
                 <div
                   key={i}
-                  className="flex-1 transition-transform duration-500 ease-out"
+                  className="flex-1"
                   style={{ transform: `translateY(${offset}px)` }}
                 >
                   <div
                     className={cn(
-                      "flex flex-col justify-between p-8 h-[240px] border transition-colors duration-500",
+                      "flex flex-col justify-between p-8 h-[240px] border transition-colors duration-300",
                       isCurrent
                         ? "bg-[#FFCC00] border-[#FFCC00]"
                         : "border-[#404040]",
@@ -125,7 +144,7 @@ export function ResultsSection({
                   >
                     <h3
                       className={cn(
-                        "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] transition-colors duration-500",
+                        "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] transition-colors duration-300",
                         isCurrent
                           ? "text-[#0A0A0A]"
                           : isPast
@@ -137,7 +156,7 @@ export function ResultsSection({
                     </h3>
                     <p
                       className={cn(
-                        "text-[length:var(--text-16)] leading-[1.28] transition-colors duration-500",
+                        "text-[length:var(--text-16)] leading-[1.28] transition-colors duration-300",
                         isCurrent ? "text-[#0A0A0A]" : "text-[#939393]",
                       )}
                     >

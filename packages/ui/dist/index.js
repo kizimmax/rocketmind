@@ -2258,23 +2258,35 @@ function ProcessSection({
 import { useEffect as useEffect6, useRef as useRef7, useState as useState3, useCallback as useCallback3 } from "react";
 import { jsx as jsx31, jsxs as jsxs14 } from "react/jsx-runtime";
 var STEP_OFFSET = 88;
+var STAGGER = 0.06;
+var CARD_DURATION = 0.45;
 function useResultsScroll(cardCount) {
-  const [activeCount, setActiveCount] = useState3(1);
+  const [progresses, setProgresses] = useState3(() => {
+    const arr = Array(cardCount).fill(0);
+    arr[0] = 1;
+    return arr;
+  });
   const sectionRef = useRef7(null);
   const update = useCallback3(() => {
     const el = sectionRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const trigger = window.innerHeight * 0.45;
-    const progress = Math.max(
+    const scrollProgress = Math.max(
       0,
       Math.min(1, (trigger - rect.top) / rect.height)
     );
-    const count = Math.max(
-      1,
-      Math.min(cardCount, 1 + Math.floor(progress * cardCount))
-    );
-    setActiveCount(count);
+    const newProgresses = [];
+    for (let i = 0; i < cardCount; i++) {
+      if (i === 0) {
+        newProgresses.push(1);
+        continue;
+      }
+      const start = (i - 1) * STAGGER;
+      const p = Math.max(0, Math.min(1, (scrollProgress - start) / CARD_DURATION));
+      newProgresses.push(p);
+    }
+    setProgresses(newProgresses);
   }, [cardCount]);
   useEffect6(() => {
     let raf = 0;
@@ -2291,7 +2303,7 @@ function useResultsScroll(cardCount) {
       cancelAnimationFrame(raf);
     };
   }, [update]);
-  return { activeCount, sectionRef };
+  return { progresses, sectionRef };
 }
 function ResultsSection({
   tag,
@@ -2300,8 +2312,15 @@ function ResultsSection({
   cards,
   className
 }) {
-  const { activeCount, sectionRef } = useResultsScroll(cards.length);
+  const { progresses, sectionRef } = useResultsScroll(cards.length);
   const contentHeight = STEP_OFFSET * (cards.length - 1) + 240;
+  let currentIndex = 0;
+  for (let j = cards.length - 1; j >= 0; j--) {
+    if (progresses[j] >= 1) {
+      currentIndex = j;
+      break;
+    }
+  }
   return /* @__PURE__ */ jsxs14(
     "section",
     {
@@ -2317,20 +2336,20 @@ function ResultsSection({
             ] })
           ] }),
           /* @__PURE__ */ jsx31("div", { className: "absolute bottom-0 left-0 right-0 flex", children: cards.map((card, i) => {
-            const isDescended = i < activeCount;
-            const isCurrent = i === activeCount - 1;
-            const isPast = isDescended && !isCurrent;
-            const offset = isDescended ? 0 : -i * STEP_OFFSET;
+            const progress = progresses[i];
+            const offset = i === 0 ? 0 : -i * STEP_OFFSET * (1 - progress);
+            const isCurrent = i === currentIndex;
+            const isPast = progress >= 1 && !isCurrent;
             return /* @__PURE__ */ jsx31(
               "div",
               {
-                className: "flex-1 transition-transform duration-500 ease-out",
+                className: "flex-1",
                 style: { transform: `translateY(${offset}px)` },
                 children: /* @__PURE__ */ jsxs14(
                   "div",
                   {
                     className: cn(
-                      "flex flex-col justify-between p-8 h-[240px] border transition-colors duration-500",
+                      "flex flex-col justify-between p-8 h-[240px] border transition-colors duration-300",
                       isCurrent ? "bg-[#FFCC00] border-[#FFCC00]" : "border-[#404040]"
                     ),
                     children: [
@@ -2338,7 +2357,7 @@ function ResultsSection({
                         "h3",
                         {
                           className: cn(
-                            "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] transition-colors duration-500",
+                            "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] transition-colors duration-300",
                             isCurrent ? "text-[#0A0A0A]" : isPast ? "text-[#FFCC00]" : "text-[#F0F0F0]"
                           ),
                           children: card.title
@@ -2348,7 +2367,7 @@ function ResultsSection({
                         "p",
                         {
                           className: cn(
-                            "text-[length:var(--text-16)] leading-[1.28] transition-colors duration-500",
+                            "text-[length:var(--text-16)] leading-[1.28] transition-colors duration-300",
                             isCurrent ? "text-[#0A0A0A]" : "text-[#939393]"
                           ),
                           children: card.text
