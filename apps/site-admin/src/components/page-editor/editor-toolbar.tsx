@@ -31,7 +31,7 @@ export function EditorToolbar({
       <TooltipProvider>
         {/* Undo */}
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger>
             <Button
               variant="ghost"
               size="icon-sm"
@@ -46,7 +46,7 @@ export function EditorToolbar({
 
         {/* Redo */}
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger>
             <Button
               variant="ghost"
               size="icon-sm"
@@ -78,7 +78,7 @@ export function EditorToolbar({
 
         {/* Cancel */}
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger>
             <Button variant="ghost" size="icon-sm" onClick={onCancel}>
               <X className="h-4 w-4" />
             </Button>

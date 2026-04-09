@@ -1,35 +1,35 @@
-"use client";
+import {
+  CONSULTING_SERVICES,
+  ACADEMY_COURSES,
+  AI_PRODUCTS,
+} from "@rocketmind/ui/content";
+import { PageEditorClient } from "./client";
 
-import { use } from "react";
-import { useRouter } from "next/navigation";
-import { useAdminStore } from "@/lib/store";
-import { EditorShell } from "@/components/page-editor/editor-shell";
+export function generateStaticParams() {
+  const allItems = [
+    ...CONSULTING_SERVICES.map((s) => ({
+      section: "consulting",
+      slug: s.href.split("/").pop()!,
+    })),
+    ...ACADEMY_COURSES.map((s) => ({
+      section: "academy",
+      slug: s.href.split("/").pop()!,
+    })),
+    ...AI_PRODUCTS.map((s) => ({
+      section: "ai-products",
+      slug: s.href.split("/").pop()!,
+    })),
+  ];
+
+  return allItems.map(({ section, slug }) => ({
+    pageId: encodeURIComponent(`${section}/${slug}`),
+  }));
+}
 
 export default function PageEditorPage({
   params,
 }: {
   params: Promise<{ pageId: string }>;
 }) {
-  const { pageId: rawId } = use(params);
-  const pageId = decodeURIComponent(rawId);
-  const { getPage } = useAdminStore();
-  const router = useRouter();
-
-  const page = getPage(pageId);
-
-  if (!page) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">Страница не найдена</p>
-        <button
-          onClick={() => router.push("/pages")}
-          className="text-[length:var(--text-14)] text-foreground underline underline-offset-4"
-        >
-          Назад к списку
-        </button>
-      </div>
-    );
-  }
-
-  return <EditorShell initialPage={page} />;
+  return <PageEditorClient params={params} />;
 }

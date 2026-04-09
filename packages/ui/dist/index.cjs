@@ -2275,6 +2275,29 @@ function ParticipantsBlock({
     ] }, i)) })
   ] });
 }
+function AcademyStepCard({
+  step,
+  isFirst,
+  className
+}) {
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
+    "div",
+    {
+      className: cn(
+        "flex flex-col gap-2 border-[#404040] py-5 lg:flex-row lg:items-center lg:gap-4 lg:py-8",
+        isFirst ? "border-t border-b" : "border-b",
+        className
+      ),
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex items-center gap-6 lg:w-1/2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "w-[100px] shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: step.number }),
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "h4 text-[#F0F0F0]", children: step.title })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "pl-0 lg:w-1/2 lg:pl-4", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393]", children: step.text }) })
+      ]
+    }
+  );
+}
 function useStepProgress(stepCount) {
   const [activeIndex, setActiveIndex] = (0, import_react5.useState)(-1);
   const [fills, setFills] = (0, import_react5.useState)(() => Array(stepCount).fill(0));
@@ -2330,10 +2353,12 @@ function ProcessSection({
   steps,
   participantsTag,
   participants,
+  variant = "product",
   className
 }) {
   const { activeIndex, fills, containerRef } = useStepProgress(steps.length);
   const hasParticipants = participants && participants.length > 0 && participantsTag;
+  const isAcademy = variant === "academy";
   return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
     "section",
     {
@@ -2354,7 +2379,7 @@ function ProcessSection({
             ] }) }) }),
             hasParticipants && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "max-w-[648px]", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(ParticipantsBlock, { tag: participantsTag, participants }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "w-1/2 pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { "data-step": true, children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "w-1/2 pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { "data-step": true, children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             StepCard,
             {
               step,
@@ -2385,7 +2410,7 @@ function ProcessSection({
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex-1 pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { "data-step": true, children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex-1 pt-10", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(AcademyStepCard, { step, isFirst: i === 0, className: "lg:flex-col lg:items-start" }, i)) : steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { "data-step": true, children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             StepCard,
             {
               step,
@@ -2408,7 +2433,7 @@ function ProcessSection({
               description && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: description })
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { "data-step": true, children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { "data-step": true, children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             StepCard,
             {
               step,

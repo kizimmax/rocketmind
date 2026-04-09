@@ -65,6 +65,7 @@ export type ProcessData = {
   steps: ProcessStep[];
   participantsTag?: string;
   participants?: ProcessParticipant[];
+  variant?: "product" | "academy";
 };
 
 export type ResultCardData = {
@@ -118,6 +119,13 @@ export type ProductData = {
 // ── Paths ──────────────────────────────────────────────────────────────────────
 
 const PRODUCTS_DIR = path.join(process.cwd(), "content", "products");
+const CONTENT_DIRS: Record<string, string> = {
+  consulting: path.join(process.cwd(), "content", "products"),
+  academy: path.join(process.cwd(), "content", "academy"),
+  "ai-products": path.join(process.cwd(), "content", "ai-products"),
+  cases: path.join(process.cwd(), "content", "cases"),
+  media: path.join(process.cwd(), "content", "media"),
+};
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -146,8 +154,13 @@ function resolveImage(
 
 // ── API ────────────────────────────────────────────────────────────────────────
 
-export function getProductBySlug(slug: string): ProductData | null {
-  const filePath = path.join(PRODUCTS_DIR, `${slug}.md`);
+export function getProductBySlug(slug: string, category?: string): ProductData | null {
+  // Try category-specific dir first, fall back to products dir
+  let filePath = path.join(PRODUCTS_DIR, `${slug}.md`);
+  if (category && CONTENT_DIRS[category]) {
+    const catPath = path.join(CONTENT_DIRS[category], `${slug}.md`);
+    if (fs.existsSync(catPath)) filePath = catPath;
+  }
   if (!fs.existsSync(filePath)) return null;
 
   const raw = fs.readFileSync(filePath, "utf-8");

@@ -10,6 +10,26 @@ import {
 } from "react";
 import React from "react";
 import type { SitePage, PageStatus } from "./types";
+import { createSeedPages } from "./seed-data";
+
+const LS_KEY = "rm_site_admin_pages";
+const isStaticExport = process.env.NEXT_PUBLIC_STATIC === "1";
+
+// ── localStorage helpers ────────────────────────────────────────────────────
+
+function loadFromLS(): SitePage[] {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return JSON.parse(raw) as SitePage[];
+  } catch { /* ignore */ }
+  const seed = createSeedPages();
+  localStorage.setItem(LS_KEY, JSON.stringify(seed));
+  return seed;
+}
+
+function saveToLS(pages: SitePage[]) {
+  localStorage.setItem(LS_KEY, JSON.stringify(pages));
+}
 
 // ── Context ─────────────────────────────────────────────────────────────────
 
@@ -32,12 +52,19 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchPages = useCallback(async () => {
+    if (isStaticExport) {
+      setPages(loadFromLS());
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/pages");
+      if (!res.ok) throw new Error();
       const data = await res.json();
       setPages(data as SitePage[]);
-    } catch (e) {
-      console.error("Failed to load pages:", e);
+    } catch {
+      // API not available — fallback to localStorage
+      setPages(loadFromLS());
     } finally {
       setLoading(false);
     }
@@ -69,6 +96,30 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         .replace(/-+/g, "-")
         .substring(0, 50);
 
+      if (isStaticExport) {
+        const now = new Date().toISOString();
+        const page: SitePage = {
+          id: `${sectionId}/${slug}`,
+          sectionId,
+          slug,
+          status: "hidden",
+          order: pages.filter((p) => p.sectionId === sectionId).length,
+          menuTitle: title,
+          menuDescription: "",
+          cardTitle: title,
+          cardDescription: "",
+          metaTitle: `${title} — Rocketmind`,
+          metaDescription: "",
+          blocks: [],
+          createdAt: now,
+          updatedAt: now,
+        };
+        const next = [...pages, page];
+        setPages(next);
+        saveToLS(next);
+        return page;
+      }
+
       try {
         const res = await fetch("/api/pages", {
           method: "POST",
@@ -83,20 +134,29 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         return null;
       }
     },
-    []
+    [pages]
   );
 
   const setPageStatus = useCallback(
     (pageId: string, status: PageStatus) => {
-      // Status is local-only for now (not persisted to MD)
-      setPages((prev) =>
-        prev.map((p) => (p.id === pageId ? { ...p, status } : p))
-      );
+      setPages((prev) => {
+        const next = prev.map((p) => (p.id === pageId ? { ...p, status } : p));
+        if (isStaticExport) saveToLS(next);
+        return next;
+      });
     },
     []
   );
 
   const deletePage = useCallback(async (pageId: string) => {
+    if (isStaticExport) {
+      setPages((prev) => {
+        const next = prev.filter((p) => p.id !== pageId);
+        saveToLS(next);
+        return next;
+      });
+      return;
+    }
     try {
       const res = await fetch(`/api/pages/${encodeURIComponent(pageId)}`, {
         method: "DELETE",
@@ -104,12 +164,20 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         setPages((prev) => prev.filter((p) => p.id !== pageId));
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, []);
 
   const savePage = useCallback(async (page: SitePage) => {
+    if (isStaticExport) {
+      setPages((prev) => {
+        const next = prev.map((p) =>
+          p.id === page.id ? { ...page, updatedAt: new Date().toISOString() } : p
+        );
+        saveToLS(next);
+        return next;
+      });
+      return;
+    }
     try {
       await fetch(`/api/pages/${encodeURIComponent(page.id)}`, {
         method: "PUT",
@@ -121,9 +189,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
           p.id === page.id ? { ...page, updatedAt: new Date().toISOString() } : p
         )
       );
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, []);
 
   if (loading) {

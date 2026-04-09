@@ -137,6 +137,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           steps={props.product.process.steps}
           participantsTag={props.product.process.participantsTag}
           participants={props.product.process.participants}
+          variant={props.product.process.variant}
         />
       ) : (
         <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">

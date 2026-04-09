@@ -351,9 +351,11 @@ type ProcessSectionProps = {
     steps: ProcessStep[];
     participantsTag?: string;
     participants?: ProcessParticipant[];
+    /** "product" (default) = timeline animation, "academy" = horizontal flat steps */
+    variant?: "product" | "academy";
     className?: string;
 };
-declare function ProcessSection({ tag, title, subtitle, description, steps, participantsTag, participants, className, }: ProcessSectionProps): react_jsx_runtime.JSX.Element;
+declare function ProcessSection({ tag, title, subtitle, description, steps, participantsTag, participants, variant, className, }: ProcessSectionProps): react_jsx_runtime.JSX.Element;
 
 type ResultCard = {
     title: string;

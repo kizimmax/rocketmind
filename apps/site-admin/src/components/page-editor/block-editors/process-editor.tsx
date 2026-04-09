@@ -27,6 +27,8 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
   const participants =
     (data.participants as Array<{ role: string; text: string }>) || [];
   const showParticipants = data.showParticipants !== false;
+  const variant = (data.variant as string) || "product";
+  const isAcademy = variant === "academy";
 
   const stepsDnd = useItemDnd(steps, (reordered) =>
     onUpdate({ steps: reordered })
@@ -77,6 +79,18 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
 
   return (
     <div className="rounded-sm border-t border-[#404040] bg-[#0A0A0A] pb-20">
+      {/* Block settings */}
+      <div className="mx-auto flex max-w-[1512px] items-center gap-6 px-5 pt-6 md:px-8 xl:px-14">
+        <label className="flex items-center gap-2 text-[length:var(--text-12)] text-[#939393]">
+          <Switch
+            checked={isAcademy}
+            onCheckedChange={(v) => onUpdate({ variant: v ? "academy" : "product" })}
+            size="sm"
+          />
+          Вид для школы
+        </label>
+      </div>
+
       <div className="mx-auto flex max-w-[1512px] flex-col gap-8 px-5 py-10 md:px-8 lg:flex-row xl:px-14">
         {/* Left: header + participants — 50% */}
         <div className="flex flex-col gap-6 lg:w-1/2 lg:shrink-0 lg:pr-8">
@@ -217,12 +231,13 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
           </div>
         </div>
 
-        {/* Right: timeline steps — 50% */}
+        {/* Right: steps — 50% */}
         <div className="flex flex-col lg:w-1/2 lg:pt-10">
           {steps.map((step, index) => {
             const { draggable, onDragStart, onDragOver, onDrop, onDragEnd, isDragging } =
               stepsDnd.itemProps(index);
             const isLast = index === steps.length - 1;
+            const isFirst = index === 0;
 
             return (
               <div
@@ -249,28 +264,21 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
                   />
                 </div>
 
-                <div className="flex max-w-[364px] gap-10">
-                  {/* Timeline column */}
-                  <div className="relative flex w-4 shrink-0 flex-col items-center self-stretch">
-                    {/* Top line */}
-                    <div className="h-[2px] w-px bg-[#404040]" />
-                    {/* Square dot 16×16 */}
-                    <div className="h-4 w-4 shrink-0 border-2 border-[#F0F0F0] bg-[#F0F0F0]" />
-                    {/* Line below dot */}
-                    {!isLast && (
-                      <div className="w-px flex-1 bg-[#404040]" />
-                    )}
-                  </div>
-
-                  {/* Step content */}
-                  <div className="flex flex-col gap-3 pb-16">
-                    <div className="flex flex-col gap-2">
+                {isAcademy ? (
+                  /* ── Academy variant: horizontal flat step ── */
+                  <div
+                    className={`flex flex-col gap-2 border-[#404040] py-8 lg:flex-row lg:items-center lg:gap-4 ${
+                      isFirst ? "border-t border-b" : "border-b"
+                    }`}
+                  >
+                    {/* Left: number + title */}
+                    <div className="flex items-center gap-6 lg:w-1/2">
                       <InlineEdit
                         value={step.number}
                         onSave={(v) => updateStep(index, "number", v)}
-                        placeholder="01"
+                        placeholder="Модуль 1"
                       >
-                        <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]">
+                        <span className="w-[100px] shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
                           {step.number || "—"}
                         </span>
                       </InlineEdit>
@@ -278,37 +286,88 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
                       <InlineEdit
                         value={step.title}
                         onSave={(v) => updateStep(index, "title", v)}
-                        placeholder="Название этапа"
+                        placeholder="Название модуля"
                       >
-                        <h3 className="h3 text-[#F0F0F0]">
-                          {step.title || "Этап"}
-                        </h3>
+                        <span className="h4 text-[#F0F0F0]">
+                          {step.title || "Модуль"}
+                        </span>
                       </InlineEdit>
                     </div>
-
-                    <InlineEdit
-                      value={step.text}
-                      onSave={(v) => updateStep(index, "text", v)}
-                      multiline
-                      copy
-                      placeholder="Описание этапа"
-                    >
-                      <p className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]">
-                        {step.text || "Описание"}
-                      </p>
-                    </InlineEdit>
-
-                    <InlineEdit
-                      value={step.duration}
-                      onSave={(v) => updateStep(index, "duration", v)}
-                      placeholder="2 недели"
-                    >
-                      <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-[#FFCC00]">
-                        {step.duration || "срок"}
-                      </span>
-                    </InlineEdit>
+                    {/* Right: description */}
+                    <div className="lg:w-1/2">
+                      <InlineEdit
+                        value={step.text}
+                        onSave={(v) => updateStep(index, "text", v)}
+                        multiline
+                        copy
+                        placeholder="Описание модуля"
+                      >
+                        <p className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]">
+                          {step.text || "Описание"}
+                        </p>
+                      </InlineEdit>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  /* ── Product variant: timeline step ── */
+                  <div className="flex max-w-[364px] gap-10">
+                    {/* Timeline column */}
+                    <div className="relative flex w-4 shrink-0 flex-col items-center self-stretch">
+                      <div className="h-[2px] w-px bg-[#404040]" />
+                      <div className="h-4 w-4 shrink-0 border-2 border-[#F0F0F0] bg-[#F0F0F0]" />
+                      {!isLast && (
+                        <div className="w-px flex-1 bg-[#404040]" />
+                      )}
+                    </div>
+
+                    {/* Step content */}
+                    <div className="flex flex-col gap-3 pb-16">
+                      <div className="flex flex-col gap-2">
+                        <InlineEdit
+                          value={step.number}
+                          onSave={(v) => updateStep(index, "number", v)}
+                          placeholder="01"
+                        >
+                          <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]">
+                            {step.number || "—"}
+                          </span>
+                        </InlineEdit>
+
+                        <InlineEdit
+                          value={step.title}
+                          onSave={(v) => updateStep(index, "title", v)}
+                          placeholder="Название этапа"
+                        >
+                          <h3 className="h3 text-[#F0F0F0]">
+                            {step.title || "Этап"}
+                          </h3>
+                        </InlineEdit>
+                      </div>
+
+                      <InlineEdit
+                        value={step.text}
+                        onSave={(v) => updateStep(index, "text", v)}
+                        multiline
+                        copy
+                        placeholder="Описание этапа"
+                      >
+                        <p className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]">
+                          {step.text || "Описание"}
+                        </p>
+                      </InlineEdit>
+
+                      <InlineEdit
+                        value={step.duration}
+                        onSave={(v) => updateStep(index, "duration", v)}
+                        placeholder="2 недели"
+                      >
+                        <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-[#FFCC00]">
+                          {step.duration || "срок"}
+                        </span>
+                      </InlineEdit>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

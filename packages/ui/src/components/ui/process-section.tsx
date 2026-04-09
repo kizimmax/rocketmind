@@ -25,6 +25,8 @@ export type ProcessSectionProps = {
   steps: ProcessStep[];
   participantsTag?: string;
   participants?: ProcessParticipant[];
+  /** "product" (default) = timeline animation, "academy" = horizontal flat steps */
+  variant?: "product" | "academy";
   className?: string;
 };
 
@@ -153,6 +155,42 @@ function ParticipantsBlock({
   );
 }
 
+// ── Academy step card (horizontal, no timeline) ─────────────────────────────
+
+function AcademyStepCard({
+  step,
+  isFirst,
+  className,
+}: {
+  step: ProcessStep;
+  isFirst: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-2 border-[#404040] py-5 lg:flex-row lg:items-center lg:gap-4 lg:py-8",
+        isFirst ? "border-t border-b" : "border-b",
+        className
+      )}
+    >
+      {/* Left: number + title */}
+      <div className="flex items-center gap-6 lg:w-1/2">
+        <span className="w-[100px] shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
+          {step.number}
+        </span>
+        <span className="h4 text-[#F0F0F0]">{step.title}</span>
+      </div>
+      {/* Right: description */}
+      <div className="pl-0 lg:w-1/2 lg:pl-4">
+        <p className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]">
+          {step.text}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Scroll progress hook ───────────────────────────────────────────────────────
 
 function useStepProgress(stepCount: number) {
@@ -229,10 +267,12 @@ export function ProcessSection({
   steps,
   participantsTag,
   participants,
+  variant = "product",
   className,
 }: ProcessSectionProps) {
   const { activeIndex, fills, containerRef } = useStepProgress(steps.length);
   const hasParticipants = participants && participants.length > 0 && participantsTag;
+  const isAcademy = variant === "academy";
 
   return (
     <section
@@ -275,16 +315,20 @@ export function ProcessSection({
         {/* Right: steps */}
         <div className="w-1/2 pt-10">
           <div className="flex flex-col">
-            {steps.map((step, i) => (
-              <div key={i} data-step>
-                <StepCard
-                  step={step}
-                  isActive={i <= activeIndex}
-                  isLast={i === steps.length - 1}
-                  fillProgress={fills[i]}
-                />
-              </div>
-            ))}
+            {isAcademy
+              ? steps.map((step, i) => (
+                  <AcademyStepCard key={i} step={step} isFirst={i === 0} />
+                ))
+              : steps.map((step, i) => (
+                  <div key={i} data-step>
+                    <StepCard
+                      step={step}
+                      isActive={i <= activeIndex}
+                      isLast={i === steps.length - 1}
+                      fillProgress={fills[i]}
+                    />
+                  </div>
+                ))}
           </div>
         </div>
       </div>
@@ -329,18 +373,22 @@ export function ProcessSection({
         {/* Right: steps */}
         <div className="flex-1 pt-10">
           <div className="flex flex-col">
-            {steps.map((step, i) => (
-              <div key={i} data-step>
-                <StepCard
-                  step={step}
-                  isActive={i <= activeIndex}
-                  isLast={i === steps.length - 1}
-                  fillProgress={fills[i]}
-                  className="max-w-none"
-                  titleClass="font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]"
-                />
-              </div>
-            ))}
+            {isAcademy
+              ? steps.map((step, i) => (
+                  <AcademyStepCard key={i} step={step} isFirst={i === 0} className="lg:flex-col lg:items-start" />
+                ))
+              : steps.map((step, i) => (
+                  <div key={i} data-step>
+                    <StepCard
+                      step={step}
+                      isActive={i <= activeIndex}
+                      isLast={i === steps.length - 1}
+                      fillProgress={fills[i]}
+                      className="max-w-none"
+                      titleClass="font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]"
+                    />
+                  </div>
+                ))}
           </div>
         </div>
       </div>
@@ -367,16 +415,20 @@ export function ProcessSection({
         </div>
 
         <div className="flex flex-col">
-          {steps.map((step, i) => (
-            <div key={i} data-step>
-              <StepCard
-                step={step}
-                isActive={i <= activeIndex}
-                isLast={i === steps.length - 1}
-                fillProgress={fills[i]}
-              />
-            </div>
-          ))}
+          {isAcademy
+            ? steps.map((step, i) => (
+                <AcademyStepCard key={i} step={step} isFirst={i === 0} />
+              ))
+            : steps.map((step, i) => (
+                <div key={i} data-step>
+                  <StepCard
+                    step={step}
+                    isActive={i <= activeIndex}
+                    isLast={i === steps.length - 1}
+                    fillProgress={fills[i]}
+                  />
+                </div>
+              ))}
         </div>
 
         {hasParticipants && (

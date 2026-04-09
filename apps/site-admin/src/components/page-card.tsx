@@ -57,7 +57,7 @@ export function PageCard({ page, onArchive, onRestore, onDelete }: PageCardProps
           </CardDescription>
         </div>
         <CardAction>
-          <Badge variant={status.variant as "green-subtle" | "yellow-subtle" | "neutral-subtle"} size="sm">
+          <Badge variant={status.variant as never} size="sm">
             {status.label}
           </Badge>
         </CardAction>
