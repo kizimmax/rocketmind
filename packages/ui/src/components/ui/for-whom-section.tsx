@@ -33,12 +33,12 @@ export type ForWhomSectionProps = {
 
 function FactCard({ title, text }: ForWhomFact) {
   return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex-1 flex items-end">
+    <div className="grid grid-rows-[subgrid] row-span-3 gap-4">
+      <div className="flex items-end">
         <h4 className="h4 text-[#0A0A0A]">{title}</h4>
       </div>
       <div className="h-0 w-full border-t border-[#404040]" />
-      <div className="flex-1">
+      <div>
         <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]">
           {text}
         </p>
@@ -102,22 +102,17 @@ export function ForWhomSection({
           </div>
         </div>
 
-        {/* Cards — 2 halves */}
-        <div className="flex">
-          <div className="w-1/2 shrink-0 pr-8 flex gap-8">
-            {col1.map((f, i) => (
-              <div key={i} className="flex-1">
-                <FactCard {...f} />
-              </div>
-            ))}
-          </div>
-          <div className="w-1/2 flex gap-8">
-            {col2.map((f, i) => (
-              <div key={i} className="flex-1">
-                <FactCard {...f} />
-              </div>
-            ))}
-          </div>
+        {/* Cards — flat grid, subgrid aligns separators */}
+        <div
+          className="grid gap-x-8"
+          style={{
+            gridTemplateColumns: `repeat(${facts.length}, 1fr)`,
+            gridTemplateRows: "auto auto 1fr",
+          }}
+        >
+          {facts.map((f, i) => (
+            <FactCard key={i} {...f} />
+          ))}
         </div>
       </div>
 
