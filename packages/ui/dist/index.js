@@ -1988,10 +1988,10 @@ function ProductCard({
 // src/components/ui/for-whom-section.tsx
 import { jsx as jsx29, jsxs as jsxs12 } from "react/jsx-runtime";
 function FactCard({ title, text }) {
-  return /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-4 h-full", children: [
-    /* @__PURE__ */ jsx29("div", { className: "flex-1 flex items-end", children: /* @__PURE__ */ jsx29("h4", { className: "h4 text-[#0A0A0A]", children: title }) }),
+  return /* @__PURE__ */ jsxs12("div", { className: "grid grid-rows-[subgrid] row-span-3 gap-4", children: [
+    /* @__PURE__ */ jsx29("div", { className: "flex items-end", children: /* @__PURE__ */ jsx29("h4", { className: "h4 text-[#0A0A0A]", children: title }) }),
     /* @__PURE__ */ jsx29("div", { className: "h-0 w-full border-t border-[#404040]" }),
-    /* @__PURE__ */ jsx29("div", { className: "flex-1", children: /* @__PURE__ */ jsx29("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]", children: text }) })
+    /* @__PURE__ */ jsx29("div", { children: /* @__PURE__ */ jsx29("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]", children: text }) })
   ] });
 }
 function ForWhomSection({
@@ -2002,24 +2002,6 @@ function ForWhomSection({
   wideColumn = "right",
   className
 }) {
-  let col1;
-  let col2;
-  if (facts.length === 2) {
-    col1 = [facts[0]];
-    col2 = [facts[1]];
-  } else if (facts.length === 3) {
-    if (wideColumn === "left") {
-      col1 = [facts[0]];
-      col2 = [facts[1], facts[2]];
-    } else {
-      col1 = [facts[0], facts[1]];
-      col2 = [facts[2]];
-    }
-  } else {
-    const mid = Math.ceil(facts.length / 2);
-    col1 = facts.slice(0, mid);
-    col2 = facts.slice(mid);
-  }
   return /* @__PURE__ */ jsxs12("section", { className: cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className), children: [
     /* @__PURE__ */ jsxs12("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
       /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-2", children: [
@@ -2029,10 +2011,17 @@ function ForWhomSection({
           subtitle && /* @__PURE__ */ jsx29("div", { className: "w-1/2", children: /* @__PURE__ */ jsx29("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]", children: subtitle }) })
         ] })
       ] }),
-      /* @__PURE__ */ jsxs12("div", { className: "flex", children: [
-        /* @__PURE__ */ jsx29("div", { className: "w-1/2 shrink-0 pr-8 flex gap-8", children: col1.map((f, i) => /* @__PURE__ */ jsx29("div", { className: "flex-1", children: /* @__PURE__ */ jsx29(FactCard, { ...f }) }, i)) }),
-        /* @__PURE__ */ jsx29("div", { className: "w-1/2 flex gap-8", children: col2.map((f, i) => /* @__PURE__ */ jsx29("div", { className: "flex-1", children: /* @__PURE__ */ jsx29(FactCard, { ...f }) }, i)) })
-      ] })
+      /* @__PURE__ */ jsx29(
+        "div",
+        {
+          className: "grid gap-x-8",
+          style: {
+            gridTemplateColumns: `repeat(${facts.length}, 1fr)`,
+            gridTemplateRows: "auto auto 1fr"
+          },
+          children: facts.map((f, i) => /* @__PURE__ */ jsx29(FactCard, { ...f }, i))
+        }
+      )
     ] }),
     /* @__PURE__ */ jsxs12("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
       /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-2", children: [
@@ -2040,7 +2029,7 @@ function ForWhomSection({
         /* @__PURE__ */ jsx29("h2", { className: "h3 text-[#0A0A0A]", children: title }),
         subtitle && /* @__PURE__ */ jsx29("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] mt-1", children: subtitle })
       ] }),
-      /* @__PURE__ */ jsx29("div", { className: "flex flex-col gap-7", children: facts.map((f, i) => /* @__PURE__ */ jsx29(FactCard, { ...f }, i)) })
+      /* @__PURE__ */ jsx29("div", { className: "flex flex-col gap-7", children: facts.map((f, i) => /* @__PURE__ */ jsx29("div", { className: "grid", style: { gridTemplateRows: "auto auto 1fr" }, children: /* @__PURE__ */ jsx29(FactCard, { ...f }) }, i)) })
     ] })
   ] });
 }

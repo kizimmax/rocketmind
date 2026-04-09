@@ -57,28 +57,6 @@ export function ForWhomSection({
   wideColumn = "right",
   className,
 }: ForWhomSectionProps) {
-  // Split facts into 2 columns for desktop
-  let col1: ForWhomFact[];
-  let col2: ForWhomFact[];
-
-  if (facts.length === 2) {
-    col1 = [facts[0]];
-    col2 = [facts[1]];
-  } else if (facts.length === 3) {
-    if (wideColumn === "left") {
-      col1 = [facts[0]];
-      col2 = [facts[1], facts[2]];
-    } else {
-      col1 = [facts[0], facts[1]];
-      col2 = [facts[2]];
-    }
-  } else {
-    // 4+ facts: split evenly
-    const mid = Math.ceil(facts.length / 2);
-    col1 = facts.slice(0, mid);
-    col2 = facts.slice(mid);
-  }
-
   return (
     <section className={cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className)}>
       {/* ── Desktop ── */}
@@ -131,10 +109,12 @@ export function ForWhomSection({
           )}
         </div>
 
-        {/* Cards — stacked */}
+        {/* Cards — stacked, each card is its own 3-row grid */}
         <div className="flex flex-col gap-7">
           {facts.map((f, i) => (
-            <FactCard key={i} {...f} />
+            <div key={i} className="grid" style={{ gridTemplateRows: "auto auto 1fr" }}>
+              <FactCard {...f} />
+            </div>
           ))}
         </div>
       </div>

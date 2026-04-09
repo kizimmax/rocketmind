@@ -54,7 +54,7 @@ export function AboutRocketmindSection({
   founderName,
   founderBio,
   founderRole,
-  features,
+  features = ABOUT_RM_DEFAULTS.features,
   variant = "dark",
 }: AboutRocketmindSectionProps) {
   return (
