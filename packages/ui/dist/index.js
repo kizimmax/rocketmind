@@ -2011,68 +2011,45 @@ function ForWhomSection({
           subtitle && /* @__PURE__ */ jsx29("div", { className: "w-1/2", children: /* @__PURE__ */ jsx29("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]", children: subtitle }) })
         ] })
       ] }),
-      (() => {
-        const slots = [];
-        if (facts.length === 2) {
-          slots.push({ fact: facts[0], colStart: 1, colSpan: 2 });
-          slots.push({ fact: facts[1], colStart: 3, colSpan: 2 });
-        } else if (facts.length === 3) {
-          if (wideColumn === "left") {
-            slots.push({ fact: facts[0], colStart: 1, colSpan: 2 });
-            slots.push({ fact: facts[1], colStart: 3, colSpan: 1 });
-            slots.push({ fact: facts[2], colStart: 4, colSpan: 1 });
-          } else {
-            slots.push({ fact: facts[0], colStart: 1, colSpan: 1 });
-            slots.push({ fact: facts[1], colStart: 2, colSpan: 1 });
-            slots.push({ fact: facts[2], colStart: 3, colSpan: 2 });
-          }
-        } else {
-          facts.forEach((f, i) => {
-            slots.push({ fact: f, colStart: i + 1, colSpan: 1 });
-          });
+      /* @__PURE__ */ jsxs12(
+        "div",
+        {
+          className: "grid",
+          style: {
+            gridTemplateColumns: facts.length === 3 ? wideColumn === "left" ? "calc(50% - 16px) 1fr 1fr" : "1fr 1fr calc(50% - 16px)" : facts.length === 2 ? "1fr 1fr" : `repeat(${facts.length}, 1fr)`,
+            gridTemplateRows: "1fr auto auto",
+            columnGap: "32px"
+          },
+          children: [
+            facts.map((f, i) => /* @__PURE__ */ jsx29(
+              "div",
+              {
+                className: "flex items-end pb-4",
+                style: { gridColumn: i + 1, gridRow: 1 },
+                children: /* @__PURE__ */ jsx29("h4", { className: "h4 text-[#0A0A0A]", children: f.title })
+              },
+              `t${i}`
+            )),
+            facts.map((_, i) => /* @__PURE__ */ jsx29(
+              "div",
+              {
+                className: "border-t border-[#404040]",
+                style: { gridColumn: i + 1, gridRow: 2 }
+              },
+              `d${i}`
+            )),
+            facts.map((f, i) => /* @__PURE__ */ jsx29(
+              "div",
+              {
+                className: "pt-4",
+                style: { gridColumn: i + 1, gridRow: 3 },
+                children: /* @__PURE__ */ jsx29("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]", children: f.text })
+              },
+              `p${i}`
+            ))
+          ]
         }
-        const cols = facts.length === 3 ? wideColumn === "left" ? [2, 1, 1] : [1, 1, 2] : facts.length === 2 ? [2, 2] : Array(facts.length).fill(1);
-        const totalCols = cols.reduce((a, b) => a + b, 0);
-        return /* @__PURE__ */ jsxs12(
-          "div",
-          {
-            className: "grid",
-            style: {
-              gridTemplateColumns: `repeat(${totalCols}, 1fr)`,
-              gridTemplateRows: "1fr auto auto",
-              columnGap: "32px"
-            },
-            children: [
-              slots.map((s, i) => /* @__PURE__ */ jsx29(
-                "div",
-                {
-                  className: "flex items-end pb-4",
-                  style: { gridColumn: `${s.colStart} / span ${s.colSpan}`, gridRow: 1 },
-                  children: /* @__PURE__ */ jsx29("h4", { className: "h4 text-[#0A0A0A]", children: s.fact.title })
-                },
-                `t${i}`
-              )),
-              slots.map((s, i) => /* @__PURE__ */ jsx29(
-                "div",
-                {
-                  className: "border-t border-[#404040]",
-                  style: { gridColumn: `${s.colStart} / span ${s.colSpan}`, gridRow: 2 }
-                },
-                `d${i}`
-              )),
-              slots.map((s, i) => /* @__PURE__ */ jsx29(
-                "div",
-                {
-                  className: "pt-4",
-                  style: { gridColumn: `${s.colStart} / span ${s.colSpan}`, gridRow: 3 },
-                  children: /* @__PURE__ */ jsx29("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]", children: s.fact.text })
-                },
-                `p${i}`
-              ))
-            ]
-          }
-        );
-      })()
+      )
     ] }),
     /* @__PURE__ */ jsxs12("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
       /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-2", children: [

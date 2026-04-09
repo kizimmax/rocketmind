@@ -81,84 +81,50 @@ export function ForWhomSection({
         </div>
 
         {/* Cards — single grid, 50/50 aligned with header */}
-        {(() => {
-          // Build a 4-column grid: left half = col 1-2, right half = col 3-4
-          // Each fact gets span based on how many facts are in its half
-          type CardSlot = { fact: ForWhomFact; colStart: number; colSpan: number };
-          const slots: CardSlot[] = [];
-
-          if (facts.length === 2) {
-            slots.push({ fact: facts[0], colStart: 1, colSpan: 2 });
-            slots.push({ fact: facts[1], colStart: 3, colSpan: 2 });
-          } else if (facts.length === 3) {
-            if (wideColumn === "left") {
-              slots.push({ fact: facts[0], colStart: 1, colSpan: 2 });
-              slots.push({ fact: facts[1], colStart: 3, colSpan: 1 });
-              slots.push({ fact: facts[2], colStart: 4, colSpan: 1 });
-            } else {
-              slots.push({ fact: facts[0], colStart: 1, colSpan: 1 });
-              slots.push({ fact: facts[1], colStart: 2, colSpan: 1 });
-              slots.push({ fact: facts[2], colStart: 3, colSpan: 2 });
-            }
-          } else {
-            facts.forEach((f, i) => {
-              slots.push({ fact: f, colStart: i + 1, colSpan: 1 });
-            });
-          }
-
-          // Place each card's 3 elements (title, divider, text) directly into grid rows
-          const cols =
-            facts.length === 3
-              ? wideColumn === "left"
-                ? [2, 1, 1] // col spans
-                : [1, 1, 2]
-              : facts.length === 2
-                ? [2, 2]
-                : Array(facts.length).fill(1) as number[];
-          const totalCols = cols.reduce((a, b) => a + b, 0);
-
-          return (
+        {/* Cards grid — columns match header 50/50 split */}
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns:
+              facts.length === 3
+                ? wideColumn === "left"
+                  ? "calc(50% - 16px) 1fr 1fr"
+                  : "1fr 1fr calc(50% - 16px)"
+                : facts.length === 2
+                  ? "1fr 1fr"
+                  : `repeat(${facts.length}, 1fr)`,
+            gridTemplateRows: "1fr auto auto",
+            columnGap: "32px",
+          }}
+        >
+          {facts.map((f, i) => (
             <div
-              className="grid"
-              style={{
-                gridTemplateColumns: `repeat(${totalCols}, 1fr)`,
-                gridTemplateRows: "1fr auto auto",
-                columnGap: "32px",
-              }}
+              key={`t${i}`}
+              className="flex items-end pb-4"
+              style={{ gridColumn: i + 1, gridRow: 1 }}
             >
-              {/* Row 1: titles — items-end so they stick to the divider */}
-              {slots.map((s, i) => (
-                <div
-                  key={`t${i}`}
-                  className="flex items-end pb-4"
-                  style={{ gridColumn: `${s.colStart} / span ${s.colSpan}`, gridRow: 1 }}
-                >
-                  <h4 className="h4 text-[#0A0A0A]">{s.fact.title}</h4>
-                </div>
-              ))}
-              {/* Row 2: dividers */}
-              {slots.map((s, i) => (
-                <div
-                  key={`d${i}`}
-                  className="border-t border-[#404040]"
-                  style={{ gridColumn: `${s.colStart} / span ${s.colSpan}`, gridRow: 2 }}
-                />
-              ))}
-              {/* Row 3: descriptions */}
-              {slots.map((s, i) => (
-                <div
-                  key={`p${i}`}
-                  className="pt-4"
-                  style={{ gridColumn: `${s.colStart} / span ${s.colSpan}`, gridRow: 3 }}
-                >
-                  <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]">
-                    {s.fact.text}
-                  </p>
-                </div>
-              ))}
+              <h4 className="h4 text-[#0A0A0A]">{f.title}</h4>
             </div>
-          );
-        })()}
+          ))}
+          {facts.map((_, i) => (
+            <div
+              key={`d${i}`}
+              className="border-t border-[#404040]"
+              style={{ gridColumn: i + 1, gridRow: 2 }}
+            />
+          ))}
+          {facts.map((f, i) => (
+            <div
+              key={`p${i}`}
+              className="pt-4"
+              style={{ gridColumn: i + 1, gridRow: 3 }}
+            >
+              <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]">
+                {f.text}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Mobile / Tablet ── */}
