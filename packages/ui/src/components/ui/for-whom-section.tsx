@@ -66,7 +66,7 @@ export function ForWhomSection({
           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]">
             {tag}
           </span>
-          <div className="flex">
+          <div className="flex items-end">
             <div className="w-1/2 shrink-0 pr-8">
               <h2 className="h2 text-[#0A0A0A]">{title}</h2>
             </div>

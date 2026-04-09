@@ -142,7 +142,7 @@ export function AboutRocketmindSection({
                 {heading}
               </h2>
             </div>
-            <div className="relative flex-1 min-h-[300px]">
+            <div className="relative flex-1 min-h-[300px] mx-8">
               <Image
                 src={`${BASE_PATH}/images/about/alexey-eremin.png`}
                 alt={founderName}
@@ -157,19 +157,19 @@ export function AboutRocketmindSection({
               <p className="text-[length:var(--text-14)] leading-[1.28] text-[#939393]">{founderRole}</p>
             </div>
           </div>
-          {/* Right: features stacked */}
+          {/* Right: features stacked, equal height */}
           <div className="w-1/2 flex flex-col">
-            <div className="relative flex flex-col gap-4 border-b border-[#404040] p-8 overflow-hidden">
+            <div className="relative flex-1 flex flex-col gap-4 border-b border-[#404040] p-8 overflow-hidden">
               <DotPattern />
               <h3 className="relative z-10 h4 text-[#F0F0F0]">{features[0].title}</h3>
               <p className="relative z-10 text-[length:var(--text-14)] leading-[1.28] text-[#939393]">{features[0].text}</p>
               <div className="relative z-10"><MascotCarousel size="compact" /></div>
             </div>
-            <div className="flex flex-col gap-2 border-b border-[#404040] p-8">
+            <div className="flex-1 flex flex-col gap-2 border-b border-[#404040] p-8">
               <h3 className="h4 text-[#F0F0F0]">{features[1].title}</h3>
               <p className="text-[length:var(--text-14)] leading-[1.28] text-[#939393]">{features[1].text}</p>
             </div>
-            <div className="flex flex-col gap-2 p-8">
+            <div className="flex-1 flex flex-col gap-2 p-8">
               <h3 className="h4 text-[#F0F0F0]">{features[2].title}</h3>
               <p className="text-[length:var(--text-14)] leading-[1.28] text-[#939393]">{features[2].text}</p>
             </div>
@@ -191,7 +191,7 @@ export function AboutRocketmindSection({
             <h2 className="h1 text-[#F0F0F0] whitespace-pre-line">{heading}</h2>
           </div>
           {/* Photo */}
-          <div className="relative w-full aspect-[4/5]">
+          <div className="relative w-full aspect-[4/5] px-5">
             <Image
               src={`${BASE_PATH}/images/about/alexey-eremin.png`}
               alt={founderName}

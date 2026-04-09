@@ -2006,7 +2006,7 @@ function ForWhomSection({
     /* @__PURE__ */ jsxs12("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
       /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-2", children: [
         /* @__PURE__ */ jsx29("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
-        /* @__PURE__ */ jsxs12("div", { className: "flex", children: [
+        /* @__PURE__ */ jsxs12("div", { className: "flex items-end", children: [
           /* @__PURE__ */ jsx29("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ jsx29("h2", { className: "h2 text-[#0A0A0A]", children: title }) }),
           subtitle && /* @__PURE__ */ jsx29("div", { className: "w-1/2", children: /* @__PURE__ */ jsx29("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]", children: subtitle }) })
         ] })
