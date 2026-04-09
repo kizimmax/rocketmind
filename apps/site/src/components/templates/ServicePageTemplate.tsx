@@ -2,7 +2,8 @@ import { PageBottom } from "@/components/sections/PageBottom";
 import { ProductHero } from "@/components/sections/ProductHero";
 import { AboutProduct } from "@/components/sections/AboutProduct";
 import { LogoMarqueeSection } from "@/components/sections/LogoMarqueeSection";
-import { AboutRocketmindSection, ABOUT_RM_DEFAULTS } from "@/components/sections/AboutRocketmindSection";
+import { AboutRocketmindSection } from "@/components/sections/AboutRocketmindSection";
+import { ABOUT_RM_DEFAULTS } from "@/components/sections/about-rocketmind-defaults";
 import { ForWhomSection, ProcessSection, ResultsSection, ExpertsSection, ToolsSection } from "@rocketmind/ui";
 import type { ProductData } from "@/lib/products";
 
