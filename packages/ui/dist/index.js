@@ -2012,48 +2012,50 @@ function ForWhomSection({
         ] })
       ] }),
       (() => {
-        let col1;
-        let col2;
+        const slots = [];
         if (facts.length === 2) {
-          col1 = [facts[0]];
-          col2 = [facts[1]];
+          slots.push({ fact: facts[0], colStart: 1, colSpan: 2 });
+          slots.push({ fact: facts[1], colStart: 3, colSpan: 2 });
         } else if (facts.length === 3) {
           if (wideColumn === "left") {
-            col1 = [facts[0]];
-            col2 = [facts[1], facts[2]];
+            slots.push({ fact: facts[0], colStart: 1, colSpan: 2 });
+            slots.push({ fact: facts[1], colStart: 3, colSpan: 1 });
+            slots.push({ fact: facts[2], colStart: 4, colSpan: 1 });
           } else {
-            col1 = [facts[0], facts[1]];
-            col2 = [facts[2]];
+            slots.push({ fact: facts[0], colStart: 1, colSpan: 1 });
+            slots.push({ fact: facts[1], colStart: 2, colSpan: 1 });
+            slots.push({ fact: facts[2], colStart: 3, colSpan: 2 });
           }
         } else {
-          const mid = Math.ceil(facts.length / 2);
-          col1 = facts.slice(0, mid);
-          col2 = facts.slice(mid);
+          facts.forEach((f, i) => {
+            slots.push({ fact: f, colStart: i + 1, colSpan: 1 });
+          });
         }
-        return /* @__PURE__ */ jsxs12("div", { className: "flex", children: [
-          /* @__PURE__ */ jsx29(
-            "div",
-            {
-              className: "w-1/2 shrink-0 pr-8 grid gap-x-8",
-              style: {
-                gridTemplateColumns: `repeat(${col1.length}, 1fr)`,
-                gridTemplateRows: "auto auto 1fr"
+        return /* @__PURE__ */ jsx29(
+          "div",
+          {
+            className: "grid gap-x-8",
+            style: {
+              gridTemplateColumns: "1fr 1fr 1fr 1fr",
+              gridTemplateRows: "auto auto 1fr"
+            },
+            children: slots.map((s, i) => /* @__PURE__ */ jsxs12(
+              "div",
+              {
+                className: "grid grid-rows-[subgrid] row-span-3 gap-4",
+                style: {
+                  gridColumn: `${s.colStart} / span ${s.colSpan}`
+                },
+                children: [
+                  /* @__PURE__ */ jsx29("div", { className: "flex items-end", children: /* @__PURE__ */ jsx29("h4", { className: "h4 text-[#0A0A0A]", children: s.fact.title }) }),
+                  /* @__PURE__ */ jsx29("div", { className: "h-0 w-full border-t border-[#404040]" }),
+                  /* @__PURE__ */ jsx29("div", { children: /* @__PURE__ */ jsx29("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]", children: s.fact.text }) })
+                ]
               },
-              children: col1.map((f, i) => /* @__PURE__ */ jsx29(FactCard, { ...f }, i))
-            }
-          ),
-          /* @__PURE__ */ jsx29(
-            "div",
-            {
-              className: "w-1/2 grid gap-x-8",
-              style: {
-                gridTemplateColumns: `repeat(${col2.length}, 1fr)`,
-                gridTemplateRows: "auto auto 1fr"
-              },
-              children: col2.map((f, i) => /* @__PURE__ */ jsx29(FactCard, { ...f }, i))
-            }
-          )
-        ] });
+              i
+            ))
+          }
+        );
       })()
     ] }),
     /* @__PURE__ */ jsxs12("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [

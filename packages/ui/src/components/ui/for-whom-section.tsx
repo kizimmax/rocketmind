@@ -80,50 +80,59 @@ export function ForWhomSection({
           </div>
         </div>
 
-        {/* Cards — 50/50 split matching header, subgrid inside each half */}
+        {/* Cards — single grid, 50/50 aligned with header */}
         {(() => {
-          let col1: ForWhomFact[];
-          let col2: ForWhomFact[];
+          // Build a 4-column grid: left half = col 1-2, right half = col 3-4
+          // Each fact gets span based on how many facts are in its half
+          type CardSlot = { fact: ForWhomFact; colStart: number; colSpan: number };
+          const slots: CardSlot[] = [];
+
           if (facts.length === 2) {
-            col1 = [facts[0]];
-            col2 = [facts[1]];
+            slots.push({ fact: facts[0], colStart: 1, colSpan: 2 });
+            slots.push({ fact: facts[1], colStart: 3, colSpan: 2 });
           } else if (facts.length === 3) {
             if (wideColumn === "left") {
-              col1 = [facts[0]];
-              col2 = [facts[1], facts[2]];
+              slots.push({ fact: facts[0], colStart: 1, colSpan: 2 });
+              slots.push({ fact: facts[1], colStart: 3, colSpan: 1 });
+              slots.push({ fact: facts[2], colStart: 4, colSpan: 1 });
             } else {
-              col1 = [facts[0], facts[1]];
-              col2 = [facts[2]];
+              slots.push({ fact: facts[0], colStart: 1, colSpan: 1 });
+              slots.push({ fact: facts[1], colStart: 2, colSpan: 1 });
+              slots.push({ fact: facts[2], colStart: 3, colSpan: 2 });
             }
           } else {
-            const mid = Math.ceil(facts.length / 2);
-            col1 = facts.slice(0, mid);
-            col2 = facts.slice(mid);
+            facts.forEach((f, i) => {
+              slots.push({ fact: f, colStart: i + 1, colSpan: 1 });
+            });
           }
+
           return (
-            <div className="flex">
-              <div
-                className="w-1/2 shrink-0 pr-8 grid gap-x-8"
-                style={{
-                  gridTemplateColumns: `repeat(${col1.length}, 1fr)`,
-                  gridTemplateRows: "auto auto 1fr",
-                }}
-              >
-                {col1.map((f, i) => (
-                  <FactCard key={i} {...f} />
-                ))}
-              </div>
-              <div
-                className="w-1/2 grid gap-x-8"
-                style={{
-                  gridTemplateColumns: `repeat(${col2.length}, 1fr)`,
-                  gridTemplateRows: "auto auto 1fr",
-                }}
-              >
-                {col2.map((f, i) => (
-                  <FactCard key={i} {...f} />
-                ))}
-              </div>
+            <div
+              className="grid gap-x-8"
+              style={{
+                gridTemplateColumns: "1fr 1fr 1fr 1fr",
+                gridTemplateRows: "auto auto 1fr",
+              }}
+            >
+              {slots.map((s, i) => (
+                <div
+                  key={i}
+                  className="grid grid-rows-[subgrid] row-span-3 gap-4"
+                  style={{
+                    gridColumn: `${s.colStart} / span ${s.colSpan}`,
+                  }}
+                >
+                  <div className="flex items-end">
+                    <h4 className="h4 text-[#0A0A0A]">{s.fact.title}</h4>
+                  </div>
+                  <div className="h-0 w-full border-t border-[#404040]" />
+                  <div>
+                    <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]">
+                      {s.fact.text}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           );
         })()}
