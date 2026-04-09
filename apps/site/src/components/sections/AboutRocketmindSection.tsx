@@ -55,7 +55,7 @@ function DotPattern() {
       className="absolute inset-0 pointer-events-none opacity-60"
       style={{
         backgroundImage: `url(${BASE_PATH}/images/about/dot-pattern.png)`,
-        backgroundSize: "52px 52px",
+        backgroundSize: "7px 7px",
         backgroundPosition: "left center",
         backgroundRepeat: "repeat",
       }}
@@ -79,37 +79,43 @@ export function AboutRocketmindSection({
       {/* ══ Desktop (lg+) ══ */}
       <div className="hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
         <div className="flex border border-[#404040]">
-          {/* Left half: CSS Grid — photo | text, equal columns */}
-          <div className="w-1/2 shrink-0 grid grid-cols-2 gap-8 border-r border-[#404040] p-8 min-h-[460px]">
-            {/* Photo */}
-            <div className="relative">
-              <Image
-                src={`${BASE_PATH}/images/about/alexey-eremin.png`}
-                alt={founderName}
-                fill
-                className="object-cover object-top"
-                sizes="(min-width: 1512px) 302px, 25vw"
-              />
-            </div>
-            {/* Text */}
-            <div className="flex flex-col justify-between">
-              <div className="flex flex-col gap-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`${BASE_PATH}/images/about/rocketmind-logo-dark.svg`}
-                  alt="Rocketmind"
-                  className="h-14 w-auto self-start"
+          {/* Left half: photo + text side by side */}
+          <div className="w-1/2 shrink-0 border-r border-[#404040] p-8">
+            <div className="flex gap-8 h-full">
+              {/* Photo — fixed width calc(50% - 16px) */}
+              <div className="relative shrink-0" style={{ width: "calc(50% - 16px)" }}>
+                <Image
+                  src={`${BASE_PATH}/images/about/alexey-eremin.png`}
+                  alt={founderName}
+                  fill
+                  className="object-cover object-top"
+                  sizes="(min-width: 1512px) 302px, 25vw"
                 />
-                <h2 className="h2 text-[#F0F0F0] whitespace-pre-line">{heading}</h2>
               </div>
-              <div className="flex flex-col gap-2">
-                <span className="h4 text-[#F0F0F0]">{founderName}</span>
-                <p className="text-[length:var(--text-14)] leading-[1.28] text-[#F0F0F0]">
-                  {founderBio}
-                </p>
-                <p className="text-[length:var(--text-14)] leading-[1.28] text-[#939393]">
-                  {founderRole}
-                </p>
+              {/* Text — fixed width calc(50% - 16px) */}
+              <div className="flex flex-col justify-between" style={{ width: "calc(50% - 16px)" }}>
+                <div className="flex flex-col gap-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`${BASE_PATH}/images/about/rocketmind-logo-dark.svg`}
+                    alt="Rocketmind"
+                    className="h-14 w-auto self-start"
+                  />
+                  <h2 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-52)] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] whitespace-pre-line">
+                    {heading}
+                  </h2>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
+                    {founderName}
+                  </span>
+                  <p className="text-[length:var(--text-14)] leading-[1.28] text-[#F0F0F0]">
+                    {founderBio}
+                  </p>
+                  <p className="text-[length:var(--text-14)] leading-[1.28] text-[#939393]">
+                    {founderRole}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
