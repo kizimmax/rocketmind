@@ -36,18 +36,18 @@ function ToolCardItem({
       <div className="flex items-end">
         {useIcons && tool.icon ? (
           <div
-            className="h-9 w-9 bg-contain bg-center bg-no-repeat"
+            className="h-[86px] w-[86px] bg-contain bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${tool.icon})` }}
           />
         ) : (
-          <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-32)] font-bold leading-[1.12] tracking-[-0.01em] text-[#F0F0F0]">
+          <span className="font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-[#F0F0F0]">
             {tool.number}
           </span>
         )}
       </div>
 
       {/* Title */}
-      <h4 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
+      <h4 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
         {tool.title}
       </h4>
 
@@ -88,7 +88,7 @@ export function ToolsSection({
           </div>
           {description && (
             <div className="w-1/2 flex items-end">
-              <p className="text-[length:var(--text-18)] leading-[1.2] text-[#939393] max-w-[668px]">
+              <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393] max-w-[668px]">
                 {description}
               </p>
             </div>
@@ -103,7 +103,7 @@ export function ToolsSection({
           }}
         >
           {tools.map((tool, i) => (
-            <div key={i} className="border border-[#404040] p-8">
+            <div key={i} className="border border-[#404040] p-8 h-[300px]">
               <ToolCardItem tool={tool} useIcons={useIcons} />
             </div>
           ))}

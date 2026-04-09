@@ -156,7 +156,7 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
                       onUpload={(file) => handleIconUpload(index, file)}
                     />
                   ) : (
-                    <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-32)] font-bold leading-[1.12] tracking-[-0.01em] text-[#F0F0F0]">
+                    <span className="font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-[#F0F0F0]">
                       {tool.number}
                     </span>
                   )}
@@ -167,7 +167,7 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
                     onSave={(v) => updateTool(index, "title", v)}
                     placeholder="Название"
                   >
-                    <h4 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
+                    <h4 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
                       {tool.title || "Название"}
                     </h4>
                   </InlineEdit>
@@ -213,7 +213,7 @@ function IconUpload({
     <div className="group/icon relative">
       {icon ? (
         <div
-          className="h-9 w-9 bg-contain bg-center bg-no-repeat cursor-pointer"
+          className="h-[86px] w-[86px] bg-contain bg-center bg-no-repeat cursor-pointer"
           style={{ backgroundImage: `url(${icon})` }}
           onClick={() => ref.current?.click()}
         />
@@ -221,7 +221,7 @@ function IconUpload({
         <button
           type="button"
           onClick={() => ref.current?.click()}
-          className="flex h-9 w-9 items-center justify-center rounded border border-dashed border-[#404040] text-[#939393] hover:border-[#FFCC00] hover:text-[#FFCC00] cursor-pointer"
+          className="flex h-[86px] w-[86px] items-center justify-center rounded border border-dashed border-[#404040] text-[#939393] hover:border-[#FFCC00] hover:text-[#FFCC00] cursor-pointer"
         >
           <Upload className="h-4 w-4" />
         </button>

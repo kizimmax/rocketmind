@@ -2590,11 +2590,11 @@ function ToolCardItem({
     /* @__PURE__ */ jsx33("div", { className: "flex items-end", children: useIcons && tool.icon ? /* @__PURE__ */ jsx33(
       "div",
       {
-        className: "h-9 w-9 bg-contain bg-center bg-no-repeat",
+        className: "h-[86px] w-[86px] bg-contain bg-center bg-no-repeat",
         style: { backgroundImage: `url(${tool.icon})` }
       }
-    ) : /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-32)] font-bold leading-[1.12] tracking-[-0.01em] text-[#F0F0F0]", children: tool.number }) }),
-    /* @__PURE__ */ jsx33("h4", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: tool.title }),
+    ) : /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-[#F0F0F0]", children: tool.number }) }),
+    /* @__PURE__ */ jsx33("h4", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: tool.title }),
     /* @__PURE__ */ jsx33("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393]", children: tool.text })
   ] });
 }
@@ -2620,7 +2620,7 @@ function ToolsSection({
               /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
               /* @__PURE__ */ jsx33("h2", { className: "h2 text-[#F0F0F0]", children: title })
             ] }),
-            description && /* @__PURE__ */ jsx33("div", { className: "w-1/2 flex items-end", children: /* @__PURE__ */ jsx33("p", { className: "text-[length:var(--text-18)] leading-[1.2] text-[#939393] max-w-[668px]", children: description }) })
+            description && /* @__PURE__ */ jsx33("div", { className: "w-1/2 flex items-end", children: /* @__PURE__ */ jsx33("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393] max-w-[668px]", children: description }) })
           ] }),
           /* @__PURE__ */ jsx33(
             "div",
@@ -2629,7 +2629,7 @@ function ToolsSection({
               style: {
                 gridTemplateColumns: `repeat(${tools.length}, 1fr)`
               },
-              children: tools.map((tool, i) => /* @__PURE__ */ jsx33("div", { className: "border border-[#404040] p-8", children: /* @__PURE__ */ jsx33(ToolCardItem, { tool, useIcons }) }, i))
+              children: tools.map((tool, i) => /* @__PURE__ */ jsx33("div", { className: "border border-[#404040] p-8 h-[300px]", children: /* @__PURE__ */ jsx33(ToolCardItem, { tool, useIcons }) }, i))
             }
           )
         ] }),
