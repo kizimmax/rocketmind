@@ -157,9 +157,9 @@ export function AboutRocketmindSection({
               <p className="text-[length:var(--text-14)] leading-[1.28] text-[#939393]">{founderRole}</p>
             </div>
           </div>
-          {/* Right: features stacked, equal height */}
+          {/* Right: features stacked — AI по контенту, остальные flex-1 */}
           <div className="w-1/2 flex flex-col">
-            <div className="relative flex-1 flex flex-col gap-4 border-b border-[#404040] p-8 overflow-hidden">
+            <div className="relative flex flex-col gap-4 border-b border-[#404040] p-8 overflow-hidden">
               <DotPattern />
               <h3 className="relative z-10 h4 text-[#F0F0F0]">{features[0].title}</h3>
               <p className="relative z-10 text-[length:var(--text-14)] leading-[1.28] text-[#939393]">{features[0].text}</p>
