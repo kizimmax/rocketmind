@@ -92,27 +92,32 @@ export function AboutRocketmindSection({
                   sizes="(min-width: 1512px) 302px, 25vw"
                 />
               </div>
-              {/* Text — fixed width calc(50% - 16px) */}
-              <div className="flex flex-col justify-between" style={{ width: "calc(50% - 16px)" }}>
+              {/* Text — Figma: 302×463, vertical, gap=40 */}
+              <div className="flex flex-col gap-10" style={{ width: "calc(50% - 16px)" }}>
+                {/* Logo + heading block — Figma: 302×140, gap=16 */}
                 <div className="flex flex-col gap-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`${BASE_PATH}/images/about/rocketmind-logo-dark.svg`}
                     alt="Rocketmind"
-                    className="h-14 w-auto self-start"
+                    className="h-[52px] w-auto self-start"
                   />
-                  <h2 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-52)] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] whitespace-pre-line">
+                  {/* Heading: Figma 32px, NOT 52px */}
+                  <h2 className="font-[family-name:var(--font-heading-family)] text-[32px] font-bold uppercase leading-[1.12] tracking-[-0.01em] text-[#F0F0F0] whitespace-pre-line">
                     {heading}
                   </h2>
                 </div>
+                {/* Founder info — Figma: 302×135, gap=8 */}
                 <div className="flex flex-col gap-2">
-                  <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
-                    {founderName}
-                  </span>
-                  <p className="text-[length:var(--text-14)] leading-[1.28] text-[#F0F0F0]">
-                    {founderBio}
-                  </p>
-                  <p className="text-[length:var(--text-14)] leading-[1.28] text-[#939393]">
+                  <div className="flex flex-col gap-2">
+                    <span className="font-[family-name:var(--font-heading-family)] text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
+                      {founderName}
+                    </span>
+                    <p className="text-[14px] leading-[1.28] text-[#F0F0F0]">
+                      {founderBio}
+                    </p>
+                  </div>
+                  <p className="text-[14px] leading-[1.28] text-[#939393]">
                     {founderRole}
                   </p>
                 </div>

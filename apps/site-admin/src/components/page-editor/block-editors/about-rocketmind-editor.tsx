@@ -79,7 +79,7 @@ export function AboutRocketmindEditor({ data, onUpdate }: AboutRocketmindEditorP
                   <span className="text-[14px] font-bold text-[#F0F0F0] tracking-wide">Rocketmind</span>
                 </div>
                 <InlineEdit value={heading} onSave={(v) => onUpdate({ heading: v })} placeholder="Заголовок" multiline>
-                  <h2 className="font-[family-name:var(--font-heading-family)] text-[20px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] whitespace-pre-line">
+                  <h2 className="font-[family-name:var(--font-heading-family)] text-[16px] font-bold uppercase leading-[1.12] tracking-[-0.01em] text-[#F0F0F0] whitespace-pre-line">
                     {heading}
                   </h2>
                 </InlineEdit>
