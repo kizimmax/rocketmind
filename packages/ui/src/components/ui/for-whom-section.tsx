@@ -108,7 +108,7 @@ export function ForWhomSection({
 
           return (
             <div
-              className="grid gap-x-8"
+              className="grid gap-x-8 gap-y-4"
               style={{
                 gridTemplateColumns: "1fr 1fr 1fr 1fr",
                 gridTemplateRows: "auto auto 1fr",
