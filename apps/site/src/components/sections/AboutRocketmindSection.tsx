@@ -191,7 +191,7 @@ export function AboutRocketmindSection({
             <h2 className="h1 text-[#F0F0F0] whitespace-pre-line">{heading}</h2>
           </div>
           {/* Photo */}
-          <div className="relative w-full aspect-[4/5] px-5">
+          <div className="relative aspect-[4/5] mx-5">
             <Image
               src={`${BASE_PATH}/images/about/alexey-eremin.png`}
               alt={founderName}
