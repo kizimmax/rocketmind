@@ -112,12 +112,14 @@ export function AboutRocketmindEditor({ data, onUpdate }: AboutRocketmindEditorP
           <div className="w-1/2 flex flex-col">
             {/* AI Agents card */}
             <div className="flex-1 flex flex-col justify-between gap-4 border-b border-[#404040] p-8">
-              <div className="flex gap-12">
-                <InlineEdit value={features[0].title} onSave={(v) => updateFeature(0, "title", v)} placeholder="Заголовок">
-                  <h3 className="font-[family-name:var(--font-heading-family)] text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] shrink-0">
-                    {features[0].title}
-                  </h3>
-                </InlineEdit>
+              <div className="flex justify-between gap-8">
+                <div className="shrink-0">
+                  <InlineEdit value={features[0].title} onSave={(v) => updateFeature(0, "title", v)} placeholder="Заголовок">
+                    <h3 className="font-[family-name:var(--font-heading-family)] text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
+                      {features[0].title}
+                    </h3>
+                  </InlineEdit>
+                </div>
                 <InlineEdit value={features[0].text} onSave={(v) => updateFeature(0, "text", v)} placeholder="Описание" multiline>
                   <p className="text-[14px] leading-[1.28] text-[#939393]">{features[0].text}</p>
                 </InlineEdit>
