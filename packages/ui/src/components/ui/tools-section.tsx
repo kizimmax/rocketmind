@@ -40,7 +40,7 @@ function ToolCardItem({
             style={{ backgroundImage: `url(${tool.icon})` }}
           />
         ) : (
-          <span className="font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-[#F0F0F0]">
+          <span className="font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent [-webkit-text-stroke:1px_#404040]">
             {tool.number}
           </span>
         )}

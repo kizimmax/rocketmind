@@ -66,10 +66,10 @@ function DotPattern() {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function AboutRocketmindSection({
-  heading,
-  founderName,
-  founderBio,
-  founderRole,
+  heading = ABOUT_RM_DEFAULTS.heading,
+  founderName = ABOUT_RM_DEFAULTS.founderName,
+  founderBio = ABOUT_RM_DEFAULTS.founderBio,
+  founderRole = ABOUT_RM_DEFAULTS.founderRole,
   features = ABOUT_RM_DEFAULTS.features,
   variant = "dark",
 }: AboutRocketmindSectionProps) {

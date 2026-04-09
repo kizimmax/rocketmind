@@ -2593,7 +2593,7 @@ function ToolCardItem({
         className: "h-[86px] w-[86px] bg-contain bg-center bg-no-repeat",
         style: { backgroundImage: `url(${tool.icon})` }
       }
-    ) : /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-[#F0F0F0]", children: tool.number }) }),
+    ) : /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent [-webkit-text-stroke:1px_#404040]", children: tool.number }) }),
     /* @__PURE__ */ jsx33("h4", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: tool.title }),
     /* @__PURE__ */ jsx33("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393]", children: tool.text })
   ] });
