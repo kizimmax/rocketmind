@@ -20,6 +20,7 @@ export const BLOCK_TYPES: Record<BlockType, { label: string; description: string
   results: { label: "Результаты", description: "Карточки результатов" },
   process: { label: "Процесс", description: "Этапы работы, участники" },
   experts: { label: "Эксперты", description: "Карточки экспертов продукта" },
+  aboutRocketmind: { label: "О Rocketmind", description: "Блок о компании с AI-агентами" },
   pageBottom: { label: "Кейсы + CTA", description: "Секция кейсов и финальный CTA" },
 };
 
@@ -33,5 +34,6 @@ export const DEFAULT_BLOCK_TYPES: BlockType[] = [
   "results",
   "process",
   "experts",
+  "aboutRocketmind",
   "pageBottom",
 ];

@@ -2,6 +2,7 @@ import { PageBottom } from "@/components/sections/PageBottom";
 import { ProductHero } from "@/components/sections/ProductHero";
 import { AboutProduct } from "@/components/sections/AboutProduct";
 import { LogoMarqueeSection } from "@/components/sections/LogoMarqueeSection";
+import { AboutRocketmindSection, ABOUT_RM_DEFAULTS } from "@/components/sections/AboutRocketmindSection";
 import { ForWhomSection, ProcessSection, ResultsSection, ExpertsSection } from "@rocketmind/ui";
 import type { ProductData } from "@/lib/products";
 
@@ -172,7 +173,14 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
         <ExpertsSection experts={props.product.experts} />
       ) : null}
 
-      {/* 11–13. Кейсы + отзывы + логотипы + CTA */}
+      {/* 11. О Rocketmind — AI-агенты */}
+      <AboutRocketmindSection
+        tag={ABOUT_RM_DEFAULTS.tag}
+        title={ABOUT_RM_DEFAULTS.title}
+        description={ABOUT_RM_DEFAULTS.description}
+      />
+
+      {/* 12–14. Кейсы + отзывы + логотипы + CTA */}
       <PageBottom />
     </div>
   );

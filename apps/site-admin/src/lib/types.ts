@@ -12,6 +12,7 @@ export type BlockType =
   | "results"
   | "process"
   | "experts"
+  | "aboutRocketmind"
   | "pageBottom";
 
 // ── Block data shapes (mirror apps/site/src/lib/products.ts) ────────────────
@@ -48,6 +49,13 @@ export interface ResultsBlockData {
 
 export interface ExpertsBlockData {
   experts: Array<{ tag?: string; name: string; bio: string; image: string }>;
+}
+
+export interface AboutRocketmindBlockData {
+  tag: string;
+  title: string;
+  description: string;
+  variant: "dark" | "light";
 }
 
 export interface ProcessBlockData {

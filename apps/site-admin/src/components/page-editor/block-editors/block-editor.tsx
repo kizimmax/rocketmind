@@ -7,6 +7,7 @@ import { AudienceEditor } from "./audience-editor";
 import { ResultsEditor } from "./results-editor";
 import { ProcessEditor } from "./process-editor";
 import { ExpertsEditor } from "./experts-editor";
+import { AboutRocketmindEditor } from "./about-rocketmind-editor";
 import { GenericEditor } from "./generic-editor";
 
 interface BlockEditorProps {
@@ -28,6 +29,8 @@ export function BlockEditor({ block, onUpdate }: BlockEditorProps) {
       return <ProcessEditor data={block.data} onUpdate={onUpdate} />;
     case "experts":
       return <ExpertsEditor data={block.data} onUpdate={onUpdate} />;
+    case "aboutRocketmind":
+      return <AboutRocketmindEditor data={block.data} onUpdate={onUpdate} />;
     default:
       return <GenericEditor block={block} />;
   }
