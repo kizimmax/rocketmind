@@ -162,21 +162,12 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
         </div>
       </section>
 
-      {/* 9. Почему Rocketmind */}
-      <section className="border-t border-border px-5 py-16 md:px-8 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
-          <p className="text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            Почему Rocketmind — заполнить
-          </p>
-        </div>
-      </section>
-
-      {/* 10. Эксперт (опционально) */}
+      {/* 9. Эксперт (опционально) */}
       {hasProduct && props.product.experts && props.product.experts.length > 0 ? (
         <ExpertsSection experts={props.product.experts} />
       ) : null}
 
-      {/* 11. О Rocketmind — AI-агенты */}
+      {/* 10. Почему / О Rocketmind */}
       <AboutRocketmindSection
         {...ABOUT_RM_DEFAULTS}
         {...(hasProduct && props.product.aboutRocketmind ? props.product.aboutRocketmind : {})}
