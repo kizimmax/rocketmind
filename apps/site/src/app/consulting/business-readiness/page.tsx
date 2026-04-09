@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
+import { getProductBySlug } from "@/lib/products";
 import { ServicePageTemplate } from "@/components/templates/ServicePageTemplate";
 
+const product = getProductBySlug("business-readiness");
+
 export const metadata: Metadata = {
-  title: "Диагностика готовности бизнеса к трансформации | Rocketmind",
-  description:
-    "Комплексная диагностика готовности бизнеса к цифровой трансформации.",
+  title: product?.metaTitle || "Диагностика готовности бизнеса к трансформации | Rocketmind",
+  description: product?.metaDescription || "Комплексная диагностика готовности бизнеса к цифровой трансформации.",
 };
 
 export default function BusinessReadinessPage() {
-  return (
-    <ServicePageTemplate
-      title="Диагностика готовности бизнеса к трансформации"
-      subtitle="Комплексная диагностика готовности бизнеса к цифровой трансформации."
-    />
-  );
+  if (!product) {
+    return <ServicePageTemplate title="Диагностика готовности бизнеса к трансформации" subtitle="Комплексная диагностика готовности бизнеса к цифровой трансформации." />;
+  }
+  return <ServicePageTemplate product={product} />;
 }

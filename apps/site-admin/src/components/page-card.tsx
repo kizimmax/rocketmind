@@ -7,6 +7,7 @@ import {
   Archive,
   ArchiveRestore,
   Trash2,
+  GripVertical,
 } from "lucide-react";
 import {
   Card,
@@ -38,9 +39,11 @@ interface PageCardProps {
   onArchive: (id: string) => void;
   onRestore: (id: string) => void;
   onDelete: (id: string) => void;
+  onGripDown?: () => void;
+  onGripUp?: () => void;
 }
 
-export function PageCard({ page, onArchive, onRestore, onDelete }: PageCardProps) {
+export function PageCard({ page, onArchive, onRestore, onDelete, onGripDown, onGripUp }: PageCardProps) {
   const router = useRouter();
   const status = STATUS_BADGE[page.status] || STATUS_BADGE.hidden;
   const isArchived = page.status === "archived";
@@ -48,6 +51,19 @@ export function PageCard({ page, onArchive, onRestore, onDelete }: PageCardProps
   return (
     <Card className="group relative transition-colors hover:border-foreground/20">
       <CardHeader>
+        {/* Drag handle */}
+        {onGripDown && (
+          <div
+            className="mr-1 cursor-grab text-muted-foreground opacity-0 transition-opacity select-none active:cursor-grabbing group-hover:opacity-100"
+            onMouseDown={onGripDown}
+            onMouseUp={onGripUp}
+          >
+            <GripVertical className="h-4 w-4" />
+          </div>
+        )}
+        <span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-rm-gray-1 text-[length:var(--text-10)] font-medium text-muted-foreground">
+          {page.order + 1}
+        </span>
         <div className="flex-1 min-w-0">
           <CardTitle className="text-[length:var(--text-16)] truncate">
             {page.menuTitle || page.cardTitle || "Без названия"}

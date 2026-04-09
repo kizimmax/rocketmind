@@ -30,6 +30,18 @@ export async function GET() {
             case "audience": if (data.audience) blockData = data.audience; else enabled = false; break;
             case "results": if (data.results) blockData = data.results; else enabled = false; break;
             case "process": if (data.process) blockData = data.process; else enabled = false; break;
+            case "experts": {
+              const arr = data.experts as unknown[] | null;
+              if (arr && arr.length > 0) {
+                blockData = { experts: arr };
+                enabled = true;
+              } else {
+                blockData = { experts: [] };
+                // academy pages: on by default, others: off
+                enabled = sectionId === "academy";
+              }
+              break;
+            }
           }
           return { id: `${data.slug}_${type}`, type, enabled, order: i, data: blockData };
         });
@@ -80,7 +92,7 @@ export async function POST(request: Request) {
     cardTitle: menuTitle, cardDescription: "",
     metaTitle: `${menuTitle} | Rocketmind`, metaDescription: "",
     hero: { caption: captions[sectionId] || sectionId, title: menuTitle.toUpperCase(), description: "", ctaText: "оставить заявку", factoids: [] },
-    about: null, audience: null, results: null, process: null,
+    about: null, audience: null, results: null, process: null, experts: null,
     socialProof: null, tools: null, duration: null, whyRocketmind: null, expert: null, cases: null, reviews: null,
   };
   fs.writeFileSync(filePath, matter.stringify("", fm), "utf-8");

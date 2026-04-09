@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
+import { getProductBySlug } from "@/lib/products";
 import { ServicePageTemplate } from "@/components/templates/ServicePageTemplate";
 
+const product = getProductBySlug("design-sprints");
+
 export const metadata: Metadata = {
-  title: "Организация дизайн-спринтов | Rocketmind",
-  description:
-    "Быстрое тестирование идей через структурированные дизайн-спринты.",
+  title: product?.metaTitle || "Организация дизайн-спринтов | Rocketmind",
+  description: product?.metaDescription || "Быстрое тестирование идей через структурированные дизайн-спринты.",
 };
 
 export default function DesignSprintsPage() {
-  return (
-    <ServicePageTemplate
-      title="Организация дизайн-спринтов"
-      subtitle="Быстрое тестирование идей через структурированные дизайн-спринты."
-    />
-  );
+  if (!product) {
+    return <ServicePageTemplate title="Организация дизайн-спринтов" subtitle="Быстрое тестирование идей через структурированные дизайн-спринты." />;
+  }
+  return <ServicePageTemplate product={product} />;
 }

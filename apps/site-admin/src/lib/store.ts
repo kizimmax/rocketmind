@@ -42,6 +42,7 @@ interface StoreContext {
   setPageStatus(pageId: string, status: PageStatus): void;
   deletePage(pageId: string): Promise<void>;
   savePage(page: SitePage): Promise<void>;
+  reorderPages(sectionId: string, orderedIds: string[]): void;
   reload(): Promise<void>;
 }
 
@@ -192,6 +193,21 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
     } catch { /* ignore */ }
   }, []);
 
+  const reorderPages = useCallback(
+    (sectionId: string, orderedIds: string[]) => {
+      setPages((prev) => {
+        const next = prev.map((p) => {
+          if (p.sectionId !== sectionId) return p;
+          const idx = orderedIds.indexOf(p.id);
+          return idx >= 0 ? { ...p, order: idx } : p;
+        });
+        if (isStaticExport) saveToLS(next);
+        return next;
+      });
+    },
+    []
+  );
+
   if (loading) {
     return React.createElement(
       "div",
@@ -215,6 +231,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         setPageStatus,
         deletePage,
         savePage,
+        reorderPages,
         reload: fetchPages,
       },
     },

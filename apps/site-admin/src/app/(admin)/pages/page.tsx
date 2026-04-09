@@ -1,8 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
-import { Plus } from "lucide-react";
+import { useState, useCallback, Suspense } from "react";
+import { Plus, LayoutGrid, List } from "lucide-react";
 import {
   Tabs,
   TabsList,
@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { ADMIN_SECTIONS } from "@/lib/constants";
 import { useAdminStore } from "@/lib/store";
+import { useItemDnd } from "@/lib/use-item-dnd";
 import { PageCard } from "@/components/page-card";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
@@ -21,17 +22,28 @@ function PagesContent() {
   const searchParams = useSearchParams();
   const initialSection = searchParams.get("section") || "consulting";
 
-  const { getPagesBySection, createPage, setPageStatus, deletePage } =
+  const { getPagesBySection, createPage, setPageStatus, deletePage, reorderPages } =
     useAdminStore();
 
   const [activeSection, setActiveSection] = useState(initialSection);
   const [isCreating, setIsCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const pages = getPagesBySection(activeSection);
   const activePages = pages.filter((p) => p.status !== "archived");
   const archivedPages = pages.filter((p) => p.status === "archived");
+
+  const handleReorder = useCallback(
+    (reordered: typeof activePages) => {
+      reorderPages(activeSection, reordered.map((p) => p.id));
+      toast.success("Порядок сохранён");
+    },
+    [activeSection, reorderPages]
+  );
+
+  const dnd = useItemDnd(activePages, handleReorder);
 
   async function handleCreate() {
     if (!newTitle.trim()) return;
@@ -73,6 +85,28 @@ function PagesContent() {
         <h1 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase tracking-tight text-foreground">
           Страницы сайта
         </h1>
+        <div className="flex items-center gap-0.5 rounded-sm border border-border p-0.5">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`flex h-7 w-7 items-center justify-center rounded-sm transition-colors ${
+              viewMode === "grid"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutGrid className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`flex h-7 w-7 items-center justify-center rounded-sm transition-colors ${
+              viewMode === "list"
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <List className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
 
       <Tabs
@@ -136,16 +170,31 @@ function PagesContent() {
             </div>
 
             {/* Active pages */}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {activePages.map((page) => (
-                <PageCard
-                  key={page.id}
-                  page={page}
-                  onArchive={handleArchive}
-                  onRestore={handleRestore}
-                  onDelete={setDeleteTarget}
-                />
-              ))}
+            <div className={viewMode === "grid" ? "grid gap-3 sm:grid-cols-2 lg:grid-cols-3" : "flex flex-col gap-2"}>
+              {activePages.map((page, index) => {
+                const { draggable, onDragStart, onDragOver, onDrop, onDragEnd, isDragging } =
+                  dnd.itemProps(index);
+                return (
+                  <div
+                    key={page.id}
+                    draggable={draggable}
+                    onDragStart={onDragStart}
+                    onDragOver={onDragOver}
+                    onDrop={onDrop}
+                    onDragEnd={onDragEnd}
+                    className={`transition-opacity ${isDragging ? "opacity-50" : ""}`}
+                  >
+                    <PageCard
+                      page={page}
+                      onArchive={handleArchive}
+                      onRestore={handleRestore}
+                      onDelete={setDeleteTarget}
+                      onGripDown={() => dnd.onGripDown(index)}
+                      onGripUp={dnd.onGripUp}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             {activePages.length === 0 && (
@@ -160,7 +209,7 @@ function PagesContent() {
                 <p className="mb-3 text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground">
                   Архив ({archivedPages.length})
                 </p>
-                <div className="grid gap-3 opacity-60 sm:grid-cols-2 lg:grid-cols-3">
+                <div className={`opacity-60 ${viewMode === "grid" ? "grid gap-3 sm:grid-cols-2 lg:grid-cols-3" : "flex flex-col gap-2"}`}>
                   {archivedPages.map((page) => (
                     <PageCard
                       key={page.id}

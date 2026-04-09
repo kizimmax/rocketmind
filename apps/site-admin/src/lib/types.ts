@@ -11,6 +11,7 @@ export type BlockType =
   | "audience"
   | "results"
   | "process"
+  | "experts"
   | "pageBottom";
 
 // ── Block data shapes (mirror apps/site/src/lib/products.ts) ────────────────
@@ -43,6 +44,10 @@ export interface ResultsBlockData {
   title: string;
   description?: string;
   cards: Array<{ title: string; text: string }>;
+}
+
+export interface ExpertsBlockData {
+  experts: Array<{ tag?: string; name: string; bio: string; image: string }>;
 }
 
 export interface ProcessBlockData {

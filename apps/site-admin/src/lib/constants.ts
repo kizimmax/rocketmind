@@ -19,6 +19,7 @@ export const BLOCK_TYPES: Record<BlockType, { label: string; description: string
   audience: { label: "Для кого", description: "Целевая аудитория, факты" },
   results: { label: "Результаты", description: "Карточки результатов" },
   process: { label: "Процесс", description: "Этапы работы, участники" },
+  experts: { label: "Эксперты", description: "Карточки экспертов продукта" },
   pageBottom: { label: "Кейсы + CTA", description: "Секция кейсов и финальный CTA" },
 };
 
@@ -31,5 +32,6 @@ export const DEFAULT_BLOCK_TYPES: BlockType[] = [
   "audience",
   "results",
   "process",
+  "experts",
   "pageBottom",
 ];

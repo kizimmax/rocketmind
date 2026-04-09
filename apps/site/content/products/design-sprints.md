@@ -29,6 +29,7 @@ socialProof: null
 tools: null
 duration: null
 whyRocketmind: null
+experts: null
 expert: null
 cases: null
 reviews: null
