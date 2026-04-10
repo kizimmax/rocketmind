@@ -60,8 +60,8 @@ export function ForWhomSection({
   return (
     <section className={cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className)}>
       {/* ── Desktop ── */}
-      <div className="hidden lg:flex flex-col gap-10 mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
-        {/* Header — 50/50 */}
+      <div className="hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
+        {/* Header — Figma: gap 8px, title row 50/50 */}
         <div className="flex flex-col gap-2">
           <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]">
             {tag}
@@ -80,51 +80,58 @@ export function ForWhomSection({
           </div>
         </div>
 
-        {/* Cards — single grid, 50/50 aligned with header */}
-        {/* Cards grid — columns match header 50/50 split */}
-        <div
-          className="grid"
-          style={{
-            gridTemplateColumns:
-              facts.length === 3
-                ? wideColumn === "left"
-                  ? "calc(50% - 16px) 1fr 1fr"
-                  : "1fr 1fr calc(50% - 16px)"
-                : facts.length === 2
-                  ? "1fr 1fr"
-                  : `repeat(${facts.length}, 1fr)`,
-            gridTemplateRows: "1fr auto auto",
-            columnGap: "32px",
-          }}
-        >
-          {facts.map((f, i) => (
-            <div
-              key={`t${i}`}
-              className="flex items-end pb-4"
-              style={{ gridColumn: i + 1, gridRow: 1 }}
-            >
-              <h4 className="h4 text-[#0A0A0A]">{f.title}</h4>
-            </div>
-          ))}
-          {facts.map((_, i) => (
-            <div
-              key={`d${i}`}
-              className="border-t border-[#404040]"
-              style={{ gridColumn: i + 1, gridRow: 2 }}
-            />
-          ))}
-          {facts.map((f, i) => (
-            <div
-              key={`p${i}`}
-              className="pt-4"
-              style={{ gridColumn: i + 1, gridRow: 3 }}
-            >
-              <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A] max-w-[480px]">
+        {/* Cards — Figma: two columns, left pr-4, right no padding, gap-4 within each */}
+        {(() => {
+          // Split facts into left/right columns based on wideColumn
+          let leftFacts: ForWhomFact[];
+          let rightFacts: ForWhomFact[];
+
+          if (facts.length === 2) {
+            leftFacts = [facts[0]];
+            rightFacts = [facts[1]];
+          } else if (facts.length === 3) {
+            if (wideColumn === "left") {
+              leftFacts = [facts[0]];
+              rightFacts = [facts[1], facts[2]];
+            } else {
+              leftFacts = [facts[0], facts[1]];
+              rightFacts = [facts[2]];
+            }
+          } else {
+            // 4 facts: 2 per column
+            leftFacts = [facts[0], facts[1]];
+            rightFacts = [facts[2], facts[3]];
+          }
+
+          const renderCard = (f: ForWhomFact, i: number) => (
+            <div key={i} className="flex flex-col gap-4">
+              <div className="flex items-end">
+                <h4 className="h4 text-[#0A0A0A]">{f.title}</h4>
+              </div>
+              <div className="h-0 w-full border-t border-[#404040]" />
+              <p className="text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A]">
                 {f.text}
               </p>
             </div>
-          ))}
-        </div>
+          );
+
+          return (
+            <div className="flex">
+              {/* Left column — pr-4 */}
+              <div className="w-1/2 flex gap-4 pr-4">
+                {leftFacts.map((f, i) => (
+                  <div key={i} className="flex-1">{renderCard(f, i)}</div>
+                ))}
+              </div>
+              {/* Right column — no padding */}
+              <div className="w-1/2 flex gap-4">
+                {rightFacts.map((f, i) => (
+                  <div key={i} className="flex-1">{renderCard(f, i)}</div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ── Mobile / Tablet ── */}
