@@ -169,14 +169,14 @@ function AcademyStepCard({
         className
       )}
     >
-      {/* Left: number + title */}
-      <div className="flex items-center gap-6 lg:w-1/2">
-        <span className="w-[100px] shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
+      {/* Title + number row */}
+      <div className="flex items-end gap-6 lg:w-1/2 lg:items-center">
+        <span className="flex-1 h4 text-[#F0F0F0]">{step.title}</span>
+        <span className="w-[100px] shrink-0 text-right lg:text-left lg:order-first font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
           {step.number}
         </span>
-        <span className="h4 text-[#F0F0F0]">{step.title}</span>
       </div>
-      {/* Right: description */}
+      {/* Description */}
       <div className="pl-0 lg:w-1/2 lg:pl-4">
         <p className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]">
           {step.text}
