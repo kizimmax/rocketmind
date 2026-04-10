@@ -195,8 +195,8 @@ export function AboutRocketmindSection({
             <Image
               src={`${BASE_PATH}/images/about/alexey-eremin.png`}
               alt={founderName}
-              width={1036}
-              height={1572}
+              width={604}
+              height={914}
               className="w-full h-auto block"
               sizes="(max-width: 768px) calc(100vw - 80px)"
             />
