@@ -1456,8 +1456,8 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
         </div>
 
         {/* R-Plan table */}
-        <div ref={containerRef} className="border border-border rounded-xl overflow-hidden relative">
-          <div style={{ overflow: 'hidden' }}>
+        <div ref={containerRef} className="border border-border rounded-xl overflow-clip relative">
+          <div style={{ overflow: 'clip' }}>
             <div style={{
               transform: slideDir ? `translateX(${slideDir === 'left' ? '40px' : '-40px'})` : 'translateX(0)',
               opacity: slideDir ? 0.6 : 1,
