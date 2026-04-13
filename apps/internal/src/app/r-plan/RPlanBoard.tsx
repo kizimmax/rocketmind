@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { ref, onValue, set } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import { Button, Checkbox, Tabs, TabsList, TabsTrigger, Tooltip, TooltipTrigger, TooltipContent, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@rocketmind/ui';
+import { Button, Checkbox, Tabs, TabsList, TabsTrigger, Tooltip, TooltipTrigger, TooltipContent, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, ShowMore, ShowMorePanel } from '@rocketmind/ui';
 import { toast } from 'sonner';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -510,7 +510,7 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
   const [weeks, setWeeks] = useState<Week[]>(tmpl.weeks);
   const [rows, setRows] = useState<Row[]>(tmpl.rows);
   const [archivedRows, setArchivedRows] = useState<Row[]>([]);
-  const [collapsedRows, setCollapsedRows] = useState<Set<string>>(new Set());
+  const [expandedCells, setExpandedCells] = useState<Set<string>>(new Set());
   const [title, setTitle] = useState(tmpl.title);
   const [subtitle, setSubtitle] = useState(tmpl.subtitle);
   const [locked, setLocked] = useState(false);
@@ -1111,10 +1111,11 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
     showToast('Строка восстановлена');
   };
 
-  const toggleCollapse = (rowId: string) => {
-    setCollapsedRows(prev => {
+  const toggleCell = (rowId: string, weekId: string) => {
+    const key = `${rowId}:${weekId}`;
+    setExpandedCells(prev => {
       const next = new Set(prev);
-      if (next.has(rowId)) next.delete(rowId); else next.add(rowId);
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
   };
@@ -1595,16 +1596,8 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                     className="group/row flex-shrink-0 flex flex-col justify-between px-2 py-2 md:px-3 md:py-2 border-r border-border bg-background"
                     style={isMobile ? { width: '30%', minWidth: 0 } : { width: COL_W, minWidth: COL_W }}
                   >
-                    {/* Top: collapse arrow + label */}
+                    {/* Top: label */}
                     <div className="flex items-start gap-1 md:gap-1.5">
-                      {!isMobile && (
-                        <button
-                          onClick={() => toggleCollapse(row.id)}
-                          className="flex-shrink-0 mt-0.5 text-[length:var(--text-12)] leading-none text-muted-foreground/40 hover:text-muted-foreground transition-colors select-none"
-                        >
-                          {collapsedRows.has(row.id) ? '▸' : '▾'}
-                        </button>
-                      )}
                       <span className="text-[length:var(--text-12)] font-medium text-foreground flex-1 min-w-0 mt-0.5">
                         <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                       </span>
@@ -1628,24 +1621,8 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                     )}
                   </div>
 
-                  {/* Week cells or collapsed badge */}
-                  {collapsedRows.has(row.id) ? (
-                    <div className="flex-1 flex items-center px-3 py-2 gap-2">
-                      {(() => {
-                        const allCards = Object.values(row.cells ?? {}).flat();
-                        const done = allCards.filter(c => c.done).length;
-                        const active = allCards.filter(c => !c.done).length;
-                        return (
-                          <span className="text-[length:var(--text-11)] font-mono text-muted-foreground">
-                            {active > 0 && <span className="text-foreground/70">{active} активн.</span>}
-                            {active > 0 && done > 0 && <span className="mx-1">·</span>}
-                            {done > 0 && <span className="text-muted-foreground/50">{done} завер.</span>}
-                            {active === 0 && done === 0 && <span className="text-muted-foreground/30">Пусто</span>}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  ) : shownWeeks.map((w, localIdx) => {
+                  {/* Week cells */}
+                  {shownWeeks.map((w, localIdx) => {
                     const globalIdx = visibleStartIdx + localIdx;
                     const isCurrent = globalIdx === currentWeekIdx;
                     const effColor = getEffectiveColor(globalIdx);
@@ -1681,8 +1658,16 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                           </Tooltip>
                         )}
 
-                        <div className="flex flex-col gap-0">
-                          {cards.map(c => {
+                        {(() => {
+                          const VISIBLE = 2;
+                          const cellKey = `${row.id}:${w.id}`;
+                          const isExpanded = expandedCells.has(cellKey);
+                          const visibleCards = cards.slice(0, VISIBLE);
+                          const hiddenCards = cards.slice(VISIBLE);
+                          const doneCount = cards.filter(c => c.done).length;
+                          const activeCount = cards.filter(c => !c.done).length;
+
+                          const renderCard = (c: Card) => {
                             const isDropBefore =
                               cardDropTarget?.rowId === row.id &&
                               cardDropTarget?.weekId === w.id &&
@@ -1711,37 +1696,73 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                                 </div>
                               </div>
                             );
-                          })}
-                          {cardDropTarget?.rowId === row.id &&
-                            cardDropTarget?.weekId === w.id &&
-                            cardDropTarget?.cardId === null &&
-                            dragCard.current && (
-                            <div className="h-0.5 mx-1 rounded-full mb-1" style={{ backgroundColor: cssVar(effColor, '100') }} />
-                          )}
-                          {cards.length === 0 && (
-                            <div className="min-h-[40px] rounded-sm border border-dashed border-border/0 hover:border-border/40 transition-colors" />
-                          )}
-                        </div>
+                          };
 
-                        {!locked && cards.length > 0 && (
-                          <Tooltip>
-                            <TooltipTrigger render={
-                              <button
-                                onClick={() => addCard(row.id, w.id, undefined, 'bottom')}
-                                className="w-full mt-0.5 flex items-center justify-center gap-1 rounded text-[length:var(--text-12)] font-mono uppercase tracking-wide transition-all opacity-[0.35] md:opacity-[0.15] md:group-hover/cell:opacity-[0.35] md:hover:!opacity-[0.8]"
-                                style={{
-                                  height: 18,
-                                  color: cssVar(effColor, 'fg-subtle'),
-                                  backgroundColor: cssVar(effColor, '900'),
-                                  border: `1px dashed ${cssVar(effColor, '300')}`,
-                                }}
-                              />
-                            }>
-                              +
-                            </TooltipTrigger>
-                            <TooltipContent>Добавить задачу</TooltipContent>
-                          </Tooltip>
-                        )}
+                          return (
+                            <>
+                              <div className="flex flex-col gap-0">
+                                {visibleCards.map(renderCard)}
+                              </div>
+
+                              {hiddenCards.length > 0 && (
+                                <>
+                                  <ShowMorePanel expanded={isExpanded} fade collapsedHeight={0}>
+                                    <div className="flex flex-col gap-0">
+                                      {hiddenCards.map(renderCard)}
+                                    </div>
+                                  </ShowMorePanel>
+                                  <ShowMore
+                                    expanded={isExpanded}
+                                    onClick={() => toggleCell(row.id, w.id)}
+                                    label={`ещё ${hiddenCards.length}`}
+                                    labelExpanded="скрыть"
+                                    fade={!isExpanded}
+                                    fadeBg={isCurrent ? `color-mix(in srgb, ${cssVar(effColor, '900')}, var(--background) 60%)` : 'var(--background)'}
+                                  />
+                                </>
+                              )}
+
+                              {cardDropTarget?.rowId === row.id &&
+                                cardDropTarget?.weekId === w.id &&
+                                cardDropTarget?.cardId === null &&
+                                dragCard.current && (
+                                <div className="h-0.5 mx-1 rounded-full mb-1" style={{ backgroundColor: cssVar(effColor, '100') }} />
+                              )}
+                              {cards.length === 0 && (
+                                <div className="min-h-[40px] rounded-sm border border-dashed border-border/0 hover:border-border/40 transition-colors" />
+                              )}
+
+                              {/* Cell stats */}
+                              {cards.length > 0 && (
+                                <div className="text-[length:var(--text-10)] font-mono text-muted-foreground/40 mt-0.5 px-0.5">
+                                  {activeCount > 0 && <span>{activeCount} акт.</span>}
+                                  {activeCount > 0 && doneCount > 0 && <span> · </span>}
+                                  {doneCount > 0 && <span>{doneCount} зав.</span>}
+                                </div>
+                              )}
+
+                              {!locked && cards.length > 0 && (
+                                <Tooltip>
+                                  <TooltipTrigger render={
+                                    <button
+                                      onClick={() => addCard(row.id, w.id, undefined, 'bottom')}
+                                      className="w-full mt-0.5 flex items-center justify-center gap-1 rounded text-[length:var(--text-12)] font-mono uppercase tracking-wide transition-all opacity-[0.35] md:opacity-[0.15] md:group-hover/cell:opacity-[0.35] md:hover:!opacity-[0.8]"
+                                      style={{
+                                        height: 18,
+                                        color: cssVar(effColor, 'fg-subtle'),
+                                        backgroundColor: cssVar(effColor, '900'),
+                                        border: `1px dashed ${cssVar(effColor, '300')}`,
+                                      }}
+                                    />
+                                  }>
+                                    +
+                                  </TooltipTrigger>
+                                  <TooltipContent>Добавить задачу</TooltipContent>
+                                </Tooltip>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     );
                   })}
@@ -1776,14 +1797,8 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                         className="group/row flex-shrink-0 flex flex-col justify-between px-3 py-2 border-r border-border bg-background"
                         style={{ width: COL_W, minWidth: COL_W }}
                       >
-                        {/* Top: collapse arrow + label */}
+                        {/* Top: label */}
                         <div className="flex items-start gap-1.5">
-                          <button
-                            onClick={() => toggleCollapse(row.id)}
-                            className="flex-shrink-0 mt-0.5 text-[length:var(--text-12)] leading-none text-muted-foreground/40 hover:text-muted-foreground transition-colors select-none"
-                          >
-                            {collapsedRows.has(row.id) ? '▸' : '▾'}
-                          </button>
                           <span className="text-[length:var(--text-12)] font-medium text-foreground flex-1 min-w-0 mt-0.5">
                             <EditableText value={row.label} onChange={v => updateRowLabel(row.id, v)} />
                           </span>
@@ -1807,24 +1822,7 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                         )}
                       </div>
 
-                      {/* Day grid or collapsed badge */}
-                      {collapsedRows.has(row.id) ? (
-                        <div className="flex-1 flex items-center px-3 py-2 gap-2">
-                          {(() => {
-                            const allCards = Object.values(row.cells ?? {}).flat();
-                            const done = allCards.filter(c => c.done).length;
-                            const active = allCards.filter(c => !c.done).length;
-                            return (
-                              <span className="text-[length:var(--text-11)] font-mono text-muted-foreground">
-                                {active > 0 && <span className="text-foreground/70">{active} активн.</span>}
-                                {active > 0 && done > 0 && <span className="mx-1">·</span>}
-                                {done > 0 && <span className="text-muted-foreground/50">{done} завер.</span>}
-                                {active === 0 && done === 0 && <span className="text-muted-foreground/30">Пусто</span>}
-                              </span>
-                            );
-                          })()}
-                        </div>
-                      ) : (
+                      {/* Day grid */}
                       <div className="group/cell flex-1 relative" style={{ backgroundColor: awIsCurrent ? `color-mix(in srgb, ${cssVar(awColor, '900')}, transparent 60%)` : undefined }}>
                         {/* Column borders + hatched "Без дня" + drop highlight */}
                         <div className="absolute inset-0 pointer-events-none" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }}>
@@ -1939,7 +1937,6 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                           </div>
                         )}
                       </div>
-                      )}
                     </div>
                   );
                 });
