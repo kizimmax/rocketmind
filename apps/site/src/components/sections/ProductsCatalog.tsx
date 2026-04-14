@@ -308,12 +308,32 @@ function ProductsCatalogInner({ sections }: Props) {
             className="flex flex-col gap-[72px] md:gap-[112px] mt-10 md:mt-[40px] pb-[72px] md:pb-[112px] animate-[slideUp_0.4s_ease-out]"
           >
             {filteredSections.length === 0 && (
-              <div className="flex items-center gap-3 py-5 md:flex-col md:items-center md:justify-center md:py-24 lg:py-32 md:gap-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted-foreground/40 md:w-12 md:h-12">
-                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M8 11h6" />
-                </svg>
-                <div className="flex flex-col gap-2 md:items-center">
-                  <p className="text-[14px] md:text-[18px] text-muted-foreground md:text-center">
+              <>
+                {/* Mobile: compact inline */}
+                <div className="flex items-center gap-2 -mt-5 md:hidden">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted-foreground/40">
+                    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M8 11h6" />
+                  </svg>
+                  <p className="text-[14px] text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                    {searchQuery
+                      ? <>Ничего по &laquo;<span className="text-foreground">{searchQuery}</span>&raquo;</>
+                      : "Нет продуктов"}
+                  </p>
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery("")}
+                      className="shrink-0 ml-auto text-[12px] font-mono uppercase tracking-[0.02em] text-muted-foreground underline underline-offset-2 cursor-pointer"
+                    >
+                      Сбросить
+                    </button>
+                  )}
+                </div>
+                {/* Desktop */}
+                <div className="hidden md:flex flex-col items-center justify-center py-24 lg:py-32 gap-4">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40">
+                    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M8 11h6" />
+                  </svg>
+                  <p className="text-[18px] text-muted-foreground text-center">
                     {searchQuery
                       ? <>Ничего по запросу <span className="text-foreground">&laquo;{searchQuery}&raquo;</span></>
                       : "Нет продуктов в этой категории"}
@@ -321,13 +341,13 @@ function ProductsCatalogInner({ sections }: Props) {
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="self-start md:self-auto inline-flex items-center gap-2 h-8 md:h-10 px-3 md:px-4 border border-border rounded-[4px] bg-background text-foreground font-mono text-[12px] md:text-[14px] uppercase tracking-[0.02em] transition-colors hover:bg-[#1A1A1A] cursor-pointer"
+                      className="inline-flex items-center gap-2 h-10 px-4 border border-border rounded-[4px] bg-background text-foreground font-mono text-[14px] uppercase tracking-[0.02em] transition-colors hover:bg-[#1A1A1A] cursor-pointer"
                     >
-                      Сбросить
+                      Сбросить поиск
                     </button>
                   )}
                 </div>
-              </div>
+              </>
             )}
 
             {filteredSections.map((section) => (
