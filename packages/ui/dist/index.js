@@ -3528,7 +3528,7 @@ function SiteFooter({ basePath = "", className, children }) {
     ] }),
     /* @__PURE__ */ jsxs23("div", { className: "relative h-[320px] md:h-[460px]", children: [
       /* @__PURE__ */ jsx41(DottedSurface, {}),
-      children && /* @__PURE__ */ jsx41("div", { className: "absolute inset-0 z-10 flex flex-col justify-end", children })
+      children && /* @__PURE__ */ jsx41("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
     ] })
   ] });
 }

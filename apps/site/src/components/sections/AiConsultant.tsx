@@ -68,7 +68,7 @@ export const AiConsultant = forwardRef<AiConsultantHandle>(
         </div>
 
         {/* Input — at the bottom with spacing */}
-        <div className="mx-auto w-full max-w-[1512px] shrink-0 px-5 pb-[40px] md:px-8 xl:px-14">
+        <div className="mx-auto w-full max-w-[1512px] shrink-0 px-5 pb-4 md:px-8 md:pb-[40px] xl:px-14">
           <ConsultantInput onSend={sendMessage} disabled={isSending} />
         </div>
       </div>
