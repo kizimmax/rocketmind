@@ -4,6 +4,7 @@ import { Suspense, useState, useMemo, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { ProductCard } from "@rocketmind/ui";
 import { ShaderBackground } from "@/components/ui/ShaderBackground";
 import type { CatalogSection, CatalogCard } from "@/app/products/page";
 
@@ -119,7 +120,7 @@ function ProductsCatalogInner({ sections }: Props) {
       all: allCards.length,
       consulting: allCards.filter((p) => p.category === "consulting").length,
       academy: allCards.filter((p) => p.category === "academy").length,
-      expert: allCards.filter((p) => p.hasExperts).length,
+      expert: allCards.filter((p) => p.experts.length > 0).length,
       "ai-products": allCards.filter((p) => p.category === "ai-products").length,
     };
     return c;
@@ -142,7 +143,7 @@ function ProductsCatalogInner({ sections }: Props) {
         let cards = section.cards;
 
         if (activeFilter === "expert") {
-          cards = cards.filter((c) => c.hasExperts);
+          cards = cards.filter((c) => c.experts.length > 0);
         } else if (activeFilter !== "all") {
           if (section.key !== activeFilter) return { ...section, cards: [] };
         }
@@ -173,15 +174,18 @@ function ProductsCatalogInner({ sections }: Props) {
           {/* Mobile hero (< lg) */}
           <div className="lg:hidden px-5 pt-[102px] pb-6">
             <div className="flex flex-col gap-6">
-              {/* Row: title + animated search */}
-              <div className="flex items-end gap-3">
-                <h1 className="font-heading text-[28px] font-bold uppercase leading-[1.16] tracking-[-0.01em] shrink-0">
+              {/* Row: title LEFT + animated search RIGHT */}
+              <div className="flex items-end justify-between gap-3">
+                <h1
+                  className="font-heading text-[28px] font-bold uppercase leading-[1.16] tracking-[-0.01em] shrink-0 transition-opacity duration-300"
+                  style={{ opacity: searchOpen ? 0 : 1, width: searchOpen ? 0 : "auto", overflow: "hidden" }}
+                >
                   Продукты
                 </h1>
-                {/* Animated search: collapses to chip, expands to input */}
+                {/* Search: chip → full-width input with smooth expand/collapse */}
                 <div
-                  className="relative h-8 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                  style={{ width: searchOpen ? "100%" : "auto" }}
+                  className="relative h-8 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ml-auto"
+                  style={{ width: searchOpen ? "100%" : undefined, flexShrink: searchOpen ? 1 : 0 }}
                 >
                   {searchOpen ? (
                     <>
@@ -393,9 +397,22 @@ function ProductsCatalogInner({ sections }: Props) {
                   )}
 
                   {/* Cards grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 border-t border-l border-[#404040]">
                     {section.cards.map((card) => (
-                      <CatalogCardItem key={card.slug} card={card} />
+                      <ProductCard
+                        key={card.slug}
+                        title={card.cardTitle}
+                        description={card.cardDescription}
+                        href={card.href}
+                        icon={
+                          card.category === "consulting" && card.coverImage
+                            ? <img src={card.coverImage} alt="" className="w-full h-full object-contain" />
+                            : undefined
+                        }
+                        experts={card.experts}
+                        tag={card.experts.length > 0 ? "Экспертный продукт" : undefined}
+                        className="border-t-0 border-l-0"
+                      />
                     ))}
                   </div>
                 </div>
@@ -485,44 +502,3 @@ function PartnershipBlock() {
   );
 }
 
-// ── Card ────────────────────────────────────────────────────────────────────────
-
-function CatalogCardItem({ card }: { card: CatalogCard }) {
-  return (
-    <article className="group flex flex-col border border-border [&:not(:first-child)]:md:border-l-0 [&:nth-child(n+3)]:xl:border-t-0 [&:nth-child(n+5)]:xl:border-t-0 bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px] transition-colors hover:bg-[#111]">
-      {/* Top image area */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#0d0d0d] border-b border-border">
-        <Link
-          href={card.href}
-          className="absolute top-1 right-1 z-10 flex items-center justify-center w-10 h-10 bg-foreground text-background rounded-[4px] opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label={`Открыть ${card.cardTitle}`}
-        >
-          <ArrowUpRight size={16} strokeWidth={2} />
-        </Link>
-        {card.coverImage && (
-          <img
-            src={card.coverImage}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        )}
-      </div>
-
-      {/* Content */}
-      <Link href={card.href} className="flex flex-col flex-1 p-6 md:p-8 gap-4">
-        {card.hasExperts && (
-          <span className="inline-flex self-start px-2.5 py-1 text-[12px] font-mono uppercase tracking-[0.02em] border rounded-[4px] border-[#4A3C00] text-[#FFE466] bg-[#3D3300]">
-            Экспертный продукт
-          </span>
-        )}
-
-        <h3 className="font-heading text-[20px] md:text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground">
-          {card.cardTitle}
-        </h3>
-        <p className="text-[14px] leading-[1.32] tracking-[0.01em] text-muted-foreground">
-          {card.cardDescription}
-        </p>
-      </Link>
-    </article>
-  );
-}
