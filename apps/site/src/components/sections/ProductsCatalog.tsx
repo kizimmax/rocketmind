@@ -100,6 +100,7 @@ function ProductsCatalogInner({ sections }: Props) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>(paramFilter);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   // Sync filter state when URL param changes (e.g. header nav click)
   const prevParam = useRef(paramFilter);
@@ -172,34 +173,47 @@ function ProductsCatalogInner({ sections }: Props) {
           {/* Mobile hero (< lg) */}
           <div className="lg:hidden px-5 pt-[102px] pb-6">
             <div className="flex flex-col gap-6">
-              {/* Row: title + search chip */}
-              <div className="flex items-end justify-between gap-4">
-                <h1 className="font-heading text-[28px] font-bold uppercase leading-[1.16] tracking-[-0.01em]">
+              {/* Row: title + animated search */}
+              <div className="flex items-end gap-3">
+                <h1 className="font-heading text-[28px] font-bold uppercase leading-[1.16] tracking-[-0.01em] shrink-0">
                   Продукты
                 </h1>
-                {searchOpen ? (
-                  <div className="relative flex-1 min-w-0 max-w-[180px] h-8 overflow-hidden">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[5px] top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                    {/* 16px font-size prevents iOS zoom; scale(0.75) renders at ~12px visually */}
-                    <input
-                      autoFocus
-                      type="text"
-                      placeholder="Найти"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
-                      className="h-[42px] w-[133%] origin-top-left scale-75 pl-7 pr-2 bg-[#1A1A1A] border border-border rounded-[5px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
-                    />
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setSearchOpen(true)}
-                    className="inline-flex items-center gap-2 h-8 px-2 border border-border rounded-[4px] bg-[#1A1A1A] text-muted-foreground font-mono text-[12px] uppercase tracking-[0.02em] cursor-pointer shrink-0"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                    <span>Найти продукт</span>
-                  </button>
-                )}
+                {/* Animated search: collapses to chip, expands to input */}
+                <div
+                  className="relative h-8 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                  style={{ width: searchOpen ? "100%" : "auto" }}
+                >
+                  {searchOpen ? (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[5px] top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                      <input
+                        ref={mobileInputRef}
+                        type="text"
+                        placeholder="Найти"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
+                        className="h-[42px] w-[133%] origin-top-left scale-75 pl-7 pr-8 bg-[#1A1A1A] border border-border rounded-[5px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring"
+                      />
+                      {searchQuery && (
+                        <button
+                          onMouseDown={(e) => { e.preventDefault(); setSearchQuery(""); }}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 z-[1] flex items-center justify-center w-5 h-5 text-muted-foreground cursor-pointer"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => { setSearchOpen(true); requestAnimationFrame(() => mobileInputRef.current?.focus()); }}
+                      className="inline-flex items-center gap-2 h-8 px-2 border border-border rounded-[4px] bg-[#1A1A1A] text-muted-foreground font-mono text-[12px] uppercase tracking-[0.02em] cursor-pointer whitespace-nowrap"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                      <span>Найти продукт</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Description */}
@@ -267,8 +281,16 @@ function ProductsCatalogInner({ sections }: Props) {
                         placeholder="Найти продукт"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="relative w-full h-[48px] pl-10 pr-4 bg-background/60 backdrop-blur-sm border border-border rounded-[4px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
+                        className="relative w-full h-[48px] pl-10 pr-10 bg-background/60 backdrop-blur-sm border border-border rounded-[4px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
                       />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 z-[1] flex items-center justify-center w-6 h-6 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                        </button>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1">
