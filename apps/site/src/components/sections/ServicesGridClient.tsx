@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
@@ -58,6 +58,34 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
 
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const scrollRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Desktop drag-to-scroll
+  const dragState = useRef<{ active: boolean; startX: number; sIdx: number; startIdx: number } | null>(null);
+
+  const handleDragStart = useCallback((e: React.PointerEvent, sIdx: number) => {
+    if (isMobile) return;
+    dragState.current = { active: true, startX: e.clientX, sIdx, startIdx: carouselIndices[sIdx] };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }, [isMobile, carouselIndices]);
+
+  const handleDragMove = useCallback((e: React.PointerEvent) => {
+    if (!dragState.current?.active) return;
+    const dx = dragState.current.startX - e.clientX;
+    if (Math.abs(dx) > 40) {
+      const { sIdx, startIdx } = dragState.current;
+      const section = sections[sIdx];
+      const epv = section.showImages ? Math.max(1, cardsPerView / 2) : cardsPerView;
+      const max = Math.max(0, section.cards.length - epv);
+      const step = dx > 0 ? 1 : -1;
+      const next = Math.max(0, Math.min(max, startIdx + step));
+      setCarouselIndices((prev) => ({ ...prev, [sIdx]: next }));
+      dragState.current.active = false;
+    }
+  }, [sections, cardsPerView]);
+
+  const handleDragEnd = useCallback(() => {
+    dragState.current = null;
+  }, []);
 
   // Responsive
   useEffect(() => {
@@ -215,7 +243,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                     /* ── Mobile: native horizontal scroll ── */
                     <div
                       ref={(el) => { scrollRefs.current[sIdx] = el; }}
-                      className="flex overflow-x-auto snap-x snap-mandatory pl-5 [&::-webkit-scrollbar]:hidden"
+                      className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory pl-5 [&::-webkit-scrollbar]:hidden touch-pan-x"
                       style={{ scrollbarWidth: "none", scrollPaddingLeft: 20 }}
                     >
                       {section.cards.map((card) =>
@@ -253,7 +281,13 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                     </div>
                   ) : (
                     /* ── Desktop/tablet: grid carousel ── */
-                    <div className="relative overflow-hidden md:-mr-8 xl:-mr-14 md:pr-8 xl:pr-14">
+                    <div
+                      className="relative overflow-hidden md:-mr-8 xl:-mr-14 md:pr-8 xl:pr-14 cursor-grab active:cursor-grabbing select-none"
+                      onPointerDown={(e) => handleDragStart(e, sIdx)}
+                      onPointerMove={handleDragMove}
+                      onPointerUp={handleDragEnd}
+                      onPointerCancel={handleDragEnd}
+                    >
                       {/* Left fade — visible when scrolled */}
                       <div
                         className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 transition-opacity duration-300"
@@ -312,7 +346,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
 
                   {/* ── Partner block (yellow, below carousel) ── */}
                   {section.partnerBlock && (
-                    <div className="bg-[#FFCC00] p-5 md:p-8 mt-[-1px]">
+                    <div className="bg-[#FFCC00] mx-5 md:mx-0 p-5 md:p-8">
                       <div className="flex flex-col gap-8 md:flex-row md:justify-between">
                         <div className="flex flex-col gap-4 md:max-w-[665px]">
                           <h3 className="font-heading text-[28px] md:text-[32px] font-bold uppercase leading-[1.12] tracking-[-0.01em] text-[#0A0A0A]">
@@ -322,7 +356,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                             {section.partnerBlock.description}
                           </p>
                         </div>
-                        <div className="relative w-[284px] h-[60px] md:h-[140px] shrink-0 self-end md:self-auto">
+                        <div className="flex items-center justify-start gap-6 md:relative md:w-[284px] md:h-[140px] md:shrink-0">
                           {section.partnerBlock.logos.map((logo, i) => (
                             <Image
                               key={i}
@@ -331,8 +365,8 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                               width={logo.width ?? 180}
                               height={logo.height ?? 46}
                               className={i === 0
-                                ? "absolute bottom-0 left-4 h-[27px] md:h-[46px] w-auto object-contain"
-                                : "absolute top-0 left-0 h-[39px] md:h-[60px] w-auto object-contain"
+                                ? "h-[27px] md:h-[46px] w-auto object-contain md:absolute md:bottom-0 md:left-4"
+                                : "h-[39px] md:h-[60px] w-auto object-contain md:absolute md:top-0 md:left-0"
                               }
                               unoptimized
                             />
@@ -348,6 +382,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
           </div>
 
         </div>
+
       </div>
     </section>
   );
