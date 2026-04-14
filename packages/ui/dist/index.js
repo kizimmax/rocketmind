@@ -2074,7 +2074,7 @@ function ProductImageCard({
     const inner2 = /* @__PURE__ */ jsxs12(Fragment3, { children: [
       /* @__PURE__ */ jsx29("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx29(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 1, variant: "yellow" }) }),
       /* @__PURE__ */ jsx29("div", { className: "absolute top-[2px] right-[2px] z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#404040] transition-all duration-200 group-hover:text-[#F0F0F0] group-hover:-top-[2px] group-hover:-right-[2px]", children: /* @__PURE__ */ jsx29("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx29("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) }) }),
-      /* @__PURE__ */ jsxs12("div", { className: "relative md:flex-1 h-[220px] md:h-[360px] overflow-hidden shrink-0", children: [
+      /* @__PURE__ */ jsxs12("div", { className: "relative md:w-1/2 h-[220px] md:h-[360px] overflow-hidden shrink-0", children: [
         image ? /* @__PURE__ */ jsx29("img", { src: image, alt: "", className: "w-full h-full object-cover" }) : /* @__PURE__ */ jsx29(ImagePlaceholder, {}),
         tag && /* @__PURE__ */ jsx29("span", { className: cn(tagCn, "hidden md:inline-flex absolute left-0 top-0 z-10"), children: tag })
       ] }),

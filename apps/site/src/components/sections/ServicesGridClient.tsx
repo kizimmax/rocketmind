@@ -248,7 +248,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                     /* ── Mobile: native horizontal scroll ── */
                     <div
                       ref={(el) => { scrollRefs.current[sIdx] = el; }}
-                      className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory pl-5 [&::-webkit-scrollbar]:hidden touch-pan-x"
+                      className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory pl-5 [&::-webkit-scrollbar]:hidden"
                       style={{ scrollbarWidth: "none", scrollPaddingLeft: 20 }}
                     >
                       {section.cards.map((card) =>

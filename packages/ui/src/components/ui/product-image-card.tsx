@@ -86,7 +86,7 @@ export function ProductImageCard({
         </div>
 
         {/* ── Image ── */}
-        <div className="relative md:flex-1 h-[220px] md:h-[360px] overflow-hidden shrink-0">
+        <div className="relative md:w-1/2 h-[220px] md:h-[360px] overflow-hidden shrink-0">
           {image ? (
             <img src={image} alt="" className="w-full h-full object-cover" />
           ) : (
