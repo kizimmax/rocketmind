@@ -178,8 +178,9 @@ function ProductsCatalogInner({ sections }: Props) {
                   Продукты
                 </h1>
                 {searchOpen ? (
-                  <div className="relative flex-1 min-w-0 max-w-[180px]">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-2 top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                  <div className="relative flex-1 min-w-0 max-w-[180px] h-8 overflow-hidden">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[5px] top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                    {/* 16px font-size prevents iOS zoom; scale(0.75) renders at ~12px visually */}
                     <input
                       autoFocus
                       type="text"
@@ -187,7 +188,7 @@ function ProductsCatalogInner({ sections }: Props) {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
-                      className="w-full h-8 pl-8 pr-2 bg-[#1A1A1A] border border-border rounded-[4px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
+                      className="h-[42px] w-[133%] origin-top-left scale-75 pl-7 pr-2 bg-[#1A1A1A] border border-border rounded-[5px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
                     />
                   </div>
                 ) : (
@@ -307,8 +308,23 @@ function ProductsCatalogInner({ sections }: Props) {
             className="flex flex-col gap-[72px] md:gap-[112px] mt-10 md:mt-[40px] pb-[72px] md:pb-[112px] animate-[slideUp_0.4s_ease-out]"
           >
             {filteredSections.length === 0 && (
-              <div className="py-20 text-center text-muted-foreground text-[16px]">
-                Ничего не найдено
+              <div className="flex flex-col items-center justify-center py-16 md:py-24 lg:py-32 gap-4">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M8 11h6" />
+                </svg>
+                <p className="text-[16px] md:text-[18px] text-muted-foreground text-center">
+                  {searchQuery
+                    ? <>По запросу <span className="text-foreground">&laquo;{searchQuery}&raquo;</span> ничего не найдено</>
+                    : "Нет продуктов в этой категории"}
+                </p>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="mt-2 inline-flex items-center gap-2 h-10 px-4 border border-border rounded-[4px] bg-background text-foreground font-mono text-[14px] uppercase tracking-[0.02em] transition-colors hover:bg-[#1A1A1A] cursor-pointer"
+                  >
+                    Сбросить поиск
+                  </button>
+                )}
               </div>
             )}
 
