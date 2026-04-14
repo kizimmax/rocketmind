@@ -169,140 +169,129 @@ function ProductsCatalogInner({ sections }: Props) {
           <div className="absolute inset-0 bg-background/50" />
         </div>
         <div className="relative z-10">
-          <div className="mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14 pt-[136px] lg:pt-[144px] pb-8 md:pb-10 lg:pb-12">
-            <div className="flex flex-col gap-9 lg:gap-10 mt-0 lg:mt-10">
-
-              {/* ── Hero: title + description ── */}
-              <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-0">
-                <div className="lg:pr-10">
-                  <h1 className="font-heading text-[28px] md:text-[56px] lg:text-[80px] font-bold lg:font-extrabold uppercase leading-[1.16] lg:leading-[1.08] tracking-[-0.01em] lg:tracking-[-0.02em]">
-                    Продукты
-                  </h1>
-                </div>
-                <div className="flex items-center">
-                  <p className="text-[16px] md:text-[18px] leading-[1.2] text-foreground lg:pt-2">
-                    Единый маркетплейс решений для трансформации вашего бизнеса.
-                    {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
-                    {" "}и цифровых продуктов.
-                  </p>
-                </div>
+          {/* Mobile hero (< lg) */}
+          <div className="lg:hidden px-5 pt-[102px] pb-6">
+            <div className="flex flex-col gap-6">
+              {/* Row: title + search chip */}
+              <div className="flex items-end justify-between gap-4">
+                <h1 className="font-heading text-[28px] font-bold uppercase leading-[1.16] tracking-[-0.01em]">
+                  Продукты
+                </h1>
+                {searchOpen ? (
+                  <div className="relative flex-1 min-w-0 max-w-[180px]">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-2 top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                    <input
+                      autoFocus
+                      type="text"
+                      placeholder="Найти"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
+                      className="w-full h-8 pl-8 pr-2 bg-[#1A1A1A] border border-border rounded-[4px] font-mono text-[12px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
+                    />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="inline-flex items-center gap-2 h-8 px-2 border border-border rounded-[4px] bg-[#1A1A1A] text-muted-foreground font-mono text-[12px] uppercase tracking-[0.02em] cursor-pointer shrink-0"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                    <span>Найти продукт</span>
+                  </button>
+                )}
               </div>
 
-              {/* ── Filters + Search ── */}
-              {/* Mobile: row1=[Все продукты | Найти продукт], row2=[other chips wrap] */}
-              {/* Desktop: left=search input, right=all chips */}
+              {/* Description */}
+              <p className="text-[16px] md:text-[18px] leading-[1.2] text-foreground">
+                Единый маркетплейс решений для трансформации вашего бизнеса.
+                {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
+                {" "}и цифровых продуктов.
+              </p>
+            </div>
+          </div>
 
-              {/* Mobile layout */}
-              <div className="flex flex-col gap-1 lg:hidden">
-                {/* Row 1: "Все продукты" + search */}
-                <div className="flex gap-1">
+          {/* Mobile filter chips — horizontal scroll, bleeds edge-to-edge */}
+          <div className="lg:hidden overflow-x-auto px-5 pb-6 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+            <div className="flex gap-1 w-max">
+              {FILTERS.map((f) => {
+                const isActive = f.key === activeFilter;
+                return (
                   <button
-                    onClick={() => handleFilter("all")}
+                    key={f.key}
+                    onClick={() => handleFilter(f.key)}
                     className={[
-                      "inline-flex items-center gap-2 h-10 px-3 border rounded-[4px] shrink-0",
+                      "inline-flex items-center gap-1 h-10 px-2 border rounded-[4px] shrink-0",
                       "font-mono text-[12px] uppercase tracking-[0.02em] transition-colors cursor-pointer whitespace-nowrap",
-                      activeFilter === "all"
+                      isActive
                         ? "bg-[#1A1A1A] text-[var(--rm-yellow-100)] border-border"
                         : "bg-background text-muted-foreground border-border",
                     ].join(" ")}
                   >
-                    <GridIcon />
-                    <span>Все продукты</span>
-                    <span className="text-[11px] text-muted-foreground/60">{counts.all}</span>
+                    {f.icon}
+                    <span>{f.label}</span>
+                    <span className="text-[11px] text-muted-foreground/60">{counts[f.key]}</span>
                   </button>
-                  {searchOpen ? (
-                    <div className="relative flex-1 min-w-0">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none">
-                        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-                      </svg>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop hero (>= lg) */}
+          <div className="hidden lg:block">
+            <div className="mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14 pt-[144px] pb-12">
+              <div className="flex flex-col gap-10 mt-10">
+                {/* Title + description */}
+                <div className="grid grid-cols-2">
+                  <div className="pr-10">
+                    <h1 className="font-heading text-[80px] font-extrabold uppercase leading-[1.08] tracking-[-0.02em]">
+                      продукты
+                    </h1>
+                  </div>
+                  <div className="flex items-center">
+                    <p className="text-[18px] leading-[1.2] text-foreground pt-2">
+                      Единый маркетплейс решений для трансформации вашего бизнеса.
+                      {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
+                      {" "}и цифровых продуктов.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Search + filters */}
+                <div className="grid grid-cols-2">
+                  <div className="pr-10">
+                    <div className="relative max-w-[380px]">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                       <input
-                        autoFocus
                         type="text"
                         placeholder="Найти продукт"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
-                        className="w-full h-10 pl-9 pr-3 bg-background border border-border rounded-[4px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
+                        className="relative w-full h-[48px] pl-10 pr-4 bg-background/60 backdrop-blur-sm border border-border rounded-[4px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
                       />
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => setSearchOpen(true)}
-                      className="inline-flex items-center gap-2 h-10 px-3 border border-border rounded-[4px] bg-background text-muted-foreground font-mono text-[12px] uppercase tracking-[0.02em] cursor-pointer flex-1 min-w-0"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-                      </svg>
-                      <span>Найти продукт</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Row 2: other filter chips */}
-                <div className="flex flex-wrap gap-1">
-                  {FILTERS.filter((f) => f.key !== "all").map((f) => {
-                    const isActive = f.key === activeFilter;
-                    return (
-                      <button
-                        key={f.key}
-                        onClick={() => handleFilter(f.key)}
-                        className={[
-                          "inline-flex items-center gap-2 h-10 px-3 border rounded-[4px]",
-                          "font-mono text-[12px] uppercase tracking-[0.02em] transition-colors cursor-pointer whitespace-nowrap",
-                          isActive
-                            ? "bg-[#1A1A1A] text-[var(--rm-yellow-100)] border-border"
-                            : "bg-background text-muted-foreground border-border",
-                        ].join(" ")}
-                      >
-                        {f.icon}
-                        <span>{f.label}</span>
-                        <span className="text-[11px] text-muted-foreground/60">{counts[f.key]}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Desktop layout */}
-              <div className="hidden lg:grid lg:grid-cols-2 lg:gap-0">
-                <div className="lg:pr-10">
-                  <div className="relative lg:max-w-[380px]">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none">
-                      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-                    </svg>
-                    <input
-                      type="text"
-                      placeholder="Найти продукт"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="relative w-full h-[48px] pl-10 pr-4 bg-background/60 backdrop-blur-sm border border-border rounded-[4px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring transition-colors"
-                    />
                   </div>
-                </div>
-
-                <div className="flex flex-wrap gap-1">
-                  {FILTERS.map((f) => {
-                    const isActive = f.key === activeFilter;
-                    return (
-                      <button
-                        key={f.key}
-                        onClick={() => handleFilter(f.key)}
-                        className={[
-                          "inline-flex items-center gap-2 h-[48px] px-3.5 border rounded-[4px]",
-                          "font-mono text-[16px] uppercase tracking-[0.02em] transition-colors cursor-pointer whitespace-nowrap",
-                          isActive
-                            ? "bg-[#1A1A1A]/80 backdrop-blur-sm text-[var(--rm-yellow-100)] border-border"
-                            : "bg-background/60 backdrop-blur-sm text-muted-foreground border-border hover:text-foreground hover:border-foreground/40",
-                        ].join(" ")}
-                      >
-                        {f.icon}
-                        <span>{f.label}</span>
-                        <span className="text-[14px] ml-0.5 text-muted-foreground/60">
-                          {counts[f.key]}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  <div className="flex flex-wrap gap-1">
+                    {FILTERS.map((f) => {
+                      const isActive = f.key === activeFilter;
+                      return (
+                        <button
+                          key={f.key}
+                          onClick={() => handleFilter(f.key)}
+                          className={[
+                            "inline-flex items-center gap-2 h-[48px] px-3.5 border rounded-[4px]",
+                            "font-mono text-[16px] uppercase tracking-[0.02em] transition-colors cursor-pointer whitespace-nowrap",
+                            isActive
+                              ? "bg-[#1A1A1A]/80 backdrop-blur-sm text-[var(--rm-yellow-100)] border-border"
+                              : "bg-background/60 backdrop-blur-sm text-muted-foreground border-border hover:text-foreground hover:border-foreground/40",
+                          ].join(" ")}
+                        >
+                          {f.icon}
+                          <span>{f.label}</span>
+                          <span className="text-[14px] ml-0.5 text-muted-foreground/60">{counts[f.key]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
