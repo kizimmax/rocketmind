@@ -5,14 +5,23 @@ import { cn } from "../../lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+export interface ProductCardExpert {
+  name: string;
+  image: string;
+}
+
 export interface ProductCardProps {
-  /** Product title (H4, uppercase) */
+  /** Product title (uppercase, max 2 lines) */
   title: string;
-  /** Short description */
+  /** Short description (max 3 lines, ellipsis on overflow) */
   description: string;
-  /** Cover image element (Next.js Image or plain img) */
-  image?: React.ReactNode;
-  /** Link href for the card */
+  /** 120×120 icon element (consulting section only) */
+  icon?: React.ReactNode;
+  /** Expert avatars — first 2 shown, rest collapsed into "+N" */
+  experts?: ProductCardExpert[];
+  /** Yellow badge label (e.g. "Экспертный продукт") */
+  tag?: string;
+  /** Makes the entire card a link */
   href?: string;
   className?: string;
 }
@@ -22,31 +31,102 @@ export interface ProductCardProps {
 export function ProductCard({
   title,
   description,
-  image,
+  icon,
+  experts,
+  tag,
   href,
   className,
 }: ProductCardProps) {
+  const hasExperts = experts && experts.length > 0;
+  const shown = hasExperts ? experts.slice(0, 2) : [];
+  const extra = hasExperts ? Math.max(0, experts.length - 2) : 0;
+
+  const rootCn = cn(
+    "group relative flex flex-col p-5 md:p-8",
+    "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
+    "border border-[#404040]",
+    className,
+  );
+
   const content = (
-    <div className={cn(
-      "flex flex-col gap-8 border border-[#404040] p-5 md:p-8",
-      "transition-colors hover:border-[#606060]",
-      className,
-    )}>
-      {image && (
-        <div className="shrink-0">{image}</div>
-      )}
-      <div className="flex flex-col gap-2">
-        <h3 className="h4 text-[#F0F0F0]">{title}</h3>
-        <p className="text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]">
-          {description}
-        </p>
+    <>
+      {/* Arrow — top-right, appears on hover */}
+      <div className="absolute top-1 right-1 z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#F0F0F0] opacity-0 group-hover:opacity-100 transition-opacity">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <path
+            d="M1 10L10 1M10 1H3M10 1V8"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </div>
-    </div>
+
+      <div className={cn("flex flex-col", icon ? "gap-6 md:gap-8" : "")}>
+        {/* ── Icon + Experts + Tag ── */}
+        {icon && (
+          <div className="flex flex-col">
+            <div className="flex items-center">
+              <div className="w-[120px] h-[120px] shrink-0">{icon}</div>
+              {hasExperts && (
+                <div className="flex items-center -ml-[18px] pb-10 pt-2 justify-end">
+                  {shown.map((e, i) => (
+                    <div
+                      key={e.name}
+                      className={cn(
+                        "w-[72px] h-[72px] rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center shrink-0",
+                        i > 0 && "-ml-4",
+                      )}
+                      style={{ backgroundImage: `url(${e.image})` }}
+                    />
+                  ))}
+                  {extra > 0 && (
+                    <div className="w-[72px] h-[72px] rounded-full bg-[#1A1A1A] flex items-center justify-center shrink-0 -ml-4">
+                      <span className="font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
+                        +{extra}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {tag && (
+              <div className="-mt-[22px]">
+                <span className="inline-flex items-center px-2.5 py-1 bg-[#3D3300] border border-[#4A3C00] font-['Loos_Condensed',sans-serif] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466]">
+                  {tag}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Tag without icon ── */}
+        {tag && !icon && (
+          <span className="inline-flex self-start items-center px-2.5 py-1 mb-4 md:mb-5 bg-[#3D3300] border border-[#4A3C00] font-['Loos_Condensed',sans-serif] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466]">
+            {tag}
+          </span>
+        )}
+
+        {/* ── Text ── */}
+        <div className="flex flex-col gap-4 md:gap-5">
+          <h3 className="font-heading font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] line-clamp-2 min-h-[2.4em] text-[20px] md:text-[clamp(16px,1.6vw,24px)]">
+            {title}
+          </h3>
+          <p className="text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393] h-[54px] overflow-hidden line-clamp-3">
+            {description}
+          </p>
+        </div>
+      </div>
+    </>
   );
 
   if (href) {
-    return <a href={href} className="block">{content}</a>;
+    return (
+      <a href={href} className={rootCn}>
+        {content}
+      </a>
+    );
   }
-
-  return content;
+  return <div className={rootCn}>{content}</div>;
 }

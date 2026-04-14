@@ -4,16 +4,21 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
+import { ProductCard } from "@rocketmind/ui";
 
 export type ServiceCard = {
   title: string;
   description: string;
-  /** Link for "Подробнее" button */
+  /** Link for card */
   href?: string;
-  /** Info bubble: no "Подробнее" button, purple bg, dark text, partner logos at bottom */
+  /** Info bubble: purple bg, dark text, partner logos at bottom */
   variant?: "info";
   /** Partner logos for info cards */
   partnerLogos?: Array<{ src: string; width?: number; height?: number }>;
+  /** Cover image URL for 120×120 icon display */
+  coverImage?: string;
+  /** Expert avatars */
+  experts?: Array<{ name: string; image: string }>;
 };
 
 export type ServiceSection = {
@@ -26,6 +31,8 @@ export type ServiceSection = {
   catalogHref?: string;
   /** Label for mobile "Все" button (e.g. "Все продукты", "Все курсы") */
   catalogLabel?: string;
+  /** Show 120×120 icon in cards (consulting section only) */
+  showIcons?: boolean;
   cards: ServiceCard[];
 };
 
@@ -203,7 +210,21 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                         card.variant === "info" ? (
                           <MobileInfoCard key={card.title} card={card} />
                         ) : (
-                          <MobileCard key={card.title} card={card} />
+                          <div key={card.title} className="flex-none w-[335px] snap-start -ml-px first:ml-0">
+                            <ProductCard
+                              title={card.title}
+                              description={card.description}
+                              href={card.href}
+                              icon={
+                                section.showIcons && card.coverImage
+                                  ? <img src={card.coverImage} alt="" className="w-full h-full object-contain" />
+                                  : undefined
+                              }
+                              experts={section.showIcons ? card.experts : undefined}
+                              tag={section.showIcons && card.experts?.length ? "Экспертный продукт" : undefined}
+                              className="h-full"
+                            />
+                          </div>
                         )
                       )}
                       {/* Right spacer so last card doesn't stick to edge */}
@@ -250,27 +271,20 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                               </div>
                             </article>
                           ) : (
-                            <article
+                            <ProductCard
                               key={card.title}
-                              className="flex flex-col border border-border [&:not(:first-child)]:border-l-0 p-8 bg-background"
-                            >
-                              <div className="flex flex-col gap-6 flex-1">
-                                <div className="flex flex-col gap-2">
-                                  <h3 className="font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground">
-                                    {card.title}
-                                  </h3>
-                                  <p className="text-[14px] leading-[1.32] tracking-[0.01em] text-muted-foreground">
-                                    {card.description}
-                                  </p>
-                                </div>
-                                <Link
-                                  href={card.href ?? "#contact"}
-                                  className="mt-auto flex items-center justify-center border border-border bg-[#1a1a1a] px-5 py-[14px] font-['Loos_Condensed',sans-serif] text-[14px] font-medium uppercase tracking-[0.56px] text-foreground transition-colors hover:bg-[#242424] rounded-[4px]"
-                                >
-                                  Подробнее
-                                </Link>
-                              </div>
-                            </article>
+                              title={card.title}
+                              description={card.description}
+                              href={card.href}
+                              icon={
+                                section.showIcons && card.coverImage
+                                  ? <img src={card.coverImage} alt="" className="w-full h-full object-contain" />
+                                  : undefined
+                              }
+                              experts={section.showIcons ? card.experts : undefined}
+                              tag={section.showIcons && card.experts?.length ? "Экспертный продукт" : undefined}
+                              className="[&:not(:first-child)]:border-l-0 h-full"
+                            />
                           )
                         )}
                       </div>
@@ -286,34 +300,6 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
         </div>
       </div>
     </section>
-  );
-}
-
-/* ── Mobile card: 335px fixed, Figma specs ── */
-function MobileCard({ card }: { card: ServiceCard }) {
-  return (
-    <article
-      className="flex-none w-[335px] snap-start border border-border -ml-px first:ml-0 p-5 bg-background"
-    >
-      <div className="flex flex-col gap-8">
-        {/* Text area — fixed 140px */}
-        <div className="flex flex-col gap-2 h-[140px]">
-          <h3 className="font-heading text-[20px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-foreground">
-            {card.title}
-          </h3>
-          <p className="text-[14px] leading-[1.32] tracking-[0.01em] text-muted-foreground">
-            {card.description}
-          </p>
-        </div>
-        {/* Button — full width */}
-        <Link
-          href={card.href ?? "#contact"}
-          className="flex items-center justify-center bg-[#121212] border border-border px-4 py-[14px] font-['Loos_Condensed',sans-serif] text-[14px] font-medium uppercase tracking-[0.04em] leading-[1.2] text-foreground transition-colors hover:bg-[#1a1a1a] rounded-[4px]"
-        >
-          Подробнее
-        </Link>
-      </div>
-    </article>
   );
 }
 

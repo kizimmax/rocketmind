@@ -1960,29 +1960,71 @@ function TooltipContent({
 }
 
 // src/components/ui/product-card.tsx
-import { jsx as jsx28, jsxs as jsxs11 } from "react/jsx-runtime";
+import { Fragment as Fragment2, jsx as jsx28, jsxs as jsxs11 } from "react/jsx-runtime";
 function ProductCard({
   title,
   description,
-  image,
+  icon,
+  experts,
+  tag,
   href,
   className
 }) {
-  const content = /* @__PURE__ */ jsxs11("div", { className: cn(
-    "flex flex-col gap-8 border border-[#404040] p-5 md:p-8",
-    "transition-colors hover:border-[#606060]",
+  const hasExperts = experts && experts.length > 0;
+  const shown = hasExperts ? experts.slice(0, 2) : [];
+  const extra = hasExperts ? Math.max(0, experts.length - 2) : 0;
+  const rootCn = cn(
+    "group relative flex flex-col p-5 md:p-8",
+    "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
+    "border border-[#404040]",
     className
-  ), children: [
-    image && /* @__PURE__ */ jsx28("div", { className: "shrink-0", children: image }),
-    /* @__PURE__ */ jsxs11("div", { className: "flex flex-col gap-2", children: [
-      /* @__PURE__ */ jsx28("h3", { className: "h4 text-[#F0F0F0]", children: title }),
-      /* @__PURE__ */ jsx28("p", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: description })
+  );
+  const content = /* @__PURE__ */ jsxs11(Fragment2, { children: [
+    /* @__PURE__ */ jsx28("div", { className: "absolute top-1 right-1 z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#F0F0F0] opacity-0 group-hover:opacity-100 transition-opacity", children: /* @__PURE__ */ jsx28("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx28(
+      "path",
+      {
+        d: "M1 10L10 1M10 1H3M10 1V8",
+        stroke: "currentColor",
+        strokeWidth: "2",
+        strokeLinecap: "round",
+        strokeLinejoin: "round"
+      }
+    ) }) }),
+    /* @__PURE__ */ jsxs11("div", { className: cn("flex flex-col", icon ? "gap-6 md:gap-8" : ""), children: [
+      icon && /* @__PURE__ */ jsxs11("div", { className: "flex flex-col", children: [
+        /* @__PURE__ */ jsxs11("div", { className: "flex items-center", children: [
+          /* @__PURE__ */ jsx28("div", { className: "w-[120px] h-[120px] shrink-0", children: icon }),
+          hasExperts && /* @__PURE__ */ jsxs11("div", { className: "flex items-center -ml-[18px] pb-10 pt-2 justify-end", children: [
+            shown.map((e, i) => /* @__PURE__ */ jsx28(
+              "div",
+              {
+                className: cn(
+                  "w-[72px] h-[72px] rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center shrink-0",
+                  i > 0 && "-ml-4"
+                ),
+                style: { backgroundImage: `url(${e.image})` }
+              },
+              e.name
+            )),
+            extra > 0 && /* @__PURE__ */ jsx28("div", { className: "w-[72px] h-[72px] rounded-full bg-[#1A1A1A] flex items-center justify-center shrink-0 -ml-4", children: /* @__PURE__ */ jsxs11("span", { className: "font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: [
+              "+",
+              extra
+            ] }) })
+          ] })
+        ] }),
+        tag && /* @__PURE__ */ jsx28("div", { className: "-mt-[22px]", children: /* @__PURE__ */ jsx28("span", { className: "inline-flex items-center px-2.5 py-1 bg-[#3D3300] border border-[#4A3C00] font-['Loos_Condensed',sans-serif] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466]", children: tag }) })
+      ] }),
+      tag && !icon && /* @__PURE__ */ jsx28("span", { className: "inline-flex self-start items-center px-2.5 py-1 mb-4 md:mb-5 bg-[#3D3300] border border-[#4A3C00] font-['Loos_Condensed',sans-serif] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466]", children: tag }),
+      /* @__PURE__ */ jsxs11("div", { className: "flex flex-col gap-4 md:gap-5", children: [
+        /* @__PURE__ */ jsx28("h3", { className: "font-heading font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] line-clamp-2 min-h-[2.4em] text-[20px] md:text-[clamp(16px,1.6vw,24px)]", children: title }),
+        /* @__PURE__ */ jsx28("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393] h-[54px] overflow-hidden line-clamp-3", children: description })
+      ] })
     ] })
   ] });
   if (href) {
-    return /* @__PURE__ */ jsx28("a", { href, className: "block", children: content });
+    return /* @__PURE__ */ jsx28("a", { href, className: rootCn, children: content });
   }
-  return content;
+  return /* @__PURE__ */ jsx28("div", { className: rootCn, children: content });
 }
 
 // src/components/ui/for-whom-section.tsx
@@ -3025,7 +3067,7 @@ var LEGAL_LINKS = [
 ];
 
 // src/components/ui/mobile-nav.tsx
-import { Fragment as Fragment2, jsx as jsx38, jsxs as jsxs21 } from "react/jsx-runtime";
+import { Fragment as Fragment3, jsx as jsx38, jsxs as jsxs21 } from "react/jsx-runtime";
 function BurgerIcon({
   open,
   barClass = "bg-foreground"
@@ -3130,7 +3172,7 @@ function MobileNav({ className }) {
                         ease: [0.23, 1, 0.32, 1]
                       },
                       className: "border-b border-black/10",
-                      children: hasDropdown ? /* @__PURE__ */ jsxs21(Fragment2, { children: [
+                      children: hasDropdown ? /* @__PURE__ */ jsxs21(Fragment3, { children: [
                         /* @__PURE__ */ jsxs21(
                           "button",
                           {

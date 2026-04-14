@@ -3,7 +3,7 @@
 import React from "react"
 import {
   Avatar, AvatarFallback, AvatarImage,
-  Badge, GlowingEffect, ScrollArea, Separator, Skeleton, Slider,
+  Badge, GlowingEffect, ProductCard, ScrollArea, Separator, Skeleton, Slider,
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from "@rocketmind/ui"
 import { Section, SubSection } from "@/components/ds/shared"
@@ -803,8 +803,71 @@ export default function ComponentsPage() {
                 ))}
               </div>
 
-              {/* ════════ 3. ИИ-АГЕНТ ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">3. ИИ-Агент</h3>
+              {/* ════════ 3. С ИКОНКОЙ ════════ */}
+              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">3. С иконкой</h3>
+              <p className="text-muted-foreground text-[length:var(--text-14)] mb-4">
+                Карточки для раздела «Консалтинг и стратегия». Иконка 120×120, опциональные аватарки экспертов и жёлтый бейдж.
+                Заголовок — макс. 2 строки, описание — 3 строки с многоточием.
+              </p>
+              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>С экспертами</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <ProductCard
+                  title="Экосистемная стратегия"
+                  description="Создадим стратегию и портфель бизнес-моделей, которые расширят влияние и сделают бизнес более устойчивым"
+                  icon={<div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#3D3300]/40 to-[#1A1A1A] flex items-center justify-center"><Rocket size={48} className="text-[var(--rm-yellow-100)]" /></div>}
+                  experts={[
+                    { name: "Алексей Е.", image: "" },
+                    { name: "Ирина Г.", image: "" },
+                    { name: "Сергей К.", image: "" },
+                    { name: "Мария Л.", image: "" },
+                    { name: "Дмитрий Р.", image: "" },
+                  ]}
+                  tag="Экспертный продукт"
+                  href="#"
+                />
+                <ProductCard
+                  title="Умная аналитика"
+                  description="Аналитика для развития бизнеса на основе данных и выявления зон роста"
+                  icon={<div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#3D3300]/40 to-[#1A1A1A] flex items-center justify-center"><Gem size={48} className="text-[var(--rm-yellow-100)]" /></div>}
+                  experts={[
+                    { name: "Иван П.", image: "" },
+                  ]}
+                  tag="Экспертный продукт"
+                  href="#"
+                />
+              </div>
+              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>Без экспертов</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <ProductCard
+                  title="Цифровая платформа"
+                  description="Внедрение цифровой платформы в ваш бизнес для масштабирования и оптимизации"
+                  icon={<div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#3D3300]/40 to-[#1A1A1A] flex items-center justify-center"><Wrench size={48} className="text-[var(--rm-yellow-100)]" /></div>}
+                  href="#"
+                />
+                <ProductCard
+                  title="Дизайн-спринты"
+                  description="Организация дизайн-спринтов для быстрого тестирования идей и проверки гипотез"
+                  icon={<div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#3D3300]/40 to-[#1A1A1A] flex items-center justify-center"><BookOpen size={48} className="text-[var(--rm-yellow-100)]" /></div>}
+                  href="#"
+                />
+              </div>
+              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>Без иконки (академия, AI)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+                <ProductCard
+                  title="Бизнес-дизайн для команд"
+                  description="Практикум по бизнес-дизайну для команд, помогающий системно подойти к развитию продукта"
+                  href="#"
+                />
+                <ProductCard
+                  title="Тестирование гипотез"
+                  description="ИИ-агент по тестированию бизнес-гипотез с автоматическим анализом данных"
+                  tag="Экспертный продукт"
+                  href="#"
+                />
+              </div>
+
+              {/* ════════ 4. ИИ-АГЕНТ ════════ */}
+              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">4. ИИ-Агент</h3>
               <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 {[1,2,3].map(i => (

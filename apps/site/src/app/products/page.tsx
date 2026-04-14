@@ -17,7 +17,7 @@ export type CatalogCard = {
   cardTitle: string;
   cardDescription: string;
   coverImage: string;
-  hasExperts: boolean;
+  experts: Array<{ name: string; image: string }>;
 };
 
 /** Section descriptor for each category block. */
@@ -65,8 +65,11 @@ export default function ProductsPage() {
         href: buildHref(p.category, p.slug),
         cardTitle: p.cardTitle,
         cardDescription: p.cardDescription,
-        coverImage: p.coverImage,
-        hasExperts: Array.isArray(p.experts) && p.experts.length > 0,
+        coverImage: p.heroImage ?? "",
+        experts:
+          p.experts
+            ?.filter((e) => e.image)
+            .map((e) => ({ name: e.name, image: e.image! })) ?? [],
       }));
 
     return {

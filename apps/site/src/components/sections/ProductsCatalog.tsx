@@ -2,8 +2,6 @@
 
 import { Suspense, useState, useMemo, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
 import { ProductCard } from "@rocketmind/ui";
 import { ShaderBackground } from "@/components/ui/ShaderBackground";
 import type { CatalogSection, CatalogCard } from "@/app/products/page";

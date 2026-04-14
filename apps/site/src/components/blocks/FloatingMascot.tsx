@@ -22,6 +22,7 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
   const [isTyping, setIsTyping] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [greetingDone, setGreetingDone] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const indexRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
@@ -32,6 +33,7 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
     setDisplayedText("");
     setIsTyping(false);
     setGreetingDone(false);
+    setDismissed(false);
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
@@ -72,9 +74,10 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
   const handleDismiss = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setBubbleVisible(false);
+    setDismissed(true);
   }, []);
 
-  const showBubble = bubbleVisible || isHovered;
+  const showBubble = !dismissed && (bubbleVisible || isHovered);
 
   // Figma layout: 311×102
   // Mascot: 56×56 at (255, 46) — bottom-right
@@ -91,7 +94,7 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
         pointerEvents: hidden ? "none" : "auto",
       }}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={() => { setIsHovered(false); setDismissed(false); }}
     >
       {/* Chat bubble — 265×56, top-left of frame, border-radius 4px */}
       <div
@@ -101,18 +104,12 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
           opacity: showBubble ? 1 : 0,
           pointerEvents: showBubble ? "auto" : "none",
         }}
-        onClick={(e) => {
-          e.stopPropagation();
-          setBubbleVisible(false);
-        }}
+        onClick={handleDismiss}
       >
         <button
           type="button"
           className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground/40 transition-colors hover:text-muted-foreground"
-          onClick={(e) => {
-            e.stopPropagation();
-            setBubbleVisible(false);
-          }}
+          onClick={handleDismiss}
         >
           <X className="h-3 w-3" />
         </button>
