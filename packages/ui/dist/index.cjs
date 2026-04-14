@@ -3662,7 +3662,7 @@ function SiteFooter({ basePath = "", className, children }) {
         " Rocketmind"
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "relative h-[320px] md:h-[460px]", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("div", { className: "relative h-[440px] md:h-[460px]", children: [
       /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(DottedSurface, {}),
       children && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
     ] })

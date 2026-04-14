@@ -101,12 +101,18 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
           opacity: showBubble ? 1 : 0,
           pointerEvents: showBubble ? "auto" : "none",
         }}
-        onClick={handleClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          setBubbleVisible(false);
+        }}
       >
         <button
           type="button"
           className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground/40 transition-colors hover:text-muted-foreground"
-          onClick={handleDismiss}
+          onClick={(e) => {
+            e.stopPropagation();
+            setBubbleVisible(false);
+          }}
         >
           <X className="h-3 w-3" />
         </button>

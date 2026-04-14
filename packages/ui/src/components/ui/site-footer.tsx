@@ -114,7 +114,7 @@ export function SiteFooter({ basePath = "", className, children }: SiteFooterPro
       </div>
 
       {/* Dotted surface background + optional overlay content */}
-      <div className="relative h-[320px] md:h-[460px]">
+      <div className="relative h-[440px] md:h-[460px]">
         <DottedSurface />
         {children && (
           <div className="pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end">
