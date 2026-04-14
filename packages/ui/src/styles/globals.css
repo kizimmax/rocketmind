@@ -15,7 +15,7 @@
   font-family: 'Loos Condensed';
   src: url('/fonts/LoosCond-Medium.woff2') format('woff2'),
        url('/fonts/LoosCond-Medium.otf') format('opentype');
-  font-weight: 100 900;
+  font-weight: 400 500;
   font-style: normal;
   font-display: swap;
 }
