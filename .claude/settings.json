@@ -74,11 +74,23 @@
       "Bash(rmdir \"apps/site-admin/src/app/\\(admin\\)/pages/[pageId]\")",
       "Bash(sed -i '' 's|`/pages/${encodeURIComponent\\(page.id\\)}`|`/pages/${page.id}`|g' apps/site-admin/src/components/page-card.tsx)",
       "Bash(grep -n 'pages/${' apps/site-admin/src/components/page-card.tsx)",
-      "Bash(lsof -ti:3001,3002)"
+      "Bash(lsof -ti:3001,3002)",
+      "Bash(git checkout *)",
+      "Bash(NODE_OPTIONS='--max-old-space-size=4096' timeout 15 npx next dev --port 3001)",
+      "Bash(lsof -i:3001 -i:3004 -P -n)",
+      "Bash(pkill -f \"next dev.*3001\")",
+      "Bash(kill -9 52055 55268)",
+      "Bash(ps -p 52055 -o pid,command)",
+      "Bash(ps -p 55303 -o pid,command)",
+      "Bash(kill -9 52055)",
+      "Bash(kill -TERM 52055)",
+      "Bash(ps -p 52055 -o pid,state,tty,command)",
+      "Bash(ps -p 52055 -o pid,state)"
     ],
     "additionalDirectories": [
       "/private/tmp",
-      "/Users/Maxi/GitHub/Rocketmind/apps/site/.next/dev"
+      "/Users/Maxi/GitHub/Rocketmind/apps/site/.next/dev",
+      "/Users/Maxi/GitHub/Rocketmind/apps/site/.next"
     ]
   }
 }

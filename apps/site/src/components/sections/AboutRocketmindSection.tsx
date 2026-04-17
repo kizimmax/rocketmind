@@ -1,8 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { RichText } from "@rocketmind/ui";
-import { MascotCarousel } from "@/components/blocks/MascotCarousel";
+
+const MascotCarousel = dynamic(
+  () => import("@/components/blocks/MascotCarousel").then((m) => m.MascotCarousel),
+  { ssr: false, loading: () => null },
+);
 import {
   ABOUT_RM_DEFAULTS,
   type AboutRocketmindSectionProps,

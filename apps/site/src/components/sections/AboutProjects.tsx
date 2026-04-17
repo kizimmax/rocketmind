@@ -1,10 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { RichText } from "@rocketmind/ui";
 import { LogoGrid } from "@/components/ui/LogoGrid";
-import { RoundGlassLens } from "@/components/ui/round-glass-lens";
 import type { ProjectsBlockData } from "@/lib/unique";
+
+const RoundGlassLens = dynamic(
+  () => import("@/components/ui/round-glass-lens").then((m) => m.RoundGlassLens),
+  { ssr: false, loading: () => null },
+);
 
 // ── Accordion (mirrors AboutProduct accordion visual) ─────────────────────────
 
@@ -132,8 +137,8 @@ export function AboutProjects({
           <RoundGlassLens
             sceneRef={logoGridRef}
             size={280}
-            motionStrengthX={0.3}
-            motionStrengthY={0.3}
+            motionStrengthX={0.2}
+            motionStrengthY={0.2}
             motionParallax
             parallaxOnWindow
             refraction={0.056}

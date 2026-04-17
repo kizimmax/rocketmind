@@ -181,7 +181,7 @@
   /* === Font families === */
   --font-heading-family: 'Roboto Condensed', sans-serif;
   --font-mono-family: 'Loos Condensed', sans-serif;
-  --font-caption-family: 'Roboto Mono', monospace;
+  --font-caption-family: var(--font-roboto-mono, 'Roboto Mono', monospace);
   --font-body: 'Roboto', sans-serif;
   --font-accent-family: 'Shantell Sans', cursive;
 

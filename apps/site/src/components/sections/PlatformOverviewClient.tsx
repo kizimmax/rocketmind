@@ -1,8 +1,16 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { Canvas3DCarousel } from "@/components/blocks/Canvas3DCarousel";
-import { MascotCarousel } from "@/components/blocks/MascotCarousel";
+import dynamic from "next/dynamic";
+
+const Canvas3DCarousel = dynamic(
+  () => import("@/components/blocks/Canvas3DCarousel").then((m) => m.Canvas3DCarousel),
+  { ssr: false, loading: () => null },
+);
+const MascotCarousel = dynamic(
+  () => import("@/components/blocks/MascotCarousel").then((m) => m.MascotCarousel),
+  { ssr: false, loading: () => null },
+);
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 

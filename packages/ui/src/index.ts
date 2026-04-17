@@ -53,5 +53,6 @@ export * from './components/ui/infinite-logo-marquee';
 export * from './components/ui/mobile-nav';
 export * from './components/ui/rocketmind-menu';
 export * from './components/ui/wave-animation';
+export * from './components/ui/dotted-surface';
 export * from './components/ui/site-footer';
 export * from './components/ui/site-header';

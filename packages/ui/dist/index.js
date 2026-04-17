@@ -1,11 +1,8 @@
 "use client";
-
-// src/lib/utils.ts
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-function cn(...inputs) {
-  return twMerge(clsx(inputs));
-}
+import {
+  DottedSurface,
+  cn
+} from "./chunk-EE3AAV6C.js";
 
 // src/components/theme-provider.tsx
 import { ThemeProvider as NextThemesProvider } from "next-themes";
@@ -4261,8 +4258,13 @@ function WaveAnimation({
 
 // src/components/ui/site-footer.tsx
 import Link6 from "next/link";
+import dynamic from "next/dynamic";
 import { ChevronUp } from "lucide-react";
 import { jsx as jsx46, jsxs as jsxs28 } from "react/jsx-runtime";
+var DottedSurface2 = dynamic(
+  () => import("./dotted-surface-OKVVT7AA.js").then((m) => m.DottedSurface),
+  { ssr: false, loading: () => null }
+);
 var COMPANY_LINKS = [
   { href: "/about", label: "\u041E Rocketmind" },
   { href: "/cases", label: "\u041A\u0435\u0439\u0441\u044B" },
@@ -4340,19 +4342,7 @@ function SiteFooter({ basePath = "", className, children }) {
       ] })
     ] }),
     /* @__PURE__ */ jsxs28("div", { className: "relative h-[440px] md:h-[460px]", children: [
-      /* @__PURE__ */ jsx46(
-        WaveAnimation,
-        {
-          className: "pointer-events-none absolute left-0 right-0 bottom-[87px] h-[1153px] md:bottom-[147px] md:h-[1253px]",
-          pointSize: 3,
-          waveSpeed: 2,
-          waveIntensity: 10,
-          particleColor: "#ffffff",
-          gridDistance: 4,
-          fadeNear: 20,
-          fadeFar: 300
-        }
-      ),
+      /* @__PURE__ */ jsx46(DottedSurface2, {}),
       children && /* @__PURE__ */ jsx46("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
     ] })
   ] });
@@ -4439,6 +4429,7 @@ export {
   DialogTitle,
   DialogTrigger,
   DotGridLens,
+  DottedSurface,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ArrowRight } from "lucide-react";
 import {
   useEffect,
@@ -14,7 +15,11 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 
 import { InfiniteLogoMarquee } from "@rocketmind/ui";
-import { RoundGlassLens } from "@/components/ui/round-glass-lens";
+
+const RoundGlassLens = dynamic(
+  () => import("@/components/ui/round-glass-lens").then((m) => m.RoundGlassLens),
+  { ssr: false, loading: () => null },
+);
 import type { PartnerLogo } from "@/lib/partner-logos";
 import type { HomeHeroRotatingLine } from "@/lib/unique";
 

@@ -6,6 +6,9 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -27,6 +30,152 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/lib/utils.ts
+function cn(...inputs) {
+  return (0, import_tailwind_merge.twMerge)((0, import_clsx.clsx)(inputs));
+}
+var import_clsx, import_tailwind_merge;
+var init_utils = __esm({
+  "src/lib/utils.ts"() {
+    "use strict";
+    import_clsx = require("clsx");
+    import_tailwind_merge = require("tailwind-merge");
+  }
+});
+
+// src/components/ui/dotted-surface.tsx
+var dotted_surface_exports = {};
+__export(dotted_surface_exports, {
+  DottedSurface: () => DottedSurface
+});
+function DottedSurface({ className, ...props }) {
+  const containerRef = (0, import_react12.useRef)(null);
+  const cleanupRef = (0, import_react12.useRef)(null);
+  (0, import_react12.useEffect)(() => {
+    if (!containerRef.current) return;
+    const container = containerRef.current;
+    let cancelled = false;
+    import("three").then((THREE2) => {
+      if (cancelled || !container) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      if (width === 0 || height === 0) return;
+      const SEPARATION = 150;
+      const AMOUNTX = 40;
+      const AMOUNTY = 60;
+      const scene = new THREE2.Scene();
+      const camera = new THREE2.PerspectiveCamera(60, width / height, 1, 1e4);
+      camera.position.set(0, 355, 1220);
+      camera.lookAt(0, 0, 0);
+      const renderer = new THREE2.WebGLRenderer({
+        alpha: true,
+        antialias: true
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(width, height);
+      renderer.setClearColor(0, 0);
+      container.appendChild(renderer.domElement);
+      const positions = [];
+      const colors = [];
+      const geometry = new THREE2.BufferGeometry();
+      for (let ix = 0; ix < AMOUNTX; ix++) {
+        for (let iy = 0; iy < AMOUNTY; iy++) {
+          const x = ix * SEPARATION - AMOUNTX * SEPARATION / 2;
+          const z = iy * SEPARATION - AMOUNTY * SEPARATION / 2;
+          positions.push(x, 0, z);
+          colors.push(0.78, 0.78, 0.78);
+        }
+      }
+      geometry.setAttribute(
+        "position",
+        new THREE2.Float32BufferAttribute(positions, 3)
+      );
+      geometry.setAttribute(
+        "color",
+        new THREE2.Float32BufferAttribute(colors, 3)
+      );
+      const material = new THREE2.PointsMaterial({
+        size: 8,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        sizeAttenuation: true
+      });
+      const points = new THREE2.Points(geometry, material);
+      scene.add(points);
+      let count = 0;
+      let animationId = 0;
+      const animate2 = () => {
+        animationId = requestAnimationFrame(animate2);
+        const positionAttribute = geometry.attributes.position;
+        const pos = positionAttribute.array;
+        let i = 0;
+        for (let ix = 0; ix < AMOUNTX; ix++) {
+          for (let iy = 0; iy < AMOUNTY; iy++) {
+            const index = i * 3;
+            pos[index + 1] = Math.sin((ix + count) * 0.3) * 50 + Math.sin((iy + count) * 0.5) * 50;
+            i++;
+          }
+        }
+        positionAttribute.needsUpdate = true;
+        renderer.render(scene, camera);
+        count += 0.0333;
+      };
+      const handleResize = () => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        if (w === 0 || h === 0) return;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      };
+      window.addEventListener("resize", handleResize);
+      animate2();
+      cleanupRef.current = () => {
+        window.removeEventListener("resize", handleResize);
+        cancelAnimationFrame(animationId);
+        scene.traverse((object) => {
+          if (object instanceof THREE2.Points) {
+            object.geometry.dispose();
+            if (Array.isArray(object.material)) {
+              object.material.forEach((mat) => mat.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        });
+        renderer.dispose();
+        if (container && renderer.domElement.parentNode === container) {
+          container.removeChild(renderer.domElement);
+        }
+      };
+    });
+    return () => {
+      cancelled = true;
+      cleanupRef.current?.();
+      cleanupRef.current = null;
+    };
+  }, []);
+  return /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+    "div",
+    {
+      ref: containerRef,
+      className: cn("pointer-events-none absolute inset-0", className),
+      ...props
+    }
+  );
+}
+var import_react12, import_jsx_runtime46;
+var init_dotted_surface = __esm({
+  "src/components/ui/dotted-surface.tsx"() {
+    "use strict";
+    "use client";
+    init_utils();
+    import_react12 = require("react");
+    import_jsx_runtime46 = require("react/jsx-runtime");
+  }
+});
 
 // src/index.ts
 var index_exports = {};
@@ -59,6 +208,7 @@ __export(index_exports, {
   DialogTitle: () => DialogTitle,
   DialogTrigger: () => DialogTrigger,
   DotGridLens: () => DotGridLens,
+  DottedSurface: () => DottedSurface,
   DropdownMenu: () => DropdownMenu,
   DropdownMenuContent: () => DropdownMenuContent,
   DropdownMenuGroup: () => DropdownMenuGroup,
@@ -141,13 +291,7 @@ __export(index_exports, {
   textareaVariants: () => textareaVariants
 });
 module.exports = __toCommonJS(index_exports);
-
-// src/lib/utils.ts
-var import_clsx = require("clsx");
-var import_tailwind_merge = require("tailwind-merge");
-function cn(...inputs) {
-  return (0, import_tailwind_merge.twMerge)((0, import_clsx.clsx)(inputs));
-}
+init_utils();
 
 // src/components/theme-provider.tsx
 var import_next_themes = require("next-themes");
@@ -163,6 +307,7 @@ function ThemeProvider({
 var React = __toESM(require("react"), 1);
 var AvatarPrimitive = __toESM(require("@radix-ui/react-avatar"), 1);
 var import_class_variance_authority = require("class-variance-authority");
+init_utils();
 var import_jsx_runtime2 = require("react/jsx-runtime");
 var avatarVariants = (0, import_class_variance_authority.cva)(
   "relative inline-flex shrink-0 overflow-hidden rounded-full border border-border",
@@ -220,6 +365,7 @@ AvatarFallback.displayName = "AvatarFallback";
 
 // src/components/ui/badge.tsx
 var import_class_variance_authority2 = require("class-variance-authority");
+init_utils();
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var badgeVariants = (0, import_class_variance_authority2.cva)(
   // Base: flat, Loos Condensed, uppercase — consistent with buttons and labels
@@ -289,6 +435,7 @@ function Badge({
 // src/components/ui/button.tsx
 var import_button = require("@base-ui/react/button");
 var import_class_variance_authority3 = require("class-variance-authority");
+init_utils();
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var buttonVariants = (0, import_class_variance_authority3.cva)(
   "group/button inline-flex shrink-0 items-center justify-center rounded-sm border border-transparent bg-clip-padding text-[length:var(--text-14)] font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -336,6 +483,7 @@ function Button({
 }
 
 // src/components/ui/card.tsx
+init_utils();
 var import_jsx_runtime5 = require("react/jsx-runtime");
 function Card({
   className,
@@ -431,6 +579,7 @@ function CardFooter({ className, ...props }) {
 // src/components/ui/checkbox.tsx
 var React2 = __toESM(require("react"), 1);
 var import_lucide_react = require("lucide-react");
+init_utils();
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var checkboxBaseClassName = "peer size-5 shrink-0 appearance-none rounded-sm border border-border bg-rm-gray-1 transition-[background-color,border-color,opacity] duration-150 outline-none checked:border-[var(--checkbox-accent,var(--rm-yellow-100))] checked:bg-[var(--checkbox-accent,var(--rm-yellow-100))] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40";
 var Checkbox = React2.forwardRef(
@@ -590,6 +739,7 @@ function DotGridLens({
 // src/components/ui/dialog.tsx
 var React3 = __toESM(require("react"), 1);
 var DialogPrimitive = __toESM(require("@radix-ui/react-dialog"), 1);
+init_utils();
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var Dialog = DialogPrimitive.Root;
 var DialogTrigger = DialogPrimitive.Trigger;
@@ -677,6 +827,7 @@ DialogDescription.displayName = "DialogDescription";
 // src/components/ui/dropdown-menu.tsx
 var React4 = __toESM(require("react"), 1);
 var DropdownMenuPrimitive = __toESM(require("@radix-ui/react-dropdown-menu"), 1);
+init_utils();
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var DropdownMenu = DropdownMenuPrimitive.Root;
 var DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -745,6 +896,7 @@ DropdownMenuLabel.displayName = "DropdownMenuLabel";
 
 // src/components/ui/glowing-effect.tsx
 var import_react2 = require("react");
+init_utils();
 var import_react3 = require("motion/react");
 var import_jsx_runtime10 = require("react/jsx-runtime");
 var GlowingEffect = (0, import_react2.memo)(
@@ -916,6 +1068,7 @@ GlowingEffect.displayName = "GlowingEffect";
 // src/components/ui/input.tsx
 var React5 = __toESM(require("react"), 1);
 var import_class_variance_authority4 = require("class-variance-authority");
+init_utils();
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var inputVariants = (0, import_class_variance_authority4.cva)(
   "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive",
@@ -951,6 +1104,7 @@ Input.displayName = "Input";
 
 // src/components/ui/input-otp.tsx
 var React6 = __toESM(require("react"), 1);
+init_utils();
 var import_jsx_runtime12 = require("react/jsx-runtime");
 var InputOTP = React6.forwardRef(
   ({ length = 6, value = "", onChange, disabled, className, "aria-invalid": ariaInvalid, ...props }, ref) => {
@@ -1033,6 +1187,7 @@ InputOTP.displayName = "InputOTP";
 var React7 = __toESM(require("react"), 1);
 var import_lucide_react2 = require("lucide-react");
 var NavigationMenuPrimitive = __toESM(require("@radix-ui/react-navigation-menu"), 1);
+init_utils();
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var NavigationMenu = React7.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
   NavigationMenuPrimitive.Root,
@@ -1121,6 +1276,7 @@ NavigationMenuViewport.displayName = NavigationMenuPrimitive.Viewport.displayNam
 
 // src/components/ui/note.tsx
 var import_class_variance_authority5 = require("class-variance-authority");
+init_utils();
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var noteVariants = (0, import_class_variance_authority5.cva)(
   "rounded-lg border p-4 transition-[border-color,background-color,color,opacity] duration-150",
@@ -1254,6 +1410,7 @@ function NoteDescription({ className, ...props }) {
 
 // src/components/ui/radio.tsx
 var React8 = __toESM(require("react"), 1);
+init_utils();
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var radioBaseClassName = "peer size-5 shrink-0 appearance-none rounded-full border border-border bg-rm-gray-1 transition-[background-color,border-color,opacity] duration-150 outline-none checked:border-[var(--rm-yellow-100)] checked:bg-background focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-40";
 var Radio = React8.forwardRef(({ className, ...props }, ref) => {
@@ -1276,6 +1433,7 @@ Radio.displayName = "Radio";
 // src/components/ui/scroll-area.tsx
 var React9 = __toESM(require("react"), 1);
 var ScrollAreaPrimitive = __toESM(require("@radix-ui/react-scroll-area"), 1);
+init_utils();
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var ScrollArea = React9.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
   ScrollAreaPrimitive.Root,
@@ -1322,6 +1480,7 @@ ScrollBar.displayName = "ScrollBar";
 // src/components/ui/search-combobox.tsx
 var import_react4 = require("react");
 var import_lucide_react3 = require("lucide-react");
+init_utils();
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var sizeStyles = {
   xs: "h-7 px-3 text-[length:var(--text-12)]",
@@ -1565,6 +1724,7 @@ function SearchCombobox({
 
 // src/components/ui/separator.tsx
 var import_separator = require("@base-ui/react/separator");
+init_utils();
 var import_jsx_runtime18 = require("react/jsx-runtime");
 function Separator2({
   className,
@@ -1587,6 +1747,7 @@ function Separator2({
 
 // src/components/ui/show-more.tsx
 var import_lucide_react4 = require("lucide-react");
+init_utils();
 var import_jsx_runtime19 = require("react/jsx-runtime");
 function ShowMore({
   expanded,
@@ -1678,6 +1839,7 @@ function ShowMorePanel({
 }
 
 // src/components/ui/skeleton.tsx
+init_utils();
 var import_jsx_runtime20 = require("react/jsx-runtime");
 function Skeleton({ className, ...props }) {
   return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
@@ -1727,6 +1889,7 @@ var Toaster = ({ ...props }) => {
 
 // src/components/ui/switch.tsx
 var import_switch = require("@base-ui/react/switch");
+init_utils();
 var import_jsx_runtime22 = require("react/jsx-runtime");
 function Switch({
   className,
@@ -1755,6 +1918,7 @@ function Switch({
 }
 
 // src/components/ui/table.tsx
+init_utils();
 var import_jsx_runtime23 = require("react/jsx-runtime");
 function Table({ className, ...props }) {
   return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { "data-slot": "table-container", className: "relative w-full overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
@@ -1861,6 +2025,7 @@ function TableCaption({ className, ...props }) {
 // src/components/ui/tabs.tsx
 var import_tabs = require("@base-ui/react/tabs");
 var import_class_variance_authority6 = require("class-variance-authority");
+init_utils();
 var import_jsx_runtime24 = require("react/jsx-runtime");
 function Tabs({
   className,
@@ -1947,6 +2112,7 @@ function TabsContent({ className, ...props }) {
 // src/components/ui/textarea.tsx
 var React11 = __toESM(require("react"), 1);
 var import_class_variance_authority7 = require("class-variance-authority");
+init_utils();
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var textareaVariants = (0, import_class_variance_authority7.cva)(
   "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive",
@@ -1978,6 +2144,7 @@ var Textarea = React11.forwardRef(
 Textarea.displayName = "Textarea";
 
 // src/components/ui/slider.tsx
+init_utils();
 var import_jsx_runtime26 = require("react/jsx-runtime");
 function Slider({
   value = 0,
@@ -2045,6 +2212,7 @@ function Slider({
 
 // src/components/ui/tooltip.tsx
 var import_tooltip = require("@base-ui/react/tooltip");
+init_utils();
 var import_jsx_runtime27 = require("react/jsx-runtime");
 function TooltipProvider({
   delay = 0,
@@ -2102,6 +2270,7 @@ function TooltipContent({
 }
 
 // src/components/ui/partnership-block.tsx
+init_utils();
 var import_jsx_runtime28 = require("react/jsx-runtime");
 function PartnershipBlock({
   caption,
@@ -2152,6 +2321,7 @@ function PartnershipBlock({
 
 // src/components/ui/product-card.tsx
 var import_link = __toESM(require("next/link"), 1);
+init_utils();
 var import_jsx_runtime29 = require("react/jsx-runtime");
 function ProductCard({
   title,
@@ -2237,6 +2407,7 @@ function ProductCard({
 
 // src/components/ui/product-image-card.tsx
 var import_link2 = __toESM(require("next/link"), 1);
+init_utils();
 var import_jsx_runtime30 = require("react/jsx-runtime");
 function ImagePlaceholder() {
   return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex h-full w-full items-center justify-center bg-[#111] text-[#404040]", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("svg", { width: "32", height: "32", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round", children: [
@@ -2317,6 +2488,7 @@ function ProductImageCard({
 }
 
 // src/components/ui/rich-text.tsx
+init_utils();
 var import_jsx_runtime31 = require("react/jsx-runtime");
 var BULLET_RE = /^\s*[-•·–—]\s+(.*)$/;
 var NUMBERED_RE = /^\s*\d+[.)]\s+(.*)$/;
@@ -2400,6 +2572,7 @@ function RichText({ text, className, blockClassName }) {
 }
 
 // src/components/ui/for-whom-section.tsx
+init_utils();
 var import_jsx_runtime32 = require("react/jsx-runtime");
 function FactCard({ title, text }) {
   return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "grid grid-rows-[subgrid] row-span-3 gap-4", children: [
@@ -2504,6 +2677,7 @@ function ForWhomSection({
 
 // src/components/ui/process-section.tsx
 var import_react5 = require("react");
+init_utils();
 var import_jsx_runtime33 = require("react/jsx-runtime");
 function TimelineColumn({
   isActive,
@@ -2837,6 +3011,7 @@ function ProcessSection({
 
 // src/components/ui/results-section.tsx
 var import_react6 = require("react");
+init_utils();
 var import_jsx_runtime34 = require("react/jsx-runtime");
 var STEP_OFFSET = 88;
 var STAGGER = 0.18;
@@ -3067,6 +3242,7 @@ function ResultsSection({
 }
 
 // src/components/ui/services-section.tsx
+init_utils();
 var import_jsx_runtime35 = require("react/jsx-runtime");
 function Arrow({ featured }) {
   return /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(
@@ -3178,6 +3354,7 @@ function repackBento(cards) {
 }
 
 // src/components/ui/experts-section.tsx
+init_utils();
 var import_jsx_runtime36 = require("react/jsx-runtime");
 function CirclePattern({ className }) {
   return /* @__PURE__ */ (0, import_jsx_runtime36.jsxs)(
@@ -3469,6 +3646,7 @@ function HeroExperts({
 }
 
 // src/components/ui/tools-section.tsx
+init_utils();
 var import_jsx_runtime38 = require("react/jsx-runtime");
 function ToolCardItem({
   tool,
@@ -3602,6 +3780,7 @@ function ToolsSection({
 
 // src/components/ui/accordion-faq.tsx
 var import_react8 = require("@base-ui/react");
+init_utils();
 var import_jsx_runtime39 = require("react/jsx-runtime");
 var DEFAULT_ITEMS = [
   { id: "1", q: "\u0427\u0442\u043E \u0442\u0430\u043A\u043E\u0435 Rocketmind?", a: "Rocketmind \u2014 SaaS-\u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430 \u0441 \u0433\u043E\u0442\u043E\u0432\u044B\u043C\u0438 AI-\u0430\u0433\u0435\u043D\u0442\u0430\u043C\u0438 \u0434\u043B\u044F \u0432\u0435\u0434\u0435\u043D\u0438\u044F \u043A\u0435\u0439\u0441\u043E\u0432. \u041A\u0430\u0436\u0434\u044B\u0439 \u0430\u0433\u0435\u043D\u0442 \u0441\u043F\u0435\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u043D\u0430 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0439 \u0437\u0430\u0434\u0430\u0447\u0435: \u0430\u043D\u0430\u043B\u0438\u0437, \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u044F, \u0438\u0441\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u0435 \u0440\u044B\u043D\u043A\u0430, \u0442\u0435\u0441\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0433\u0438\u043F\u043E\u0442\u0435\u0437." },
@@ -3633,6 +3812,7 @@ function AccordionFAQ({
 }
 
 // src/components/ui/cta-section-dark.tsx
+init_utils();
 var import_jsx_runtime40 = require("react/jsx-runtime");
 function CTASectionDark({
   heading = "\u0425\u043E\u0442\u0438\u0442\u0435 \u0443\u0432\u0438\u0434\u0435\u0442\u044C, \u043A\u0430\u043A \u043A\u043E\u043C\u0430\u043D\u0434\u0430 Rocketmind \u0440\u0435\u0448\u0438\u0442 \u0432\u0430\u0448\u0443 \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0447\u0435\u0441\u043A\u0443\u044E \u0437\u0430\u0434\u0430\u0447\u0443?",
@@ -3695,6 +3875,7 @@ function CTASectionDark({
 }
 
 // src/components/ui/cta-section-yellow.tsx
+init_utils();
 var import_jsx_runtime41 = require("react/jsx-runtime");
 function SpiralMobile({ className }) {
   return /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
@@ -3774,6 +3955,7 @@ function CTASectionYellow({
 }
 
 // src/components/ui/infinite-logo-marquee.tsx
+init_utils();
 var import_jsx_runtime42 = require("react/jsx-runtime");
 function LogoSequence({
   logos,
@@ -3848,6 +4030,7 @@ var import_react9 = require("react");
 var import_react_dom = require("react-dom");
 var import_react10 = require("motion/react");
 var import_link3 = __toESM(require("next/link"), 1);
+init_utils();
 
 // src/content/site-nav.ts
 var CONSULTING_SERVICES = [
@@ -4158,6 +4341,7 @@ function MobileNav({ className }) {
 // src/components/ui/rocketmind-menu.tsx
 var import_link4 = __toESM(require("next/link"), 1);
 var import_navigation = require("next/navigation");
+init_utils();
 var import_jsx_runtime44 = (
   // gap-0.5 at the end wins over gap-5 lg:gap-7 coming from className via tailwind-merge
   require("react/jsx-runtime")
@@ -4249,6 +4433,7 @@ function DropdownSection({
 // src/components/ui/wave-animation.tsx
 var import_react11 = require("react");
 var THREE = __toESM(require("three"), 1);
+init_utils();
 var import_jsx_runtime45 = require("react/jsx-runtime");
 function WaveAnimation({
   width,
@@ -4404,10 +4589,18 @@ function WaveAnimation({
   );
 }
 
+// src/index.ts
+init_dotted_surface();
+
 // src/components/ui/site-footer.tsx
 var import_link5 = __toESM(require("next/link"), 1);
+var import_dynamic = __toESM(require("next/dynamic"), 1);
 var import_lucide_react6 = require("lucide-react");
-var import_jsx_runtime46 = require("react/jsx-runtime");
+var import_jsx_runtime47 = require("react/jsx-runtime");
+var DottedSurface2 = (0, import_dynamic.default)(
+  () => Promise.resolve().then(() => (init_dotted_surface(), dotted_surface_exports)).then((m) => m.DottedSurface),
+  { ssr: false, loading: () => null }
+);
 var COMPANY_LINKS = [
   { href: "/about", label: "\u041E Rocketmind" },
   { href: "/cases", label: "\u041A\u0435\u0439\u0441\u044B" },
@@ -4415,9 +4608,9 @@ var COMPANY_LINKS = [
   ...LEGAL_LINKS.map((l) => ({ href: l.href, label: l.label }))
 ];
 function FooterColumn({ title, links }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("p", { className: "font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50", children: title }),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("ul", { className: "mt-4 flex flex-col gap-2.5", children: links.map((link) => /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("p", { className: "font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50", children: title }),
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("ul", { className: "mt-4 flex flex-col gap-2.5", children: links.map((link) => /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
       import_link5.default,
       {
         href: link.href,
@@ -4440,10 +4633,10 @@ function SiteFooter({ basePath = "", className, children }) {
     href: s.href,
     label: s.title
   }));
-  return /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("footer", { className: className ?? "relative overflow-hidden border-t border-border bg-background", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "relative z-10 mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_link5.default, { href: "/", className: "inline-flex items-center", children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("footer", { className: className ?? "relative overflow-hidden border-t border-border bg-background", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "relative z-10 mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(import_link5.default, { href: "/", className: "inline-flex items-center", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
           "img",
           {
             src: `${basePath}/with_descriptor_dark_background_en.svg`,
@@ -4451,68 +4644,57 @@ function SiteFooter({ basePath = "", className, children }) {
             className: "h-[42px] w-auto"
           }
         ) }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
           "button",
           {
             type: "button",
             onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }),
             "aria-label": "\u041D\u0430\u0432\u0435\u0440\u0445",
             className: "inline-flex items-center justify-center w-10 h-10 rounded-sm bg-secondary text-secondary-foreground transition-opacity duration-150 hover:opacity-[0.88] cursor-pointer",
-            children: /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(import_lucide_react6.ChevronUp, { size: 20, strokeWidth: 2 })
+            children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(import_lucide_react6.ChevronUp, { size: 20, strokeWidth: 2 })
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "flex flex-col justify-between", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(FooterColumn, { title: "\u041A\u043E\u043D\u0441\u0430\u043B\u0442\u0438\u043D\u0433", links: consultingLinks.slice(0, 4) }),
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("p", { className: "mt-8 text-[13px] text-muted-foreground/50 hidden md:block", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex flex-col justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(FooterColumn, { title: "\u041A\u043E\u043D\u0441\u0430\u043B\u0442\u0438\u043D\u0433", links: consultingLinks.slice(0, 4) }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "mt-8 text-[13px] text-muted-foreground/50 hidden md:block", children: [
             "\xA9 ",
             (/* @__PURE__ */ new Date()).getFullYear(),
             " Rocketmind"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(FooterColumn, { title: "\xA0", links: consultingLinks.slice(4) }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "flex flex-col gap-10", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(FooterColumn, { title: "\u041E\u043D\u043B\u0430\u0439\u043D-\u0448\u043A\u043E\u043B\u0430", links: academyLinks }),
-          /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(FooterColumn, { title: "AI-\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B", links: aiProductLinks })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(FooterColumn, { title: "\xA0", links: consultingLinks.slice(4) }),
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "flex flex-col gap-10", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(FooterColumn, { title: "\u041E\u043D\u043B\u0430\u0439\u043D-\u0448\u043A\u043E\u043B\u0430", links: academyLinks }),
+          /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(FooterColumn, { title: "AI-\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B", links: aiProductLinks })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(FooterColumn, { title: "\u041A\u043E\u043C\u043F\u0430\u043D\u0438\u044F", links: COMPANY_LINKS })
+        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(FooterColumn, { title: "\u041A\u043E\u043C\u043F\u0430\u043D\u0438\u044F", links: COMPANY_LINKS })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("p", { className: "mt-10 text-[13px] text-muted-foreground/50 md:hidden", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("p", { className: "mt-10 text-[13px] text-muted-foreground/50 md:hidden", children: [
         "\xA9 ",
         (/* @__PURE__ */ new Date()).getFullYear(),
         " Rocketmind"
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime46.jsxs)("div", { className: "relative h-[440px] md:h-[460px]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
-        WaveAnimation,
-        {
-          className: "pointer-events-none absolute left-0 right-0 bottom-[87px] h-[1153px] md:bottom-[147px] md:h-[1253px]",
-          pointSize: 3,
-          waveSpeed: 2,
-          waveIntensity: 10,
-          particleColor: "#ffffff",
-          gridDistance: 4,
-          fadeNear: 20,
-          fadeFar: 300
-        }
-      ),
-      children && /* @__PURE__ */ (0, import_jsx_runtime46.jsx)("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
+    /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "relative h-[440px] md:h-[460px]", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(DottedSurface2, {}),
+      children && /* @__PURE__ */ (0, import_jsx_runtime47.jsx)("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
     ] })
   ] });
 }
 
 // src/components/ui/site-header.tsx
-var import_react12 = require("react");
+var import_react13 = require("react");
 var import_link6 = __toESM(require("next/link"), 1);
 var import_navigation2 = require("next/navigation");
-var import_jsx_runtime47 = require("react/jsx-runtime");
+init_utils();
+var import_jsx_runtime48 = require("react/jsx-runtime");
 function SiteHeader({ basePath = "", className }) {
   const pathname = (0, import_navigation2.usePathname)();
   const isHome = pathname === "/";
-  const [isVisible, setIsVisible] = (0, import_react12.useState)(!isHome);
-  (0, import_react12.useEffect)(() => {
+  const [isVisible, setIsVisible] = (0, import_react13.useState)(!isHome);
+  (0, import_react13.useEffect)(() => {
     if (!isHome) {
       setIsVisible(true);
       return;
@@ -4525,7 +4707,7 @@ function SiteHeader({ basePath = "", className }) {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
-  return /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
     "header",
     {
       className: cn(
@@ -4533,8 +4715,8 @@ function SiteHeader({ basePath = "", className }) {
         isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none",
         className
       ),
-      children: /* @__PURE__ */ (0, import_jsx_runtime47.jsxs)("div", { className: "mx-auto flex w-full max-w-[1512px] items-center justify-between gap-6 px-5 md:px-8 xl:px-14", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(import_link6.default, { href: "/", className: "flex items-center", children: /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
+      children: /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "mx-auto flex w-full max-w-[1512px] items-center justify-between gap-6 px-5 md:px-8 xl:px-14", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(import_link6.default, { href: "/", className: "flex items-center", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
           "img",
           {
             src: `${basePath}/text_logo_dark_background_en.svg`,
@@ -4542,7 +4724,7 @@ function SiteHeader({ basePath = "", className }) {
             className: "h-auto w-[120px] md:w-[144px]"
           }
         ) }),
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
           RocketmindMenu,
           {
             className: "hero-menu-desktop ml-auto flex-1 items-center justify-end gap-5 lg:gap-7",
@@ -4550,7 +4732,7 @@ function SiteHeader({ basePath = "", className }) {
             showDropdowns: true
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime47.jsx)(MobileNav, { className: "ml-auto" })
+        /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(MobileNav, { className: "ml-auto" })
       ] })
     }
   );
@@ -4585,6 +4767,7 @@ function SiteHeader({ basePath = "", className }) {
   DialogTitle,
   DialogTrigger,
   DotGridLens,
+  DottedSurface,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,

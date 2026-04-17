@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { ChevronUp } from "lucide-react";
 
 import {
@@ -9,7 +10,11 @@ import {
   AI_PRODUCTS,
   LEGAL_LINKS,
 } from "../../content/site-nav";
-import { WaveAnimation } from "./wave-animation";
+
+const DottedSurface = dynamic(
+  () => import("./dotted-surface").then((m) => m.DottedSurface),
+  { ssr: false, loading: () => null },
+);
 
 const COMPANY_LINKS = [
   { href: "/about", label: "О Rocketmind" },
@@ -49,7 +54,7 @@ export type SiteFooterProps = {
   /** Base path for static assets (logo). Default: "" */
   basePath?: string;
   className?: string;
-  /** Content rendered on top of the WaveAnimation area (e.g. chat widget) */
+  /** Content rendered on top of the DottedSurface area (e.g. chat widget) */
   children?: React.ReactNode;
 };
 
@@ -111,18 +116,9 @@ export function SiteFooter({ basePath = "", className, children }: SiteFooterPro
         </p>
       </div>
 
-      {/* Wave animation background + optional overlay content */}
+      {/* Dotted surface background + optional overlay content */}
       <div className="relative h-[440px] md:h-[460px]">
-        <WaveAnimation
-          className="pointer-events-none absolute left-0 right-0 bottom-[87px] h-[1153px] md:bottom-[147px] md:h-[1253px]"
-          pointSize={3}
-          waveSpeed={2}
-          waveIntensity={10}
-          particleColor="#ffffff"
-          gridDistance={4}
-          fadeNear={20}
-          fadeFar={300}
-        />
+        <DottedSurface />
         {children && (
           <div className="pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end">
             {children}

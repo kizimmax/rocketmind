@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@rocketmind/ui";
 
@@ -6,6 +7,13 @@ import { Header } from "@/components/sections/Header";
 import { Footer } from "@/components/sections/Footer";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { ScrollToTop } from "@/components/ui/ScrollToTop";
+
+const robotoMono = Roboto_Mono({
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-roboto-mono",
+});
 
 export const metadata: Metadata = {
   title: "Rocketmind | Стратегия и бизнес-модели",
@@ -19,12 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="ru" suppressHydrationWarning className={robotoMono.variable}>
       <body className="antialiased">
         <ScrollToTop />
         <PageLoader />
