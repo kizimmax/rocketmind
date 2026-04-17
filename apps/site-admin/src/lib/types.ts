@@ -6,6 +6,9 @@ export type PageStatus = "published" | "hidden" | "archived";
 
 export type BlockType =
   | "hero"
+  | "homeHero"
+  | "methodology"
+  | "homeSections"
   | "logoMarquee"
   | "about"
   | "projects"
@@ -18,7 +21,38 @@ export type BlockType =
   | "partnerships"
   | "aboutRocketmind"
   | "pageBottom"
-  | "customSection";
+  | "customSection"
+  | "caseCard"
+  | "casesList";
+
+// ── Case-specific types ─────────────────────────────────────────────────────
+
+export type CaseType = "big" | "mini";
+
+export interface CaseCardStat {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export interface CaseCardBlockData {
+  title: string;
+  description: string;
+  stats: CaseCardStat[];
+  result: string;
+}
+
+// ── Testimonials ────────────────────────────────────────────────────────────
+
+export interface Testimonial {
+  id: string;
+  paragraphs: string[];
+  name: string;
+  position: string;
+  /** /images/testimonials/<id>.<ext> after persistence; data URL while editing. */
+  avatar: string | null;
+  order: number;
+}
 
 // ── Block data shapes (mirror apps/site/src/lib/products.ts) ────────────────
 
@@ -164,6 +198,57 @@ export interface AboutRocketmindBlockData {
   leftVariant: "alex" | "canvas";
 }
 
+// ── Home page (unique) blocks ───────────────────────────────────────────────
+
+export interface HomeHeroRotatingLine {
+  /** Серый подзаголовок, меняется по кругу. */
+  text: string;
+  /** Подпись CTA-кнопки, которая показывается одновременно с этой строкой. */
+  ctaLabel: string;
+  /** href CTA-кнопки. */
+  ctaHref: string;
+}
+
+export interface HomeHeroBlockData {
+  /** Первые две строки (сохраняются неизменными, разбиваются по \n). */
+  title: string;
+  /** Подпись под логотипом PIK (многострочная, \n сохраняется). */
+  pikCaption: string;
+  /** Ротирующиеся серые строчки + их CTA. */
+  rotatingLines: HomeHeroRotatingLine[];
+}
+
+export interface MethodologyCell {
+  /** Жёлтый label сверху ячейки. */
+  label: string;
+  /** Крупный заголовок ячейки. */
+  title: string;
+  /** Описание. */
+  description: string;
+}
+
+export interface MethodologyBlockData {
+  /** Ровно 3 ячейки: Методология, Синергия, Канвасы. */
+  cells: MethodologyCell[];
+}
+
+export interface HomeSectionItem {
+  /** Ключ фильтра /products — один из FILTER_KEYS. */
+  filterKey: string;
+  trackName: string;
+  headerHighlight: string;
+  /** Заголовок для мобильной версии (\n — перевод строки). */
+  mobileTitle: string;
+  description: string;
+  catalogLabel: string;
+  /** Слаги карточек, которые нужно СКРЫТЬ из соответствующего /products фильтра. */
+  hiddenCardSlugs: string[];
+}
+
+export interface HomeSectionsBlockData {
+  sections: HomeSectionItem[];
+}
+
 export interface ProcessBlockData {
   tag: string;
   title: string;
@@ -201,6 +286,10 @@ export interface SitePage {
   metaDescription: string;
   /** Explicit "expert product" flag. If undefined, legacy behaviour (derived from experts block) applies. */
   expertProduct?: boolean;
+  /** Cases section only. "big" = has internal /cases/[slug] page; "mini" = card-only. */
+  caseType?: CaseType;
+  /** Cases section only. If true, this case appears in the cross-block CasesSection on all pages. Max 5 site-wide. */
+  featured?: boolean;
   blocks: PageBlock[];
   createdAt: string;
   updatedAt: string;

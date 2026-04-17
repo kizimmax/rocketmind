@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 import { InfiniteLogoMarquee, type LogoMarqueeItem } from "@rocketmind/ui";
 
@@ -16,7 +17,7 @@ export function LogoMarqueeEditor(_props: LogoMarqueeEditorProps) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/partner-logos")
+    apiFetch("/api/partner-logos")
       .then((r) => r.json())
       .then((data) => { if (!cancelled) setLogos(data as LogoMarqueeItem[]); })
       .catch(() => { if (!cancelled) setLogos([]); });

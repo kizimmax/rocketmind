@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, FileText, Users, Sun, Moon } from "lucide-react";
+import { LogOut, FileText, Users, MessageSquareQuote, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@rocketmind/ui";
 import { useAuth } from "@/lib/auth-context";
@@ -27,6 +27,7 @@ export function AdminHeader() {
 
   const isOnPages = pathname.startsWith("/pages");
   const isOnExperts = pathname.startsWith("/experts");
+  const isOnTestimonials = pathname.startsWith("/testimonials");
 
   function guardedClick(e: React.MouseEvent, href: string) {
     if (!tryNavigate(href)) e.preventDefault();
@@ -104,6 +105,16 @@ export function AdminHeader() {
           >
             <Users className="h-3.5 w-3.5" />
             Эксперты
+          </Link>
+
+          {/* ── Testimonials tab ──────────────────────────────── */}
+          <Link
+            href="/testimonials"
+            onClick={(e) => guardedClick(e, "/testimonials")}
+            className={`flex items-center gap-1.5 ${linkBase} ${isOnTestimonials ? linkActive : linkIdle}`}
+          >
+            <MessageSquareQuote className="h-3.5 w-3.5" />
+            Отзывы
           </Link>
         </nav>
       </div>

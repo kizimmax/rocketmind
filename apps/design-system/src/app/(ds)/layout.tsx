@@ -91,6 +91,7 @@ const sections: NavSection[] = [
     { id: "animations-page",        label: "Page-level" },
     { id: "animations-a11y",        label: "Доступность" },
     { id: "animations-round-glass", label: "Round Glass Lens" },
+    { id: "animations-wave",        label: "Wave Animation" },
   ]},
   { id: "cross-blocks", label: "Сквозные блоки", Icon: LayoutDashboard, subsections: [
     { id: "cross-header",  label: "Header" },

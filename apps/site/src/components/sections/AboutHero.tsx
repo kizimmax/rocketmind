@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { DotGridLens, HeroExperts, RichText, type HeroExpert } from "@rocketmind/ui";
+import { AbstractGlassyShader } from "@/components/ui/AbstractGlassyShader";
 import type { Factoid } from "@/lib/products";
+
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -16,6 +19,10 @@ type AboutHeroProps = {
   experts: HeroExpert[];
   /** Custom logo (base64 data URL). Falls back to default SVG if absent. */
   heroLogoData?: string;
+  /** If present, renders a large uppercase heading instead of the brand logo in the top-left slot. */
+  heading?: string;
+  /** When true, renders a yellow/white animated shader as an additional background layer. */
+  showShader?: boolean;
 };
 
 // ── Factoid cell (single row of 4) ────────────────────────────────────────────
@@ -30,11 +37,11 @@ function FactoidCell({
   className?: string;
 }) {
   return (
-    <div className={`flex items-center gap-5 p-5 md:p-7 ${className ?? ""}`}>
+    <div className={`flex items-center gap-5 p-5 md:p-7 bg-black/90 backdrop-blur-md ${className ?? ""}`}>
       <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-52)] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] shrink-0">
         {number}
       </span>
-      <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0] min-w-0">
+      <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0] min-w-0 break-words">
         {label}
       </span>
     </div>
@@ -51,7 +58,7 @@ function fadeIn(index: number): React.CSSProperties {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function AboutHero({ description, factoids, experts, heroLogoData }: AboutHeroProps) {
+export function AboutHero({ description, factoids, experts, heroLogoData, heading, showShader }: AboutHeroProps) {
   const fourFactoids = factoids.slice(0, 4);
 
   return (
@@ -63,23 +70,33 @@ export function AboutHero({ description, factoids, experts, heroLogoData }: Abou
           gridGap={13}
           baseRadius={0.75}
           maxScale={4.2}
-          className="absolute left-14 right-14 top-0 bottom-0 z-0 opacity-30 pointer-events-none"
+          className="absolute left-14 right-14 top-0 bottom-0 z-0 opacity-75 pointer-events-none"
         />
+
+        {showShader && (
+          <AbstractGlassyShader className="absolute inset-0 z-0 h-full w-full pointer-events-none" />
+        )}
 
         {/* Content frame */}
         <div className="relative z-10 px-5 md:px-8 xl:px-14 pt-[102px] lg:pt-[184px]">
           {/* ── Top row: brand mark (left 50%) + description (right 50%) ── */}
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-0 lg:mt-12" style={fadeIn(0)}>
             <div className="lg:w-1/2 lg:pr-11">
-              <Image
-                src={heroLogoData || "/with_descriptor_dark_background_ru.svg"}
-                alt="Rocketmind Business Design"
-                width={482}
-                height={118}
-                priority
-                unoptimized={!!heroLogoData}
-                className="h-auto w-[280px] md:w-[360px] lg:w-[482px]"
-              />
+              {heading ? (
+                <h1 className="font-[family-name:var(--font-heading-family)] text-[52px] md:text-[64px] lg:text-[80px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0]">
+                  {heading}
+                </h1>
+              ) : (
+                <Image
+                  src={heroLogoData || `${BASE_PATH}/with_descriptor_dark_background_ru.svg`}
+                  alt="Rocketmind Business Design"
+                  width={482}
+                  height={118}
+                  priority
+                  unoptimized={!!heroLogoData}
+                  className="h-auto w-[280px] md:w-[360px] lg:w-[482px]"
+                />
+              )}
             </div>
             <div className="lg:w-1/2 flex items-start">
               <RichText
@@ -103,13 +120,22 @@ export function AboutHero({ description, factoids, experts, heroLogoData }: Abou
 
           {/* ── Factoids: 4 in a single row ── */}
           {fourFactoids.length > 0 && (
-            <div className="mt-10 md:mt-14 grid grid-cols-2 xl:grid-cols-4 border-t border-l border-[#404040]" style={fadeIn(3)}>
+            <div
+              className={[
+                "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 border-t border-l border-[#404040]",
+                // When the experts strip is rendered above, it provides its own gap; otherwise add a large gap to match Figma (319px @ xl)
+                experts.length > 0
+                  ? "mt-10 md:mt-14"
+                  : "mt-20 md:mt-32 lg:mt-[200px] xl:mt-[319px]",
+              ].join(" ")}
+              style={fadeIn(3)}
+            >
               {fourFactoids.map((f) => (
                 <FactoidCell
                   key={f.number + f.label}
                   number={f.number}
                   label={f.label}
-                  className="border-b border-r border-[#404040] min-w-0 overflow-hidden"
+                  className="border-b border-r border-[#404040] min-w-0"
                 />
               ))}
             </div>

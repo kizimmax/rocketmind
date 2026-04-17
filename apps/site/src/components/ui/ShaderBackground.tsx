@@ -14,7 +14,7 @@ const FRAGMENT_SHADER = `
   uniform vec2 iResolution;
   uniform float iTime;
 
-  const float overallSpeed = 0.2;
+  const float overallSpeed = 0.0333;
   const float gridSmoothWidth = 0.015;
   const float axisWidth = 0.05;
   const float majorLineWidth = 0.025;
@@ -24,22 +24,24 @@ const FRAGMENT_SHADER = `
   const float scale = 5.0;
   const float minLineWidth = 0.01;
   const float maxLineWidth = 0.2;
-  const float lineSpeed = 1.0 * overallSpeed;
+  const float lineSpeed = -1.0 * overallSpeed;
   const float lineAmplitude = 1.0;
   const float lineFrequency = 0.2;
   const float warpSpeed = 0.2 * overallSpeed;
   const float warpFrequency = 0.5;
   const float warpAmplitude = 1.0;
   const float offsetFrequency = 0.5;
-  const float offsetSpeed = 1.33 * overallSpeed;
+  const float offsetSpeed = -1.33 * overallSpeed;
   const float minOffsetSpread = 0.6;
   const float maxOffsetSpread = 2.0;
   const int linesPerGroup = 16;
+  const float dotFrequency = 30.0;
+  const float dotSize = 0.4;
 
-  // Yellow theme
-  const vec4 lineColor = vec4(1.0, 0.8, 0.0, 1.0);
+  // Neutral / colorless theme
+  const vec4 lineColor = vec4(1.0, 1.0, 1.0, 1.0);
   const vec4 bgColor1 = vec4(0.04, 0.04, 0.04, 1.0);
-  const vec4 bgColor2 = vec4(0.08, 0.06, 0.0, 1.0);
+  const vec4 bgColor2 = vec4(0.04, 0.04, 0.04, 1.0);
 
   #define drawSmoothLine(pos, halfWidth, t) smoothstep(halfWidth, 0.0, abs(pos - (t)))
   #define drawCrispLine(pos, halfWidth, t) smoothstep(halfWidth + gridSmoothWidth, halfWidth, abs(pos - (t)))
@@ -65,15 +67,19 @@ const FRAGMENT_SHADER = `
 
     vec4 lines = vec4(0.0);
 
+    float spacing = 1.0 / dotFrequency;
+    float cellX = floor(space.x / spacing) * spacing + spacing * 0.5;
     for (int l = 0; l < linesPerGroup; l++) {
       float normalizedLineIndex = float(l) / float(linesPerGroup);
       float offsetTime = iTime * offsetSpeed;
-      float offsetPosition = float(l) + space.x * offsetFrequency;
+      float offsetPosition = float(l) + cellX * offsetFrequency;
       float rand = random(offsetPosition + offsetTime) * 0.5 + 0.5;
       float halfWidth = mix(minLineWidth, maxLineWidth, rand * horizontalFade) / 2.0;
       float offset = random(offsetPosition + offsetTime * (1.0 + normalizedLineIndex)) * mix(minOffsetSpread, maxOffsetSpread, horizontalFade);
-      float linePosition = getPlasmaY(space.x, horizontalFade, offset);
-      float line = drawSmoothLine(linePosition, halfWidth, space.y) / 2.0 + drawCrispLine(linePosition, halfWidth * 0.15, space.y);
+      float dotY = getPlasmaY(cellX, horizontalFade, offset);
+      float pxHalf = spacing * dotSize * 0.5;
+      vec2 delta = abs(space - vec2(cellX, dotY));
+      float line = step(max(delta.x, delta.y), pxHalf);
 
       float circleX = mod(float(l) + iTime * lineSpeed, 25.0) - 12.0;
       vec2 circlePosition = vec2(circleX, getPlasmaY(circleX, horizontalFade, offset));

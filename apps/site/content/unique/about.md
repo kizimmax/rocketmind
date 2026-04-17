@@ -1,5 +1,5 @@
 ---
-slug: rocketmind
+slug: about
 category: unique
 menuTitle: О Rocketmind
 menuDescription: 'Экосистема экспертов, цифровых решений и методов'
@@ -13,6 +13,10 @@ metaDescription: >-
   бизнес-моделей, стратегий, платформ и экосистем. 120+ проектов, 19 лет опыта,
   27+ партнёров среди крупнейших компаний России.
 expertProduct: true
+caseType: null
+featured: null
+order: 1
+caseCard: null
 hero:
   variant: about
   factoidsLayout: 2x2
@@ -181,118 +185,118 @@ projects:
     cells:
       - id: clip-1744800000000
         alt: 18 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000000.svg
+        src: /images/unique/about/logos/cell-clip-1744800000000.svg
         size: S
       - id: clip-1744800000001
         alt: 2gis
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000001.svg
+        src: /images/unique/about/logos/cell-clip-1744800000001.svg
         size: S
       - id: clip-1744800000002
         alt: alfa 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000002.svg
+        src: /images/unique/about/logos/cell-clip-1744800000002.svg
         size: S
       - id: clip-1744800000003
         alt: bilaine
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000003.svg
+        src: /images/unique/about/logos/cell-clip-1744800000003.svg
         size: S
       - id: clip-1744800000004
         alt: gazprombank
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000004.svg
+        src: /images/unique/about/logos/cell-clip-1744800000004.svg
         size: S
       - id: clip-1744800000005
         alt: gazpromneft 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000005.svg
+        src: /images/unique/about/logos/cell-clip-1744800000005.svg
         size: S
       - id: clip-1744800000006
         alt: gdrive 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000006.svg
+        src: /images/unique/about/logos/cell-clip-1744800000006.svg
         size: S
       - id: clip-1744800000007
         alt: gosuslugy
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000007.png
+        src: /images/unique/about/logos/cell-clip-1744800000007.png
         size: S
       - id: clip-1744800000008
         alt: mail 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000008.svg
+        src: /images/unique/about/logos/cell-clip-1744800000008.svg
         size: S
       - id: clip-1744800000009
         alt: megafon 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000009.svg
+        src: /images/unique/about/logos/cell-clip-1744800000009.svg
         size: S
       - id: clip-1744800000010
         alt: mincifr
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000010.svg
+        src: /images/unique/about/logos/cell-clip-1744800000010.svg
         size: S
       - id: clip-1744800000011
         alt: mtc
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000011.svg
+        src: /images/unique/about/logos/cell-clip-1744800000011.svg
         size: S
       - id: clip-1744800000012
         alt: pochta ross
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000012.svg
+        src: /images/unique/about/logos/cell-clip-1744800000012.svg
         size: S
         padding: 18
       - id: clip-1744800000013
         alt: rambler
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000013.svg
+        src: /images/unique/about/logos/cell-clip-1744800000013.svg
         size: S
         padding: 14
       - id: clip-1744800000014
         alt: rbk
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000014.svg
+        src: /images/unique/about/logos/cell-clip-1744800000014.svg
         size: S
         padding: 20
       - id: clip-1744800000015
         alt: red kvadr
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000015.svg
+        src: /images/unique/about/logos/cell-clip-1744800000015.svg
         size: S
       - id: clip-1744800000016
         alt: ros-export-centr
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000016.svg
+        src: /images/unique/about/logos/cell-clip-1744800000016.svg
         size: S
       - id: clip-1744800000017
         alt: rosatom
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000017.svg
+        src: /images/unique/about/logos/cell-clip-1744800000017.svg
         size: S
       - id: clip-1744800000018
         alt: rosgosbiblio 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000018.png
+        src: /images/unique/about/logos/cell-clip-1744800000018.png
         size: S
       - id: clip-1744800000019
         alt: rostel 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000019.svg
+        src: /images/unique/about/logos/cell-clip-1744800000019.svg
         size: S
       - id: clip-1744800000020
         alt: ruslan
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000020.svg
+        src: /images/unique/about/logos/cell-clip-1744800000020.svg
         size: S
       - id: clip-1744800000021
         alt: sberuniver 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000021.svg
+        src: /images/unique/about/logos/cell-clip-1744800000021.svg
         size: S
       - id: clip-1744800000022
         alt: seiko 1
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000022.svg
+        src: /images/unique/about/logos/cell-clip-1744800000022.svg
         size: S
       - id: clip-1744800000023
         alt: sk moscow school
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000023.png
+        src: /images/unique/about/logos/cell-clip-1744800000023.png
         size: S
       - id: clip-1744800000024
         alt: tbank
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000024.svg
+        src: /images/unique/about/logos/cell-clip-1744800000024.svg
         size: S
       - id: clip-1744800000025
         alt: vk
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000025.svg
+        src: /images/unique/about/logos/cell-clip-1744800000025.svg
         size: S
       - id: clip-1744800000026
         alt: vtb
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000026.svg
+        src: /images/unique/about/logos/cell-clip-1744800000026.svg
         size: S
       - id: clip-1744800000027
         alt: x5
-        src: /images/unique/rocketmind/logos/cell-clip-1744800000027.svg
+        src: /images/unique/about/logos/cell-clip-1744800000027.svg
         size: S
 pageBottom: null
 customSections: null

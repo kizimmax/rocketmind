@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, ImagePlus, Upload, Trash2 } from "lucide-react";
@@ -388,25 +389,27 @@ export function EditorShell({ initialPage }: EditorShellProps) {
     toast.success("Изменения сохранены и записаны в файл");
   }
 
+  const pagesHref = `/pages?section=${page.sectionId}`;
+
   function handleBack() {
     if (isDirty) {
-      setNavigateTarget("/pages");
+      setNavigateTarget(pagesHref);
       setShowUnsavedDialog(true);
     } else {
-      router.push("/pages");
+      router.push(pagesHref);
     }
   }
 
   async function handleSaveAndNavigate() {
     await handleSave();
     setShowUnsavedDialog(false);
-    router.push(navigateTarget || "/pages");
+    router.push(navigateTarget || pagesHref);
   }
 
   function handleDiscardAndNavigate() {
     discard();
     setShowUnsavedDialog(false);
-    router.push(navigateTarget || "/pages");
+    router.push(navigateTarget || pagesHref);
   }
 
   function handleCancelDialog() {
@@ -433,7 +436,7 @@ export function EditorShell({ initialPage }: EditorShellProps) {
       return;
     }
     let cancelled = false;
-    fetch("/api/experts")
+    apiFetch("/api/experts")
       .then((r) => r.json())
       .then((all: Array<{ slug: string; name: string; image: string | null }>) => {
         if (cancelled) return;
@@ -471,6 +474,7 @@ export function EditorShell({ initialPage }: EditorShellProps) {
       <div className="flex-1 overflow-y-auto px-6 py-6">
        <div className="mx-auto w-full max-w-[1400px]">
         {/* ── Top section: left fields + right card ──────────────── */}
+        {page.caseType !== "mini" && (
         <div className="mb-8 flex flex-col gap-8 lg:flex-row">
           {/* Left column — inputs */}
           <div className="flex flex-1 flex-col gap-4">
@@ -550,6 +554,7 @@ export function EditorShell({ initialPage }: EditorShellProps) {
           </div>
 
           {/* Right column — product card preview (Figma design) */}
+          {page.sectionId !== "unique" && (
           <div className="flex flex-col gap-3 lg:w-[380px] lg:shrink-0">
             <h2 className="text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground">
               Карточка продукта
@@ -580,25 +585,32 @@ export function EditorShell({ initialPage }: EditorShellProps) {
               />
             </div>
           </div>
+          )}
         </div>
+        )}
 
-        <Separator className="mb-8" />
+        {page.caseType !== "mini" && <Separator className="mb-8" />}
 
         {/* Blocks */}
         <div className="space-y-4">
-          <h2 className="text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground">
-            Блоки страницы
-          </h2>
+          {page.caseType !== "mini" && (
+            <h2 className="text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground">
+              Блоки страницы
+            </h2>
+          )}
 
           <BlockList
             blocks={page.blocks}
             sectionId={page.sectionId}
+            pageSlug={page.slug}
             hasExperts={expertProduct}
+            experts={resolvedExperts}
             onToggleBlock={toggleBlock}
             onUpdateBlock={updateBlock}
             onReorderBlocks={reorderBlocks}
             onInsertBlock={insertBlock}
             onDeleteBlock={deleteBlock}
+            disableInsert={page.caseType === "mini"}
           />
         </div>
        </div>

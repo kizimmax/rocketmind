@@ -49,7 +49,29 @@
       "Bash(sudo kill *)",
       "Bash(lsof -ti:3001,3005)",
       "Bash(rm -f /Users/Maxi/GitHub/Rocketmind/apps/site-admin/.next/dev/lock)",
-      "Bash(NODE_OPTIONS='--max-old-space-size=4096' npx next dev --port 3005)"
+      "Bash(NODE_OPTIONS='--max-old-space-size=4096' npx next dev --port 3005)",
+      "Bash(curl -sI -H \"User-Agent: Mozilla/5.0 \\(iPhone; CPU iPhone OS 17_0 like Mac OS X\\) AppleWebKit/605.1.15\" http://localhost:3001/about)",
+      "Bash(curl -sI http://localhost:3001/with_descriptor_dark_background_ru.svg)",
+      "Bash(curl -sI http://localhost:3001/images/unique/rocketmind/logos/cell-clip-1744800000000.svg)",
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(iPhone; CPU iPhone OS 17_0 like Mac OS X\\) AppleWebKit/605.1.15\" http://localhost:3001/about)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu --window-size=390,844 --screenshot=/tmp/about-mobile.png --virtual-time-budget=5000 http://localhost:3001/about)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu --window-size=390,4800 --screenshot=/tmp/about-mobile-full.png --virtual-time-budget=10000 http://localhost:3001/about)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu --window-size=390,1400 --screenshot=/tmp/about-mobile-v2.png --virtual-time-budget=5000 http://localhost:3001/about)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu --window-size=390,1400 --screenshot=/tmp/about-mobile-v3.png --virtual-time-budget=5000 http://localhost:3001/about)",
+      "Bash(pkill -f \"next dev --port 3004\")",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu --window-size=390,1400 --screenshot=/tmp/about-mobile-v4.png --virtual-time-budget=5000 http://localhost:3001/about)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu --force-device-scale-factor=1 --window-size=390,1400 --user-agent=\"Mozilla/5.0 \\(iPhone; CPU iPhone OS 17_0 like Mac OS X\\) AppleWebKit/605.1.15\" --screenshot=/tmp/about-mobile-v5.png --virtual-time-budget=5000 http://localhost:3001/about)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --hide-scrollbars --window-size=390,1400 --virtual-time-budget=8000 --screenshot=/tmp/about-mobile-v6.png http://localhost:3001/about)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --window-size=390,400 --virtual-time-budget=5000 --dump-dom http://localhost:3001/about)",
+      "Bash(npm ls *)",
+      "Bash(grep -E \"editor\\\\.tsx$\")",
+      "Bash(npx --no-install tsc --noEmit -p apps/site-admin)",
+      "Bash(../../node_modules/.bin/tsc --noEmit)",
+      "Bash(node scripts/build-cms-data.mjs)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp",
+      "/Users/Maxi/GitHub/Rocketmind/apps/site/.next/dev"
     ]
   }
 }

@@ -9,26 +9,30 @@ import {
   type ReactNode,
 } from "react";
 import React from "react";
-import type { SitePage, PageStatus } from "./types";
+import type { SitePage, PageStatus, CaseType } from "./types";
 import { createSeedPages } from "./seed-data";
+import { MAX_FEATURED_CASES } from "./constants";
+import { apiFetch, IS_STATIC } from "./api-client";
 
-const LS_KEY = "rm_site_admin_pages";
-const isStaticExport = process.env.NEXT_PUBLIC_STATIC === "1";
+const LS_KEY = "cms:demo:v1:pages";
+/** One-shot migration: prior demo builds used this key; drop it if present. */
+const LEGACY_LS_KEY = "rm_site_admin_pages";
+const isStaticExport = IS_STATIC;
 
 // ── localStorage helpers ────────────────────────────────────────────────────
 
-function loadFromLS(): SitePage[] {
+function readLS(): SitePage[] | null {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) return JSON.parse(raw) as SitePage[];
+    // Legacy migration: if old key exists, clear it (its data is stale).
+    if (localStorage.getItem(LEGACY_LS_KEY)) localStorage.removeItem(LEGACY_LS_KEY);
   } catch { /* ignore */ }
-  const seed = createSeedPages();
-  localStorage.setItem(LS_KEY, JSON.stringify(seed));
-  return seed;
+  return null;
 }
 
 function saveToLS(pages: SitePage[]) {
-  localStorage.setItem(LS_KEY, JSON.stringify(pages));
+  try { localStorage.setItem(LS_KEY, JSON.stringify(pages)); } catch { /* ignore */ }
 }
 
 // ── Context ─────────────────────────────────────────────────────────────────
@@ -38,11 +42,15 @@ interface StoreContext {
   loading: boolean;
   getPagesBySection(sectionId: string): SitePage[];
   getPage(pageId: string): SitePage | undefined;
-  createPage(sectionId: string, title: string): Promise<SitePage | null>;
+  createPage(sectionId: string, title: string, options?: { caseType?: CaseType }): Promise<SitePage | null>;
   setPageStatus(pageId: string, status: PageStatus): void;
   deletePage(pageId: string): Promise<void>;
   savePage(page: SitePage): Promise<void>;
   reorderPages(sectionId: string, orderedIds: string[]): void;
+  /** Toggle featured flag on a case. Returns false if attempted to exceed the cap. */
+  setCaseFeatured(pageId: string, value: boolean): Promise<boolean>;
+  /** Count of cases currently marked featured (across all sections). */
+  featuredCasesCount(): number;
   reload(): Promise<void>;
 }
 
@@ -53,19 +61,23 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchPages = useCallback(async () => {
+    // In static mode, prefer user's local edits (if any) over the snapshot.
     if (isStaticExport) {
-      setPages(loadFromLS());
-      setLoading(false);
-      return;
+      const ls = readLS();
+      if (ls) {
+        setPages(ls);
+        setLoading(false);
+        return;
+      }
     }
     try {
-      const res = await fetch("/api/pages");
+      const res = await apiFetch("/api/pages");
       if (!res.ok) throw new Error();
       const data = await res.json();
-      setPages(data as SitePage[]);
+      const pages = Array.isArray(data) && data.length ? (data as SitePage[]) : createSeedPages();
+      setPages(pages);
     } catch {
-      // API not available — fallback to localStorage
-      setPages(loadFromLS());
+      setPages(createSeedPages());
     } finally {
       setLoading(false);
     }
@@ -89,7 +101,11 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
   );
 
   const createPage = useCallback(
-    async (sectionId: string, title: string): Promise<SitePage | null> => {
+    async (
+      sectionId: string,
+      title: string,
+      options?: { caseType?: CaseType },
+    ): Promise<SitePage | null> => {
       const slug = title
         .toLowerCase()
         .replace(/[^a-zа-яё0-9\s-]/gi, "")
@@ -111,6 +127,8 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
           cardDescription: "",
           metaTitle: `${title} — Rocketmind`,
           metaDescription: "",
+          caseType: sectionId === "cases" ? options?.caseType ?? "big" : undefined,
+          featured: sectionId === "cases" ? false : undefined,
           blocks: [],
           createdAt: now,
           updatedAt: now,
@@ -122,20 +140,34 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const res = await fetch("/api/pages", {
+        const res = await apiFetch("/api/pages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sectionId, slug, menuTitle: title }),
+          body: JSON.stringify({
+            sectionId,
+            slug,
+            menuTitle: title,
+            ...(sectionId === "cases" ? { caseType: options?.caseType ?? "big" } : {}),
+          }),
         });
         if (!res.ok) return null;
         const page = (await res.json()) as SitePage;
+        // Refresh from disk so the editor sees the full block list (caseCard etc.)
+        try {
+          const listRes = await apiFetch("/api/pages");
+          if (listRes.ok) {
+            const fresh = (await listRes.json()) as SitePage[];
+            setPages(fresh);
+            return fresh.find((p) => p.id === page.id) ?? page;
+          }
+        } catch { /* fall through */ }
         setPages((prev) => [...prev, page]);
         return page;
       } catch {
         return null;
       }
     },
-    [pages]
+    []
   );
 
   const setPageStatus = useCallback(
@@ -159,7 +191,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
-      const res = await fetch(`/api/pages/${encodeURIComponent(pageId)}`, {
+      const res = await apiFetch(`/api/pages/${encodeURIComponent(pageId)}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -180,7 +212,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
-      await fetch(`/api/pages/${encodeURIComponent(page.id)}`, {
+      await apiFetch(`/api/pages/${encodeURIComponent(page.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(page),
@@ -208,6 +240,37 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  const featuredCasesCount = useCallback(
+    () => pages.filter((p) => p.sectionId === "cases" && p.featured === true).length,
+    [pages],
+  );
+
+  const setCaseFeatured = useCallback(
+    async (pageId: string, value: boolean): Promise<boolean> => {
+      const target = pages.find((p) => p.id === pageId);
+      if (!target || target.sectionId !== "cases") return false;
+      if (value === true && target.featured !== true) {
+        const cur = pages.filter((p) => p.sectionId === "cases" && p.featured === true).length;
+        if (cur >= MAX_FEATURED_CASES) return false;
+      }
+      const updated: SitePage = { ...target, featured: value };
+      setPages((prev) => prev.map((p) => (p.id === pageId ? updated : p)));
+      if (isStaticExport) {
+        saveToLS(pages.map((p) => (p.id === pageId ? updated : p)));
+      } else {
+        try {
+          await apiFetch(`/api/pages/${encodeURIComponent(pageId)}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updated),
+          });
+        } catch { /* ignore */ }
+      }
+      return true;
+    },
+    [pages],
+  );
+
   if (loading) {
     return React.createElement(
       "div",
@@ -232,6 +295,8 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         deletePage,
         savePage,
         reorderPages,
+        setCaseFeatured,
+        featuredCasesCount,
         reload: fetchPages,
       },
     },

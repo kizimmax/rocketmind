@@ -9,6 +9,7 @@ import {
   ToggleAnimCard, LinkCTADemo,
 } from "@/components/ds/shared"
 import { DotGridDemo, AnimatedGridLinesDemo, LensShowcase } from "@/components/ds/animation-demos"
+import { WaveAnimation } from "@rocketmind/ui"
 import { SceneHero, SceneGradient, SceneMinimal, LensPropsTable } from "@/components/ds/LensDemoScenes"
 
 export default function AnimationsPage() {
@@ -578,6 +579,49 @@ export default function AnimationsPage() {
               </p>
             </div>
           </div>
+        </SpecBlock>
+
+        {/* 8.13 Wave Animation */}
+        <SubSection id="animations-wave" title="8.13 Wave Animation" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
+          Фоновый шейдер из бегущей сетки точек. Применяется в футере лендинга и на экране 404 как декоративный слой.
+          Точки плавно затухают по мере удаления от камеры (глубина <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-caption-family)]">u_fade_near → u_fade_far</code>),
+          поэтому нижние точки остаются яркими, а верх плавно растворяется в фоне.
+        </p>
+
+        <div className="mb-6 overflow-hidden rounded-lg border border-border bg-black" style={{ height: 360 }}>
+          <WaveAnimation
+            pointSize={3}
+            waveSpeed={2}
+            waveIntensity={10}
+            particleColor="#ffffff"
+            gridDistance={4}
+          />
+        </div>
+
+        <SpecBlock title="Параметры">
+          <div className="space-y-2">
+            {[
+              { token: "pointSize",      value: "3",       desc: "Размер точки в пикселях" },
+              { token: "waveSpeed",      value: "2",       desc: "Скорость бегущей волны" },
+              { token: "waveIntensity",  value: "10",      desc: "Частота синусоиды по сетке" },
+              { token: "particleColor",  value: "#ffffff", desc: "Цвет точек (применяем с альфой через fade)" },
+              { token: "gridDistance",   value: "4",       desc: "Шаг сетки в мировых единицах" },
+              { token: "fadeNear",       value: "20",      desc: "Глубина, с которой начинается затухание" },
+              { token: "fadeFar",        value: "200",     desc: "Глубина, на которой точка полностью прозрачна" },
+            ].map((t) => (
+              <TokenRow key={t.token} token={t.token} value={t.value} desc={t.desc} />
+            ))}
+          </div>
+          <pre className="mt-4 rounded-xl bg-muted p-5 text-sm overflow-x-auto">
+            <code>{`<WaveAnimation
+  pointSize={3}
+  waveSpeed={2}
+  waveIntensity={10}
+  particleColor="#ffffff"
+  gridDistance={4}
+/>`}</code>
+          </pre>
         </SpecBlock>
       </Section>
 

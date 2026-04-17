@@ -290,6 +290,19 @@ export type RoundGlassLensProps = {
    */
   onReady?: () => void;
 
+  /**
+   * Delay before the gradient border + backdrop-blur container fades in (ms).
+   * Gives the page time to paint before the lens reveals itself. Default: 0.
+   */
+  containerFadeInDelay?: number;
+
+  /**
+   * Delay before the first html2canvas scene capture (ms). Use this to wait
+   * for scene-level opacity animations (e.g. hero background fade-in) to
+   * complete; capturing too early produces a dark/black texture. Default: 0.
+   */
+  captureStartDelay?: number;
+
   // ── Dev controls ─────────────────────────────────────────────────────────
 
   /**
@@ -430,6 +443,8 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     motionParallax,
     parallaxOnWindow = false,
     onReady,
+    containerFadeInDelay = 0,
+    captureStartDelay = 0,
     showControls = false,
     storageKey,
     className,
@@ -448,9 +463,12 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
   const positionRef = useRef({ x, y, xOffset, yOffset, anchorRef });
 
   const [mounted, setMounted] = useState(false);
-  // containerVisible: ring + backdrop-blur show after first position sync (before capture)
+  // containerVisible: ring + backdrop-blur container fades in after containerFadeInDelay
   const [containerVisible, setContainerVisible] = useState(false);
-  // canvasReady: canvas fades in after first successful WebGL render with captured texture
+  // webglReady: first successful WebGL render with captured scene texture is done
+  const [webglReady, setWebglReady] = useState(false);
+  // canvasReady: container is visible AND webgl is ready → blur cross-fades to 0 over 2s
+  // and canvas simultaneously fades in over 2s to reveal the WebGL distortion.
   const [canvasReady, setCanvasReady] = useState(false);
   const [activeTab, setActiveTab] = useState<"optical" | "shape" | "style" | "motion">("optical");
 
@@ -495,28 +513,58 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     ],
   );
 
-  // Container (ring + backdrop-blur) fades in after first position sync
+  // Container (ring + backdrop-blur) fades in after containerFadeInDelay.
+  // When canvasReady flips true (container visible AND webgl ready), the
+  // backdrop-filter blur cross-fades to zero over 2s so the WebGL distortion
+  // becomes visible underneath.
   const lensStyle = useMemo<CSSProperties>(
-    () => ({
-      "--lens-gradient-angle": `${effectiveSettings.gradientAngle}deg`,
-      width: `${size}px`,
-      height: `${size}px`,
-      opacity: containerVisible ? 1 : 0,
-      transition: containerVisible ? "opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1)" : undefined,
-      ...externalStyle,
-    } as CSSProperties),
+    () => {
+      const transitions: string[] = [];
+      if (containerVisible) {
+        transitions.push("opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1)");
+      }
+      transitions.push(
+        "backdrop-filter 2s cubic-bezier(0.23, 1, 0.32, 1)",
+        "-webkit-backdrop-filter 2s cubic-bezier(0.23, 1, 0.32, 1)",
+      );
+      const blurOverride = canvasReady
+        ? {
+            backdropFilter: "blur(0px) brightness(1)",
+            WebkitBackdropFilter: "blur(0px) brightness(1)",
+          }
+        : {};
+      return {
+        "--lens-gradient-angle": `${effectiveSettings.gradientAngle}deg`,
+        width: `${size}px`,
+        height: `${size}px`,
+        opacity: containerVisible ? 1 : 0,
+        transition: transitions.join(", "),
+        ...blurOverride,
+        ...externalStyle,
+      } as unknown as CSSProperties;
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [effectiveSettings.gradientAngle, size, externalStyle, containerVisible],
+    [effectiveSettings.gradientAngle, size, externalStyle, containerVisible, canvasReady],
   );
 
-  // Canvas (distortion) cross-fades in over the blur when WebGL texture is ready
+  // Canvas (distortion) cross-fades in over 2s while the backdrop-filter blur
+  // simultaneously transitions to zero — so the glass preview smoothly morphs
+  // into the WebGL-rendered distortion.
   const canvasStyle = useMemo<CSSProperties>(
     () => ({
       opacity: canvasReady ? 1 : 0,
-      transition: canvasReady ? "opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1)" : undefined,
+      transition: canvasReady ? "opacity 2s cubic-bezier(0.23, 1, 0.32, 1)" : undefined,
     }),
     [canvasReady],
   );
+
+  // Reveal distortion once the gradient-border container is visible and WebGL has rendered.
+  // Flipping canvasReady starts the cross-fade: blur→0 + canvas opacity 0→1 (both 2s).
+  useEffect(() => {
+    if (!containerVisible || !webglReady || canvasReady) return;
+    setCanvasReady(true);
+    onReadyRef.current?.();
+  }, [containerVisible, webglReady, canvasReady]);
 
   // Sync position props to ref → triggers re-position without WebGL teardown
   useEffect(() => {
@@ -556,6 +604,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     // ── CSS-only mode on mobile (<640px): gradient border ring, no WebGL ──────
     if (window.innerWidth < 640) {
       let mobileResizeObserver: ResizeObserver | null = null;
+      let disposedMobile = false;
 
       const syncMobile = () => {
         const { x: cx, y: cy, xOffset: cxo, yOffset: cyo, anchorRef: car } = positionRef.current;
@@ -582,8 +631,11 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
 
       syncRef.current = syncMobile;
       syncMobile();
-      setContainerVisible(true);
-      onReadyRef.current?.();
+      const mobileRevealTimer = window.setTimeout(() => {
+        if (disposedMobile) return;
+        setContainerVisible(true);
+        onReadyRef.current?.();
+      }, containerFadeInDelay);
 
       if (typeof ResizeObserver !== "undefined") {
         mobileResizeObserver = new ResizeObserver(syncMobile);
@@ -594,6 +646,8 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       window.addEventListener("resize", syncMobile);
 
       return () => {
+        disposedMobile = true;
+        window.clearTimeout(mobileRevealTimer);
         syncRef.current = null;
         mobileResizeObserver?.disconnect();
         window.removeEventListener("resize", syncMobile);
@@ -803,12 +857,17 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       }
     };
 
+    // Until the initial scene capture has been scheduled, suppress captures
+    // triggered by layout syncs — scene opacity animations (e.g. hero bg fade-in)
+    // may still be running and would produce a black/dark texture snapshot.
+    let capturesEnabled = captureStartDelay <= 0;
+
     const syncLayout = () => {
       syncPosition();
       resizeCanvas();
       drawLens();
       scheduleRender();
-      requestCapture(true);
+      if (capturesEnabled) requestCapture(true);
     };
 
     // ── Scene capture ─────────────────────────────────────────────────────────
@@ -885,13 +944,11 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
         drawLens();
         if (!readyFired) {
           readyFired = true;
-          // Wait one frame so the GPU has time to composite the rendered
-          // WebGL frame before the lens container fades in from opacity 0.
+          // Mark WebGL as ready. The reveal (canvasReady) is triggered by the
+          // effect watching [containerVisible, webglReady], so the blur-fade and
+          // distortion appear only once the gradient-border container is on screen.
           window.requestAnimationFrame(() => {
-            if (!disposed) {
-              setCanvasReady(true);
-              onReadyRef.current?.();
-            }
+            if (!disposed) setWebglReady(true);
           });
         }
       } catch (err) {
@@ -933,13 +990,26 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
 
     // ── Bootstrap ─────────────────────────────────────────────────────────────
     syncRef.current = syncLayout;
+    // First layout without capture — ensures position/size are set but defers
+    // the html2canvas snapshot until the scene is guaranteed fully painted.
     syncLayout();
     glass.style.transform = "translate3d(-50%, -50%, 0)";
     scheduleRender();
-    // Show ring + backdrop-blur after position is set, before capture completes
-    window.requestAnimationFrame(() => {
+    // Show ring + backdrop-blur after the configured delay so the lens appears
+    // after the page has had time to paint. Capture can complete in parallel;
+    // the distortion reveal is gated separately on containerVisible + webglReady.
+    const revealContainerTimer = window.setTimeout(() => {
       if (!disposed) setContainerVisible(true);
-    });
+    }, containerFadeInDelay);
+    // Delay the first scene capture so overlapping opacity transitions (e.g.
+    // hero background fade-in) have finished before html2canvas runs. Without
+    // this, the first snapshot can be black and remain until the next capture
+    // is triggered by a pointer move or resize.
+    const initialCaptureTimer = window.setTimeout(() => {
+      if (disposed) return;
+      capturesEnabled = true;
+      requestCapture(true);
+    }, captureStartDelay);
 
     // Single initial capture is triggered by syncLayout() above.
     // Scene content is static — no need for continuous recapture.
@@ -964,6 +1034,8 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
 
     return () => {
       disposed = true;
+      window.clearTimeout(revealContainerTimer);
+      window.clearTimeout(initialCaptureTimer);
       syncRef.current = null;
       if (frameId) window.cancelAnimationFrame(frameId);
       if (parallaxOnWindow) {

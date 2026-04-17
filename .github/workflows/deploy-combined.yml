@@ -68,6 +68,7 @@ jobs:
         continue-on-error: true
         run: |
           cd apps/site-admin
+          BASE_PATH=/rocketmind/cms node scripts/build-cms-data.mjs
           mv src/app/api src/app/_api 2>/dev/null || true
           GITHUB_PAGES=1 npx next build
           mv src/app/_api src/app/api 2>/dev/null || true

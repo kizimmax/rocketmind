@@ -11,6 +11,7 @@ import {
   Image as ImageIcon,
   Eye,
   EyeOff,
+  Star,
 } from "lucide-react";
 import {
   Badge,
@@ -48,8 +49,11 @@ function getCoverPath(page: SitePage): string {
   return `images/products/${page.sectionId}/${page.slug}/cover.*`;
 }
 
-/** Extract card tag: "Экспертный продукт" if experts assigned */
+/** Extract card tag: "Экспертный продукт", "Большой кейс", "Мини-кейс", or null */
 function getCardTag(page: SitePage): string | null {
+  if (page.sectionId === "cases") {
+    return page.caseType === "mini" ? "Мини-кейс" : "Большой кейс";
+  }
   const expertsBlock = page.blocks.find((b) => b.type === "experts");
   const experts = expertsBlock?.data?.experts as string[] | undefined;
   if (experts && experts.length > 0) return "Экспертный продукт";
@@ -65,6 +69,7 @@ function PageActions({
   onRestore,
   onDelete,
   onTogglePublish,
+  onToggleFeatured,
 }: {
   page: SitePage;
   isArchived: boolean;
@@ -72,6 +77,7 @@ function PageActions({
   onRestore: (id: string) => void;
   onDelete: (id: string) => void;
   onTogglePublish: (id: string) => void;
+  onToggleFeatured?: (id: string) => void;
 }) {
   const router = useRouter();
   const isPublished = page.status === "published";
@@ -110,6 +116,14 @@ function PageActions({
               )}
             </DropdownMenuItem>
           )}
+          {onToggleFeatured && page.sectionId === "cases" && !isArchived && (
+            <DropdownMenuItem onClick={() => onToggleFeatured(page.id)}>
+              <Star
+                className={`mr-2 h-3.5 w-3.5 ${page.featured ? "fill-[color:var(--rm-yellow-100)] text-[color:var(--rm-yellow-100)]" : ""}`}
+              />
+              {page.featured ? "Убрать с общего показа" : "Отображать на всех страницах"}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           {isArchived ? (
             <DropdownMenuItem onClick={() => onRestore(page.id)}>
@@ -144,6 +158,8 @@ interface PageCardProps {
   onRestore: (id: string) => void;
   onDelete: (id: string) => void;
   onTogglePublish: (id: string) => void;
+  /** Cases section only — toggle the "show on all pages" flag. */
+  onToggleFeatured?: (id: string) => void;
   onGripDown?: () => void;
   onGripUp?: () => void;
   /** Drag props for list-mode <tr> (applied directly since no wrapper div) */
@@ -157,11 +173,12 @@ interface PageCardProps {
   };
 }
 
-export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDelete, onTogglePublish, onGripDown, onGripUp, dragProps }: PageCardProps) {
+export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDelete, onTogglePublish, onToggleFeatured, onGripDown, onGripUp, dragProps }: PageCardProps) {
   const router = useRouter();
   const status = STATUS_BADGE[page.status] || STATUS_BADGE.hidden;
   const isArchived = page.status === "archived";
-  const cover = getCoverData(page);
+  const isMiniCase = page.sectionId === "cases" && page.caseType === "mini";
+  const cover = isMiniCase ? null : getCoverData(page);
   const isImage = isImageSection(page.sectionId);
   const coverPath = getCoverPath(page);
   const tag = getCardTag(page);
@@ -197,19 +214,21 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
           </div>
         </td>
 
-        {/* Thumbnail */}
-        <td className="w-10 py-2 px-1 align-middle">
-          {cover ? (
-            <div
-              className={`h-8 w-8 shrink-0 rounded-sm border border-border ${isImage ? "bg-cover bg-center" : "bg-contain bg-center bg-no-repeat"}`}
-              style={{ backgroundImage: `url(${cover})` }}
-            />
-          ) : (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-dashed border-border">
-              <ImageIcon className="h-3 w-3 text-muted-foreground/50" />
-            </div>
-          )}
-        </td>
+        {/* Thumbnail — skipped for mini cases (no image at all) */}
+        {!isMiniCase && (
+          <td className="w-10 py-2 px-1 align-middle">
+            {cover ? (
+              <div
+                className={`h-8 w-8 shrink-0 rounded-sm border border-border ${isImage ? "bg-cover bg-center" : "bg-contain bg-center bg-no-repeat"}`}
+                style={{ backgroundImage: `url(${cover})` }}
+              />
+            ) : (
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-dashed border-border">
+                <ImageIcon className="h-3 w-3 text-muted-foreground/50" />
+              </div>
+            )}
+          </td>
+        )}
 
         {/* Title + Tag */}
         <td className="py-2 px-2 align-middle">
@@ -221,6 +240,19 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
               <span className="shrink-0 rounded-sm bg-[color:var(--rm-yellow-100)]/10 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium text-[color:var(--rm-yellow-100)]">
                 {tag}
               </span>
+            )}
+            {page.sectionId === "cases" && onToggleFeatured && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onToggleFeatured(page.id); }}
+                className="shrink-0 rounded-sm p-0.5 text-muted-foreground transition hover:bg-foreground/10"
+                aria-label={page.featured ? "На всех страницах" : "Сделать общим"}
+                title={page.featured ? "На всех страницах — кликните, чтобы убрать" : "Отображать на всех страницах"}
+              >
+                <Star
+                  className={`h-3.5 w-3.5 ${page.featured ? "fill-[color:var(--rm-yellow-100)] text-[color:var(--rm-yellow-100)]" : ""}`}
+                />
+              </button>
             )}
           </div>
         </td>
@@ -259,7 +291,7 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
 
         {/* Actions */}
         <td className="py-2 pr-3 pl-1 align-middle" onClick={(e) => e.stopPropagation()}>
-          <PageActions page={page} isArchived={isArchived} onArchive={onArchive} onRestore={onRestore} onDelete={onDelete} onTogglePublish={onTogglePublish} />
+          <PageActions page={page} isArchived={isArchived} onArchive={onArchive} onRestore={onRestore} onDelete={onDelete} onTogglePublish={onTogglePublish} onToggleFeatured={onToggleFeatured} />
         </td>
       </tr>
     );
@@ -284,8 +316,8 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
         </div>
       )}
 
-      {/* Thumbnail area */}
-      {isImage ? (
+      {/* Thumbnail area — skipped for mini cases (no image at all) */}
+      {!isMiniCase && (isImage ? (
         /* Image-style cover (academy / ai-products / media) — 4:3 landscape */
         <div className="relative aspect-[4/3] w-full bg-muted/30">
           {cover ? (
@@ -313,7 +345,7 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
             </div>
           )}
         </div>
-      )}
+      ))}
 
       {/* Card body */}
       <div className="flex flex-1 flex-col gap-2 px-4 pb-3 pt-2">
@@ -326,6 +358,19 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
             <span className="truncate rounded-sm bg-[color:var(--rm-yellow-100)]/10 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium text-[color:var(--rm-yellow-100)]">
               {tag}
             </span>
+          )}
+          {page.sectionId === "cases" && onToggleFeatured && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onToggleFeatured(page.id); }}
+              className="shrink-0 rounded-sm p-0.5 text-muted-foreground transition hover:bg-foreground/10"
+              aria-label={page.featured ? "На всех страницах" : "Сделать общим"}
+              title={page.featured ? "На всех страницах — кликните, чтобы убрать" : "Отображать на всех страницах"}
+            >
+              <Star
+                className={`h-3.5 w-3.5 ${page.featured ? "fill-[color:var(--rm-yellow-100)] text-[color:var(--rm-yellow-100)]" : ""}`}
+              />
+            </button>
           )}
           <span className="ml-auto shrink-0">
             <Badge variant={status.variant as never} size="sm">
@@ -357,7 +402,7 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
             )}
           </div>
           <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-            <PageActions page={page} isArchived={isArchived} onArchive={onArchive} onRestore={onRestore} onDelete={onDelete} onTogglePublish={onTogglePublish} />
+            <PageActions page={page} isArchived={isArchived} onArchive={onArchive} onRestore={onRestore} onDelete={onDelete} onTogglePublish={onTogglePublish} onToggleFeatured={onToggleFeatured} />
           </div>
         </div>
       </div>

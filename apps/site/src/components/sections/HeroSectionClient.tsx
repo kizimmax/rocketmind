@@ -15,8 +15,8 @@ import { AnimatePresence, motion } from "motion/react";
 
 import { InfiniteLogoMarquee } from "@rocketmind/ui";
 import { RoundGlassLens } from "@/components/ui/round-glass-lens";
-import { rocketmindHeroRotatingLines } from "@/content/rocketmind-hero";
 import type { PartnerLogo } from "@/lib/partner-logos";
+import type { HomeHeroRotatingLine } from "@/lib/unique";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -36,6 +36,9 @@ const platformTextStyle = {
 
 type HeroSectionClientProps = {
   logos: PartnerLogo[];
+  title: string;
+  pikCaption: string;
+  rotatingLines: HomeHeroRotatingLine[];
 };
 
 type BreakpointKey = "mobile" | "tablet" | "desktop" | "wide";
@@ -292,7 +295,7 @@ function ControlSlider({
   );
 }
 
-export function HeroSectionClient({ logos }: HeroSectionClientProps) {
+export function HeroSectionClient({ logos, title, pikCaption, rotatingLines }: HeroSectionClientProps) {
   const heroRef = useRef<HTMLElement | null>(null);
   const wordmarkRef = useRef<HTMLDivElement | null>(null);
   const staticGlassRef = useRef<HTMLDivElement | null>(null);
@@ -310,6 +313,8 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
     BREAKPOINT_PRESETS.wide,
   );
   const [heroReady, setHeroReady] = useState(false);
+  // Большая статичная линза — градиентный бордер появляется через 1000ms после mount,
+  // на 500ms позже малой линзы. Не зависит от готовности WebGL.
   const [largeLensReady, setLargeLensReady] = useState(false);
 
   const breakpointPreset = BREAKPOINT_PRESETS[breakpointKey];
@@ -340,6 +345,12 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
   // ── Hero entrance animations ──────────────────────────────────────────────
   useEffect(() => {
     const t = setTimeout(() => setHeroReady(true), 150);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Большая линза появляется через 1000ms (500ms после малой).
+  useEffect(() => {
+    const t = setTimeout(() => setLargeLensReady(true), 1000);
     return () => clearTimeout(t);
   }, []);
 
@@ -377,14 +388,22 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
 
   // ── Rotating headline ────────────────────────────────────────────────────
   useEffect(() => {
-    if (rocketmindHeroRotatingLines.length <= 1) return;
+    if (rotatingLines.length <= 1) return;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
     const intervalId = window.setInterval(() => {
-      setActiveRotatingLineIndex((prev) => (prev + 1) % rocketmindHeroRotatingLines.length);
+      setActiveRotatingLineIndex((prev) => (prev + 1) % rotatingLines.length);
     }, HERO_ROTATION_INTERVAL_MS);
     return () => window.clearInterval(intervalId);
-  }, []);
+  }, [rotatingLines.length]);
+
+  // Clamp active index if lines array shrinks at runtime.
+  const safeActiveIndex = rotatingLines.length === 0
+    ? 0
+    : Math.min(activeRotatingLineIndex, rotatingLines.length - 1);
+  const activeLine = rotatingLines[safeActiveIndex];
+  const titleLines = title.split(/\r?\n/);
+  const pikCaptionLines = pikCaption.split(/\r?\n/);
 
   // ── Keep settingsRef in sync + re-position static lens ───────────────────
   useEffect(() => {
@@ -752,7 +771,8 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
               motionStrengthY={settings.motionStrengthY}
               motionParallax
               showControls={false}
-              onReady={() => setLargeLensReady(true)}
+              containerFadeInDelay={500}
+              captureStartDelay={1500}
             />
 
             {/* Large static CSS lens */}
@@ -776,12 +796,15 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
           <div className="grid gap-10 lg:grid-cols-[minmax(0,888px)_212px] lg:items-end lg:justify-between">
             <motion.div className="flex flex-col items-start gap-6" {...heroFadeUp(heroReady, 0.22)}>
               <h1 className="h2 w-full max-w-[888px]">
-                <span className="block text-foreground">Помогаем бизнесу&nbsp;расти</span>
-                <span className="block text-foreground">и масштабироваться</span>
+                {titleLines.map((line, i) => (
+                  <span key={i} className="block text-foreground">
+                    {line.replace(/ /g, "\u00A0")}
+                  </span>
+                ))}
                 <span className="hero-rotating-line-viewport relative block text-muted-foreground">
                   <AnimatePresence initial={false}>
                     <motion.p
-                      key={activeRotatingLineIndex}
+                      key={safeActiveIndex}
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -16 }}
@@ -792,19 +815,35 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
                       }}
                       className="absolute inset-x-0 top-0 md:whitespace-nowrap"
                     >
-                      {rocketmindHeroRotatingLines[activeRotatingLineIndex]}
+                      {activeLine?.text ?? ""}
                     </motion.p>
                   </AnimatePresence>
                 </span>
               </h1>
 
-              <Link
-                href="#contact"
-                className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88"
-              >
-                <span>Обсудить стратегию</span>
-                <ArrowRight size={20} strokeWidth={2.1} className="text-primary" />
-              </Link>
+              {activeLine && (
+                <Link
+                  key={safeActiveIndex}
+                  href={activeLine.ctaHref || "#contact"}
+                  className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88"
+                >
+                  <AnimatePresence initial={false} mode="wait">
+                    <motion.span
+                      key={activeLine.ctaLabel}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{
+                        duration: HERO_ROTATION_TRANSITION_MS / 1000,
+                        ease: [0.23, 1, 0.32, 1],
+                      }}
+                    >
+                      {activeLine.ctaLabel || "Обсудить стратегию"}
+                    </motion.span>
+                  </AnimatePresence>
+                  <ArrowRight size={20} strokeWidth={2.1} className="text-primary" />
+                </Link>
+              )}
             </motion.div>
 
             <motion.div className="flex flex-row items-center gap-4 self-end lg:flex-col lg:items-end lg:gap-5" {...heroFadeUp(heroReady, 0.38)}>
@@ -819,11 +858,12 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
                 className="min-w-0 flex-1 text-left font-mono text-[10px] uppercase leading-[1.32] tracking-[0.01em] text-muted-foreground md:text-[14px] lg:flex-none lg:text-right"
                 style={platformTextStyle}
               >
-                Развиваем методологию
-                <br />
-                и представляем PIK
-                <br />
-                в России и странах Азии
+                {pikCaptionLines.map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    {i < pikCaptionLines.length - 1 && <br />}
+                  </span>
+                ))}
               </p>
             </motion.div>
           </div>

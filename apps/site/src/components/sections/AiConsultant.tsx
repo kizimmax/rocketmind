@@ -208,8 +208,17 @@ function MessageBubble({
         className={`rounded-sm px-3 py-2.5 text-[length:var(--text-16)] leading-[1.28] text-foreground ${
           isUser
             ? "max-w-[85%] bg-rm-gray-2 md:max-w-[620px]"
-            : "max-w-[95%] bg-card md:max-w-[858px]"
+            : "max-w-[95%] md:max-w-[858px]"
         }`}
+        style={
+          !isUser
+            ? {
+                backgroundColor: "rgba(18, 18, 18, 0.3)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+              }
+            : undefined
+        }
       >
         <p className="whitespace-pre-wrap">
           {displayedText}
@@ -226,7 +235,14 @@ function MessageBubble({
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
-      <div className="rounded-sm bg-card px-4 py-2.5">
+      <div
+        className="rounded-sm px-4 py-2.5"
+        style={{
+          backgroundColor: "rgba(18, 18, 18, 0.3)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+        }}
+      >
         <div className="flex space-x-1.5">
           <span className="h-2 w-2 animate-bounce rounded-full bg-border [animation-delay:0ms]" />
           <span className="h-2 w-2 animate-bounce rounded-full bg-border [animation-delay:150ms]" />

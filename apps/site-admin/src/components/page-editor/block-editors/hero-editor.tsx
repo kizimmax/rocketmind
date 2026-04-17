@@ -196,7 +196,7 @@ export function HeroEditor({ data, hasExperts, experts = [], onUpdate }: HeroEdi
           <div className="col-span-2 col-start-1 row-start-3 self-end pb-8 flex flex-col gap-4">
             {showExpertsBlock ? (
               <>
-                <HeroExperts experts={experts} quote={quote || undefined} />
+                <HeroExperts experts={experts} />
                 {/* Quote edit field */}
                 <div className="flex flex-col gap-1 mt-2">
                   <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-10)] uppercase tracking-wider text-[#939393]">

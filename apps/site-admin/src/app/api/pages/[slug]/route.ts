@@ -285,6 +285,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     cardTitle: page.cardTitle, cardDescription: page.cardDescription,
     metaTitle: page.metaTitle, metaDescription: page.metaDescription,
     expertProduct: typeof page.expertProduct === "boolean" ? page.expertProduct : null,
+    caseType: page.caseType === "mini" || page.caseType === "big" ? page.caseType : null,
+    featured: typeof page.featured === "boolean" ? page.featured : null,
+    order: typeof page.order === "number" ? page.order : null,
+    caseCard: enabled(block("caseCard")),
+    homeHero: enabled(block("homeHero")),
+    methodology: enabled(block("methodology")),
+    homeSections: enabled(block("homeSections")),
     hero: enabled(heroBlock),
     // logoMarquee is auto-enabled by default; persist `false` only if disabled, otherwise omit (null)
     logoMarquee: block("logoMarquee")?.enabled === false ? false : null,

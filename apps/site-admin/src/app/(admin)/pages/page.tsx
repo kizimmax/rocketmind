@@ -12,22 +12,32 @@ import {
   Input,
 } from "@rocketmind/ui";
 import { toast } from "sonner";
-import { ADMIN_SECTIONS, LOCKED_SECTIONS } from "@/lib/constants";
+import { ADMIN_SECTIONS, LOCKED_SECTIONS, MAX_FEATURED_CASES } from "@/lib/constants";
 import { useAdminStore } from "@/lib/store";
 import { useItemDnd } from "@/lib/use-item-dnd";
 import { PageCard } from "@/components/page-card";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import type { CaseType } from "@/lib/types";
 
 function PagesContent() {
   const searchParams = useSearchParams();
   const initialSection = searchParams.get("section") || "consulting";
 
-  const { getPagesBySection, createPage, setPageStatus, deletePage, reorderPages } =
-    useAdminStore();
+  const {
+    getPagesBySection,
+    createPage,
+    setPageStatus,
+    deletePage,
+    reorderPages,
+    setCaseFeatured,
+    featuredCasesCount,
+  } = useAdminStore();
 
   const [activeSection, setActiveSection] = useState(initialSection);
   const [isCreating, setIsCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  /** Cases section only — which kind of case to create when "Создать" is clicked. */
+  const [pendingCaseType, setPendingCaseType] = useState<CaseType>("big");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
@@ -47,14 +57,30 @@ function PagesContent() {
 
   async function handleCreate() {
     if (!newTitle.trim()) return;
-    const page = await createPage(activeSection, newTitle.trim());
+    const isCases = activeSection === "cases";
+    const page = await createPage(activeSection, newTitle.trim(), isCases ? { caseType: pendingCaseType } : undefined);
     setNewTitle("");
     setIsCreating(false);
     if (page) {
-      toast.success(`Страница «${page.menuTitle}» создана`);
+      const label = isCases
+        ? pendingCaseType === "mini" ? "Мини-кейс" : "Большой кейс"
+        : "Страница";
+      toast.success(`${label} «${page.menuTitle}» создан${isCases ? "" : "а"}`);
     } else {
       toast.error("Не удалось создать страницу");
     }
+  }
+
+  async function handleToggleFeatured(id: string) {
+    const target = activePages.find((p) => p.id === id);
+    if (!target) return;
+    const next = !target.featured;
+    const ok = await setCaseFeatured(id, next);
+    if (!ok) {
+      toast.error(`Максимум ${MAX_FEATURED_CASES} кейсов могут быть отмечены «на всех страницах». Сначала снимите галочку с одного из выбранных.`);
+      return;
+    }
+    toast.success(next ? "Кейс будет показываться на всех страницах" : "Кейс убран с общего показа");
   }
 
   function handleArchive(id: string) {
@@ -134,12 +160,17 @@ function PagesContent() {
           <TabsContent key={section.id} value={section.id}>
             {/* Add page — hidden in locked sections (e.g. "Уникальные") */}
             {!LOCKED_SECTIONS.has(section.id) && (
-              <div className="mb-4">
+              <div className="mb-4 flex items-center gap-3">
                 {isCreating ? (
                   <div className="flex items-center gap-2">
+                    {section.id === "cases" && (
+                      <span className="rounded-sm bg-foreground/10 px-2 py-1 text-[length:var(--text-11)] font-medium uppercase tracking-wider text-foreground">
+                        {pendingCaseType === "mini" ? "Мини-кейс" : "Большой кейс"}
+                      </span>
+                    )}
                     <Input
                       size="sm"
-                      placeholder="Название страницы"
+                      placeholder={section.id === "cases" ? "Название кейса" : "Название страницы"}
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                       onKeyDown={(e) => {
@@ -166,6 +197,34 @@ function PagesContent() {
                       Отмена
                     </Button>
                   </div>
+                ) : section.id === "cases" ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setPendingCaseType("big");
+                        setIsCreating(true);
+                      }}
+                    >
+                      <Plus className="mr-1 h-4 w-4" />
+                      Большой кейс
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setPendingCaseType("mini");
+                        setIsCreating(true);
+                      }}
+                    >
+                      <Plus className="mr-1 h-4 w-4" />
+                      Мини-кейс
+                    </Button>
+                    <span className="ml-auto text-[length:var(--text-12)] text-muted-foreground">
+                      На всех страницах: {featuredCasesCount()} / {MAX_FEATURED_CASES}
+                    </span>
+                  </>
                 ) : (
                   <Button
                     variant="outline"
@@ -202,6 +261,7 @@ function PagesContent() {
                         onRestore={handleRestore}
                         onDelete={setDeleteTarget}
                         onTogglePublish={handleTogglePublish}
+                        onToggleFeatured={section.id === "cases" ? handleToggleFeatured : undefined}
                         onGripDown={() => dnd.onGripDown(index)}
                         onGripUp={dnd.onGripUp}
                       />
@@ -236,6 +296,7 @@ function PagesContent() {
                           onRestore={handleRestore}
                           onDelete={setDeleteTarget}
                           onTogglePublish={handleTogglePublish}
+                          onToggleFeatured={section.id === "cases" ? handleToggleFeatured : undefined}
                           onGripDown={() => dnd.onGripDown(index)}
                           onGripUp={dnd.onGripUp}
                           dragProps={props}

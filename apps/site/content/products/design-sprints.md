@@ -7,7 +7,7 @@ cardTitle: Дизайн-спринты
 cardDescription: Организация дизайн-спринтов для быстрого тестирования идей.
 metaTitle: Дизайн-спринты | Rocketmind
 metaDescription: Организация дизайн-спринтов для быстрого тестирования идей.
-expertProduct: null
+expertProduct: true
 hero:
   caption: консалтинг и стратегии
   title: |
@@ -55,6 +55,9 @@ experts:
 aboutRocketmind:
   variant: dark
   leftVariant: alex
+projects: null
+pageBottom: null
+customSections: null
 socialProof: null
 duration: null
 whyRocketmind: null

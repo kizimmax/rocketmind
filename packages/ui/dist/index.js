@@ -4027,32 +4027,35 @@ function RocketmindMenu({
     (item) => !showDropdowns || !item.items || item.items.length === 0
   );
   const linkClass = cn(
-    "inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-sm",
+    "inline-flex items-center gap-3 whitespace-nowrap px-2.5 py-2 rounded-sm",
     "font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px]",
     "text-foreground transition-[color,opacity] duration-150 hover:opacity-[0.88]",
     "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
     itemClassName
   );
-  return /* @__PURE__ */ jsxs27("div", { className: cn("relative z-10 flex items-center", className), children: [
-    dropdownItems.length > 0 && /* @__PURE__ */ jsx44(
-      NavigationMenu,
-      {
-        className: cn(
-          "relative flex max-w-max items-center",
-          "[&>div]:left-auto [&>div]:right-0 [&>div]:justify-end"
-        ),
-        children: /* @__PURE__ */ jsx44(NavigationMenuList, { className: "flex list-none items-center gap-0.5", children: dropdownItems.map((item) => /* @__PURE__ */ jsx44(
-          DropdownSection,
-          {
-            item,
-            itemClassName
-          },
-          item.label
-        )) })
-      }
-    ),
-    plainItems.length > 0 && /* @__PURE__ */ jsx44("nav", { className: "flex list-none items-center gap-0.5", children: plainItems.map((item) => /* @__PURE__ */ jsx44(Link5, { href: item.href, className: linkClass, children: /* @__PURE__ */ jsx44("span", { children: item.label }) }, item.label)) })
-  ] });
+  return (
+    // gap-0.5 at the end wins over gap-5 lg:gap-7 coming from className via tailwind-merge
+    /* @__PURE__ */ jsxs27("div", { className: cn("relative z-10 flex items-center", className, "gap-0 lg:gap-0"), children: [
+      dropdownItems.length > 0 && /* @__PURE__ */ jsx44(
+        NavigationMenu,
+        {
+          className: cn(
+            "relative flex max-w-max items-center",
+            "[&>div]:left-auto [&>div]:right-0 [&>div]:justify-end"
+          ),
+          children: /* @__PURE__ */ jsx44(NavigationMenuList, { className: "flex list-none items-center gap-0.5", children: dropdownItems.map((item) => /* @__PURE__ */ jsx44(
+            DropdownSection,
+            {
+              item,
+              itemClassName
+            },
+            item.label
+          )) })
+        }
+      ),
+      plainItems.length > 0 && /* @__PURE__ */ jsx44("nav", { className: "flex list-none items-center gap-0.5", children: plainItems.map((item) => /* @__PURE__ */ jsx44(Link5, { href: item.href, className: linkClass, children: /* @__PURE__ */ jsx44("span", { children: item.label }) }, item.label)) })
+    ] })
+  );
 }
 function DropdownSection({
   item,
@@ -4064,7 +4067,7 @@ function DropdownSection({
       NavigationMenuTrigger,
       {
         className: cn(
-          "inline-flex items-center gap-3 whitespace-nowrap px-3 py-2 rounded-sm",
+          "inline-flex items-center gap-3 whitespace-nowrap px-2.5 py-2 rounded-sm",
           "font-mono text-[20px] uppercase leading-[1.16] tracking-[0.36px]",
           "text-foreground bg-transparent hover:bg-transparent hover:opacity-[0.88]",
           "data-[state=open]:bg-transparent data-[state=open]:opacity-[0.88]",
@@ -4098,123 +4101,156 @@ function DropdownSection({
   ] });
 }
 
-// src/components/ui/dotted-surface.tsx
+// src/components/ui/wave-animation.tsx
 import { useEffect as useEffect9, useRef as useRef10 } from "react";
+import * as THREE from "three";
 import { jsx as jsx45 } from "react/jsx-runtime";
-function DottedSurface({ className, ...props }) {
+function WaveAnimation({
+  width,
+  height,
+  pointSize = 1.5,
+  waveSpeed = 2,
+  waveIntensity = 8,
+  particleColor = "#ffffff",
+  gridDistance = 5,
+  fadeNear = 20,
+  fadeFar = 200,
+  className
+}) {
   const containerRef = useRef10(null);
-  const cleanupRef = useRef10(null);
   useEffect9(() => {
-    if (!containerRef.current) return;
     const container = containerRef.current;
-    let cancelled = false;
-    import("three").then((THREE) => {
-      if (cancelled || !container) return;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      if (width === 0 || height === 0) return;
-      const SEPARATION = 150;
-      const AMOUNTX = 40;
-      const AMOUNTY = 60;
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(60, width / height, 1, 1e4);
-      camera.position.set(0, 355, 1220);
-      camera.lookAt(0, 0, 0);
-      const renderer = new THREE.WebGLRenderer({
-        alpha: true,
-        antialias: true
-      });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(width, height);
-      renderer.setClearColor(0, 0);
-      container.appendChild(renderer.domElement);
+    if (!container) return;
+    const fixed = typeof width === "number" && typeof height === "number";
+    const initialW = fixed ? width : container.clientWidth || 1;
+    const initialH = fixed ? height : container.clientHeight || 1;
+    const fov = 60;
+    const dpr = window.devicePixelRatio;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(initialW, initialH);
+    renderer.setClearColor(0, 0);
+    renderer.setPixelRatio(dpr);
+    container.appendChild(renderer.domElement);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(fov, initialW / initialH, 1, 4e3);
+    camera.position.set(0, 0, 10);
+    const geo = new THREE.BufferGeometry();
+    const buildPositions = (w, h) => {
       const positions = [];
-      const colors = [];
-      const geometry = new THREE.BufferGeometry();
-      for (let ix = 0; ix < AMOUNTX; ix++) {
-        for (let iy = 0; iy < AMOUNTY; iy++) {
-          const x = ix * SEPARATION - AMOUNTX * SEPARATION / 2;
-          const z = iy * SEPARATION - AMOUNTY * SEPARATION / 2;
-          positions.push(x, 0, z);
-          colors.push(0.78, 0.78, 0.78);
+      const gridWidth = 400 * (w / h);
+      const depth = 400;
+      for (let x = 0; x < gridWidth; x += gridDistance) {
+        for (let z = 0; z < depth; z += gridDistance) {
+          positions.push(-gridWidth / 2 + x, -30, -depth / 2 + z);
         }
       }
-      geometry.setAttribute(
-        "position",
-        new THREE.Float32BufferAttribute(positions, 3)
-      );
-      geometry.setAttribute(
-        "color",
-        new THREE.Float32BufferAttribute(colors, 3)
-      );
-      const material = new THREE.PointsMaterial({
-        size: 8,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.8,
-        sizeAttenuation: true
-      });
-      const points = new THREE.Points(geometry, material);
-      scene.add(points);
-      let count = 0;
-      let animationId = 0;
-      const animate2 = () => {
-        animationId = requestAnimationFrame(animate2);
-        const positionAttribute = geometry.attributes.position;
-        const pos = positionAttribute.array;
-        let i = 0;
-        for (let ix = 0; ix < AMOUNTX; ix++) {
-          for (let iy = 0; iy < AMOUNTY; iy++) {
-            const index = i * 3;
-            pos[index + 1] = Math.sin((ix + count) * 0.3) * 50 + Math.sin((iy + count) * 0.5) * 50;
-            i++;
-          }
-        }
-        positionAttribute.needsUpdate = true;
-        renderer.render(scene, camera);
-        count += 0.1;
-      };
-      const handleResize = () => {
-        const w = container.clientWidth;
-        const h = container.clientHeight;
-        if (w === 0 || h === 0) return;
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-      };
-      window.addEventListener("resize", handleResize);
-      animate2();
-      cleanupRef.current = () => {
-        window.removeEventListener("resize", handleResize);
-        cancelAnimationFrame(animationId);
-        scene.traverse((object) => {
-          if (object instanceof THREE.Points) {
-            object.geometry.dispose();
-            if (Array.isArray(object.material)) {
-              object.material.forEach((mat) => mat.dispose());
-            } else {
-              object.material.dispose();
-            }
-          }
-        });
-        renderer.dispose();
-        if (container && renderer.domElement.parentNode === container) {
-          container.removeChild(renderer.domElement);
-        }
-      };
-    });
-    return () => {
-      cancelled = true;
-      cleanupRef.current?.();
-      cleanupRef.current = null;
+      return new THREE.Float32BufferAttribute(positions, 3);
     };
-  }, []);
+    geo.setAttribute("position", buildPositions(initialW, initialH));
+    const mat = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      uniforms: {
+        u_time: { value: 0 },
+        u_point_size: { value: pointSize },
+        u_color: { value: new THREE.Color(particleColor) },
+        u_fade_near: { value: fadeNear },
+        u_fade_far: { value: fadeFar }
+      },
+      vertexShader: `
+        #define M_PI 3.1415926535897932384626433832795
+        precision mediump float;
+        uniform float u_time;
+        uniform float u_point_size;
+        uniform float u_fade_near;
+        uniform float u_fade_far;
+        varying float v_alpha;
+
+        void main() {
+          vec3 p = position;
+          p.y += (
+            cos(p.x / M_PI * ${waveIntensity.toFixed(1)} + u_time * ${waveSpeed.toFixed(1)}) +
+            sin(p.z / M_PI * ${waveIntensity.toFixed(1)} + u_time * ${waveSpeed.toFixed(1)})
+          );
+          vec4 mvPos = modelViewMatrix * vec4(p, 1.0);
+          float depth = -mvPos.z;
+          v_alpha = 1.0 - smoothstep(u_fade_near, u_fade_far, depth);
+          gl_PointSize = u_point_size;
+          gl_Position = projectionMatrix * mvPos;
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        uniform vec3 u_color;
+        varying float v_alpha;
+        void main() {
+          gl_FragColor = vec4(u_color, v_alpha);
+        }
+      `
+    });
+    const mesh = new THREE.Points(geo, mat);
+    scene.add(mesh);
+    const clock = new THREE.Clock();
+    let animationId = 0;
+    const render = () => {
+      mat.uniforms.u_time.value = clock.getElapsedTime();
+      renderer.render(scene, camera);
+      animationId = requestAnimationFrame(render);
+    };
+    render();
+    const resize = (w, h) => {
+      if (w === 0 || h === 0) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      const next = buildPositions(w, h);
+      geo.setAttribute("position", next);
+      geo.attributes.position.needsUpdate = true;
+    };
+    let observer = null;
+    const onWindowResize = () => {
+      resize(window.innerWidth, window.innerHeight);
+    };
+    if (!fixed) {
+      observer = new ResizeObserver((entries) => {
+        const entry = entries[0];
+        if (!entry) return;
+        const { width: w, height: h } = entry.contentRect;
+        resize(w, h);
+      });
+      observer.observe(container);
+    } else if (!width && !height) {
+      window.addEventListener("resize", onWindowResize);
+    }
+    return () => {
+      cancelAnimationFrame(animationId);
+      if (observer) observer.disconnect();
+      window.removeEventListener("resize", onWindowResize);
+      if (renderer.domElement.parentNode === container) {
+        container.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+      geo.dispose();
+      mat.dispose();
+    };
+  }, [
+    width,
+    height,
+    pointSize,
+    waveSpeed,
+    waveIntensity,
+    particleColor,
+    gridDistance,
+    fadeNear,
+    fadeFar
+  ]);
+  const hasFixedSize = typeof width === "number" && typeof height === "number";
   return /* @__PURE__ */ jsx45(
     "div",
     {
       ref: containerRef,
-      className: cn("pointer-events-none absolute inset-0", className),
-      ...props
+      className: cn("overflow-hidden", className),
+      style: hasFixedSize ? { width, height } : { width: "100%", height: "100%" }
     }
   );
 }
@@ -4300,7 +4336,19 @@ function SiteFooter({ basePath = "", className, children }) {
       ] })
     ] }),
     /* @__PURE__ */ jsxs28("div", { className: "relative h-[440px] md:h-[460px]", children: [
-      /* @__PURE__ */ jsx46(DottedSurface, {}),
+      /* @__PURE__ */ jsx46(
+        WaveAnimation,
+        {
+          className: "pointer-events-none absolute left-0 right-0 bottom-[95px] h-[1145px] md:bottom-[155px] md:h-[1245px]",
+          pointSize: 3,
+          waveSpeed: 2,
+          waveIntensity: 10,
+          particleColor: "#ffffff",
+          gridDistance: 4,
+          fadeNear: 20,
+          fadeFar: 300
+        }
+      ),
       children && /* @__PURE__ */ jsx46("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
     ] })
   ] });
@@ -4387,7 +4435,6 @@ export {
   DialogTitle,
   DialogTrigger,
   DotGridLens,
-  DottedSurface,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -4455,6 +4502,7 @@ export {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  WaveAnimation,
   avatarVariants,
   badgeVariants,
   buttonVariants,

@@ -88,6 +88,7 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
 
   return (
     <div
+      data-floating-mascot
       className="fixed bottom-0 right-0 z-50 h-[102px] w-[311px] transition-opacity duration-500"
       style={{
         opacity: hidden ? 0 : 1,

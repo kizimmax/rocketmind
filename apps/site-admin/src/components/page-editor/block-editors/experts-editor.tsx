@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
 import { useEffect, useState, useRef } from "react";
 import { GripVertical, Search, Plus, X, UserCircle } from "lucide-react";
 import { MdText } from "@/components/md-text";
@@ -57,7 +58,7 @@ function ExpertSelector({
 
   useEffect(() => {
     if (!open) return;
-    fetch("/api/experts")
+    apiFetch("/api/experts")
       .then((r) => r.json())
       .then(setExperts)
       .catch(() => {});
@@ -91,7 +92,7 @@ function ExpertSelector({
       .replace(/\s+/g, "-")
       .replace(/[^a-zа-яё0-9-]/gi, "");
     try {
-      const res = await fetch("/api/experts", {
+      const res = await apiFetch("/api/experts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug, name: newName.trim() }),
@@ -296,7 +297,7 @@ export function ExpertsEditor({ data, onUpdate }: ExpertsEditorProps) {
       setResolvedExperts([]);
       return;
     }
-    fetch("/api/experts")
+    apiFetch("/api/experts")
       .then((r) => r.json())
       .then((all: ExpertInfo[]) => {
         const map = new Map(all.map((e) => [e.slug, e]));

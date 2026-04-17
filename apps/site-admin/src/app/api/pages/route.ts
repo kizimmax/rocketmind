@@ -109,7 +109,15 @@ export async function GET() {
         const audioUrl = resolveAsset(fs, path, sitePublicDir, data.category || sectionId, data.slug, "audio", AUDIO_EXTS);
 
         const blockTypesForSection: string[] = sectionId === "unique"
-          ? ["hero", "about", "tools", "projects", "process", "experts", "audience", "pageBottom"]
+          ? (data.slug === "home"
+              ? ["homeHero", "methodology", "homeSections"]
+              : data.slug === "cases-index"
+              ? ["hero", "about"]
+              : ["hero", "about", "tools", "projects", "process", "experts", "audience", "pageBottom"])
+          : sectionId === "cases"
+          ? (data.caseType === "mini"
+              ? ["caseCard"]
+              : ["caseCard", "hero", "about", "pageBottom"])
           : DEFAULT_BLOCK_TYPES;
         const blocks = blockTypesForSection.map((type: string, i: number) => {
           let blockData: Record<string, unknown> = {};
@@ -203,6 +211,38 @@ export async function GET() {
               enabled = data.logoMarquee !== false;
               break;
             case "pageBottom": enabled = !!data.pageBottom; if (data.pageBottom) blockData = data.pageBottom; break;
+            case "homeHero":
+              if (data.homeHero && typeof data.homeHero === "object") {
+                blockData = data.homeHero;
+                enabled = true;
+              } else {
+                enabled = false;
+              }
+              break;
+            case "methodology":
+              if (data.methodology && typeof data.methodology === "object") {
+                blockData = data.methodology;
+                enabled = true;
+              } else {
+                enabled = false;
+              }
+              break;
+            case "homeSections":
+              if (data.homeSections && typeof data.homeSections === "object") {
+                blockData = data.homeSections;
+                enabled = true;
+              } else {
+                enabled = false;
+              }
+              break;
+            case "caseCard":
+              if (data.caseCard && typeof data.caseCard === "object") {
+                blockData = data.caseCard;
+                enabled = true;
+              } else {
+                enabled = false;
+              }
+              break;
           }
           return { id: `${data.slug}_${type}`, type, enabled, order: i, data: blockData };
         });
@@ -255,6 +295,8 @@ export async function GET() {
           metaTitle: data.metaTitle || "",
           metaDescription: data.metaDescription || "",
           expertProduct: typeof data.expertProduct === "boolean" ? data.expertProduct : undefined,
+          caseType: data.caseType === "mini" || data.caseType === "big" ? data.caseType : undefined,
+          featured: data.featured === true ? true : (data.featured === false ? false : undefined),
           blocks: finalBlocks,
           createdAt: stat.birthtime.toISOString(),
           updatedAt: stat.mtime.toISOString(),
@@ -274,7 +316,7 @@ export async function POST(request: Request) {
   const { getContentDir } = await import("@/lib/content-paths");
 
   const body = await request.json();
-  const { sectionId, slug, menuTitle } = body;
+  const { sectionId, slug, menuTitle, caseType } = body;
   const dir = getContentDir(sectionId);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   const filePath = path.join(dir, `${slug}.md`);
@@ -284,14 +326,53 @@ export async function POST(request: Request) {
     consulting: "консалтинг и стратегии", academy: "онлайн-школа",
     "ai-products": "ии-продукты", cases: "кейсы", media: "медиа",
   };
-  const fm: Record<string, unknown> = {
-    slug, category: sectionId, menuTitle, menuDescription: "",
+
+  let fm: Record<string, unknown>;
+  if (sectionId === "cases") {
+    const isMini = caseType === "mini";
+    fm = {
+      slug, category: "cases",
+      caseType: isMini ? "mini" : "big",
+      featured: false,
+      order: 0,
+      menuTitle, menuDescription: "",
+      cardTitle: menuTitle, cardDescription: "",
+      metaTitle: `${menuTitle} | Rocketmind`, metaDescription: "",
+      caseCard: {
+        title: menuTitle,
+        description: "",
+        stats: [
+          { value: "", label: "", description: "" },
+          { value: "", label: "", description: "" },
+          { value: "", label: "", description: "" },
+        ],
+        result: "",
+      },
+      // Big cases also get a hero/about/pageBottom for the future internal page
+      hero: isMini ? null : { caption: "кейс", title: menuTitle.toUpperCase(), description: "", ctaText: "обсудить проект", factoids: [] },
+      about: null, pageBottom: null,
+    };
+  } else {
+    fm = {
+      slug, category: sectionId, menuTitle, menuDescription: "",
+      cardTitle: menuTitle, cardDescription: "",
+      metaTitle: `${menuTitle} | Rocketmind`, metaDescription: "",
+      hero: { caption: captions[sectionId] || sectionId, title: menuTitle.toUpperCase(), description: "", ctaText: "оставить заявку", factoids: [] },
+      about: null, audience: null, results: null, process: null, experts: null,
+      socialProof: null, tools: null, duration: null, whyRocketmind: null, expert: null, cases: null, reviews: null,
+    };
+  }
+  fs.writeFileSync(filePath, matter.stringify("", fm), "utf-8");
+  return NextResponse.json({
+    id: `${sectionId}/${slug}`, sectionId, slug,
+    status: "published", order: 0,
+    menuTitle, menuDescription: "",
     cardTitle: menuTitle, cardDescription: "",
     metaTitle: `${menuTitle} | Rocketmind`, metaDescription: "",
-    hero: { caption: captions[sectionId] || sectionId, title: menuTitle.toUpperCase(), description: "", ctaText: "оставить заявку", factoids: [] },
-    about: null, audience: null, results: null, process: null, experts: null,
-    socialProof: null, tools: null, duration: null, whyRocketmind: null, expert: null, cases: null, reviews: null,
-  };
-  fs.writeFileSync(filePath, matter.stringify("", fm), "utf-8");
-  return NextResponse.json({ id: `${sectionId}/${slug}`, sectionId, slug, status: "published", order: 0, menuTitle, menuDescription: "", cardTitle: menuTitle, cardDescription: "", metaTitle: `${menuTitle} | Rocketmind`, metaDescription: "", blocks: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }, { status: 201 });
+    caseType: sectionId === "cases" ? (caseType === "mini" ? "mini" : "big") : undefined,
+    featured: sectionId === "cases" ? false : undefined,
+    blocks: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }, { status: 201 });
 }

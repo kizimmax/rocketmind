@@ -127,7 +127,7 @@ export function AboutProjects({
           <ProjectsAccordion items={accordion} />
         </div>
 
-        <div ref={logoGridRef} className="relative w-1/2 self-start overflow-hidden">
+        <div ref={logoGridRef} className="relative w-1/2 self-start">
           <LogoGrid cells={logoGrid} />
           <RoundGlassLens
             sceneRef={logoGridRef}

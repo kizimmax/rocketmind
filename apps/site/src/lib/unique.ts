@@ -22,6 +22,8 @@ export type AboutHeroData = {
   experts: ExpertData[];
   /** Custom logo image (base64 data URL). Falls back to default SVG if absent. */
   heroLogoData?: string;
+  /** When present, renders as large uppercase heading instead of the brand logo. */
+  heading?: string;
   /** Max number of expert avatars to show. Shows all if absent. */
   maxExperts?: number;
 };
@@ -115,13 +117,13 @@ function normaliseAccordion(raw: unknown): AccordionItem[] {
 
 // ── API ────────────────────────────────────────────────────────────────────────
 
-export function getAboutPage(): AboutPageData | null {
-  const filePath = path.join(UNIQUE_DIR, "rocketmind.md");
+function loadUniquePage(uniqueSlug: string, defaultSlug: string): AboutPageData | null {
+  const filePath = path.join(UNIQUE_DIR, `${uniqueSlug}.md`);
   if (!fs.existsSync(filePath)) return null;
 
   const raw = fs.readFileSync(filePath, "utf-8");
   const { data } = matter(raw);
-  const slug = data.slug || "rocketmind";
+  const slug = data.slug || defaultSlug;
 
   // ── Hero ────────────────────────────────────────────────────────────────────
   const heroRaw = (data.hero ?? {}) as Record<string, unknown>;
@@ -134,6 +136,7 @@ export function getAboutPage(): AboutPageData | null {
     factoids: Array.isArray(heroRaw.factoids) ? (heroRaw.factoids as Factoid[]) : [],
     experts: resolveExperts(heroExpertSlugs),
     heroLogoData: typeof heroRaw.heroLogoData === "string" ? heroRaw.heroLogoData : undefined,
+    heading: typeof heroRaw.heading === "string" ? heroRaw.heading : undefined,
     maxExperts: typeof heroRaw.maxExperts === "number" ? heroRaw.maxExperts : undefined,
   };
 
@@ -162,9 +165,10 @@ export function getAboutPage(): AboutPageData | null {
         .map((c): LogoGridCell | null => {
           const cell = c as { id?: unknown; src?: unknown; alt?: unknown; size?: unknown; padding?: unknown };
           if (typeof cell.src !== "string" || !cell.src) return null;
+          const src = cell.src.startsWith("/") ? BASE_PATH + cell.src : cell.src;
           return {
             id: typeof cell.id === "string" ? cell.id : Math.random().toString(36).slice(2),
-            src: cell.src,
+            src,
             alt: typeof cell.alt === "string" ? cell.alt : undefined,
             size: cell.size === "S" || cell.size === "L" ? cell.size : "M",
             padding: typeof cell.padding === "number" ? cell.padding : undefined,
@@ -201,4 +205,130 @@ export function getAboutPage(): AboutPageData | null {
     audience: (data.audience as ForWhomData | undefined) ?? null,
     aboutImage,
   };
+}
+
+export function getAboutPage(): AboutPageData | null {
+  // Slug renamed from "rocketmind" → "about"; fall back to legacy filename for compat.
+  return loadUniquePage("about", "about") ?? loadUniquePage("rocketmind", "rocketmind");
+}
+
+export function getCasesIndexPage(): AboutPageData | null {
+  return loadUniquePage("cases-index", "cases-index");
+}
+
+// ── Home page (unique, slug="home") ────────────────────────────────────────────
+
+export type HomeHeroRotatingLine = {
+  text: string;
+  ctaLabel: string;
+  ctaHref: string;
+};
+
+export type HomeHeroData = {
+  title: string;
+  pikCaption: string;
+  rotatingLines: HomeHeroRotatingLine[];
+};
+
+export type HomeMethodologyCell = {
+  label: string;
+  title: string;
+  description: string;
+};
+
+export type HomeMethodologyData = {
+  cells: HomeMethodologyCell[];
+};
+
+export type HomeSectionItem = {
+  filterKey: string;
+  trackName: string;
+  headerHighlight: string;
+  mobileTitle: string;
+  description: string;
+  catalogLabel: string;
+  hiddenCardSlugs: string[];
+};
+
+export type HomeSectionsData = {
+  sections: HomeSectionItem[];
+};
+
+export type HomePageData = {
+  hero: HomeHeroData | null;
+  methodology: HomeMethodologyData | null;
+  sections: HomeSectionsData | null;
+};
+
+const HOME_HERO_DEFAULTS: HomeHeroData = {
+  title: "Помогаем бизнесу расти\nи масштабироваться",
+  pikCaption: "Развиваем методологию\nи представляем PIK\nв России и странах Азии",
+  rotatingLines: [
+    { text: "создаем стратегию развития", ctaLabel: "Обсудить стратегию", ctaHref: "#contact" },
+    { text: "ищем новые направления", ctaLabel: "Обсудить стратегию", ctaHref: "#contact" },
+    { text: "внедряем системное мышление", ctaLabel: "Обсудить стратегию", ctaHref: "#contact" },
+    { text: "интегрируем AI для эффективности", ctaLabel: "Обсудить стратегию", ctaHref: "#contact" },
+  ],
+};
+
+export function getHomePage(): HomePageData {
+  const filePath = path.join(UNIQUE_DIR, "home.md");
+  if (!fs.existsSync(filePath)) {
+    return { hero: HOME_HERO_DEFAULTS, methodology: null, sections: null };
+  }
+
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const { data } = matter(raw);
+
+  const heroRaw = (data.homeHero ?? null) as Record<string, unknown> | null;
+  const hero: HomeHeroData = heroRaw
+    ? {
+        title: typeof heroRaw.title === "string" ? heroRaw.title : HOME_HERO_DEFAULTS.title,
+        pikCaption:
+          typeof heroRaw.pikCaption === "string" ? heroRaw.pikCaption : HOME_HERO_DEFAULTS.pikCaption,
+        rotatingLines: Array.isArray(heroRaw.rotatingLines)
+          ? (heroRaw.rotatingLines as Array<Record<string, unknown>>)
+              .map((l): HomeHeroRotatingLine => ({
+                text: typeof l.text === "string" ? l.text : "",
+                ctaLabel: typeof l.ctaLabel === "string" ? l.ctaLabel : "",
+                ctaHref: typeof l.ctaHref === "string" ? l.ctaHref : "",
+              }))
+              .filter((l) => l.text.length > 0)
+          : HOME_HERO_DEFAULTS.rotatingLines,
+      }
+    : HOME_HERO_DEFAULTS;
+
+  const methRaw = (data.methodology ?? null) as Record<string, unknown> | null;
+  const methodology: HomeMethodologyData | null = methRaw
+    ? {
+        cells: Array.isArray(methRaw.cells)
+          ? (methRaw.cells as Array<Record<string, unknown>>).map((c) => ({
+              label: typeof c.label === "string" ? c.label : "",
+              title: typeof c.title === "string" ? c.title : "",
+              description: typeof c.description === "string" ? c.description : "",
+            }))
+          : [],
+      }
+    : null;
+
+  const secRaw = (data.homeSections ?? null) as Record<string, unknown> | null;
+  const sections: HomeSectionsData | null = secRaw
+    ? {
+        sections: Array.isArray(secRaw.sections)
+          ? (secRaw.sections as Array<Record<string, unknown>>).map((s) => ({
+              filterKey: typeof s.filterKey === "string" ? s.filterKey : "",
+              trackName: typeof s.trackName === "string" ? s.trackName : "",
+              headerHighlight: typeof s.headerHighlight === "string" ? s.headerHighlight : "",
+              mobileTitle: typeof s.mobileTitle === "string" ? s.mobileTitle : "",
+              description: typeof s.description === "string" ? s.description : "",
+              catalogLabel: typeof s.catalogLabel === "string" ? s.catalogLabel : "Все продукты",
+              hiddenCardSlugs: Array.isArray(s.hiddenCardSlugs)
+                ? (s.hiddenCardSlugs as unknown[]).filter((x): x is string => typeof x === "string")
+                : [],
+            }))
+          : [],
+      }
+    : null;
+
+  return { hero, methodology, sections };
 }

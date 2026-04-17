@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { AdminStoreProvider } from "@/lib/store";
 import { NavigationGuardProvider } from "@/lib/navigation-guard";
 import { AdminHeader } from "@/components/admin-header";
+import { DemoBanner } from "@/components/demo-banner";
 
 export default function AdminLayout({
   children,
@@ -35,6 +36,7 @@ export default function AdminLayout({
     <AdminStoreProvider>
       <NavigationGuardProvider>
         <div className="fixed inset-0 flex flex-col overflow-hidden bg-background">
+          <DemoBanner />
           <AdminHeader />
           <main className="flex flex-1 flex-col overflow-y-auto">
             {children}

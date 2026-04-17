@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
 import { useState } from "react";
 import { Plus, GripVertical } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
@@ -103,7 +104,7 @@ export function ProjectsEditor({ data, onUpdate }: ProjectsEditorProps) {
   async function loadClipLogos() {
     setLoadingLogos(true);
     try {
-      const res = await fetch("/api/partner-logos");
+      const res = await apiFetch("/api/partner-logos");
       const list = (await res.json()) as Array<{ src: string; alt: string }>;
       const newCells: LogoCell[] = list.map((item, i) => ({
         id: `clip-${Date.now()}-${i}`,

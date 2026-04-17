@@ -10,12 +10,16 @@ import { BlockEditor } from "./block-editors/block-editor";
 interface BlockListProps {
   blocks: PageBlock[];
   sectionId: string;
+  pageSlug?: string;
   hasExperts: boolean;
+  experts: Array<{ name: string; image: string | null }>;
   onToggleBlock: (blockId: string) => void;
   onUpdateBlock: (blockId: string, data: Record<string, unknown>) => void;
   onReorderBlocks: (orderedIds: string[]) => void;
   onInsertBlock: (afterBlockId: string | null, blockType: BlockType) => void;
   onDeleteBlock: (blockId: string) => void;
+  /** If true, hides "+ Добавить блок" gaps (used for mini cases with a fixed single-block layout). */
+  disableInsert?: boolean;
 }
 
 function InsertGap({ onInsert }: { onInsert: () => void }) {
@@ -37,12 +41,15 @@ function InsertGap({ onInsert }: { onInsert: () => void }) {
 export function BlockList({
   blocks,
   sectionId,
+  pageSlug,
   hasExperts,
+  experts,
   onToggleBlock,
   onUpdateBlock,
   onReorderBlocks,
   onInsertBlock,
   onDeleteBlock,
+  disableInsert = false,
 }: BlockListProps) {
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(new Set());
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
@@ -125,10 +132,16 @@ export function BlockList({
   return (
     <div className="flex flex-col gap-0">
       {/* Insert gap above the first block */}
-      <InsertGap onInsert={() => onInsertBlock(null, "customSection")} />
+      {!disableInsert && (
+        <InsertGap onInsert={() => onInsertBlock(null, "customSection")} />
+      )}
 
       {sorted.map((block, idx) => {
         const info = BLOCK_TYPES[block.type];
+        const labelOverride =
+          sectionId === "unique" && pageSlug === "cases-index" && block.type === "about"
+            ? "Произвольный блок"
+            : null;
         const isCollapsed = collapsedIds.has(block.id);
         const isDragging = dragId === block.id;
         const isDragOver = dragOverId === block.id && dragId !== block.id;
@@ -156,13 +169,15 @@ export function BlockList({
             >
               {/* Block toolbar — floating bar */}
               <div className="sticky top-0 z-10 flex items-center gap-2 border border-border bg-card px-3 py-1.5 shadow-sm">
-                <div
-                  className="cursor-grab text-muted-foreground active:cursor-grabbing select-none"
-                  onMouseDown={() => handleGripMouseDown(block.id)}
-                  onMouseUp={handleGripMouseUp}
-                >
-                  <GripVertical className="h-4 w-4" />
-                </div>
+                {!disableInsert && (
+                  <div
+                    className="cursor-grab text-muted-foreground active:cursor-grabbing select-none"
+                    onMouseDown={() => handleGripMouseDown(block.id)}
+                    onMouseUp={handleGripMouseUp}
+                  >
+                    <GripVertical className="h-4 w-4" />
+                  </div>
+                )}
 
                 <button
                   className="flex flex-1 items-center gap-2 text-left"
@@ -174,7 +189,7 @@ export function BlockList({
                     <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                   )}
                   <span className="text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground">
-                    {info?.label || block.type}
+                    {labelOverride || info?.label || block.type}
                   </span>
                   {isCustom && (
                     <span className="text-[length:var(--text-10)] font-medium uppercase tracking-wider text-[var(--rm-yellow-300)]">
@@ -183,15 +198,17 @@ export function BlockList({
                   )}
                 </button>
 
-                {!block.enabled && (
+                {!disableInsert && !block.enabled && (
                   <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
                 )}
 
-                <Switch
-                  checked={block.enabled}
-                  onCheckedChange={() => onToggleBlock(block.id)}
-                  size="sm"
-                />
+                {!disableInsert && (
+                  <Switch
+                    checked={block.enabled}
+                    onCheckedChange={() => onToggleBlock(block.id)}
+                    size="sm"
+                  />
+                )}
 
                 {isCustom && (
                   confirmingDeleteId === block.id ? (
@@ -231,7 +248,9 @@ export function BlockList({
                   <BlockEditor
                     block={block}
                     sectionId={sectionId}
+                    pageSlug={pageSlug}
                     hasExperts={hasExperts}
+                    experts={experts}
                     onUpdate={(data) => onUpdateBlock(block.id, data)}
                   />
                 </div>
@@ -239,7 +258,7 @@ export function BlockList({
             </div>
 
             {/* Insert gap between this block and the next */}
-            {idx < sorted.length - 1 && (
+            {!disableInsert && idx < sorted.length - 1 && (
               <InsertGap onInsert={() => onInsertBlock(block.id, "customSection")} />
             )}
           </Fragment>
@@ -247,7 +266,7 @@ export function BlockList({
       })}
 
       {/* Insert gap below the last block */}
-      {sorted.length > 0 && (
+      {!disableInsert && sorted.length > 0 && (
         <InsertGap
           onInsert={() => onInsertBlock(sorted[sorted.length - 1].id, "customSection")}
         />

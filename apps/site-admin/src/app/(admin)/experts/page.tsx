@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
 import { useEffect, useState, useRef } from "react";
 import { Plus, Upload, Trash2, UserCircle } from "lucide-react";
 import { Button, Input } from "@rocketmind/ui";
@@ -24,7 +25,7 @@ export default function ExpertsPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   function load() {
-    fetch("/api/experts")
+    apiFetch("/api/experts")
       .then((r) => r.json())
       .then(setExperts)
       .catch(() => {});
@@ -39,7 +40,7 @@ export default function ExpertsPage() {
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-zа-яё0-9-]/gi, "");
-    const res = await fetch("/api/experts", {
+    const res = await apiFetch("/api/experts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slug, name: newName.trim() }),
@@ -56,7 +57,7 @@ export default function ExpertsPage() {
   }
 
   async function updateExpert(slug: string, field: string, value: string) {
-    await fetch(`/api/experts/${slug}`, {
+    await apiFetch(`/api/experts/${slug}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ [field]: value }),
@@ -70,7 +71,7 @@ export default function ExpertsPage() {
   async function uploadPhoto(slug: string, file: File) {
     const formData = new FormData();
     formData.append("photo", file);
-    const res = await fetch(`/api/experts/${slug}`, {
+    const res = await apiFetch(`/api/experts/${slug}`, {
       method: "POST",
       body: formData,
     });

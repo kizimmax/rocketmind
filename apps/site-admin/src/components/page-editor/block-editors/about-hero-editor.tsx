@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/lib/api-client";
 import { useRef, useEffect, useState } from "react";
 import { GripVertical, ImagePlus, Upload, Trash2, Plus, Minus } from "lucide-react";
 import { HeroExperts } from "@rocketmind/ui";
@@ -9,16 +10,19 @@ import { useItemDnd } from "@/lib/use-item-dnd";
 
 interface AboutHeroEditorProps {
   data: Record<string, unknown>;
+  /** When true, the top-left slot shows an editable heading instead of a logo upload. */
+  useHeading?: boolean;
   onUpdate: (data: Record<string, unknown>) => void;
 }
 
 type ResolvedExpert = { name: string; image: string | null };
 
-export function AboutHeroEditor({ data, onUpdate }: AboutHeroEditorProps) {
+export function AboutHeroEditor({ data, useHeading = false, onUpdate }: AboutHeroEditorProps) {
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   const description = (data.description as string) || "";
   const heroLogoData = (data.heroLogoData as string) || "";
+  const heading = (data.heading as string) || "";
   const maxExperts = typeof data.maxExperts === "number" ? data.maxExperts : null;
 
   // Factoids — always 4, pad if needed
@@ -35,7 +39,7 @@ export function AboutHeroEditor({ data, onUpdate }: AboutHeroEditorProps) {
   useEffect(() => {
     if (!slugsKey) return;
     let cancelled = false;
-    fetch("/api/experts")
+    apiFetch("/api/experts")
       .then((r) => r.json())
       .then((all: Array<{ slug: string; name: string; image: string | null }>) => {
         if (cancelled) return;
@@ -95,7 +99,17 @@ export function AboutHeroEditor({ data, onUpdate }: AboutHeroEditorProps) {
         {/* ── Row 1: Logo (left 50%) + Description (right 50%) ── */}
         <div className="flex flex-row gap-0 mb-16">
           <div className="w-1/2 pr-11">
-            {heroLogoData ? (
+            {useHeading ? (
+              <InlineEdit
+                value={heading}
+                onSave={(v) => onUpdate({ heading: v })}
+                placeholder="ЗАГОЛОВОК"
+              >
+                <h1 className="font-[family-name:var(--font-heading-family)] text-[52px] md:text-[64px] lg:text-[80px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0]">
+                  {heading || "ЗАГОЛОВОК"}
+                </h1>
+              </InlineEdit>
+            ) : heroLogoData ? (
               <div className="group/logo relative inline-block">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
