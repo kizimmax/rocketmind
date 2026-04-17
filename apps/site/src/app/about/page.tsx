@@ -34,7 +34,8 @@ export default function AboutPage() {
         description={page.hero.description}
         ctaText={page.hero.ctaText}
         factoids={page.hero.factoids}
-        experts={page.hero.experts.map((e) => ({
+        heroLogoData={page.hero.heroLogoData}
+        experts={page.experts.map((e) => ({
           name: e.name,
           tag: e.shortBio || e.tag,
           image: e.image,

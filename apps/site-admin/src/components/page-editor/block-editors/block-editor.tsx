@@ -3,6 +3,7 @@
 import type { PageBlock } from "@/lib/types";
 import { HeroEditor } from "./hero-editor";
 import { HeroImageEditor } from "./hero-image-editor";
+import { AboutHeroEditor } from "./about-hero-editor";
 import { AboutEditor } from "./about-editor";
 import { ProjectsEditor } from "./projects-editor";
 import { AudienceEditor } from "./audience-editor";
@@ -28,6 +29,9 @@ const IMAGE_HERO_SECTIONS = new Set(["academy", "ai-products"]);
 export function BlockEditor({ block, sectionId, hasExperts, onUpdate }: BlockEditorProps) {
   switch (block.type) {
     case "hero":
+      if (block.data.variant === "about") {
+        return <AboutHeroEditor data={block.data} onUpdate={onUpdate} />;
+      }
       return IMAGE_HERO_SECTIONS.has(sectionId) ? (
         <HeroImageEditor data={block.data} hasExperts={hasExperts} onUpdate={onUpdate} />
       ) : (

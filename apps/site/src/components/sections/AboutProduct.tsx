@@ -166,7 +166,7 @@ export function AboutProduct({
     ) : null;
 
   return (
-    <section className="w-full border-t border-border py-10 md:py-16 lg:py-20">
+    <section className="w-full border-t border-border pt-10 pb-20 md:pt-16 md:pb-24 lg:pt-20 lg:pb-28">
       {/* ── Desktop with image ── */}
       {hasImage && (
         <div
@@ -175,7 +175,7 @@ export function AboutProduct({
           }`}
         >
           {/* Text + accordion */}
-          <div className="w-[560px] shrink-0 flex flex-col justify-between gap-28">
+          <div className="w-1/2 shrink-0 flex flex-col justify-between gap-28 pr-[120px]">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
                 <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
@@ -189,7 +189,7 @@ export function AboutProduct({
           </div>
 
           {/* Right: image — preserves natural proportions */}
-          <div className="flex-1 self-start bg-[#121212]">
+          <div className="w-1/2 self-start bg-[#121212]">
             <AboutImage src={aboutImage} alt={title} />
           </div>
         </div>

@@ -501,7 +501,7 @@ type HeroExpertsProps = {
     experts: HeroExpert[];
     /** Optional quote shown below the expert block */
     quote?: string;
-    /** Max avatars before collapsing the rest into a "+N" counter. Default: 6 */
+    /** Max avatars before collapsing the rest into a "+N" counter. Default: 20 */
     maxVisible?: number;
     className?: string;
 };

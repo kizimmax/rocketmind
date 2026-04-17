@@ -2021,8 +2021,9 @@ function ProductCard({
   className
 }) {
   const hasExperts = experts && experts.length > 0;
-  const shown = hasExperts ? experts.slice(0, 2) : [];
-  const extra = hasExperts ? Math.max(0, experts.length - 2) : 0;
+  const exactlyThree = hasExperts && experts.length === 3;
+  const shown = hasExperts ? experts.slice(0, exactlyThree ? 3 : 2) : [];
+  const extra = hasExperts && !exactlyThree ? Math.max(0, experts.length - 2) : 0;
   const rootCn = cn(
     "group relative flex flex-col p-5 md:p-8 md:h-full",
     "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
@@ -3135,13 +3136,17 @@ function ExpertsSection({
 }
 
 // src/components/ui/hero-experts.tsx
-import { useEffect as useEffect7, useState as useState4 } from "react";
+import { useState as useState4, useRef as useRef8, useEffect as useEffect7, useCallback as useCallback4 } from "react";
 import { jsx as jsx37, jsxs as jsxs20 } from "react/jsx-runtime";
+var AVATAR_SIZE = 80;
+var AVATAR_OVERLAP = 16;
+var EFFECTIVE_WIDTH = AVATAR_SIZE - AVATAR_OVERLAP;
+var COLLAPSE_MS = 180;
 function Avatar2({
   expert,
-  size = 80,
   overlap = false,
   lifted = false,
+  zIndex,
   onHover,
   onLeave
 }) {
@@ -3151,10 +3156,11 @@ function Avatar2({
       onMouseEnter: onHover,
       onMouseLeave: onLeave,
       onClick: onHover,
-      className: `relative shrink-0 rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center transition-transform duration-200 ease-out ${overlap ? "-ml-4 first:ml-0" : ""} ${lifted ? "-translate-y-2.5" : ""}`,
+      className: `relative shrink-0 rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center cursor-pointer transition-transform duration-200 ease-out ${overlap ? "-ml-4 first:ml-0" : ""} ${lifted ? "-translate-y-2.5" : ""}`,
       style: {
-        width: size,
-        height: size,
+        width: AVATAR_SIZE,
+        height: AVATAR_SIZE,
+        zIndex,
         backgroundImage: expert.image ? `url(${expert.image})` : void 0
       },
       "aria-label": expert.name,
@@ -3162,23 +3168,21 @@ function Avatar2({
     }
   );
 }
-function CounterAvatar({ count, size = 80 }) {
-  return /* @__PURE__ */ jsx37(
-    "div",
-    {
-      className: "relative shrink-0 -ml-4 flex items-center justify-center rounded-full border border-[#0A0A0A] bg-[#1A1A1A]",
-      style: { width: size, height: size },
-      children: /* @__PURE__ */ jsxs20("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: [
-        "+",
-        count
-      ] })
-    }
-  );
-}
 function SingleExpert({ expert, quote }) {
   return /* @__PURE__ */ jsxs20("div", { className: "flex flex-col gap-4", children: [
     /* @__PURE__ */ jsxs20("div", { className: "flex items-center gap-4", children: [
-      /* @__PURE__ */ jsx37(Avatar2, { expert, size: 80 }),
+      /* @__PURE__ */ jsx37(
+        "div",
+        {
+          className: "relative shrink-0 rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center",
+          style: {
+            width: AVATAR_SIZE,
+            height: AVATAR_SIZE,
+            backgroundImage: expert.image ? `url(${expert.image})` : void 0
+          },
+          children: !expert.image && /* @__PURE__ */ jsx37("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
+        }
+      ),
       /* @__PURE__ */ jsxs20("div", { className: "flex flex-col justify-center gap-1", children: [
         /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
         expert.tag && /* @__PURE__ */ jsx37("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: expert.tag })
@@ -3192,50 +3196,122 @@ function MultiExperts({
   quote,
   maxVisible
 }) {
+  const containerRef = useRef8(null);
+  const containerWidthRef = useRef8(0);
+  const [containerWidth, setContainerWidth] = useState4(0);
+  const [dynamicMax, setDynamicMax] = useState4(maxVisible);
   const [activeIndex, setActiveIndex] = useState4(null);
-  const [lastIndex, setLastIndex] = useState4(0);
-  const overflow = experts.length > maxVisible;
-  const visible = overflow ? experts.slice(0, maxVisible - 1) : experts;
-  const extraCount = overflow ? experts.length - (maxVisible - 1) : 0;
-  const isActive = activeIndex !== null;
+  const [tipVisible, setTipVisible] = useState4(false);
+  const [tipLeft, setTipLeft] = useState4(0);
+  const [tipFlipped, setTipFlipped] = useState4(false);
+  const [tipContent, setTipContent] = useState4(null);
+  const pendingRef = useRef8(null);
+  const timerRef = useRef8(null);
   useEffect7(() => {
-    if (activeIndex !== null) setLastIndex(activeIndex);
-  }, [activeIndex]);
-  const displayExpert = visible[lastIndex] ?? visible[0];
-  const hintLeft = (isActive ? activeIndex : lastIndex) * 64 + 40;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      containerWidthRef.current = w;
+      setContainerWidth(w);
+      const n = Math.max(1, Math.floor((w - AVATAR_OVERLAP) / EFFECTIVE_WIDTH));
+      setDynamicMax(n);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  useEffect7(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+  const effectiveMax = Math.min(dynamicMax, maxVisible);
+  const visible = experts.slice(0, effectiveMax);
+  const computeLeft = useCallback4(
+    (i) => i * EFFECTIVE_WIDTH + AVATAR_SIZE / 2,
+    []
+  );
+  const computeFlipped = useCallback4(
+    (left) => left > containerWidthRef.current / 2,
+    []
+  );
+  const showTip = (left, flipped, content) => {
+    setTipLeft(left);
+    setTipFlipped(flipped);
+    setTipContent(content);
+    setTipVisible(true);
+  };
+  const handleHover = (index, expert) => {
+    setActiveIndex(index);
+    const left = computeLeft(index);
+    const flipped = computeFlipped(left);
+    if (timerRef.current) {
+      pendingRef.current = { left, flipped, content: expert };
+      return;
+    }
+    if (tipVisible) {
+      pendingRef.current = { left, flipped, content: expert };
+      setTipVisible(false);
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
+        if (pendingRef.current) {
+          const p = pendingRef.current;
+          pendingRef.current = null;
+          showTip(p.left, p.flipped, p.content);
+        }
+      }, COLLAPSE_MS);
+    } else {
+      showTip(left, flipped, expert);
+    }
+  };
+  const handleLeave = (index) => {
+    setActiveIndex((prev) => prev === index ? null : prev);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    pendingRef.current = null;
+    setTipVisible(false);
+  };
   return /* @__PURE__ */ jsxs20("div", { className: "flex flex-col gap-4", children: [
-    /* @__PURE__ */ jsxs20("div", { className: "relative z-30", children: [
+    /* @__PURE__ */ jsxs20("div", { className: "relative w-full", ref: containerRef, children: [
       /* @__PURE__ */ jsx37(
         "div",
         {
-          className: "pointer-events-none absolute z-30 bottom-full mb-3 w-[280px] border-l border-[#F0F0F0] bg-[#121212] px-5 py-4",
+          className: "pointer-events-none absolute z-50 bottom-full mb-3",
           style: {
-            left: `${hintLeft}px`,
-            opacity: isActive ? 1 : 0,
-            transform: isActive ? "translateY(0)" : "translateY(8px)",
-            transition: "opacity 200ms ease-out, transform 200ms ease-out"
+            left: tipLeft,
+            transform: tipFlipped ? "translateX(-100%)" : "translateX(0)"
           },
-          children: displayExpert && /* @__PURE__ */ jsxs20("div", { className: "flex flex-col gap-1", children: [
-            /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: displayExpert.name }),
-            displayExpert.tag && /* @__PURE__ */ jsx37("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: displayExpert.tag })
-          ] })
+          children: /* @__PURE__ */ jsx37(
+            "div",
+            {
+              className: `w-max bg-[#121212] px-5 py-4 will-change-[opacity,transform] ${tipFlipped ? "border-r" : "border-l"} border-[#F0F0F0]`,
+              style: {
+                // Clamp to available space so tooltip never overflows the container edge
+                maxWidth: containerWidth > 0 ? Math.min(600, tipFlipped ? tipLeft : containerWidth - tipLeft) : 600,
+                opacity: tipVisible ? 1 : 0,
+                transform: tipVisible ? "translateY(0)" : "translateY(10px)",
+                transition: `opacity ${COLLAPSE_MS}ms ease-out, transform ${COLLAPSE_MS}ms ease-out`
+              },
+              children: tipContent && /* @__PURE__ */ jsxs20("div", { className: "flex flex-col gap-1", children: [
+                /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: tipContent.name }),
+                tipContent.tag && /* @__PURE__ */ jsx37("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: tipContent.tag })
+              ] })
+            }
+          )
         }
       ),
-      /* @__PURE__ */ jsxs20("div", { className: "flex items-center", children: [
-        visible.map((expert, i) => /* @__PURE__ */ jsx37(
-          Avatar2,
-          {
-            expert,
-            size: 80,
-            overlap: i > 0,
-            lifted: activeIndex === i,
-            onHover: () => setActiveIndex(i),
-            onLeave: () => setActiveIndex((prev) => prev === i ? null : prev)
-          },
-          `${expert.name}-${i}`
-        )),
-        overflow && /* @__PURE__ */ jsx37(CounterAvatar, { count: extraCount, size: 80 })
-      ] })
+      /* @__PURE__ */ jsx37("div", { className: "flex items-center", children: visible.map((expert, i) => /* @__PURE__ */ jsx37(
+        Avatar2,
+        {
+          expert,
+          overlap: i > 0,
+          lifted: activeIndex === i,
+          zIndex: activeIndex === i ? visible.length + 10 : visible.length - i,
+          onHover: () => handleHover(i, expert),
+          onLeave: () => handleLeave(i)
+        },
+        `${expert.name}-${i}`
+      )) })
     ] }),
     quote && /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
   ] });
@@ -3243,7 +3319,7 @@ function MultiExperts({
 function HeroExperts({
   experts,
   quote,
-  maxVisible = 6,
+  maxVisible = 20,
   className
 }) {
   if (experts.length === 0) return null;
@@ -3326,7 +3402,7 @@ function ToolsSection({
                   return /* @__PURE__ */ jsx38(
                     "div",
                     {
-                      className: "border border-[#404040] p-8 h-[300px]",
+                      className: "border border-[#404040] p-8",
                       style: { gridColumn: `${start} / span ${span}` },
                       children: /* @__PURE__ */ jsx38(ToolCardItem, { tool, useIcons })
                     },
@@ -3626,7 +3702,7 @@ function InfiniteLogoMarquee({
 }
 
 // src/components/ui/mobile-nav.tsx
-import { useState as useState5, useCallback as useCallback4, useEffect as useEffect8, useRef as useRef8 } from "react";
+import { useState as useState5, useCallback as useCallback5, useEffect as useEffect8, useRef as useRef9 } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import Link4 from "next/link";
@@ -3743,9 +3819,9 @@ function MobileNav({ className }) {
   const [accordions, setAccordions] = useState5({});
   const [mounted, setMounted] = useState5(false);
   const [origin, setOrigin] = useState5(null);
-  const triggerRef = useRef8(null);
+  const triggerRef = useRef9(null);
   useEffect8(() => setMounted(true), []);
-  const open = useCallback4(() => {
+  const open = useCallback5(() => {
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect();
       setOrigin({
@@ -3758,11 +3834,11 @@ function MobileNav({ className }) {
     setAccordions({});
     setIsOpen(true);
   }, []);
-  const close = useCallback4(() => {
+  const close = useCallback5(() => {
     setIsOpen(false);
     window.scrollTo(0, 0);
   }, []);
-  const toggleAccordion = useCallback4((label) => {
+  const toggleAccordion = useCallback5((label) => {
     setAccordions((prev) => ({ ...prev, [label]: !prev[label] }));
   }, []);
   useEffect8(() => {
@@ -4023,11 +4099,11 @@ function DropdownSection({
 }
 
 // src/components/ui/dotted-surface.tsx
-import { useEffect as useEffect9, useRef as useRef9 } from "react";
+import { useEffect as useEffect9, useRef as useRef10 } from "react";
 import { jsx as jsx45 } from "react/jsx-runtime";
 function DottedSurface({ className, ...props }) {
-  const containerRef = useRef9(null);
-  const cleanupRef = useRef9(null);
+  const containerRef = useRef10(null);
+  const cleanupRef = useRef10(null);
   useEffect9(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
@@ -4160,8 +4236,6 @@ function FooterColumn({ title, links }) {
       Link6,
       {
         href: link.href,
-        scroll: false,
-        onClick: () => window.scrollTo(0, 0),
         className: "text-[14px] leading-[1.5] text-muted-foreground transition-colors duration-150 hover:text-foreground",
         children: link.label
       }

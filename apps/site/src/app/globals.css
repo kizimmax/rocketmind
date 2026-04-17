@@ -27,6 +27,8 @@
   overflow: hidden;
   isolation: isolate;
   border-radius: 9999px;
+  backdrop-filter: blur(32px) brightness(1.1);
+  -webkit-backdrop-filter: blur(32px) brightness(1.1);
 }
 
 .round-glass-lens::before {
@@ -54,8 +56,6 @@
 }
 
 .round-glass-lens--static {
-  background:
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.12) 58%, rgba(0, 0, 0, 0.18) 100%);
 }
 
 .round-glass-lens-canvas {

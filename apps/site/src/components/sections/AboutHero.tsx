@@ -14,6 +14,8 @@ type AboutHeroProps = {
   description: string;
   factoids: Factoid[];
   experts: HeroExpert[];
+  /** Custom logo (base64 data URL). Falls back to default SVG if absent. */
+  heroLogoData?: string;
 };
 
 // ── Factoid cell (single row of 4) ────────────────────────────────────────────
@@ -32,7 +34,7 @@ function FactoidCell({
       <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-52)] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] shrink-0">
         {number}
       </span>
-      <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0] max-w-[200px]">
+      <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0] min-w-0">
         {label}
       </span>
     </div>
@@ -49,7 +51,7 @@ function fadeIn(index: number): React.CSSProperties {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function AboutHero({ description, factoids, experts }: AboutHeroProps) {
+export function AboutHero({ description, factoids, experts, heroLogoData }: AboutHeroProps) {
   const fourFactoids = factoids.slice(0, 4);
 
   return (
@@ -70,11 +72,12 @@ export function AboutHero({ description, factoids, experts }: AboutHeroProps) {
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-0 lg:mt-12" style={fadeIn(0)}>
             <div className="lg:w-1/2 lg:pr-11">
               <Image
-                src="/with_descriptor_dark_background_ru.svg"
+                src={heroLogoData || "/with_descriptor_dark_background_ru.svg"}
                 alt="Rocketmind Business Design"
                 width={482}
                 height={118}
                 priority
+                unoptimized={!!heroLogoData}
                 className="h-auto w-[280px] md:w-[360px] lg:w-[482px]"
               />
             </div>
@@ -88,25 +91,25 @@ export function AboutHero({ description, factoids, experts }: AboutHeroProps) {
 
           {/* ── Experts strip ── */}
           {experts.length > 0 && (
-            <div className="relative mt-16 md:mt-24 lg:mt-28 max-w-[700px]" style={fadeIn(2)}>
+            <div className="relative mt-16 md:mt-24 lg:mt-28" style={fadeIn(2)}>
               <div className="flex flex-col gap-4">
                 <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]">
                   Команда экспертов
                 </span>
-                <HeroExperts experts={experts} maxVisible={6} />
+                <HeroExperts experts={experts} />
               </div>
             </div>
           )}
 
           {/* ── Factoids: 4 in a single row ── */}
           {fourFactoids.length > 0 && (
-            <div className="mt-10 md:mt-14 grid grid-cols-2 md:grid-cols-4 border-t border-l border-[#404040]" style={fadeIn(3)}>
+            <div className="mt-10 md:mt-14 grid grid-cols-2 xl:grid-cols-4 border-t border-l border-[#404040]" style={fadeIn(3)}>
               {fourFactoids.map((f) => (
                 <FactoidCell
                   key={f.number + f.label}
                   number={f.number}
                   label={f.label}
-                  className="border-b border-r border-[#404040]"
+                  className="border-b border-r border-[#404040] min-w-0 overflow-hidden"
                 />
               ))}
             </div>

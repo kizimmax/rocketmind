@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Plus, Trash2, GripVertical, RefreshCw } from "lucide-react";
+import { Plus, Trash2, GripVertical, RefreshCw, ZoomIn, ZoomOut } from "lucide-react";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 export interface LogoCell {
@@ -9,6 +9,8 @@ export interface LogoCell {
   src: string;
   alt?: string;
   size: "S" | "M" | "L";
+  /** Logo padding inside the cell in px. Zoom in/out changes by ZOOM_STEP. */
+  padding?: number;
 }
 
 interface LogoGridEditorProps {
@@ -18,8 +20,12 @@ interface LogoGridEditorProps {
   loadingPreset?: boolean;
 }
 
-const SIZE_SPAN: Record<LogoCell["size"], number> = { S: 2, M: 3, L: 4 };
-const SIZE_LABEL: Record<LogoCell["size"], string> = { S: "S", M: "M", L: "L" };
+const SIZE_SPAN: Record<LogoCell["size"], number> = { S: 1, M: 2, L: 4 };
+
+const DEFAULT_PADDING = 20;
+const ZOOM_STEP = 2;
+const MIN_PADDING = 0;
+const MAX_PADDING = 36;
 
 export function LogoGridEditor({ cells, onUpdate, onLoadPreset, loadingPreset }: LogoGridEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,9 +39,14 @@ export function LogoGridEditor({ cells, onUpdate, onLoadPreset, loadingPreset }:
     onUpdate(cells.filter((c) => c.id !== id));
   }
 
-  function cycleSize(id: string, current: LogoCell["size"]) {
-    const next: LogoCell["size"] = current === "S" ? "M" : current === "M" ? "L" : "S";
-    updateCell(id, { size: next });
+  function zoomIn(id: string, currentPadding: number) {
+    const next = Math.max(MIN_PADDING, currentPadding - ZOOM_STEP);
+    updateCell(id, { padding: next });
+  }
+
+  function zoomOut(id: string, currentPadding: number) {
+    const next = Math.min(MAX_PADDING, currentPadding + ZOOM_STEP);
+    updateCell(id, { padding: next });
   }
 
   function handleAddClick() {
@@ -62,7 +73,7 @@ export function LogoGridEditor({ cells, onUpdate, onLoadPreset, loadingPreset }:
       id: `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 7)}`,
       src,
       alt: files[i].name.replace(/\.[^.]+$/, ""),
-      size: "M",
+      size: "S",
     }));
 
     onUpdate([...cells, ...newCells]);
@@ -77,7 +88,7 @@ export function LogoGridEditor({ cells, onUpdate, onLoadPreset, loadingPreset }:
             Сетка логотипов
           </span>
           <span className="text-[length:var(--text-12)] text-muted-foreground">
-            Перетаскивайте ячейки, меняйте размер (S/M/L) кликом по метке
+            Перетаскивайте ячейки, зум лупой на каждом логотипе
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -118,53 +129,74 @@ export function LogoGridEditor({ cells, onUpdate, onLoadPreset, loadingPreset }:
         </div>
       ) : (
         <div
-          className="grid grid-cols-6 auto-rows-[96px] gap-px bg-[#1A1A1A] border border-[#404040]"
+          className="grid grid-cols-4 auto-rows-[80px] gap-px bg-[#1A1A1A] border border-[#404040]"
           style={{ gridAutoFlow: "dense" }}
         >
           {cells.map((cell, idx) => {
+            const padding = cell.padding ?? DEFAULT_PADDING;
+            const isAtMin = padding <= MIN_PADDING;
             const props = dnd.itemProps(idx);
+
             return (
               <div
                 key={cell.id}
                 {...props}
-                className={`group relative flex items-center justify-center bg-[#121212] p-3 ${props.isDragging ? "opacity-30" : ""} ${props.isDragOver ? "ring-2 ring-[#FFCC00]" : ""}`}
-                style={{ gridColumn: `span ${SIZE_SPAN[cell.size]} / span ${SIZE_SPAN[cell.size]}` }}
+                className={`group relative flex items-center justify-center bg-[#121212] ${props.isDragging ? "opacity-30" : ""} ${props.isDragOver ? "ring-2 ring-[#FFCC00]" : ""}`}
+                style={{
+                  gridColumn: `span ${SIZE_SPAN[cell.size]} / span ${SIZE_SPAN[cell.size]}`,
+                  padding: `${padding}px`,
+                }}
               >
                 {cell.src && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={cell.src}
                     alt={cell.alt ?? ""}
-                    className="max-h-full max-w-full object-contain pointer-events-none"
+                    className="w-full h-full object-contain pointer-events-none"
                   />
                 )}
 
+                {/* Drag grip — top left */}
                 <button
                   type="button"
                   onMouseDown={() => dnd.onGripDown(idx)}
                   onMouseUp={() => dnd.onGripUp()}
-                  className="absolute top-1.5 left-1.5 flex h-5 w-5 items-center justify-center rounded-sm bg-[#1A1A1A] text-[#939393] opacity-0 transition-opacity group-hover:opacity-100 cursor-grab active:cursor-grabbing"
+                  className="absolute top-1 left-1 flex h-5 w-5 items-center justify-center rounded-sm bg-[#1A1A1A] text-[#939393] opacity-0 transition-opacity group-hover:opacity-100 cursor-grab active:cursor-grabbing"
                   title="Перетащить"
                 >
                   <GripVertical className="h-3.5 w-3.5" />
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => cycleSize(cell.id, cell.size)}
-                  className="absolute bottom-1.5 left-1.5 flex h-5 min-w-5 items-center justify-center rounded-sm border border-[#404040] bg-[#1A1A1A] px-1 text-[10px] font-medium text-[#F0F0F0] opacity-0 transition-opacity group-hover:opacity-100"
-                  title="Изменить размер"
-                >
-                  {SIZE_LABEL[cell.size]}
-                </button>
-
+                {/* Delete — top right */}
                 <button
                   type="button"
                   onClick={() => removeCell(cell.id)}
-                  className="absolute top-1.5 right-1.5 flex h-5 w-5 items-center justify-center rounded-sm bg-[#1A1A1A] text-[#F0F0F0] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive"
+                  className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-sm bg-[#1A1A1A] text-[#F0F0F0] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive"
                   title="Удалить"
                 >
                   <Trash2 className="h-3 w-3" />
+                </button>
+
+                {/* Zoom out (−) — bottom left */}
+                <button
+                  type="button"
+                  onClick={() => zoomOut(cell.id, padding)}
+                  disabled={padding >= MAX_PADDING}
+                  className="absolute bottom-1 left-1 flex h-5 w-5 items-center justify-center rounded-sm bg-[#1A1A1A] text-[#F0F0F0] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#404040] disabled:cursor-not-allowed disabled:opacity-30"
+                  title="Уменьшить логотип"
+                >
+                  <ZoomOut className="h-3 w-3" />
+                </button>
+
+                {/* Zoom in (+) — bottom right, disabled at edges */}
+                <button
+                  type="button"
+                  onClick={() => zoomIn(cell.id, padding)}
+                  disabled={isAtMin}
+                  className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-sm bg-[#1A1A1A] text-[#F0F0F0] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[#404040] disabled:cursor-not-allowed disabled:opacity-30"
+                  title="Увеличить логотип"
+                >
+                  <ZoomIn className="h-3 w-3" />
                 </button>
               </div>
             );

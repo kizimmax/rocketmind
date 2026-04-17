@@ -160,7 +160,9 @@ const FRAGMENT_SHADER = `
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const CAPTURE_THROTTLE_MS = 90;
-const MAX_CAPTURE_SCALE = 2.0;
+// Capture at 1× regardless of devicePixelRatio — the glass distortion blurs
+// fine detail anyway, and lower resolution dramatically reduces capture time.
+const MAX_CAPTURE_SCALE = 1.0;
 const PARALLAX_LIMIT = 102.4;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -272,6 +274,21 @@ export type RoundGlassLensProps = {
    * Defaults to `true` on pointer:fine devices.
    */
   motionParallax?: boolean;
+
+  /**
+   * When true, pointer events are captured on `window` and the parallax
+   * displacement is calculated relative to the viewport center instead of
+   * the sceneRef center. Use this when the lens should react to the cursor
+   * anywhere on the screen, not just within the scene element.
+   */
+  parallaxOnWindow?: boolean;
+
+  /**
+   * Called once after the first successful WebGL render with a captured scene texture.
+   * On mobile (CSS-only mode) it fires after the initial position sync.
+   * Use this to fade in the lens container only when the effect is ready.
+   */
+  onReady?: () => void;
 
   // ── Dev controls ─────────────────────────────────────────────────────────
 
@@ -411,6 +428,8 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     xOffset = 0,
     yOffset = 0,
     motionParallax,
+    parallaxOnWindow = false,
+    onReady,
     showControls = false,
     storageKey,
     className,
@@ -421,12 +440,18 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const syncRef = useRef<(() => void) | null>(null);
   const settingsRef = useRef<RoundGlassLensSettings>(resolveSettings(props));
+  const onReadyRef = useRef<(() => void) | undefined>(onReady);
+  onReadyRef.current = onReady;
 
   // Position props kept in a ref so syncPosition() always reads latest values
   // without requiring a WebGL context teardown/rebuild.
   const positionRef = useRef({ x, y, xOffset, yOffset, anchorRef });
 
   const [mounted, setMounted] = useState(false);
+  // containerVisible: ring + backdrop-blur show after first position sync (before capture)
+  const [containerVisible, setContainerVisible] = useState(false);
+  // canvasReady: canvas fades in after first successful WebGL render with captured texture
+  const [canvasReady, setCanvasReady] = useState(false);
   const [activeTab, setActiveTab] = useState<"optical" | "shape" | "style" | "motion">("optical");
 
   // Panel settings — initialized from props, localStorage loaded after mount (SSR-safe)
@@ -470,15 +495,27 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     ],
   );
 
+  // Container (ring + backdrop-blur) fades in after first position sync
   const lensStyle = useMemo<CSSProperties>(
     () => ({
       "--lens-gradient-angle": `${effectiveSettings.gradientAngle}deg`,
       width: `${size}px`,
       height: `${size}px`,
+      opacity: containerVisible ? 1 : 0,
+      transition: containerVisible ? "opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1)" : undefined,
       ...externalStyle,
     } as CSSProperties),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [effectiveSettings.gradientAngle, size, externalStyle],
+    [effectiveSettings.gradientAngle, size, externalStyle, containerVisible],
+  );
+
+  // Canvas (distortion) cross-fades in over the blur when WebGL texture is ready
+  const canvasStyle = useMemo<CSSProperties>(
+    () => ({
+      opacity: canvasReady ? 1 : 0,
+      transition: canvasReady ? "opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1)" : undefined,
+    }),
+    [canvasReady],
   );
 
   // Sync position props to ref → triggers re-position without WebGL teardown
@@ -489,6 +526,18 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Preload html2canvas during browser idle time so the first capture starts
+  // without waiting for the dynamic import to resolve.
+  useEffect(() => {
+    const preload = () => { void import("html2canvas"); };
+    if (typeof requestIdleCallback !== "undefined") {
+      const id = requestIdleCallback(preload, { timeout: 2000 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(preload, 200);
+    return () => clearTimeout(id);
   }, []);
 
   // Keep settingsRef in sync so the WebGL render loop always reads latest values
@@ -533,6 +582,8 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
 
       syncRef.current = syncMobile;
       syncMobile();
+      setContainerVisible(true);
+      onReadyRef.current?.();
 
       if (typeof ResizeObserver !== "undefined") {
         mobileResizeObserver = new ResizeObserver(syncMobile);
@@ -640,7 +691,16 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     let captureInFlight = false;
     let pendingCapture = false;
     let hasSceneTexture = false;
+    let readyFired = false;
+    let sceneImagesAwaited = false;
     let lastCaptureRequest = 0;
+    // Crop region used for the last successful scene capture.
+    // drawLens() adjusts UV uniforms so the shader samples correctly from
+    // the cropped texture rather than the full scene.
+    let cropX = 0;
+    let cropY = 0;
+    let cropW = 1;
+    let cropH = 1;
 
     const canvasSize  = { width: 1, height: 1 };
     const lensSize    = { width: 1, height: 1 };
@@ -714,8 +774,10 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       syncLensCenter();
       gl.uniform2f(canvasSizeLoc,   canvasSize.width,  canvasSize.height);
       gl.uniform2f(lensSizeLoc,     lensSize.width,    lensSize.height);
-      gl.uniform2f(lensCenterLoc,   lensCenter.x,      lensCenter.y);
-      gl.uniform2f(sceneSizeLoc,    sceneSize.width,   sceneSize.height);
+      // Adjust lensCenter to be relative to the captured crop origin so the
+      // shader's UV calculation samples the correct region of the texture.
+      gl.uniform2f(lensCenterLoc,   lensCenter.x - cropX, lensCenter.y - cropY);
+      gl.uniform2f(sceneSizeLoc,    cropW,                cropH);
       gl.uniform1f(refractionLoc,   s.refraction);
       gl.uniform1f(depthLoc,        s.depth);
       gl.uniform1f(dispersionLoc,   s.dispersion);
@@ -755,19 +817,52 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       if (captureInFlight) { pendingCapture = true; return; }
       captureInFlight = true;
       try {
+        // On the first capture, wait for all images in the scene to finish
+        // loading so html2canvas captures the fully-rendered content.
+        if (!sceneImagesAwaited) {
+          sceneImagesAwaited = true;
+          const imgs = Array.from(scene.querySelectorAll<HTMLImageElement>("img"));
+          const pending = imgs.filter((img) => !img.complete);
+          if (pending.length > 0) {
+            await Promise.all(
+              pending.map(
+                (img) =>
+                  new Promise<void>((resolve) => {
+                    img.addEventListener("load",  () => resolve(), { once: true });
+                    img.addEventListener("error", () => resolve(), { once: true });
+                  }),
+              ),
+            );
+          }
+          if (disposed) return;
+        }
         if (!html2canvasModule) {
           const imported = await import("html2canvas");
           html2canvasModule = imported.default;
         }
-        const captureScale = Math.min(window.devicePixelRatio || 1, MAX_CAPTURE_SCALE);
+        // ── Crop the capture to the region the lens actually sees ─────────────
+        // Instead of capturing the entire hero section, we capture only the area
+        // around the lens center. Padding = parallax range + refraction headroom.
+        // This reduces captured pixels by ~10-15× vs the full scene.
+        syncLensCenter();
+        const capturePad = PARALLAX_LIMIT + lensSize.width * 0.5 + 20;
+        const rawLeft   = lensCenter.x - lensSize.width  * 0.5 - capturePad;
+        const rawTop    = lensCenter.y - lensSize.height * 0.5 - capturePad;
+        const rawRight  = lensCenter.x + lensSize.width  * 0.5 + capturePad;
+        const rawBottom = lensCenter.y + lensSize.height * 0.5 + capturePad;
+        const snapX = Math.max(0, Math.round(rawLeft));
+        const snapY = Math.max(0, Math.round(rawTop));
+        const snapW = Math.max(1, Math.min(sceneSize.width,  Math.round(rawRight))  - snapX);
+        const snapH = Math.max(1, Math.min(sceneSize.height, Math.round(rawBottom)) - snapY);
+
         const snapshot = await html2canvasModule(scene, {
           backgroundColor: null,
           logging: false,
-          scale: captureScale,
+          scale: MAX_CAPTURE_SCALE,
           useCORS: true,
-          x: 0, y: 0, scrollX: 0, scrollY: 0,
-          width: scene.offsetWidth,
-          height: scene.offsetHeight,
+          x: snapX, y: snapY, scrollX: 0, scrollY: 0,
+          width: snapW,
+          height: snapH,
           onclone: (clonedDoc) => {
             clonedDoc.querySelectorAll<HTMLElement>("[data-lens-hide='true']")
               .forEach((el) => { el.style.visibility = "hidden"; });
@@ -775,6 +870,11 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
           ignoreElements: (el) =>
             el instanceof HTMLElement && el.dataset.lensIgnore === "true",
         });
+        // Store crop coordinates so drawLens() can adjust UV uniforms
+        cropX = snapX;
+        cropY = snapY;
+        cropW = snapW;
+        cropH = snapH;
         if (disposed) return;
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, sceneTexture);
@@ -783,6 +883,17 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, snapshot);
         hasSceneTexture = true;
         drawLens();
+        if (!readyFired) {
+          readyFired = true;
+          // Wait one frame so the GPU has time to composite the rendered
+          // WebGL frame before the lens container fades in from opacity 0.
+          window.requestAnimationFrame(() => {
+            if (!disposed) {
+              setCanvasReady(true);
+              onReadyRef.current?.();
+            }
+          });
+        }
       } catch (err) {
         console.error("RoundGlassLens: scene capture failed", err);
       } finally {
@@ -803,8 +914,13 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       if (!parallaxEnabled || prefersReducedMotion) return;
       const rect = scene.getBoundingClientRect();
       const s = settingsRef.current;
-      target.x = clampVal((event.clientX - rect.left - rect.width  / 2) * s.motionStrengthX, -PARALLAX_LIMIT, PARALLAX_LIMIT);
-      target.y = clampVal((event.clientY - rect.top  - rect.height / 2) * s.motionStrengthY, -PARALLAX_LIMIT, PARALLAX_LIMIT);
+      const refCenterX = rect.left + rect.width  / 2;
+      const refCenterY = rect.top  + rect.height / 2;
+      // When parallaxOnWindow, the limit scales with viewport so the full
+      // motionStrength fraction is realized without artificial capping.
+      const limit = parallaxOnWindow ? window.innerWidth : PARALLAX_LIMIT;
+      target.x = clampVal((event.clientX - refCenterX) * s.motionStrengthX, -limit, limit);
+      target.y = clampVal((event.clientY - refCenterY) * s.motionStrengthY, -limit, limit);
       scheduleRender();
       requestCapture();
     };
@@ -820,13 +936,21 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     syncLayout();
     glass.style.transform = "translate3d(-50%, -50%, 0)";
     scheduleRender();
+    // Show ring + backdrop-blur after position is set, before capture completes
+    window.requestAnimationFrame(() => {
+      if (!disposed) setContainerVisible(true);
+    });
 
     // Single initial capture is triggered by syncLayout() above.
     // Scene content is static — no need for continuous recapture.
 
     if (parallaxEnabled && !prefersReducedMotion) {
-      scene.addEventListener("pointermove", handleMove);
-      scene.addEventListener("pointerleave", handleLeave);
+      if (parallaxOnWindow) {
+        window.addEventListener("pointermove", handleMove as EventListener);
+      } else {
+        scene.addEventListener("pointermove", handleMove);
+        scene.addEventListener("pointerleave", handleLeave);
+      }
     }
 
     if (typeof ResizeObserver !== "undefined") {
@@ -842,8 +966,12 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       disposed = true;
       syncRef.current = null;
       if (frameId) window.cancelAnimationFrame(frameId);
-      scene.removeEventListener("pointermove", handleMove);
-      scene.removeEventListener("pointerleave", handleLeave);
+      if (parallaxOnWindow) {
+        window.removeEventListener("pointermove", handleMove as EventListener);
+      } else {
+        scene.removeEventListener("pointermove", handleMove);
+        scene.removeEventListener("pointerleave", handleLeave);
+      }
       resizeObserver?.disconnect();
       window.removeEventListener("resize", syncLayout);
       gl.deleteTexture(sceneTexture);
@@ -980,7 +1108,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
         className={`round-glass-lens pointer-events-none absolute z-10 rounded-full${className ? ` ${className}` : ""}`}
         style={lensStyle}
       >
-        <canvas ref={canvasRef} aria-hidden="true" className="round-glass-lens-canvas" />
+        <canvas ref={canvasRef} aria-hidden="true" className="round-glass-lens-canvas" style={canvasStyle} />
       </div>
       {controls}
     </>

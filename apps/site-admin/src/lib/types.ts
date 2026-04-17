@@ -74,8 +74,10 @@ export interface LogoGridCell {
   /** Base64 data URL (admin) or /images/... path (persisted). */
   src: string;
   alt?: string;
-  /** Bento size: S=2 cols, M=3 cols, L=4 cols in a 6-col grid. Default M. */
+  /** Bento size: S=1 col, M=2 cols, L=4 cols in a 4-col grid. Default S. */
   size?: "S" | "M" | "L";
+  /** Logo padding inside cell in px. Default 20. Zoom in/out changes by 2px. */
+  padding?: number;
 }
 
 export interface LogoGridData {

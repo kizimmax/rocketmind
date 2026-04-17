@@ -46,7 +46,10 @@
       "Bash(curl -s -o /dev/null -w \"site-admin:3004 → %{http_code}\\\\n\" http://localhost:3004/)",
       "Bash(lsof -i :3004 -sTCP:LISTEN)",
       "Bash(kill -9 20643)",
-      "Bash(sudo kill *)"
+      "Bash(sudo kill *)",
+      "Bash(lsof -ti:3001,3005)",
+      "Bash(rm -f /Users/Maxi/GitHub/Rocketmind/apps/site-admin/.next/dev/lock)",
+      "Bash(NODE_OPTIONS='--max-old-space-size=4096' npx next dev --port 3005)"
     ]
   }
 }

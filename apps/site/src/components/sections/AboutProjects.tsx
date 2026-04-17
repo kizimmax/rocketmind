@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { RichText } from "@rocketmind/ui";
 import { LogoGrid } from "@/components/ui/LogoGrid";
+import { RoundGlassLens } from "@/components/ui/round-glass-lens";
 import type { ProjectsBlockData } from "@/lib/unique";
 
 // ── Accordion (mirrors AboutProduct accordion visual) ─────────────────────────
@@ -89,11 +90,13 @@ export function AboutProjects({
   accordion,
   logoGrid,
 }: ProjectsBlockData) {
+  const logoGridRef = useRef<HTMLDivElement>(null);
+
   return (
     <section className="w-full border-t border-border py-10 md:py-16 lg:py-20">
       {/* Desktop */}
-      <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14 gap-12">
-        <div className="w-[560px] shrink-0 flex flex-col justify-between gap-16">
+      <div className="hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
+        <div className="w-1/2 shrink-0 flex flex-col justify-between gap-16 pr-[120px]">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
               <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
@@ -124,8 +127,22 @@ export function AboutProjects({
           <ProjectsAccordion items={accordion} />
         </div>
 
-        <div className="flex-1 self-start">
+        <div ref={logoGridRef} className="relative w-1/2 self-start overflow-hidden">
           <LogoGrid cells={logoGrid} />
+          <RoundGlassLens
+            sceneRef={logoGridRef}
+            size={280}
+            motionStrengthX={0.3}
+            motionStrengthY={0.3}
+            motionParallax
+            parallaxOnWindow
+            refraction={0.056}
+            depth={0.308}
+            dispersion={1.04}
+            distortionRadius={1.237}
+            blur={0.6}
+            gradientAngle={215}
+          />
         </div>
       </div>
 

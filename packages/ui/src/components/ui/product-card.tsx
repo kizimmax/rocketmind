@@ -40,8 +40,9 @@ export function ProductCard({
   className,
 }: ProductCardProps) {
   const hasExperts = experts && experts.length > 0;
-  const shown = hasExperts ? experts.slice(0, 2) : [];
-  const extra = hasExperts ? Math.max(0, experts.length - 2) : 0;
+  const exactlyThree = hasExperts && experts.length === 3;
+  const shown = hasExperts ? experts.slice(0, exactlyThree ? 3 : 2) : [];
+  const extra = hasExperts && !exactlyThree ? Math.max(0, experts.length - 2) : 0;
 
   const rootCn = cn(
     "group relative flex flex-col p-5 md:p-8 md:h-full",

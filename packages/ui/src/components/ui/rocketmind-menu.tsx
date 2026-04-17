@@ -44,34 +44,40 @@ export function RocketmindMenu({
 
   return (
     <div className={cn("relative z-10 flex items-center", className)}>
-      {dropdownItems.length > 0 && (
-        <NavigationMenu
-          className={cn(
-            "relative flex max-w-max items-center",
-            "[&>div]:left-auto [&>div]:right-0 [&>div]:justify-end",
-          )}
-        >
-          <NavigationMenuList className="flex list-none items-center gap-0.5">
-            {dropdownItems.map((item) => (
-              <DropdownSection
-                key={item.label}
-                item={item as NavSection & { items: NonNullable<NavSection["items"]> }}
-                itemClassName={itemClassName}
-              />
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
-      )}
+      {/* Inner wrapper: gap-5/7 from className applies between children of the outer div,
+          but outer div has only this one child — so that gap has no effect.
+          Here gap-0.5 gives the same 12px+2px+12px = 26px visual spacing between
+          the two sub-groups as within each sub-group. */}
+      <div className="flex items-center gap-0.5">
+        {dropdownItems.length > 0 && (
+          <NavigationMenu
+            className={cn(
+              "relative flex max-w-max items-center",
+              "[&>div]:left-auto [&>div]:right-0 [&>div]:justify-end",
+            )}
+          >
+            <NavigationMenuList className="flex list-none items-center gap-0.5">
+              {dropdownItems.map((item, i) => (
+                <DropdownSection
+                  key={item.label}
+                  item={item as NavSection & { items: NonNullable<NavSection["items"]> }}
+                  itemClassName={cn(itemClassName, i === dropdownItems.length - 1 && "pr-0")}
+                />
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
+        )}
 
-      {plainItems.length > 0 && (
-        <nav className="flex list-none items-center gap-0.5">
-          {plainItems.map((item) => (
-            <Link key={item.label} href={item.href} className={linkClass}>
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-      )}
+        {plainItems.length > 0 && (
+          <nav className="flex list-none items-center gap-0.5">
+            {plainItems.map((item, i) => (
+              <Link key={item.label} href={item.href} className={cn(linkClass, i === 0 && "pl-0")}>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+        )}
+      </div>
     </div>
   );
 }

@@ -310,7 +310,6 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
     BREAKPOINT_PRESETS.wide,
   );
   const [heroReady, setHeroReady] = useState(false);
-  const [smallLensReady, setSmallLensReady] = useState(false);
   const [largeLensReady, setLargeLensReady] = useState(false);
 
   const breakpointPreset = BREAKPOINT_PRESETS[breakpointKey];
@@ -323,14 +322,6 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
       2200,
     );
   }, [breakpointPreset.largeLensSize, settings.largeLensSize]);
-
-  const smallLensStyle = useMemo<CSSProperties>(
-    () => ({
-      opacity: smallLensReady ? 1 : 0,
-      transition: "opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1)",
-    }),
-    [smallLensReady],
-  );
 
   const largeLensStyle = useMemo(
     () =>
@@ -352,15 +343,6 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
     return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => {
-    if (!heroReady) return;
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
-    const lensDelay1 = isMobile ? 500 : 600;
-    const lensDelay2 = isMobile ? 650 : 800;
-    const t1 = setTimeout(() => setSmallLensReady(true), lensDelay1);
-    const t2 = setTimeout(() => setLargeLensReady(true), lensDelay2);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [heroReady]);
 
   // ── Viewport / breakpoint sync ────────────────────────────────────────────
   useEffect(() => {
@@ -770,7 +752,7 @@ export function HeroSectionClient({ logos }: HeroSectionClientProps) {
               motionStrengthY={settings.motionStrengthY}
               motionParallax
               showControls={false}
-              style={smallLensStyle}
+              onReady={() => setLargeLensReady(true)}
             />
 
             {/* Large static CSS lens */}

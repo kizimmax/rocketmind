@@ -20,6 +20,10 @@ export type AboutHeroData = {
   ctaText: string;
   factoids: Factoid[];
   experts: ExpertData[];
+  /** Custom logo image (base64 data URL). Falls back to default SVG if absent. */
+  heroLogoData?: string;
+  /** Max number of expert avatars to show. Shows all if absent. */
+  maxExperts?: number;
 };
 
 export type AboutMainData = {
@@ -39,6 +43,8 @@ export type LogoGridCell = {
   src: string;
   alt?: string;
   size: "S" | "M" | "L";
+  /** Logo padding inside cell in px. Default 20. */
+  padding?: number;
 };
 
 export type ProjectsBlockData = {
@@ -127,6 +133,8 @@ export function getAboutPage(): AboutPageData | null {
     ctaText: (heroRaw.ctaText as string) ?? "связаться с нами",
     factoids: Array.isArray(heroRaw.factoids) ? (heroRaw.factoids as Factoid[]) : [],
     experts: resolveExperts(heroExpertSlugs),
+    heroLogoData: typeof heroRaw.heroLogoData === "string" ? heroRaw.heroLogoData : undefined,
+    maxExperts: typeof heroRaw.maxExperts === "number" ? heroRaw.maxExperts : undefined,
   };
 
   // ── About main ──────────────────────────────────────────────────────────────
@@ -152,13 +160,14 @@ export function getAboutPage(): AboutPageData | null {
   const cells: LogoGridCell[] = Array.isArray(logoGridRaw.cells)
     ? logoGridRaw.cells
         .map((c): LogoGridCell | null => {
-          const cell = c as { id?: unknown; src?: unknown; alt?: unknown; size?: unknown };
+          const cell = c as { id?: unknown; src?: unknown; alt?: unknown; size?: unknown; padding?: unknown };
           if (typeof cell.src !== "string" || !cell.src) return null;
           return {
             id: typeof cell.id === "string" ? cell.id : Math.random().toString(36).slice(2),
             src: cell.src,
             alt: typeof cell.alt === "string" ? cell.alt : undefined,
             size: cell.size === "S" || cell.size === "L" ? cell.size : "M",
+            padding: typeof cell.padding === "number" ? cell.padding : undefined,
           };
         })
         .filter((c): c is LogoGridCell => c !== null)

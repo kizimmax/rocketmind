@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3004",
+    "dev": "NODE_OPTIONS='--max-old-space-size=4096' next dev --port 3004",
     "build": "next build",
     "build:static": "mv src/app/api src/app/_api 2>/dev/null; GITHUB_PAGES=1 next build; mv src/app/_api src/app/api 2>/dev/null",
     "start": "next start",

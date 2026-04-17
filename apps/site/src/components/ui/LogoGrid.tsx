@@ -7,15 +7,18 @@ type LogoGridProps = {
 };
 
 const SIZE_SPAN: Record<LogoGridCell["size"], number> = {
-  S: 2,
-  M: 3,
+  S: 1,
+  M: 2,
   L: 4,
 };
 
+const DEFAULT_PADDING = 20;
+
 /**
- * Bento-style editable logo grid. 6-column base grid on desktop;
- * S=2 cols, M=3 cols, L=4 cols. Auto-flow fills dense.
+ * Bento-style logo grid. 4-column base grid on desktop;
+ * S=1 col, M=2 cols, L=4 cols. Auto-flow fills dense.
  * On mobile collapses to 2-column grid.
+ * Cell padding controlled per-cell (default 20px).
  */
 export function LogoGrid({ cells, className }: LogoGridProps) {
   if (cells.length === 0) {
@@ -30,24 +33,28 @@ export function LogoGrid({ cells, className }: LogoGridProps) {
 
   return (
     <div
-      className={`grid grid-cols-2 md:grid-cols-6 auto-rows-[120px] gap-px bg-[#1A1A1A] border border-[#404040] ${className ?? ""}`}
+      className={`grid grid-cols-2 md:grid-cols-4 auto-rows-[80px] gap-px bg-[#1A1A1A] border border-[#404040] ${className ?? ""}`}
       style={{ gridAutoFlow: "dense" }}
     >
       {cells.map((cell) => (
         <div
           key={cell.id}
-          className="relative flex items-center justify-center bg-[#121212] p-6"
-          style={{ gridColumn: `span ${SIZE_SPAN[cell.size]} / span ${SIZE_SPAN[cell.size]}` }}
+          className="relative bg-[#121212]"
+          style={{
+            gridColumn: `span ${SIZE_SPAN[cell.size]} / span ${SIZE_SPAN[cell.size]}`,
+            padding: `${cell.padding ?? DEFAULT_PADDING}px`,
+          }}
         >
           {cell.src && (
-            <Image
-              src={cell.src}
-              alt={cell.alt ?? ""}
-              width={200}
-              height={80}
-              className="max-h-full max-w-full object-contain"
-              unoptimized={cell.src.endsWith(".svg")}
-            />
+            <div className="relative w-full h-full">
+              <Image
+                src={cell.src}
+                alt={cell.alt ?? ""}
+                fill
+                className="object-contain"
+                unoptimized={cell.src.endsWith(".svg")}
+              />
+            </div>
           )}
         </div>
       ))}

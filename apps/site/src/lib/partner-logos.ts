@@ -102,7 +102,10 @@ async function getPngLogicalDimensions(
   return undefined;
 }
 
+let cachedLogos: PartnerLogo[] | null = null;
+
 export async function getPartnerLogos(): Promise<PartnerLogo[]> {
+  if (cachedLogos) return cachedLogos;
 
   const directory = await resolveHeroLogosDirectory();
   const entries = await fs.readdir(directory, { withFileTypes: true });
@@ -136,7 +139,7 @@ export async function getPartnerLogos(): Promise<PartnerLogo[]> {
 
   const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-  return Promise.all(
+  cachedLogos = await Promise.all(
     filenames.map(async (filename) => {
       const isPng = path.extname(filename).toLowerCase() === ".png";
       const dims = isPng
@@ -151,4 +154,5 @@ export async function getPartnerLogos(): Promise<PartnerLogo[]> {
       };
     }),
   );
+  return cachedLogos;
 }

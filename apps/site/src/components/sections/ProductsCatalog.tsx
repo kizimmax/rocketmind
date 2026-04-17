@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useMemo, useCallback, useRef } from "react";
+import { Suspense, useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { cn, ProductCard, ProductImageCard, PartnershipBlock } from "@rocketmind/ui";
 import { ShaderBackground } from "@/components/ui/ShaderBackground";
@@ -146,6 +146,19 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const mobileInputRef = useRef<HTMLInputElement>(null);
+  const filterBarRef = useRef<HTMLDivElement>(null);
+  const activeChipRef = useRef<HTMLButtonElement>(null);
+
+  // Scroll active filter chip into view on mount and when filter changes
+  useEffect(() => {
+    const container = filterBarRef.current;
+    const chip = activeChipRef.current;
+    if (!container || !chip) return;
+    const containerWidth = container.offsetWidth;
+    const chipLeft = chip.offsetLeft;
+    const chipWidth = chip.offsetWidth;
+    container.scrollLeft = chipLeft - containerWidth / 2 + chipWidth / 2;
+  }, [activeFilter]);
 
   // Sync filter state when URL param changes (e.g. header nav click)
   const prevParam = useRef(paramFilter);
@@ -275,13 +288,14 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
           </div>
 
           {/* Mobile filter chips — horizontal scroll, bleeds edge-to-edge */}
-          <div className="lg:hidden overflow-x-auto px-5 pb-6 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none", ...heroFade(1) }}>
+          <div ref={filterBarRef} className="lg:hidden overflow-x-auto px-5 pb-6 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none", ...heroFade(1) }}>
             <div className="flex gap-1 w-max">
               {FILTERS.map((f) => {
                 const isActive = f.key === activeFilter;
                 return (
                   <button
                     key={f.key}
+                    ref={isActive ? activeChipRef : null}
                     onClick={() => handleFilter(f.key)}
                     className={[
                       "inline-flex items-center gap-1 h-10 px-2 border rounded-[4px] shrink-0",
