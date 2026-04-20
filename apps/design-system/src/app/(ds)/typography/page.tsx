@@ -18,7 +18,7 @@ export default function TypographyPage() {
         <div className="border border-border rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2 mb-10">
           {(() => {
             const fonts = [
-              { family: "Roboto Condensed", role: "Заголовки (H1–H4)", example: "ЗАГОЛОВОК СТРАНИЦЫ", css: "font-family: 'Roboto Condensed', sans-serif", fontClass: "font-[family-name:var(--font-heading-family)] font-bold uppercase" },
+              { family: "Roboto Condensed", role: "Заголовки (H1–H5)", example: "ЗАГОЛОВОК СТРАНИЦЫ", css: "font-family: 'Roboto Condensed', sans-serif", fontClass: "font-[family-name:var(--font-heading-family)] font-bold uppercase" },
               { family: "Loos Condensed", role: "Навигация, кнопки, UI-label", example: "НАВИГАЦИЯ / КНОПКИ", css: "font-family: 'Loos Condensed', sans-serif", fontClass: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-wider" },
               { family: "Roboto", role: "Основной текст, body", example: "Основной текст для описаний и контента страниц", css: "font-family: 'Roboto', sans-serif", fontClass: "" },
               { family: "Roboto Mono", role: "Code, caption, технические подписи", example: "const caseId = 'RM-2048'", css: "font-family: 'Roboto Mono', monospace", fontClass: "font-[family-name:var(--font-caption-family)]" },
@@ -65,6 +65,7 @@ export default function TypographyPage() {
                 { label: "H2",         size: "52px", mobileSize: "32px", weight: "700", cls: "h2", tailwind: "h2" },
                 { label: "H3",         size: "32px", mobileSize: "28px", weight: "700", cls: "h3", tailwind: "h3" },
                 { label: "H4",         size: "24px", mobileSize: "20px", weight: "700", cls: "h4", tailwind: "h4" },
+                { label: "H5",         size: "18px", mobileSize: "16px", weight: "700", cls: "h5", tailwind: "h5" },
                 { label: "Label-18",   size: "18px", mobileSize: "18px", weight: "500", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.03em] leading-[1.2]",            tailwind: "text-[length:var(--text-18)]" },
                 { label: "Label-16",   size: "16px", mobileSize: "16px", weight: "500", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.28]",           tailwind: "text-[length:var(--text-16)]" },
                 { label: "Label-14",   size: "14px", mobileSize: "14px", weight: "500", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.24]",           tailwind: "text-[length:var(--text-14)]" },
@@ -104,6 +105,7 @@ export default function TypographyPage() {
                 { label: "H2", text: "AI-агенты для вашего бизнеса", cls: "h2", size: "52px", mobileSize: "32px", letterSpacing: "-0.02em", figmaSpacing: "-2%", lineHeight: "1.08", figmaLineHeight: "108%", twCopy: "h2" },
                 { label: "H3", text: "Аналитика и маркетинг без команды", cls: "h3", size: "32px", mobileSize: "28px", letterSpacing: "-0.015em", figmaSpacing: "-1.5%", lineHeight: "1.16", figmaLineHeight: "116%", twCopy: "h3" },
                 { label: "H4", text: "Выберите агента под задачу", cls: "h4", size: "24px", mobileSize: "20px", letterSpacing: "-0.01em", figmaSpacing: "-1%", lineHeight: "1.2", figmaLineHeight: "120%", twCopy: "h4" },
+                { label: "H5", text: "Мелкий заголовок карточки", cls: "h5", size: "18px", mobileSize: "16px", letterSpacing: "-0.01em", figmaSpacing: "-1%", lineHeight: "1.16", figmaLineHeight: "116%", twCopy: "h5" },
                 { label: "Label-18", text: "AI-POWERED · БЕСПЛАТНО", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.03em] leading-[1.2]", size: "18px", mobileSize: "18px", letterSpacing: "0.03em", figmaSpacing: "3%", lineHeight: "1.2", figmaLineHeight: "120%", twCopy: "text-[length:var(--text-18)] font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.03em] leading-[1.2]" },
                 { label: "Label-16", text: "ПОПРОБОВАТЬ БЕСПЛАТНО", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.28]", size: "16px", mobileSize: "16px", letterSpacing: "0.04em", figmaSpacing: "4%", lineHeight: "1.28", figmaLineHeight: "128%", twCopy: "text-[length:var(--text-16)] font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.28]" },
                 { label: "Label-14", text: "ДОБАВИТЬ АГЕНТА", cls: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.24]", size: "14px", mobileSize: "14px", letterSpacing: "0.04em", figmaSpacing: "4%", lineHeight: "1.24", figmaLineHeight: "124%", twCopy: "text-[length:var(--text-14)] font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.04em] leading-[1.24]" },

@@ -4,10 +4,8 @@ import { Suspense } from "react";
 import { ADMIN_SECTIONS } from "@/lib/constants";
 import { PagesView } from "@/components/pages-view";
 
-const EXCLUDED = new Set(["cases", "media"]);
-
-export default function PagesPage() {
-  const sections = ADMIN_SECTIONS.filter((s) => !EXCLUDED.has(s.id));
+export default function CasesPage() {
+  const sections = ADMIN_SECTIONS.filter((s) => s.id === "cases");
   return (
     <Suspense
       fallback={
@@ -16,7 +14,7 @@ export default function PagesPage() {
         </div>
       }
     >
-      <PagesView title="Страницы сайта" sections={sections} defaultSection="consulting" />
+      <PagesView title="Кейсы" sections={sections} defaultSection="cases" />
     </Suspense>
   );
 }

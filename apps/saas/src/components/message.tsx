@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button, GlowingEffect } from "@rocketmind/ui";
-import { Copy, ExternalLink, RotateCcw } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import type { Message, Agent } from "@/lib/types";
 import { formatTime, getInitials } from "@/lib/utils";
@@ -11,29 +11,43 @@ import { formatTime, getInitials } from "@/lib/utils";
 export function MessageBubble({
   message,
   agent,
+  expertThinkingAvatarUrl,
   isNew,
+  isFresh,
   onRepeat,
 }: {
   message: Message;
   agent?: Agent;
+  /** Аватар thinking-варианта эксперта. Подменяет agent.avatar_url при metadata.thinking=true. */
+  expertThinkingAvatarUrl?: string;
+  /** Включает streaming-эффект посимвольной печати. */
   isNew?: boolean;
+  /** Real-time: применяет анимацию появления (slide + fade). */
+  isFresh?: boolean;
   onRepeat?: () => void;
 }) {
   switch (message.role) {
     case "user":
-      return <UserMessage message={message} />;
+      return <UserMessage message={message} isFresh={isFresh} />;
     case "assistant":
       return (
-        <AssistantMessage message={message} agent={agent} stream={isNew} onRepeat={onRepeat} />
+        <AssistantMessage
+          message={message}
+          agent={agent}
+          thinkingAvatarUrl={expertThinkingAvatarUrl}
+          stream={isNew}
+          isFresh={isFresh}
+          onRepeat={onRepeat}
+        />
       );
     case "system":
-      return <SystemMessage message={message} />;
+      return <SystemMessage message={message} isFresh={isFresh} />;
   }
 }
 
-function UserMessage({ message }: { message: Message }) {
+function UserMessage({ message, isFresh }: { message: Message; isFresh?: boolean }) {
   return (
-    <div className="flex justify-end">
+    <div className={`flex justify-end ${isFresh ? "rm-message-rise" : ""}`}>
       <div className="max-w-[75%] space-y-1">
         <div className="rounded-sm bg-rm-gray-2 px-4 py-3 text-[length:var(--text-14)] text-foreground">
           <p className="whitespace-pre-wrap">{message.content}</p>
@@ -49,12 +63,16 @@ function UserMessage({ message }: { message: Message }) {
 function AssistantMessage({
   message,
   agent,
+  thinkingAvatarUrl,
   stream,
+  isFresh,
   onRepeat,
 }: {
   message: Message;
   agent?: Agent;
+  thinkingAvatarUrl?: string;
   stream?: boolean;
+  isFresh?: boolean;
   onRepeat?: () => void;
 }) {
   const [displayedText, setDisplayedText] = useState(stream ? "" : message.content);
@@ -64,7 +82,7 @@ function AssistantMessage({
   useEffect(() => {
     if (!stream) return;
     const full = message.content;
-    const speed = 18; // ms per character
+    const speed = 18;
     indexRef.current = 0;
     setDisplayedText("");
     setIsStreaming(true);
@@ -89,16 +107,21 @@ function AssistantMessage({
     });
   }
 
+  const isThinking = message.metadata?.thinking === true;
+  // Если сообщение в режиме «глубокая проработка» (thinking=true) —
+  // используем thinking-аватар эксперта. Fallback: обычный agent.avatar_url.
+  const avatarSrc =
+    isThinking && thinkingAvatarUrl ? thinkingAvatarUrl : agent?.avatar_url ?? null;
+
   return (
-    <div className="flex justify-start">
+    <div className={`flex justify-start ${isFresh ? "rm-message-rise" : ""}`}>
       <div className="w-full lg:max-w-[75%] min-w-0 space-y-1">
-        {/* Agent identity above bubble */}
         {agent && (
           <div className="flex items-center gap-1.5 mb-1">
             <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-background">
-              {agent.avatar_url ? (
+              {avatarSrc ? (
                 <Image
-                  src={agent.avatar_url}
+                  src={avatarSrc}
                   alt={agent.name}
                   width={32}
                   height={32}
@@ -136,25 +159,42 @@ function AssistantMessage({
           >
             <Copy className="h-3.5 w-3.5" />
           </button>
-          <button
-            type="button"
-            onClick={onRepeat}
-            title="Повторить"
-            className="flex h-6 w-6 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </button>
+          {onRepeat && (
+            <button
+              type="button"
+              onClick={onRepeat}
+              title="Повторить"
+              className="flex h-6 w-6 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function SystemMessage({ message }: { message: Message }) {
+function SystemMessage({ message, isFresh }: { message: Message; isFresh?: boolean }) {
   const cta = message.metadata?.cta;
+  const artifactCompleted = message.metadata?.artifact_completed;
+
+  // Специальный вариант — «артефакт собран/принят»
+  if (artifactCompleted) {
+    return (
+      <div className={`flex justify-center ${isFresh ? "rm-message-rise" : ""}`}>
+        <div className="inline-flex items-center gap-2 rounded-sm border border-[var(--rm-yellow-700)] bg-[var(--rm-yellow-900)] px-3 py-2 text-[length:var(--text-12)] text-[var(--rm-yellow-fg-subtle)]">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span className="font-[family-name:var(--font-mono-family)] uppercase tracking-[0.04em]">
+            {message.content}
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex justify-center">
+    <div className={`flex justify-center ${isFresh ? "rm-message-rise" : ""}`}>
       <div className="max-w-[85%] space-y-2 rounded-sm border border-border bg-rm-gray-1 px-4 py-3 text-center">
         <p className="text-[length:var(--text-14)] text-foreground">
           {message.content}
@@ -176,7 +216,6 @@ function SystemMessage({ message }: { message: Message }) {
   );
 }
 
-// Simple markdown renderer (bold, italic, code, code blocks, lists, links)
 function MarkdownContent({ content }: { content: string }) {
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
@@ -185,7 +224,6 @@ function MarkdownContent({ content }: { content: string }) {
   while (i < lines.length) {
     const line = lines[i];
 
-    // Code blocks
     if (line.startsWith("```")) {
       const codeLines: string[] = [];
       i++;
@@ -193,7 +231,7 @@ function MarkdownContent({ content }: { content: string }) {
         codeLines.push(lines[i]);
         i++;
       }
-      i++; // skip closing ```
+      i++;
       elements.push(
         <pre
           key={`code-${i}`}
@@ -205,14 +243,12 @@ function MarkdownContent({ content }: { content: string }) {
       continue;
     }
 
-    // Empty line
     if (line.trim() === "") {
       elements.push(<br key={`br-${i}`} />);
       i++;
       continue;
     }
 
-    // Headers (h3 only for chat context)
     if (line.startsWith("### ")) {
       elements.push(
         <p key={`h-${i}`} className="mt-2 mb-1 font-semibold">
@@ -223,7 +259,6 @@ function MarkdownContent({ content }: { content: string }) {
       continue;
     }
 
-    // List items
     if (/^[-*]\s/.test(line) || /^\d+\.\s/.test(line)) {
       elements.push(
         <p key={`li-${i}`} className="ml-3">
@@ -234,7 +269,6 @@ function MarkdownContent({ content }: { content: string }) {
       continue;
     }
 
-    // Tables
     if (line.includes("|") && line.trim().startsWith("|")) {
       const tableLines: string[] = [];
       while (i < lines.length && lines[i].includes("|")) {
@@ -254,7 +288,6 @@ function MarkdownContent({ content }: { content: string }) {
       continue;
     }
 
-    // Blockquote
     if (line.startsWith("> ")) {
       elements.push(
         <p
@@ -268,7 +301,6 @@ function MarkdownContent({ content }: { content: string }) {
       continue;
     }
 
-    // Regular paragraph
     elements.push(
       <p key={`p-${i}`}>
         <InlineMarkdown text={line} />
@@ -280,9 +312,7 @@ function MarkdownContent({ content }: { content: string }) {
   return <div className="space-y-1 whitespace-pre-wrap">{elements}</div>;
 }
 
-// Inline markdown: **bold**, *italic*, `code`
 function InlineMarkdown({ text }: { text: string }) {
-  // Split by inline patterns
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
 
   return (
@@ -313,3 +343,4 @@ function InlineMarkdown({ text }: { text: string }) {
     </>
   );
 }
+

@@ -2,13 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, FileText, Users, MessageSquareQuote, Sun, Moon } from "lucide-react";
+import {
+  LogOut,
+  FileText,
+  Users,
+  MessageSquareQuote,
+  Newspaper,
+  Briefcase,
+  Sun,
+  Moon,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@rocketmind/ui";
 import { useAuth } from "@/lib/auth-context";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { useAdminStore } from "@/lib/store";
 import { ADMIN_SECTIONS } from "@/lib/constants";
+
+/** Sections that have their own top-level route instead of living under /pages. */
+const STANDALONE_SECTION_ROUTES: Record<string, string> = {
+  cases: "/cases",
+  media: "/media",
+};
 
 export function AdminHeader() {
   const { logout } = useAuth();
@@ -24,9 +39,14 @@ export function AdminHeader() {
   const editingSection = editingPage
     ? ADMIN_SECTIONS.find((s) => s.id === editingPage.sectionId)
     : null;
+  const standaloneRoute = editingSection
+    ? STANDALONE_SECTION_ROUTES[editingSection.id]
+    : undefined;
 
   const isOnPages = pathname.startsWith("/pages");
+  const isOnMedia = pathname.startsWith("/media");
   const isOnExperts = pathname.startsWith("/experts");
+  const isOnCases = pathname.startsWith("/cases");
   const isOnTestimonials = pathname.startsWith("/testimonials");
 
   function guardedClick(e: React.MouseEvent, href: string) {
@@ -37,6 +57,15 @@ export function AdminHeader() {
     "rounded-sm px-2.5 py-1 text-[length:var(--text-12)] font-medium transition-colors";
   const linkIdle = "text-muted-foreground hover:text-foreground";
   const linkActive = "bg-foreground/10 text-foreground";
+
+  // Breadcrumb root for the editor: Страницы, Кейсы, or Медиа.
+  const breadcrumbRoot = editingPage
+    ? standaloneRoute === "/cases"
+      ? { href: "/cases", label: "Кейсы", Icon: Briefcase }
+      : standaloneRoute === "/media"
+        ? { href: "/media", label: "Медиа", Icon: Newspaper }
+        : { href: "/pages", label: "Страницы", Icon: FileText }
+    : null;
 
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-6">
@@ -52,22 +81,22 @@ export function AdminHeader() {
         </div>
 
         <nav className="flex items-center gap-1">
-          {/* ── Pages tab / breadcrumb ─────────────────────────── */}
-          {editingPage ? (
+          {/* ── Editor breadcrumb ──────────────────────────────── */}
+          {editingPage && breadcrumbRoot ? (
             <div className="flex items-center">
               <Link
-                href="/pages"
-                onClick={(e) => guardedClick(e, "/pages")}
+                href={breadcrumbRoot.href}
+                onClick={(e) => guardedClick(e, breadcrumbRoot.href)}
                 className={`flex items-center gap-1.5 ${linkBase} ${linkIdle}`}
               >
-                <FileText className="h-3.5 w-3.5" />
-                Страницы
+                <breadcrumbRoot.Icon className="h-3.5 w-3.5" />
+                {breadcrumbRoot.label}
               </Link>
-              <span className="text-[length:var(--text-12)] text-muted-foreground/40 select-none">
-                /
-              </span>
-              {editingSection && (
+              {editingSection && !standaloneRoute && (
                 <>
+                  <span className="text-[length:var(--text-12)] text-muted-foreground/40 select-none">
+                    /
+                  </span>
                   <Link
                     href={`/pages?section=${editingSection.id}`}
                     onClick={(e) =>
@@ -77,45 +106,68 @@ export function AdminHeader() {
                   >
                     {editingSection.label}
                   </Link>
-                  <span className="text-[length:var(--text-12)] text-muted-foreground/40 select-none">
-                    /
-                  </span>
                 </>
               )}
+              <span className="text-[length:var(--text-12)] text-muted-foreground/40 select-none">
+                /
+              </span>
               <span className={`${linkBase} ${linkActive}`}>
                 {editingPage.menuTitle}
               </span>
             </div>
           ) : (
-            <Link
-              href="/pages"
-              onClick={(e) => guardedClick(e, "/pages")}
-              className={`flex items-center gap-1.5 ${linkBase} ${isOnPages ? linkActive : linkIdle}`}
-            >
-              <FileText className="h-3.5 w-3.5" />
-              Страницы
-            </Link>
+            <>
+              {/* ── Страницы ─────────────────────────────────────── */}
+              <Link
+                href="/pages"
+                onClick={(e) => guardedClick(e, "/pages")}
+                className={`flex items-center gap-1.5 ${linkBase} ${isOnPages ? linkActive : linkIdle}`}
+              >
+                <FileText className="h-3.5 w-3.5" />
+                Страницы
+              </Link>
+
+              {/* ── Медиа ────────────────────────────────────────── */}
+              <Link
+                href="/media"
+                onClick={(e) => guardedClick(e, "/media")}
+                className={`flex items-center gap-1.5 ${linkBase} ${isOnMedia ? linkActive : linkIdle}`}
+              >
+                <Newspaper className="h-3.5 w-3.5" />
+                Медиа
+              </Link>
+
+              {/* ── Эксперты ─────────────────────────────────────── */}
+              <Link
+                href="/experts"
+                onClick={(e) => guardedClick(e, "/experts")}
+                className={`flex items-center gap-1.5 ${linkBase} ${isOnExperts ? linkActive : linkIdle}`}
+              >
+                <Users className="h-3.5 w-3.5" />
+                Эксперты
+              </Link>
+
+              {/* ── Кейсы ────────────────────────────────────────── */}
+              <Link
+                href="/cases"
+                onClick={(e) => guardedClick(e, "/cases")}
+                className={`flex items-center gap-1.5 ${linkBase} ${isOnCases ? linkActive : linkIdle}`}
+              >
+                <Briefcase className="h-3.5 w-3.5" />
+                Кейсы
+              </Link>
+
+              {/* ── Отзывы ───────────────────────────────────────── */}
+              <Link
+                href="/testimonials"
+                onClick={(e) => guardedClick(e, "/testimonials")}
+                className={`flex items-center gap-1.5 ${linkBase} ${isOnTestimonials ? linkActive : linkIdle}`}
+              >
+                <MessageSquareQuote className="h-3.5 w-3.5" />
+                Отзывы
+              </Link>
+            </>
           )}
-
-          {/* ── Experts tab ────────────────────────────────────── */}
-          <Link
-            href="/experts"
-            onClick={(e) => guardedClick(e, "/experts")}
-            className={`flex items-center gap-1.5 ${linkBase} ${isOnExperts ? linkActive : linkIdle}`}
-          >
-            <Users className="h-3.5 w-3.5" />
-            Эксперты
-          </Link>
-
-          {/* ── Testimonials tab ──────────────────────────────── */}
-          <Link
-            href="/testimonials"
-            onClick={(e) => guardedClick(e, "/testimonials")}
-            className={`flex items-center gap-1.5 ${linkBase} ${isOnTestimonials ? linkActive : linkIdle}`}
-          >
-            <MessageSquareQuote className="h-3.5 w-3.5" />
-            Отзывы
-          </Link>
         </nav>
       </div>
 

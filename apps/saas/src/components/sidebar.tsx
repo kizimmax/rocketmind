@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams, usePathname } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -23,258 +24,323 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
+  CheckCircle2,
+  Circle,
+  CircleDashed,
   Sun,
   Moon,
   User,
   X,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import Image from "next/image";
-import { useCases, useCaseAgents } from "@/lib/hooks";
+import {
+  markProjectAsSeen,
+  useExperts,
+  useExpertSessions,
+  useNewProjects,
+  useProjects,
+} from "@/lib/hooks";
 import { useAuth } from "@/lib/auth-context";
-import { getInitials } from "@/lib/utils";
-import type { Case } from "@/lib/types";
+import { useManager } from "@/lib/hooks";
+import { NewProjectModal } from "@/components/new-project-modal";
+import type {
+  ExpertCodename,
+  ExpertSessionStatus,
+  Project,
+} from "@/lib/types";
 import { toast } from "sonner";
+
+const PIPELINE_ORDER: ExpertCodename[] = ["R1", "R2", "R+", "R3", "R4", "R5"];
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const drawerMode = !!onNavigate;
 
   const {
-    activeCases,
-    archivedCases,
-    createCase,
-    archiveCase,
-    restoreCase,
-    renameCase,
-    deleteCase,
-  } = useCases();
+    activeProjects,
+    archivedProjects,
+    renameProject,
+    deleteProject,
+    archiveProject,
+    restoreProject,
+  } = useProjects();
+  const manager = useManager();
+  const newProjects = useNewProjects();
+
   const [showArchived, setShowArchived] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeCaseId =
-    (params?.id as string | undefined) ??
-    searchParams?.get("caseId") ??
-    undefined;
-  const activeAgentId = searchParams?.get("agent") ?? null;
 
-  // Drawer mode: set of expanded case ids
+  const activeProjectId = params?.id as string | undefined;
+  const activeExpertCodename =
+    (searchParams?.get("expert") as ExpertCodename | null) ?? null;
+  const isOnManager = pathname === "/manager";
+
+  // Drawer vs desktop: разные состояния expand для UX
   const [drawerExpandedIds, setDrawerExpandedIds] = useState<Set<string>>(
-    activeCaseId ? new Set([activeCaseId]) : new Set()
+    activeProjectId ? new Set([activeProjectId]) : new Set()
   );
-  // Desktop mode: set of expanded case ids; adds activeCaseId when navigating via agent
   const [desktopExpandedIds, setDesktopExpandedIds] = useState<Set<string>>(
-    activeCaseId ? new Set([activeCaseId]) : new Set()
+    activeProjectId ? new Set([activeProjectId]) : new Set()
   );
   useEffect(() => {
-    if (!drawerMode && activeCaseId) {
-      setDesktopExpandedIds((prev) => new Set([...prev, activeCaseId]));
+    if (!drawerMode && activeProjectId) {
+      setDesktopExpandedIds((prev) => new Set([...prev, activeProjectId]));
     }
-  }, [activeCaseId, drawerMode]);
+  }, [activeProjectId, drawerMode]);
 
   const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
-
-  const [isCreating, setIsCreating] = useState(false);
-  const [newCaseName, setNewCaseName] = useState("");
+  const [pendingArchivedDeleteIds, setPendingArchivedDeleteIds] = useState<Set<string>>(new Set());
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
-  const createInputRef = useRef<HTMLInputElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isCreating) createInputRef.current?.focus();
-  }, [isCreating]);
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
 
   useEffect(() => {
     if (renamingId) renameInputRef.current?.focus();
   }, [renamingId]);
 
-  function handleCreateCase() {
-    const name = newCaseName.trim();
-    if (!name) {
-      setIsCreating(false);
-      return;
-    }
-    const newCase = createCase(name);
-    setNewCaseName("");
-    setIsCreating(false);
-    toast.success(`Кейс «${name}» создан`);
-    router.push(`/cases/${newCase.id}`);
+  function handleProjectClick(p: Project) {
+    // Помечаем как прочитанный при первом клике
+    if (newProjects.has(p.id)) markProjectAsSeen(p.id);
+    router.push(`/projects/${p.id}`);
+    // В drawer-режиме также раскрываем, но не закрываем меню — пусть пользователь видит pipeline
+    const toggleExpand = (prev: Set<string>) => {
+      const next = new Set(prev);
+      if (!next.has(p.id)) next.add(p.id);
+      return next;
+    };
+    if (drawerMode) setDrawerExpandedIds(toggleExpand);
+    else setDesktopExpandedIds(toggleExpand);
     onNavigate?.();
   }
 
-  function handleCancelCreate() {
-    setNewCaseName("");
-    setIsCreating(false);
+  function toggleExpand(projectId: string) {
+    const updater = (prev: Set<string>) => {
+      const next = new Set(prev);
+      if (next.has(projectId)) next.delete(projectId);
+      else next.add(projectId);
+      return next;
+    };
+    if (drawerMode) setDrawerExpandedIds(updater);
+    else setDesktopExpandedIds(updater);
   }
 
-  function handleDeleteArchived(c: Case) {
-    let undone = false;
-
-    // Optimistically hide from list while toast is showing
-    setPendingDeleteIds((prev) => new Set([...prev, c.id]));
-
-    toast(`Кейс «${c.name}» удалён`, {
-      duration: 10000,
-      action: { label: "Отменить", onClick: () => {
-        undone = true;
-        setPendingDeleteIds((prev) => { const n = new Set(prev); n.delete(c.id); return n; });
-      }},
-      onAutoClose: () => {
-        if (undone) return;
-        deleteCase(c.id);
-        setPendingDeleteIds((prev) => { const n = new Set(prev); n.delete(c.id); return n; });
-        toast(`Кейс «${c.name}» удалён навсегда`);
-      },
-      onDismiss: () => {
-        if (undone) return;
-        deleteCase(c.id);
-        setPendingDeleteIds((prev) => { const n = new Set(prev); n.delete(c.id); return n; });
-        toast(`Кейс «${c.name}» удалён навсегда`);
-      },
-    });
+  function startRename(p: Project) {
+    setRenamingId(p.id);
+    setRenameValue(p.name);
   }
 
-  function handleRenameCase() {
+  function handleRenameSubmit() {
     if (!renamingId) return;
     const name = renameValue.trim();
-    if (name) renameCase(renamingId, name);
+    if (name) renameProject(renamingId, name);
     setRenamingId(null);
     setRenameValue("");
   }
 
-  function startRename(c: Case) {
-    setRenamingId(c.id);
-    setRenameValue(c.name);
+  function handleArchive(p: Project) {
+    let undone = false;
+    setPendingDeleteIds((prev) => new Set([...prev, p.id]));
+    archiveProject(p.id);
+    toast(`Проект «${p.name}» архивирован`, {
+      duration: 8000,
+      action: {
+        label: "Отменить",
+        onClick: () => {
+          undone = true;
+          restoreProject(p.id);
+          setPendingDeleteIds((prev) => {
+            const n = new Set(prev);
+            n.delete(p.id);
+            return n;
+          });
+        },
+      },
+      onAutoClose: () => {
+        if (!undone) {
+          setPendingDeleteIds((prev) => {
+            const n = new Set(prev);
+            n.delete(p.id);
+            return n;
+          });
+        }
+      },
+      onDismiss: () => {
+        if (!undone) {
+          setPendingDeleteIds((prev) => {
+            const n = new Set(prev);
+            n.delete(p.id);
+            return n;
+          });
+        }
+      },
+    });
   }
 
+  function handleDeleteArchived(p: Project) {
+    let undone = false;
+    setPendingArchivedDeleteIds((prev) => new Set([...prev, p.id]));
+    toast(`Проект «${p.name}» удалён`, {
+      duration: 8000,
+      action: {
+        label: "Отменить",
+        onClick: () => {
+          undone = true;
+          setPendingArchivedDeleteIds((prev) => {
+            const n = new Set(prev);
+            n.delete(p.id);
+            return n;
+          });
+        },
+      },
+      onAutoClose: () => {
+        if (undone) return;
+        deleteProject(p.id);
+        setPendingArchivedDeleteIds((prev) => {
+          const n = new Set(prev);
+          n.delete(p.id);
+          return n;
+        });
+      },
+      onDismiss: () => {
+        if (undone) return;
+        deleteProject(p.id);
+        setPendingArchivedDeleteIds((prev) => {
+          const n = new Set(prev);
+          n.delete(p.id);
+          return n;
+        });
+      },
+    });
+  }
+
+  const visibleActiveProjects = activeProjects.filter((p) => !pendingDeleteIds.has(p.id));
+
   return (
-    <aside className={`flex h-full flex-col border-r border-border bg-background ${drawerMode ? "w-full" : "w-[312px]"}`}>
-      {/* Logo */}
+    <aside
+      className={`flex h-full flex-col border-r border-border bg-background ${
+        drawerMode ? "w-full" : "w-[312px]"
+      }`}
+    >
       <LogoHeader onClose={onNavigate} />
 
-      {/* Scrollable content — left padding 16px matches Figma container pl */}
       <div className="flex-1 overflow-y-auto pl-4">
+        {/* ── R-менеджер (верхнеуровневая сущность) ───────────────────────── */}
+        <div className="pr-4 py-3">
+          <Link
+            href="/manager"
+            onClick={() => onNavigate?.()}
+            className={`flex items-center gap-2 rounded-sm p-2 transition-colors ${
+              isOnManager
+                ? "bg-rm-gray-1 text-foreground"
+                : "text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground"
+            }`}
+          >
+            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full">
+              <Image
+                src={manager.avatar_url}
+                alt={manager.name}
+                width={32}
+                height={32}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[length:var(--text-14)] text-foreground">
+                {manager.name}
+              </p>
+              <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+                {manager.role}
+              </p>
+            </div>
+            {isOnManager && (
+              <span
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--rm-yellow-500)]"
+                aria-hidden
+              />
+            )}
+          </Link>
+        </div>
 
-        {/* КЕЙСЫ header — padding: 12px 16px 12px 0, gap: 8px */}
+        {/* Divider — подчёркивает, что R-менеджер отдельный уровень */}
+        <div className="h-px bg-border mr-4" />
+
+        {/* ── Проекты header ──────────────────────────────────────────────── */}
         <div className="flex items-center gap-2 pr-4 py-3">
-          <span className="flex-1 text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground">
-            Кейсы
-          </span>
-          {/* + button: 24×24px, bg: rm-gray-1, rounded: 4px */}
+          <Link
+            href="/dashboard"
+            onClick={() => onNavigate?.()}
+            className="flex-1 text-[length:var(--text-12)] font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Проекты
+          </Link>
           <button
-            onClick={() => setIsCreating(true)}
+            onClick={() => setIsNewProjectModalOpen(true)}
+            aria-label="Новый проект"
             className="h-7 w-7 shrink-0 flex items-center justify-center rounded-sm bg-rm-gray-1 text-muted-foreground hover:bg-rm-gray-2 hover:text-foreground transition-colors"
           >
             <Plus className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Inline create new case — animated */}
-        <Collapsible open={isCreating}>
-          <div className="pr-4 pb-3 flex flex-col gap-2">
-            <Input
-              ref={createInputRef}
-              size="sm"
-              placeholder="Название кейса"
-              value={newCaseName}
-              onChange={(e) => setNewCaseName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleCreateCase();
-                if (e.key === "Escape") handleCancelCreate();
-              }}
-            />
-            {/* Explicit confirm/cancel — mobile-friendly, no onBlur trap */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleCreateCase}
-                className="flex-1 rounded-sm bg-foreground py-1.5 text-[length:var(--text-12)] font-medium text-background transition-opacity hover:opacity-80 active:opacity-70"
-              >
-                Создать
-              </button>
-              <button
-                type="button"
-                onClick={handleCancelCreate}
-                className="flex-1 rounded-sm border border-border py-1.5 text-[length:var(--text-12)] text-muted-foreground transition-colors hover:bg-rm-gray-1 hover:text-foreground"
-              >
-                Отмена
-              </button>
-            </div>
-          </div>
-        </Collapsible>
-
-        {/* Divider after header */}
         <div className="h-px bg-border mr-4" />
 
         {/* Empty state */}
-        {activeCases.length === 0 && !isCreating && (
+        {visibleActiveProjects.length === 0 && (
           <p className="py-4 pr-4 text-center text-[length:var(--text-12)] text-muted-foreground">
-            Нет кейсов.{" "}
-            <button
-              onClick={() => setIsCreating(true)}
+            Нет проектов.{" "}
+            <Link
+              href="/manager"
+              onClick={() => onNavigate?.()}
               className="text-foreground underline underline-offset-2"
             >
-              Создать первый
-            </button>
+              Обсудить с R-менеджером
+            </Link>
           </p>
         )}
 
-        {/* Case groups with dividers between them */}
-        {activeCases.map((c, idx) => {
+        {/* Project groups */}
+        {visibleActiveProjects.map((p, idx) => {
           const isExpanded = drawerMode
-            ? drawerExpandedIds.has(c.id)
-            : desktopExpandedIds.has(c.id);
-
+            ? drawerExpandedIds.has(p.id)
+            : desktopExpandedIds.has(p.id);
           return (
-          <div key={c.id}>
-            <CaseItemWithAgents
-              caseItem={c}
-              isActive={c.id === activeCaseId}
-              isExpanded={isExpanded}
-              activeAgentId={activeAgentId}
-              isRenaming={c.id === renamingId}
-              renameValue={renameValue}
-              renameInputRef={renameInputRef}
-              onSelect={() => {
-                if (drawerMode) {
-                  setDrawerExpandedIds((prev) => {
-                    const next = new Set(prev);
-                    next.has(c.id) ? next.delete(c.id) : next.add(c.id);
-                    return next;
-                  });
-                } else {
-                  setDesktopExpandedIds((prev) => {
-                    const next = new Set(prev);
-                    next.has(c.id) ? next.delete(c.id) : next.add(c.id);
-                    return next;
-                  });
-                }
-              }}
-              onAgentSelect={(agentId) => {
-                router.push(`/cases/${c.id}?agent=${agentId}`);
-                onNavigate?.();
-              }}
-              onRenameChange={setRenameValue}
-              onRenameSubmit={handleRenameCase}
-              onRenameCancel={() => setRenamingId(null)}
-              onStartRename={() => startRename(c)}
-              onArchive={() => archiveCase(c.id)}
-              onDelete={() => deleteCase(c.id)}
-              onNavigate={onNavigate}
-            />
-            {/* Divider between case groups */}
-            {idx < activeCases.length - 1 && (
-              <div className="h-px bg-border mr-4" />
-            )}
-          </div>
+            <div key={p.id}>
+              <ProjectItemWithExperts
+                project={p}
+                isActive={p.id === activeProjectId}
+                isExpanded={isExpanded}
+                isNew={newProjects.has(p.id)}
+                activeExpertCodename={activeExpertCodename}
+                isRenaming={p.id === renamingId}
+                renameValue={renameValue}
+                renameInputRef={renameInputRef}
+                onOpen={() => handleProjectClick(p)}
+                onToggle={() => toggleExpand(p.id)}
+                onExpertSelect={(codename) => {
+                  if (newProjects.has(p.id)) markProjectAsSeen(p.id);
+                  router.push(`/projects/${p.id}?expert=${codename}`);
+                  onNavigate?.();
+                }}
+                onRenameChange={setRenameValue}
+                onRenameSubmit={handleRenameSubmit}
+                onRenameCancel={() => setRenamingId(null)}
+                onStartRename={() => startRename(p)}
+                onArchive={() => handleArchive(p)}
+              />
+              {idx < visibleActiveProjects.length - 1 && (
+                <div className="h-px bg-border mr-4" />
+              )}
+            </div>
           );
         })}
       </div>
 
-      {/* Archive — pinned above footer */}
-      {archivedCases.length > 0 && (
+      {/* Архив */}
+      {archivedProjects.length > 0 && (
         <div className="border-t border-border pl-4">
           <button
             onClick={() => setShowArchived((v) => !v)}
@@ -283,101 +349,109 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
             <ChevronDown
               className={`h-2 w-2 transition-transform ${showArchived ? "" : "-rotate-90"}`}
             />
-            Архив ({archivedCases.length})
+            Архив ({archivedProjects.length})
           </button>
           <Collapsible open={showArchived}>
             <div className="pb-2">
-              {archivedCases
-                .filter((c) => !pendingDeleteIds.has(c.id))
-                .map((c) => (
-                <div
-                  key={c.id}
-                  className="group flex items-center gap-1 rounded-sm pr-2 py-1.5 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground cursor-pointer transition-colors"
-                  onClick={() => router.push(`/cases/${c.id}`)}
-                >
-                  <Archive className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                  <span className="flex-1 truncate text-[length:var(--text-14)] opacity-60">
-                    {c.name}
-                  </span>
-                  {/* Restore — always visible */}
-                  <button
-                    className="shrink-0 rounded-sm p-1 text-muted-foreground hover:bg-rm-gray-2 hover:text-foreground transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      restoreCase(c.id);
-                      toast.success(`Кейс «${c.name}» восстановлен`);
+              {archivedProjects
+                .filter((p) => !pendingArchivedDeleteIds.has(p.id))
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    className="group flex items-center gap-1 rounded-sm pr-2 py-1.5 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground cursor-pointer transition-colors"
+                    onClick={() => {
+                      if (newProjects.has(p.id)) markProjectAsSeen(p.id);
+                      router.push(`/projects/${p.id}`);
+                      onNavigate?.();
                     }}
-                    title="Восстановить"
                   >
-                    <ArchiveRestore className="h-3.5 w-3.5" />
-                  </button>
-                  {/* Delete — always visible */}
-                  <button
-                    className="shrink-0 rounded-sm p-1 text-[var(--rm-red-500)] hover:bg-rm-gray-2 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteArchived(c);
-                    }}
-                    title="Удалить навсегда"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
+                    <Archive className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                    <span className="flex-1 truncate text-[length:var(--text-14)] opacity-60">
+                      {p.name}
+                    </span>
+                    <button
+                      className="shrink-0 rounded-sm p-1 text-muted-foreground hover:bg-rm-gray-2 hover:text-foreground transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        restoreProject(p.id);
+                        toast.success(`Проект «${p.name}» восстановлен`);
+                      }}
+                      title="Восстановить"
+                    >
+                      <ArchiveRestore className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      className="shrink-0 rounded-sm p-1 text-[var(--rm-red-500)] hover:bg-rm-gray-2 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteArchived(p);
+                      }}
+                      title="Удалить навсегда"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
             </div>
           </Collapsible>
         </div>
       )}
 
-      {/* Footer — user menu */}
+      {/* Footer */}
       <div className="border-t border-border px-3 py-2">
         <UserMenu user={user} onLogout={logout} />
       </div>
+
+      {/* Модалка быстрого создания */}
+      <NewProjectModal
+        open={isNewProjectModalOpen}
+        onOpenChange={setIsNewProjectModalOpen}
+      />
     </aside>
   );
 }
 
-// --- Case group with nested agents ---
+// ─────────────────────────────────────────────────────────────────────────────
+// ProjectItemWithExperts — группа проекта с раскрывающимся списком R-экспертов
+// ─────────────────────────────────────────────────────────────────────────────
 
-function CaseItemWithAgents({
-  caseItem,
+function ProjectItemWithExperts({
+  project,
   isActive,
   isExpanded,
-  activeAgentId,
+  isNew,
+  activeExpertCodename,
   isRenaming,
   renameValue,
   renameInputRef,
-  onSelect,
-  onAgentSelect,
+  onOpen,
+  onToggle,
+  onExpertSelect,
   onRenameChange,
   onRenameSubmit,
   onRenameCancel,
   onStartRename,
   onArchive,
-  onDelete,
-  onNavigate,
 }: {
-  caseItem: Case;
+  project: Project;
   isActive: boolean;
   isExpanded: boolean;
-  activeAgentId: string | null;
+  isNew: boolean;
+  activeExpertCodename: ExpertCodename | null;
   isRenaming: boolean;
   renameValue: string;
   renameInputRef: React.RefObject<HTMLInputElement | null>;
-  onSelect: () => void;
-  onAgentSelect: (agentId: string) => void;
+  onOpen: () => void;
+  onToggle: () => void;
+  onExpertSelect: (codename: ExpertCodename) => void;
   onRenameChange: (v: string) => void;
   onRenameSubmit: () => void;
   onRenameCancel: () => void;
   onStartRename: () => void;
   onArchive: () => void;
-  onDelete: () => void;
-  onNavigate?: () => void;
 }) {
-  // Case group: padding 16px top/bottom/right, 0 left (inherited from pl-4 parent), gap 4px
   return (
     <div className="flex flex-col gap-1 py-4 pr-4">
-      {/* Case header row: padding 8px all, gap 8px, bg rm-gray-1 when active, rounded 4px */}
       {isRenaming ? (
         <Input
           ref={renameInputRef}
@@ -392,22 +466,36 @@ function CaseItemWithAgents({
         />
       ) : (
         <div
+          data-new={isNew || undefined}
           className={`group flex items-center gap-2 rounded-sm p-2 cursor-pointer transition-colors ${
             isActive
               ? "bg-rm-gray-1 text-foreground"
               : "text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground"
-          }`}
-          onClick={onSelect}
+          } data-[new=true]:bg-[var(--rm-yellow-10)] data-[new=true]:text-foreground data-[new=true]:rm-new-pulse`}
+          onClick={onOpen}
         >
-          {/* Chevron: 8×8px (h-2 w-2) */}
-          <ChevronRight
-            className={`h-2 w-2 shrink-0 transition-transform text-muted-foreground ${
-              isExpanded ? "rotate-90" : ""
-            }`}
-          />
+          {/* Chevron — раскрывает/сворачивает без навигации */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+            }}
+            className="shrink-0 flex h-4 w-4 items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={isExpanded ? "Свернуть экспертов" : "Раскрыть экспертов"}
+          >
+            <ChevronRight
+              className={`h-2 w-2 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+            />
+          </button>
           <span className="flex-1 truncate text-[length:var(--text-14)]">
-            {caseItem.name}
+            {project.name}
           </span>
+          {/* Прогресс N/M — рядом с именем */}
+          <span className="shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.04em] text-muted-foreground">
+            {project.experts_completed}/{project.experts_total}
+          </span>
+          {/* Меню действий */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -426,110 +514,133 @@ function CaseItemWithAgents({
                 <Archive className="mr-2 h-3.5 w-3.5" />
                 Архивировать
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={onDelete}
-                className="text-[var(--rm-red-500)]"
-              >
-                <Trash2 className="mr-2 h-3.5 w-3.5" />
-                Удалить
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       )}
 
-      {/* Agents — animated expand/collapse */}
+      {/* R-команда (nested) */}
       <Collapsible open={isExpanded}>
-        <CaseAgentsNested
-          caseId={caseItem.id}
-          activeAgentId={activeAgentId}
-          onAgentSelect={onAgentSelect}
-          onNavigate={onNavigate}
+        <ExpertsNested
+          projectId={project.id}
+          activeExpertCodename={activeExpertCodename}
+          currentExpertCodename={project.current_expert_codename}
+          onExpertSelect={onExpertSelect}
         />
       </Collapsible>
     </div>
   );
 }
 
-// --- Agents nested under active case ---
+// ─────────────────────────────────────────────────────────────────────────────
+// ExpertsNested — список R-экспертов под проектом с статусами
+// ─────────────────────────────────────────────────────────────────────────────
 
-function CaseAgentsNested({
-  caseId,
-  activeAgentId,
-  onAgentSelect,
-  onNavigate,
+const STATUS_LABEL: Record<ExpertSessionStatus, string> = {
+  not_started: "Не начата",
+  in_progress: "В работе",
+  awaiting_validation: "Ждёт валидации",
+  completed: "Завершена",
+};
+
+function ExpertsNested({
+  projectId,
+  activeExpertCodename,
+  currentExpertCodename,
+  onExpertSelect,
 }: {
-  caseId: string;
-  activeAgentId: string | null;
-  onAgentSelect: (agentId: string) => void;
-  onNavigate?: () => void;
+  projectId: string;
+  activeExpertCodename: ExpertCodename | null;
+  /** Текущий эксперт проекта — не затемняется даже если not_started. */
+  currentExpertCodename: ExpertCodename | null;
+  onExpertSelect: (codename: ExpertCodename) => void;
 }) {
-  const { agents } = useCaseAgents(caseId);
-  const router = useRouter();
+  const { experts } = useExperts();
+  const { sessions } = useExpertSessions(projectId);
 
   return (
-    <div className="flex flex-col gap-1">
-      {agents.map((agent) => {
-        const isSelected = agent.id === activeAgentId;
+    <div className="flex flex-col gap-0.5">
+      {PIPELINE_ORDER.map((codename) => {
+        const expert = experts.find((e) => e.codename === codename);
+        const session = sessions.find((s) => s.expert_codename === codename);
+        if (!expert) return null;
+        const status: ExpertSessionStatus = session?.status ?? "not_started";
+        const isSelected = activeExpertCodename === codename;
+        // Not_started экспертов приглушаем до 50%, кроме текущего эксперта проекта.
+        // (DS §8.16 pipeline step dimmed state)
+        const isDimmed =
+          status === "not_started" && currentExpertCodename !== codename;
+        const StatusIcon =
+          status === "completed"
+            ? CheckCircle2
+            : status === "in_progress" || status === "awaiting_validation"
+              ? CircleDashed
+              : Circle;
+
         return (
-          // Agent row: padding 4px top/bottom, 8px right, 0 left, gap 8px
-          // bg rm-gray-1 always; rm-gray-2 when selected
           <div
-            key={agent.id}
-            onClick={() => onAgentSelect(agent.id)}
+            key={codename}
+            onClick={() => onExpertSelect(codename)}
             className={`flex items-center gap-2 rounded-sm py-1 pr-2 cursor-pointer transition-colors ${
               isSelected
                 ? "bg-rm-gray-2 text-foreground"
                 : "text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground"
-            }`}
+            } ${isDimmed ? "opacity-50 hover:opacity-100" : ""}`}
           >
-            {/* Avatar: 40×40px (size="md"), no border */}
-            <Avatar size="md" className="border-0 shrink-0">
-              {agent.avatar_url && <AvatarImage src={agent.avatar_url} />}
-              <AvatarFallback>{getInitials(agent.name)}</AvatarFallback>
-            </Avatar>
-            <span className="truncate text-[length:var(--text-14)]">
-              {agent.name}
-            </span>
+            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full">
+              {expert.avatar_url && (
+                <Image
+                  src={expert.avatar_url}
+                  alt={expert.name}
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-cover"
+                />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.04em]">
+                  {codename}
+                </span>
+                <span className="truncate text-[length:var(--text-14)]">
+                  {expert.name}
+                </span>
+              </div>
+              <div
+                className="flex items-center gap-1 text-[length:var(--text-12)] text-muted-foreground"
+                title={STATUS_LABEL[status]}
+              >
+                <StatusIcon
+                  className={`h-3 w-3 shrink-0 ${
+                    status === "completed"
+                      ? "text-[var(--rm-yellow-500)]"
+                      : status === "in_progress"
+                        ? "text-foreground"
+                        : ""
+                  }`}
+                />
+                <span className="truncate">{STATUS_LABEL[status]}</span>
+              </div>
+            </div>
           </div>
         );
       })}
-
-      {/* Add agent row */}
-      <button
-        onClick={() => {
-          router.push(`/agents?caseId=${caseId}`);
-          onNavigate?.();
-        }}
-        className="mt-1 relative flex w-full items-center gap-2 rounded-sm py-1 pr-2 text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors group/add"
-      >
-        {/* Dashed border: 4px dash, 12px gap (3× rarer than default) */}
-        <svg
-          className="absolute inset-0 w-full h-full pointer-events-none opacity-100 group-hover/add:opacity-0 transition-opacity"
-        >
-          <rect
-            x="0.5"
-            y="0.5"
-            rx="3"
-            ry="3"
-            fill="none"
-            stroke="var(--rm-gray-3)"
-            strokeDasharray="4 4"
-            style={{ width: "calc(100% - 1px)", height: "calc(100% - 1px)" }}
-          />
-        </svg>
-        <span className="h-10 w-10 shrink-0 flex items-center justify-center">
-          <Plus className="h-3.5 w-3.5" />
-        </span>
-        <span className="text-[length:var(--text-14)]">Агент</span>
-      </button>
     </div>
   );
 }
 
-// --- Animated collapse/expand ---
+// ─────────────────────────────────────────────────────────────────────────────
+// Collapsible — grid row animation
+// ─────────────────────────────────────────────────────────────────────────────
 
-function Collapsible({ open, children }: { open: boolean; children: React.ReactNode }) {
+function Collapsible({
+  open,
+  children,
+}: {
+  open: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div
       className="grid transition-[grid-template-rows] duration-200 ease-out"
@@ -540,7 +651,9 @@ function Collapsible({ open, children }: { open: boolean; children: React.ReactN
   );
 }
 
-// --- Logo header ---
+// ─────────────────────────────────────────────────────────────────────────────
+// LogoHeader
+// ─────────────────────────────────────────────────────────────────────────────
 
 function LogoHeader({ onClose }: { onClose?: () => void }) {
   const { resolvedTheme } = useTheme();
@@ -552,7 +665,9 @@ function LogoHeader({ onClose }: { onClose?: () => void }) {
 
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-      <Image src={src} alt="Rocketmind" width={140} height={24} priority />
+      <Link href="/dashboard" aria-label="На дашборд">
+        <Image src={src} alt="Rocketmind" width={140} height={24} priority />
+      </Link>
       {onClose && (
         <button
           type="button"
@@ -567,7 +682,9 @@ function LogoHeader({ onClose }: { onClose?: () => void }) {
   );
 }
 
-// --- User menu (avatar dropdown) ---
+// ─────────────────────────────────────────────────────────────────────────────
+// UserMenu
+// ─────────────────────────────────────────────────────────────────────────────
 
 type FontSize = "sm" | "md" | "lg";
 
@@ -619,7 +736,6 @@ function UserMenu({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" side="top" className="z-[70] w-64">
-        {/* Font size */}
         <div className="flex items-center gap-2 px-3 py-3">
           <span className="flex-1 text-[length:var(--text-16)]">Размер</span>
           <div className="flex gap-1">

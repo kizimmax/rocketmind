@@ -389,7 +389,12 @@ export function EditorShell({ initialPage }: EditorShellProps) {
     toast.success("Изменения сохранены и записаны в файл");
   }
 
-  const pagesHref = `/pages?section=${page.sectionId}`;
+  const pagesHref =
+    page.sectionId === "cases"
+      ? "/cases"
+      : page.sectionId === "media"
+        ? "/media"
+        : `/pages?section=${page.sectionId}`;
 
   function handleBack() {
     if (isDirty) {

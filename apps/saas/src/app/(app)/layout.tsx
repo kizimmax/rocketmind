@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { MobileHeader } from "@/components/mobile-header";
@@ -9,7 +9,12 @@ import { MobileHeader } from "@/components/mobile-header";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const shellRef = useRef<HTMLDivElement>(null);
+
+  // Full-screen только /onboarding/* (deprecated редирект на /manager).
+  // /manager и /projects/[id] теперь имеют глобальный sidebar.
+  const hideAppChrome = pathname?.startsWith("/onboarding") ?? false;
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -58,6 +63,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) return null;
+
+  // Full-screen shell (onboarding, project shell): без sidebar/mobile-header,
+  // внутренняя навигация страницы.
+  if (hideAppChrome) {
+    return (
+      <div
+        ref={shellRef}
+        className="fixed inset-x-0 top-0 flex flex-col overflow-hidden bg-background"
+        style={{ height: "100dvh" }}
+      >
+        <main className="flex flex-1 flex-col overflow-hidden">{children}</main>
+      </div>
+    );
+  }
 
   return (
     <div

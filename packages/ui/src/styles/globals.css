@@ -587,6 +587,7 @@ code {
  * .h2 — 52/32px, H2, заголовки страниц
  * .h3 — 32/28px, H3, подзаголовки секций
  * .h4 — 24px,    H4, заголовки карточек
+ * .h5 — 18/16px, H5, мелкие заголовки
  */
 .h1 {
   font-family: var(--font-heading-family);
@@ -631,6 +632,18 @@ code {
   line-height: 1.2;
   letter-spacing: -0.01em;
   text-transform: uppercase;
+}
+
+.h5 {
+  font-family: var(--font-heading-family);
+  font-size: var(--text-16);   /* 16px mobile */
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+@media (min-width: 768px) {
+  .h5 { font-size: var(--text-18); }
 }
 
 /* Copy notification animation */
@@ -915,4 +928,33 @@ code {
 @keyframes rm-slider-dot {
   from { left: 0px; }
   to   { left: calc(100% - 8px); }
+}
+
+/* ── New-notification state (DS §8.14) ── */
+@keyframes rm-new-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
+  50%      { box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.55); }
+}
+.rm-new-pulse {
+  animation: rm-new-pulse 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-new-pulse {
+    animation: none;
+    box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.4);
+  }
+}
+
+/* ── Message rise — real-time only (DS §8.15) ──
+   Применяется к вновь добавленным сообщениям в чате (user-ответ,
+   assistant-ответ). НЕ применяется к исторически загруженным сообщениям. */
+@keyframes rm-message-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rm-message-rise {
+  animation: rm-message-rise 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-message-rise { animation: none; }
 }

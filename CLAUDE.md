@@ -108,4 +108,38 @@ npm run build          # Build all (turbo)
 npm run release        # bump version + commit + push
 ```
 
-**Last updated:** 2026-03-26 | **Version:** 2.0.0
+---
+
+## gstack (скилл-паки Garry Tan / YC)
+
+Установлен в `~/.claude/skills/gstack` (no-prefix mode — команды без `/gstack-`).
+
+**Доступные скиллы:**
+`/office-hours`, `/autoplan`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/plan-devex-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/design-review`, `/review`, `/codex`, `/cso`, `/investigate`, `/qa`, `/qa-only`, `/devex-review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/document-release`, `/retro`, `/learn`, `/browse`, `/open-gstack-browser`, `/pair-agent`, `/setup-browser-cookies`, `/setup-deploy`, `/gstack-upgrade`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/checkpoint`, `/health`, `/plan-tune`.
+
+### Правила интеграции с нашими процессами
+
+1. **DS-правила выше gstack.** Если `/plan-design-review` или `/design-review` предлагает стиль вне `design/design-system.md` — проходим наш цикл: «check DS → not found → ask → confirm → update DS MD + DS Web → implement». `/design-shotgun` используем как **источник идей**, но итоговые токены/паттерны должны попасть в DS MD до кода.
+2. **Коммиты на русском.** Используем наш локальный скилл `/push` (RU, imperative, ≤72 char). `/ship` — только для PR-части; commit message задаём мы до `/ship`.
+3. **`/browse` вместо mcp-chrome.** Для браузерного автоматического тестирования — `/browse` и `/qa`. Не используем `mcp__claude-in-chrome__*`.
+4. **`/review` перед каждым PR.** Обязателен на не-тривиальных изменениях в `apps/saas`.
+5. **`/cso` перед прод-деплоем.** Обязателен для изменений в auth, billing, admin, webhook-поверхности.
+6. **`/office-hours` + `/autoplan` на больших задачах.** Перед любой фичей уровня Phase (см. `docs/migration-plan-1.2.md`).
+7. **`/investigate` (Iron Law).** Для багов в expert pipeline и streaming: не фиксим без root-cause.
+8. **`/learn`** — накапливаем Rocketmind-специфичные паттерны между сессиями.
+
+---
+
+## R-Акселератор 1.2 — Wave 1 scope
+
+- **PRD:** `docs/R-Akselerator-PRD-Documentation.md`
+- **План миграции:** `docs/migration-plan-1.2.md`
+- **Вопросы для Ивана (бэк):** `docs/api-questions-for-ivan.md`
+- **Подход:** текущий `apps/saas` — надёжные рельсы, не rewrite. Рефакторинг поверх с переиспользованием `chat.tsx`, `message.tsx`, `sidebar.tsx`, streaming-UX, темизации.
+- **Wave 1:** Onboarding + Dashboard + Project Shell + Expert Pipeline R1→R5 + Artifacts/HITL + Team Roles + Billing UI + минимальный Admin (prompt editor в `apps/internal`).
+- **НЕ в Wave 1:** Canvas (~200 типов), полная админка, Partner API, white-label, когорты.
+- **Backend:** Иван на n8n (Amvera). Auth откладываем до первого контракта от него.
+
+---
+
+**Last updated:** 2026-04-18 | **Version:** 2.1.0

@@ -17,3 +17,5 @@
 .animate-blink {
   animation: blink 0.7s step-end infinite;
 }
+
+/* rm-new-pulse — определён в @rocketmind/ui/styles (DS §8.14) */

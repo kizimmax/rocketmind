@@ -12,6 +12,77 @@ import { DotGridDemo, AnimatedGridLinesDemo, LensShowcase } from "@/components/d
 import { WaveAnimation } from "@rocketmind/ui"
 import { SceneHero, SceneGradient, SceneMinimal, LensPropsTable } from "@/components/ds/LensDemoScenes"
 
+function MessageRiseDemo() {
+  const [messages, setMessages] = React.useState<string[]>([
+    "Привет! Я помогу собрать маркет-бриф.",
+  ]);
+  const [count, setCount] = React.useState(0);
+
+  function sendUser() {
+    const text = ["Собрать полный маркет-бриф", "Глубокая работа", "Продолжай"][
+      count % 3
+    ];
+    setMessages((p) => [...p, `__fresh__${text}`]);
+    setCount((c) => c + 1);
+    setTimeout(() => {
+      setMessages((p) => [
+        ...p,
+        `__fresh__assist__${"Принято. Продолжаю анализ."}`,
+      ]);
+    }, 600);
+  }
+
+  function reset() {
+    setMessages(["Привет! Я помогу собрать маркет-бриф."]);
+    setCount(0);
+  }
+
+  return (
+    <div className="mb-6 rounded-sm border border-border bg-background p-4 max-w-lg">
+      <div className="mb-3 flex flex-col gap-2 max-h-64 overflow-y-auto">
+        {messages.map((m, i) => {
+          const isFresh = m.startsWith("__fresh__");
+          const isAssist = m.startsWith("__fresh__assist__");
+          const text = m.replace(/^__fresh__(assist__)?/, "");
+          const isUser = !isAssist && isFresh;
+          const alignClass = isUser ? "justify-end" : "justify-start";
+          const bubbleClass = isUser
+            ? "bg-foreground text-background"
+            : "bg-rm-gray-1 text-foreground";
+          return (
+            <div
+              key={i}
+              className={`flex ${alignClass} ${isFresh ? "rm-message-rise" : ""}`}
+            >
+              <div
+                className={`max-w-[80%] rounded-sm px-3 py-2 text-[length:var(--text-14)] ${bubbleClass}`}
+              >
+                {text}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={sendUser}
+          className="rounded-sm bg-foreground px-3 py-1.5 text-[length:var(--text-12)] font-medium text-background hover:opacity-80 transition-opacity"
+        >
+          Отправить ответ
+        </button>
+        <button
+          type="button"
+          onClick={reset}
+          className="rounded-sm border border-border px-3 py-1.5 text-[length:var(--text-12)] text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+        >
+          Сбросить
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AnimationsPage() {
   return (
     <>
@@ -623,6 +694,178 @@ export default function AnimationsPage() {
 />`}</code>
           </pre>
         </SpecBlock>
+
+        {/* 8.14 New-notification state */}
+        <SubSection id="animations-new-pulse" title="8.14 New-notification state («не просмотрено»)" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
+          Состояние для свежесозданной карточки/строки, которую пользователь ещё не открыл. Мягкая бледно-жёлтая подложка
+          и плавно-пульсирующая жёлтая обводка — привлекают внимание без агрессии. Снимается после первого клика.
+        </p>
+
+        <div className="mb-6 grid gap-4 sm:grid-cols-2">
+          <div
+            data-new="true"
+            className="rounded-sm border border-border p-4 transition-colors data-[new=true]:bg-[var(--rm-yellow-10)] data-[new=true]:rm-new-pulse"
+          >
+            <p className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-bold uppercase leading-tight">
+              Новый проект
+            </p>
+            <p className="mt-2 text-[length:var(--text-12)] text-muted-foreground">
+              Подложка `--rm-yellow-10`, пульс 1.8s
+            </p>
+          </div>
+          <div className="rounded-sm border border-border p-4">
+            <p className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-bold uppercase leading-tight">
+              Обычная карточка
+            </p>
+            <p className="mt-2 text-[length:var(--text-12)] text-muted-foreground">
+              Для сравнения — без пульса
+            </p>
+          </div>
+        </div>
+
+        <SpecBlock title="Токены и параметры">
+          <div className="space-y-2">
+            {[
+              { token: "bg",              value: "var(--rm-yellow-10)", desc: "Подложка — самый бледный жёлтый из §1.1" },
+              { token: "shadow (peak)",   value: "0 0 0 3px rgba(255, 204, 0, 0.55)", desc: "Яркий пик пульса" },
+              { token: "shadow (idle)",   value: "0 0 0 0 rgba(255, 204, 0, 0)",       desc: "Исходная прозрачность" },
+              { token: "duration",        value: "1.8s",                desc: "Полный цикл пульса — idle → peak → idle" },
+              { token: "easing",          value: "ease-in-out",         desc: "Плавное нарастание и затухание" },
+              { token: "reduced-motion",  value: "static 2px @ 0.4α",   desc: "Статичная обводка при prefers-reduced-motion" },
+            ].map((t) => (
+              <TokenRow key={t.token} token={t.token} value={t.value} desc={t.desc} />
+            ))}
+          </div>
+          <pre className="mt-4 rounded-xl bg-muted p-5 text-sm overflow-x-auto">
+            <code>{`<Link
+  data-new={isNew || undefined}
+  className="rounded-sm border border-border transition-colors
+             data-[new=true]:bg-[var(--rm-yellow-10)]
+             data-[new=true]:rm-new-pulse"
+>
+  …
+</Link>`}</code>
+          </pre>
+        </SpecBlock>
+
+        <p className="mt-4 text-[length:var(--text-12)] text-muted-foreground">
+          Правила использования: только на одном иерархическом уровне; не более 3 непросмотренных в списке; не сочетать с
+          акцентной hover-обводкой. См. §8.14 DS MD.
+        </p>
+
+        {/* 8.15 Message rise */}
+        <SubSection id="animations-message-rise" title="8.15 Message rise (real-time-only)" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
+          Анимация «подлёта» новых сообщений в чате при отправке в real-time. Не применяется к исторически загруженным сообщениям.
+          Визуально — bubble подлетает снизу (14px) через прозрачность за 0.28s.
+        </p>
+
+        {/* Inline demo — кнопка «Отправить», и bubble падает в чат */}
+        <MessageRiseDemo />
+
+        <SpecBlock title="Параметры">
+          <div className="space-y-2">
+            {[
+              { token: "from", value: "opacity: 0; translateY(14px)", desc: "Старт — лёгкое смещение снизу" },
+              { token: "to", value: "opacity: 1; translateY(0)", desc: "Конечное положение bubble'а" },
+              { token: "duration", value: "0.28s", desc: "Быстро, но заметно" },
+              { token: "easing", value: "cubic-bezier(0.2, 0.8, 0.2, 1)", desc: "Ease-out — мягкое приземление" },
+              { token: "reduced-motion", value: "animation: none", desc: "Без анимации для prefers-reduced-motion" },
+            ].map((t) => (
+              <TokenRow key={t.token} token={t.token} value={t.value} desc={t.desc} />
+            ))}
+          </div>
+          <pre className="mt-4 rounded-xl bg-muted p-5 text-sm overflow-x-auto">
+            <code>{`// Set<string> id-шников real-time сообщений
+const [freshIds, setFreshIds] = useState(new Set());
+
+// При добавлении нового сообщения:
+setMessages(p => [...p, msg]);
+setFreshIds(p => new Set(p).add(msg.id));
+
+// В bubble:
+<div className={freshIds.has(msg.id) ? "rm-message-rise" : ""}>
+  …
+</div>`}</code>
+          </pre>
+        </SpecBlock>
+
+        <p className="mt-4 text-[length:var(--text-12)] text-muted-foreground">
+          Правила: не применять при загрузке истории; один раз при mount (не повторяется); не комбинировать с `rm-new-pulse`. См. §8.15 DS MD.
+        </p>
+
+        {/* 8.16 Pipeline step dimmed state */}
+        <SubSection id="animations-pipeline-dim" title="8.16 Pipeline step dimmed state" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-4">
+          Визуальное приглушение не-пройденных шагов последовательного процесса — в списках вроде sidebar R-экспертов.
+          Пользователь мгновенно видит, что за спиной, что сейчас, что впереди.
+        </p>
+
+        <div className="mb-6 rounded-sm border border-border bg-background p-4 max-w-sm">
+          <div className="mb-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+            R-команда · 2 из 6
+          </div>
+          <div className="flex flex-col gap-0.5">
+            {[
+              { code: "R1", name: "Роман", status: "completed" },
+              { code: "R2", name: "Регина", status: "completed" },
+              { code: "R+", name: "Роза", status: "awaiting_validation", current: true },
+              { code: "R3", name: "Римма", status: "not_started" },
+              { code: "R4", name: "Роберт", status: "not_started" },
+              { code: "R5", name: "Рон", status: "not_started" },
+            ].map((e) => {
+              const isDimmed = e.status === "not_started" && !e.current;
+              return (
+                <div
+                  key={e.code}
+                  className={`flex items-center gap-2 py-1 text-[length:var(--text-14)] transition-opacity ${
+                    isDimmed ? "opacity-50 hover:opacity-100" : ""
+                  }`}
+                >
+                  <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.04em]">
+                    {e.code}
+                  </span>
+                  <span>{e.name}</span>
+                  <span className="ml-auto text-[length:var(--text-12)] text-muted-foreground">
+                    {e.status === "completed"
+                      ? "✓ Завершена"
+                      : e.status === "awaiting_validation"
+                        ? "◌ Ждёт валидации"
+                        : "○ Не начата"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <SpecBlock title="Матрица состояний">
+          <div className="space-y-2">
+            {[
+              { token: "completed", value: "opacity: 100%", desc: "Нормальная яркость, CheckCircle2 в жёлтом акценте" },
+              { token: "in_progress / awaiting_validation", value: "opacity: 100%", desc: "Нормальная яркость, CircleDashed в foreground" },
+              { token: "current (у проекта) + not_started", value: "opacity: 100%", desc: "Текущий следующий шаг — не затемнять никогда" },
+              { token: "not_started (не current)", value: "opacity: 50%", desc: "Приглушён, сигнал «впереди»" },
+              { token: "hover", value: "opacity: 100%", desc: "Восстанавливается на hover" },
+            ].map((t) => (
+              <TokenRow key={t.token} token={t.token} value={t.value} desc={t.desc} />
+            ))}
+          </div>
+          <pre className="mt-4 rounded-xl bg-muted p-5 text-sm overflow-x-auto">
+            <code>{`const isDimmed =
+  status === "not_started" &&
+  currentExpertCodename !== codename;
+
+<div className={\`… \${isDimmed ? "opacity-50 hover:opacity-100" : ""}\`}>
+  …
+</div>`}</code>
+          </pre>
+        </SpecBlock>
+
+        <p className="mt-4 text-[length:var(--text-12)] text-muted-foreground">
+          Правила: current-шаг никогда не приглушается; hover восстанавливает; не использовать в dashboard-сценариях (там прогресс-бар). См. §8.16 DS MD.
+        </p>
       </Section>
 
       <Separator />

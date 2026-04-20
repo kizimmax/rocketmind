@@ -6,9 +6,10 @@ import { Button, Textarea, GlowingEffect } from "@rocketmind/ui";
 interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -40,7 +41,7 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Введите сообщение..."
+            placeholder={placeholder ?? "Введите сообщение..."}
             disabled={disabled}
             className="border-0 bg-transparent pr-12 focus-visible:ring-0 focus-visible:border-0"
             rows={1}
