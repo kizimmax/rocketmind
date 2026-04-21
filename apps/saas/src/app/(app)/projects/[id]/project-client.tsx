@@ -199,17 +199,20 @@ export default function ProjectClient({ id }: { id: string }) {
       {/* ── RIGHT: artifacts panel (collapsible) ───────────────────────────── */}
       {artifactsOpen && (
         <aside className="hidden w-80 shrink-0 flex-col border-l border-border bg-background lg:flex">
-          {/* Шапка-прогресс: фон заполняется бледно-жёлтым по мере score */}
+          {/* Шапка-прогресс: фон интерполируется от бледно- к ярко-жёлтому по score */}
           <div className="relative flex h-12 shrink-0 items-center justify-between overflow-hidden border-b border-border">
             <div
               aria-hidden
-              className="absolute inset-y-0 left-0 bg-[var(--rm-yellow-900)] transition-[width] duration-500 ease-out"
-              style={{ width: `${project.score ?? 0}%` }}
+              className="absolute inset-y-0 left-0 transition-[width,background-color] duration-500 ease-out"
+              style={{
+                width: `${project.score ?? 0}%`,
+                backgroundColor: `color-mix(in srgb, var(--rm-yellow-100) ${project.score ?? 0}%, var(--rm-yellow-900))`,
+              }}
             />
-            <p className="relative z-10 px-4 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+            <p className="relative z-10 px-4 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-foreground">
               Артефакты · {artifacts.length}
             </p>
-            <p className="relative z-10 px-4 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+            <p className="relative z-10 px-4 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-foreground">
               {project.score ?? 0}%
             </p>
           </div>
