@@ -793,7 +793,16 @@ function FilesTab({
   const [isTextDialogOpen, setIsTextDialogOpen] = useState(false);
 
   function handleSaveText(title: string, content: string) {
-    const safeTitle = title.trim() || "Заметка";
+    const trimmedTitle = title.trim();
+    // Если имя пустое — берём первые 6 слов текста; fallback — «Заметка».
+    const fallbackFromContent = content
+      .replace(/^#+\s*/, "") // убираем markdown-заголовки в начале
+      .trim()
+      .split(/\s+/)
+      .slice(0, 6)
+      .join(" ")
+      .slice(0, 60);
+    const safeTitle = trimmedTitle || fallbackFromContent || "Заметка";
     const filename = safeTitle.toLowerCase().endsWith(".md")
       ? safeTitle
       : `${safeTitle}.md`;
