@@ -47,10 +47,18 @@ export default function ProjectClient({ id }: { id: string }) {
   }, [id]);
 
   // Активный эксперт: из URL ?expert=R1, иначе текущий pipeline-эксперт, иначе R1
+  const expertParam = searchParams?.get("expert") as ExpertCodename | null;
   const activeExpertCodename =
-    (searchParams?.get("expert") as ExpertCodename | null) ??
-    project?.current_expert_codename ??
-    "R1";
+    expertParam ?? project?.current_expert_codename ?? "R1";
+
+  // Синхронизируем URL, чтобы sidebar корректно подсвечивал эксперта
+  useEffect(() => {
+    if (!expertParam && project) {
+      router.replace(`/projects/${id}?expert=${activeExpertCodename}`, {
+        scroll: false,
+      });
+    }
+  }, [expertParam, project, id, activeExpertCodename, router]);
 
   const activeExpert = useMemo(
     () => getExpert(activeExpertCodename),

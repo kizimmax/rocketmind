@@ -105,7 +105,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   function handleProjectClick(p: Project) {
     // Помечаем как прочитанный при первом клике
     if (newProjects.has(p.id)) markProjectAsSeen(p.id);
-    router.push(`/projects/${p.id}`);
+    // Открываем чат с текущим экспертом, чтобы он подсветился в sidebar
+    const expert = p.current_expert_codename ?? "R1";
+    router.push(`/projects/${p.id}?expert=${expert}`);
     // В drawer-режиме также раскрываем, но не закрываем меню — пусть пользователь видит pipeline
     const toggleExpand = (prev: Set<string>) => {
       const next = new Set(prev);

@@ -39,7 +39,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <Link
-      href={`/projects/${project.id}`}
+      href={`/projects/${project.id}?expert=${project.current_expert_codename ?? "R1"}`}
       className="group flex flex-col gap-4 rounded-sm border border-border bg-background p-5 transition-colors hover:border-foreground"
     >
       {/* Header: title + stage badge */}
