@@ -929,7 +929,7 @@ function AddTextDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg gap-6">
+      <DialogContent className="flex max-w-lg flex-col gap-6">
         <DialogHeader className="pr-8">
           <DialogTitle className="font-[family-name:var(--font-heading-family)] uppercase">
             Добавьте текст
