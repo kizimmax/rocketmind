@@ -426,16 +426,16 @@ function ChatArtifactCard({
       {/* Header: иконка + название + кодовое имя эксперта */}
       <div className="flex items-center gap-2 px-3 pt-3">
         <FileText className="h-5 w-5 shrink-0 text-foreground" />
-        <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-medium uppercase leading-none tracking-[0.02em] text-foreground">
+        <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-foreground">
           {artifact.title}
         </p>
-        <span className="shrink-0 font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-medium uppercase leading-none tracking-[0.02em] text-muted-foreground">
+        <span className="shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-muted-foreground">
           {artifact.expert_codename}
         </span>
       </div>
       {/* Body: превью + кнопка скачивания справа */}
       <div className="flex items-stretch pt-3">
-        <p className="min-w-0 flex-1 px-3 pb-4 text-[length:var(--text-12)] leading-[1.36] text-muted-foreground line-clamp-2">
+        <p className="min-w-0 flex-1 px-3 pb-4 font-[family-name:var(--font-body)] text-[length:var(--text-12)] leading-[1.36] tracking-[0.02em] text-muted-foreground line-clamp-2">
           {artifact.preview}
         </p>
         {onDownload && (
