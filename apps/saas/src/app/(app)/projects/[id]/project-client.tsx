@@ -54,7 +54,7 @@ export default function ProjectClient({ id }: { id: string }) {
   // Синхронизируем URL, чтобы sidebar корректно подсвечивал эксперта
   useEffect(() => {
     if (!expertParam && project) {
-      router.replace(`/projects/${id}?expert=${activeExpertCodename}`, {
+      router.replace(`/projects/${id}?expert=${encodeURIComponent(activeExpertCodename)}`, {
         scroll: false,
       });
     }

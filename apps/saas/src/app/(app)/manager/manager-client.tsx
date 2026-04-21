@@ -132,7 +132,7 @@ function ProjectMiniCard({ project }: { project: Project }) {
 
   return (
     <Link
-      href={`/projects/${project.id}?expert=${project.current_expert_codename ?? "R1"}`}
+      href={`/projects/${project.id}?expert=${encodeURIComponent(project.current_expert_codename ?? "R1")}`}
       data-new={isNew || undefined}
       className="group flex flex-col gap-2 rounded-sm border border-border bg-background p-3 transition-colors hover:border-foreground data-[new=true]:bg-[var(--rm-yellow-10)] data-[new=true]:rm-new-pulse"
     >
