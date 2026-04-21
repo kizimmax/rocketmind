@@ -90,14 +90,9 @@ export default function ProjectClient({ id }: { id: string }) {
     toast.success(`Скачан «${artifact.title}»`);
   }, []);
 
-  const handleSelectArtifact = useCallback(
-    (id: string) => {
-      setActiveArtifactId(id);
-      if (!artifactsOpen) setArtifactsOpen(true);
-      setSheetOpen(true);
-    },
-    [artifactsOpen]
-  );
+  const handleHoverArtifact = useCallback((id: string | null) => {
+    setActiveArtifactId(id);
+  }, []);
 
   if (!project) {
     return (
@@ -167,7 +162,7 @@ export default function ProjectClient({ id }: { id: string }) {
             sessionStatus={activeSession?.status}
             artifacts={artifacts}
             activeArtifactId={activeArtifactId}
-            onArtifactSelect={handleSelectArtifact}
+            onArtifactHover={handleHoverArtifact}
             onArtifactPreview={setPreviewArtifact}
             onArtifactDownload={handleDownload}
             onInputZoneHeight={setInputZoneHeight}
@@ -225,7 +220,7 @@ export default function ProjectClient({ id }: { id: string }) {
                     key={a.id}
                     artifact={a}
                     isActive={activeArtifactId === a.id}
-                    onSelect={() => setActiveArtifactId(a.id)}
+                    onHover={handleHoverArtifact}
                     onPreview={() => setPreviewArtifact(a)}
                     onDownload={() => handleDownload(a)}
                   />
@@ -242,7 +237,7 @@ export default function ProjectClient({ id }: { id: string }) {
         onOpenChange={setSheetOpen}
         artifacts={artifacts}
         activeArtifactId={activeArtifactId}
-        onSelect={setActiveArtifactId}
+        onHover={handleHoverArtifact}
         onPreview={setPreviewArtifact}
         onDownload={handleDownload}
       />
@@ -265,7 +260,7 @@ function MobileArtifactsSheet({
   onOpenChange,
   artifacts,
   activeArtifactId,
-  onSelect,
+  onHover,
   onPreview,
   onDownload,
 }: {
@@ -273,7 +268,7 @@ function MobileArtifactsSheet({
   onOpenChange: (open: boolean) => void;
   artifacts: Artifact[];
   activeArtifactId: string | null;
-  onSelect: (id: string) => void;
+  onHover: (id: string | null) => void;
   onPreview: (a: Artifact) => void;
   onDownload: (a: Artifact) => void;
 }) {
@@ -399,7 +394,7 @@ function MobileArtifactsSheet({
                     key={a.id}
                     artifact={a}
                     isActive={activeArtifactId === a.id}
-                    onSelect={() => onSelect(a.id)}
+                    onHover={onHover}
                     onPreview={() => onPreview(a)}
                     onDownload={() => onDownload(a)}
                   />
@@ -420,13 +415,13 @@ function MobileArtifactsSheet({
 function ArtifactCard({
   artifact,
   isActive,
-  onSelect,
+  onHover,
   onPreview,
   onDownload,
 }: {
   artifact: Artifact;
   isActive: boolean;
-  onSelect: () => void;
+  onHover: (id: string | null) => void;
   onPreview: () => void;
   onDownload: () => void;
 }) {
@@ -441,14 +436,13 @@ function ArtifactCard({
     <div
       ref={ref}
       data-artifact-id={artifact.id}
-      onClick={() => {
-        onSelect();
-        onPreview();
-      }}
+      onClick={onPreview}
+      onMouseEnter={() => onHover(artifact.id)}
+      onMouseLeave={() => onHover(null)}
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-sm border bg-background transition-colors ${
         isActive
-          ? "border-[var(--rm-yellow-500)]"
-          : "border-border hover:border-foreground"
+          ? "border-[var(--rm-yellow-100)]"
+          : "border-border hover:border-[var(--rm-yellow-100)]"
       }`}
     >
       {/* Header: иконка + название + кодовое имя эксперта */}
@@ -461,9 +455,9 @@ function ArtifactCard({
           {artifact.expert_codename}
         </span>
       </div>
-      {/* Body: превью + кнопка скачивания справа */}
+      {/* Body: превью (copy 12) + кнопка скачивания справа */}
       <div className="flex items-stretch pt-3">
-        <p className="min-w-0 flex-1 px-3 pb-4 font-[family-name:var(--font-body)] text-[length:var(--text-12)] leading-[1.36] tracking-[0.02em] text-muted-foreground line-clamp-2">
+        <p className="min-w-0 flex-1 px-3 pb-4 text-[length:var(--text-12)] leading-[1.36] tracking-[0.02em] text-muted-foreground line-clamp-2">
           {artifact.preview}
         </p>
         <button

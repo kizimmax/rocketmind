@@ -24,7 +24,7 @@ interface ExpertChatProps {
   /** Артефакты проекта — для привязки карточек к сообщениям. */
   artifacts?: Artifact[];
   activeArtifactId?: string | null;
-  onArtifactSelect?: (id: string) => void;
+  onArtifactHover?: (id: string | null) => void;
   onArtifactPreview?: (artifact: Artifact) => void;
   onArtifactDownload?: (artifact: Artifact) => void;
   /** Сообщает родителю высоту нижней зоны (input + пикеры) в px. */
@@ -51,7 +51,7 @@ export function ExpertChat({
   sessionStatus,
   artifacts,
   activeArtifactId,
-  onArtifactSelect,
+  onArtifactHover,
   onArtifactPreview,
   onArtifactDownload,
   onInputZoneHeight,
@@ -218,7 +218,7 @@ export function ExpertChat({
                   isArtifactActive={
                     !!linkedArtifact && activeArtifactId === linkedArtifact.id
                   }
-                  onArtifactSelect={onArtifactSelect}
+                  onArtifactHover={onArtifactHover}
                   onArtifactPreview={onArtifactPreview}
                   onArtifactDownload={onArtifactDownload}
                 />

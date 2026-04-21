@@ -24,7 +24,7 @@ export function MessageBubble({
   onRepeat,
   linkedArtifact,
   isArtifactActive,
-  onArtifactSelect,
+  onArtifactHover,
   onArtifactPreview,
   onArtifactDownload,
 }: {
@@ -40,7 +40,7 @@ export function MessageBubble({
   /** Артефакт, на который ссылается сообщение (генерация/валидация/приёмка). */
   linkedArtifact?: Artifact | null;
   isArtifactActive?: boolean;
-  onArtifactSelect?: (id: string) => void;
+  onArtifactHover?: (id: string | null) => void;
   onArtifactPreview?: (a: Artifact) => void;
   onArtifactDownload?: (a: Artifact) => void;
 }) {
@@ -58,7 +58,7 @@ export function MessageBubble({
           onRepeat={onRepeat}
           linkedArtifact={linkedArtifact ?? null}
           isArtifactActive={!!isArtifactActive}
-          onArtifactSelect={onArtifactSelect}
+          onArtifactHover={onArtifactHover}
           onArtifactPreview={onArtifactPreview}
           onArtifactDownload={onArtifactDownload}
         />
@@ -70,7 +70,7 @@ export function MessageBubble({
           isFresh={isFresh}
           linkedArtifact={linkedArtifact ?? null}
           isArtifactActive={!!isArtifactActive}
-          onArtifactSelect={onArtifactSelect}
+          onArtifactHover={onArtifactHover}
           onArtifactPreview={onArtifactPreview}
           onArtifactDownload={onArtifactDownload}
         />
@@ -102,7 +102,7 @@ function AssistantMessage({
   onRepeat,
   linkedArtifact,
   isArtifactActive,
-  onArtifactSelect,
+  onArtifactHover,
   onArtifactPreview,
   onArtifactDownload,
 }: {
@@ -114,7 +114,7 @@ function AssistantMessage({
   onRepeat?: () => void;
   linkedArtifact: Artifact | null;
   isArtifactActive: boolean;
-  onArtifactSelect?: (id: string) => void;
+  onArtifactHover?: (id: string | null) => void;
   onArtifactPreview?: (a: Artifact) => void;
   onArtifactDownload?: (a: Artifact) => void;
 }) {
@@ -194,7 +194,7 @@ function AssistantMessage({
             artifact={linkedArtifact}
             isActive={isArtifactActive}
             status={message.metadata?.hitl_for_artifact_id ? "draft" : "accepted"}
-            onSelect={onArtifactSelect}
+            onHover={onArtifactHover}
             onPreview={onArtifactPreview}
             onDownload={onArtifactDownload}
           />
@@ -234,7 +234,7 @@ function SystemMessage({
   isFresh,
   linkedArtifact,
   isArtifactActive,
-  onArtifactSelect,
+  onArtifactHover,
   onArtifactPreview,
   onArtifactDownload,
 }: {
@@ -242,7 +242,7 @@ function SystemMessage({
   isFresh?: boolean;
   linkedArtifact?: Artifact | null;
   isArtifactActive?: boolean;
-  onArtifactSelect?: (id: string) => void;
+  onArtifactHover?: (id: string | null) => void;
   onArtifactPreview?: (a: Artifact) => void;
   onArtifactDownload?: (a: Artifact) => void;
 }) {
@@ -259,7 +259,7 @@ function SystemMessage({
             artifact={linkedArtifact}
             isActive={!!isArtifactActive}
             status="accepted"
-            onSelect={onArtifactSelect}
+            onHover={onArtifactHover}
             onPreview={onArtifactPreview}
             onDownload={onArtifactDownload}
           />
@@ -400,42 +400,41 @@ function MarkdownContent({ content }: { content: string }) {
 function ChatArtifactCard({
   artifact,
   isActive,
-  onSelect,
+  onHover,
   onPreview,
   onDownload,
 }: {
   artifact: Artifact;
   isActive: boolean;
   status: "draft" | "accepted";
-  onSelect?: (id: string) => void;
+  onHover?: (id: string | null) => void;
   onPreview?: (a: Artifact) => void;
   onDownload?: (a: Artifact) => void;
 }) {
   return (
     <div
-      onClick={() => {
-        onSelect?.(artifact.id);
-        onPreview?.(artifact);
-      }}
-      className={`group flex w-full max-w-md cursor-pointer flex-col overflow-hidden rounded-sm border bg-background transition-colors ${
+      onClick={() => onPreview?.(artifact)}
+      onMouseEnter={() => onHover?.(artifact.id)}
+      onMouseLeave={() => onHover?.(null)}
+      className={`group flex w-full max-w-md cursor-pointer flex-col overflow-hidden rounded-sm border bg-secondary text-secondary-foreground transition-colors ${
         isActive
-          ? "border-[var(--rm-yellow-500)]"
-          : "border-border hover:border-foreground"
+          ? "border-[var(--rm-yellow-100)]"
+          : "border-transparent hover:border-[var(--rm-yellow-100)]"
       }`}
     >
       {/* Header: иконка + название + кодовое имя эксперта */}
       <div className="flex items-center gap-2 px-3 pt-3">
-        <FileText className="h-5 w-5 shrink-0 text-foreground" />
-        <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-foreground">
+        <FileText className="h-5 w-5 shrink-0 text-secondary-foreground" />
+        <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-secondary-foreground">
           {artifact.title}
         </p>
-        <span className="shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-muted-foreground">
+        <span className="shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-secondary-foreground/60">
           {artifact.expert_codename}
         </span>
       </div>
-      {/* Body: превью + кнопка скачивания справа */}
+      {/* Body: превью (copy 12) + кнопка скачивания справа */}
       <div className="flex items-stretch pt-3">
-        <p className="min-w-0 flex-1 px-3 pb-4 font-[family-name:var(--font-body)] text-[length:var(--text-12)] leading-[1.36] tracking-[0.02em] text-muted-foreground line-clamp-2">
+        <p className="min-w-0 flex-1 px-3 pb-4 text-[length:var(--text-12)] leading-[1.36] tracking-[0.02em] text-secondary-foreground/70 line-clamp-2">
           {artifact.preview}
         </p>
         {onDownload && (
@@ -447,7 +446,7 @@ function ChatArtifactCard({
             }}
             title="Скачать"
             aria-label="Скачать артефакт"
-            className="flex w-10 shrink-0 items-center justify-center self-stretch rounded-tl-[4px] rounded-br-[4px] bg-rm-gray-1 text-muted-foreground transition-colors hover:text-foreground"
+            className="flex w-10 shrink-0 items-center justify-center self-stretch rounded-tl-[4px] rounded-br-[4px] bg-secondary-foreground/10 text-secondary-foreground/70 transition-colors hover:text-secondary-foreground"
           >
             <Download className="h-5 w-5" />
           </button>
