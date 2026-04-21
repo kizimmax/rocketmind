@@ -477,14 +477,14 @@ function ProjectItemWithExperts({
           } data-[new=true]:bg-[var(--rm-yellow-10)] data-[new=true]:text-foreground data-[new=true]:rm-new-pulse`}
           onClick={onOpen}
         >
-          {/* Chevron — раскрывает/сворачивает без навигации */}
+          {/* Chevron — раскрывает/сворачивает без навигации. Тап-зона расширена до 28px */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onToggle();
             }}
-            className="shrink-0 flex h-4 w-4 items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            className="-m-2 shrink-0 flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-2 hover:text-foreground transition-colors"
             aria-label={isExpanded ? "Свернуть экспертов" : "Раскрыть экспертов"}
           >
             <ChevronRight
