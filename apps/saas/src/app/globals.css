@@ -42,3 +42,12 @@
 .rm-sheet-overlay.rm-sheet-manual-close[data-state="closed"] {
   animation: none !important;
 }
+
+/* Обрезка превью артефакта до 3 строк с ellipsis */
+.rm-clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}

@@ -443,14 +443,7 @@ function ChatArtifactCard({
       </div>
       {/* Body: превью (copy 12) + кнопка скачивания справа */}
       <div className="flex items-stretch pt-3">
-        <p
-          className="min-w-0 flex-1 overflow-hidden px-3 pb-4 text-[length:var(--text-12)] leading-[1.36] tracking-[0.02em] text-secondary-foreground/70"
-          style={{
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 3,
-          }}
-        >
+        <p className="rm-clamp-3 min-w-0 flex-1 px-3 pb-4 font-[family-name:var(--font-caption-family)] text-[length:var(--text-12)] font-normal leading-[1.36] tracking-[0.02em] text-secondary-foreground/70">
           {artifact.preview}
         </p>
         {onDownload && (
