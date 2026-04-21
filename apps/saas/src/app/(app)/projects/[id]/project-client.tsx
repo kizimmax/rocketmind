@@ -1,14 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  Download,
+  Eye,
   FileText,
   PanelRightClose,
   PanelRightOpen,
 } from "lucide-react";
-import { Badge, Button, Note } from "@rocketmind/ui";
+import {
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Note,
+} from "@rocketmind/ui";
+import { toast } from "sonner";
 import {
   markProjectAsSeen,
   useArtifacts,
@@ -50,6 +62,31 @@ export default function ProjectClient({ id }: { id: string }) {
     [sessions, activeExpertCodename]
   );
   const activeMessages = useExpertMessages(activeSession?.id);
+
+  const [activeArtifactId, setActiveArtifactId] = useState<string | null>(null);
+  const [previewArtifact, setPreviewArtifact] = useState<Artifact | null>(null);
+
+  const handleDownload = useCallback((artifact: Artifact) => {
+    const body = `${artifact.title}\n\nЭксперт: ${artifact.expert_codename}\nТип: ${artifact.type}\n\n${artifact.preview}\n`;
+    const blob = new Blob([body], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${artifact.title}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Скачан «${artifact.title}»`);
+  }, []);
+
+  const handleSelectArtifact = useCallback(
+    (id: string) => {
+      setActiveArtifactId(id);
+      if (!artifactsOpen) setArtifactsOpen(true);
+    },
+    [artifactsOpen]
+  );
 
   if (!project) {
     return (
@@ -116,6 +153,11 @@ export default function ProjectClient({ id }: { id: string }) {
             expert={activeExpert}
             initialMessages={activeMessages}
             sessionStatus={activeSession?.status}
+            artifacts={artifacts}
+            activeArtifactId={activeArtifactId}
+            onArtifactSelect={handleSelectArtifact}
+            onArtifactPreview={setPreviewArtifact}
+            onArtifactDownload={handleDownload}
           />
         ) : (
           <div className="flex flex-1 items-center justify-center text-muted-foreground">
@@ -151,13 +193,26 @@ export default function ProjectClient({ id }: { id: string }) {
             ) : (
               <div className="space-y-2">
                 {artifacts.map((a) => (
-                  <ArtifactCard key={a.id} artifact={a} />
+                  <ArtifactCard
+                    key={a.id}
+                    artifact={a}
+                    isActive={activeArtifactId === a.id}
+                    onSelect={() => setActiveArtifactId(a.id)}
+                    onPreview={() => setPreviewArtifact(a)}
+                    onDownload={() => handleDownload(a)}
+                  />
                 ))}
               </div>
             )}
           </div>
         </aside>
       )}
+
+      <ArtifactPreviewDialog
+        artifact={previewArtifact}
+        onOpenChange={(open) => !open && setPreviewArtifact(null)}
+        onDownload={handleDownload}
+      />
     </div>
   );
 }
@@ -166,9 +221,37 @@ export default function ProjectClient({ id }: { id: string }) {
 // Artifact card + empty
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ArtifactCard({ artifact }: { artifact: Artifact }) {
+function ArtifactCard({
+  artifact,
+  isActive,
+  onSelect,
+  onPreview,
+  onDownload,
+}: {
+  artifact: Artifact;
+  isActive: boolean;
+  onSelect: () => void;
+  onPreview: () => void;
+  onDownload: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (isActive && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [isActive]);
+
   return (
-    <div className="flex flex-col gap-2 rounded-sm border border-border bg-background p-3 transition-colors hover:border-foreground">
+    <div
+      ref={ref}
+      data-artifact-id={artifact.id}
+      onClick={onSelect}
+      className={`flex cursor-pointer flex-col gap-2 rounded-sm border bg-background p-3 transition-colors ${
+        isActive
+          ? "border-[var(--rm-yellow-500)]"
+          : "border-border hover:border-foreground"
+      }`}
+    >
       <div className="flex items-start gap-2">
         <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <div className="min-w-0 flex-1">
@@ -179,11 +262,73 @@ function ArtifactCard({ artifact }: { artifact: Artifact }) {
             {artifact.expert_codename}
           </p>
         </div>
+        <div className="flex shrink-0 gap-1">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview();
+            }}
+            title="Пред просмотр"
+            className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+          >
+            <Eye className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownload();
+            }}
+            title="Скачать"
+            className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
       <p className="line-clamp-3 text-[length:var(--text-12)] text-muted-foreground">
         {artifact.preview}
       </p>
     </div>
+  );
+}
+
+function ArtifactPreviewDialog({
+  artifact,
+  onOpenChange,
+  onDownload,
+}: {
+  artifact: Artifact | null;
+  onOpenChange: (open: boolean) => void;
+  onDownload: (a: Artifact) => void;
+}) {
+  return (
+    <Dialog open={!!artifact} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        {artifact && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-[family-name:var(--font-heading-family)] uppercase">
+                {artifact.title}
+              </DialogTitle>
+              <DialogDescription className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">
+                {artifact.expert_codename} · {artifact.type}
+              </DialogDescription>
+            </DialogHeader>
+            <p className="whitespace-pre-wrap text-[length:var(--text-14)] text-foreground">
+              {artifact.preview}
+            </p>
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={() => onDownload(artifact)}>
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+                Скачать
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

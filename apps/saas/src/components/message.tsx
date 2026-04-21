@@ -3,9 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button, GlowingEffect } from "@rocketmind/ui";
-import { CheckCircle2, Copy, ExternalLink, RotateCcw } from "lucide-react";
+import {
+  CheckCircle2,
+  Copy,
+  Download,
+  ExternalLink,
+  Eye,
+  FileText,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
-import type { Message, Agent } from "@/lib/types";
+import type { Artifact, Message, Agent } from "@/lib/types";
 import { formatTime, getInitials } from "@/lib/utils";
 
 export function MessageBubble({
@@ -15,6 +23,11 @@ export function MessageBubble({
   isNew,
   isFresh,
   onRepeat,
+  linkedArtifact,
+  isArtifactActive,
+  onArtifactSelect,
+  onArtifactPreview,
+  onArtifactDownload,
 }: {
   message: Message;
   agent?: Agent;
@@ -25,6 +38,12 @@ export function MessageBubble({
   /** Real-time: применяет анимацию появления (slide + fade). */
   isFresh?: boolean;
   onRepeat?: () => void;
+  /** Артефакт, на который ссылается сообщение (генерация/валидация/приёмка). */
+  linkedArtifact?: Artifact | null;
+  isArtifactActive?: boolean;
+  onArtifactSelect?: (id: string) => void;
+  onArtifactPreview?: (a: Artifact) => void;
+  onArtifactDownload?: (a: Artifact) => void;
 }) {
   switch (message.role) {
     case "user":
@@ -38,10 +57,25 @@ export function MessageBubble({
           stream={isNew}
           isFresh={isFresh}
           onRepeat={onRepeat}
+          linkedArtifact={linkedArtifact ?? null}
+          isArtifactActive={!!isArtifactActive}
+          onArtifactSelect={onArtifactSelect}
+          onArtifactPreview={onArtifactPreview}
+          onArtifactDownload={onArtifactDownload}
         />
       );
     case "system":
-      return <SystemMessage message={message} isFresh={isFresh} />;
+      return (
+        <SystemMessage
+          message={message}
+          isFresh={isFresh}
+          linkedArtifact={linkedArtifact ?? null}
+          isArtifactActive={!!isArtifactActive}
+          onArtifactSelect={onArtifactSelect}
+          onArtifactPreview={onArtifactPreview}
+          onArtifactDownload={onArtifactDownload}
+        />
+      );
   }
 }
 
@@ -67,6 +101,11 @@ function AssistantMessage({
   stream,
   isFresh,
   onRepeat,
+  linkedArtifact,
+  isArtifactActive,
+  onArtifactSelect,
+  onArtifactPreview,
+  onArtifactDownload,
 }: {
   message: Message;
   agent?: Agent;
@@ -74,6 +113,11 @@ function AssistantMessage({
   stream?: boolean;
   isFresh?: boolean;
   onRepeat?: () => void;
+  linkedArtifact: Artifact | null;
+  isArtifactActive: boolean;
+  onArtifactSelect?: (id: string) => void;
+  onArtifactPreview?: (a: Artifact) => void;
+  onArtifactDownload?: (a: Artifact) => void;
 }) {
   const [displayedText, setDisplayedText] = useState(stream ? "" : message.content);
   const [isStreaming, setIsStreaming] = useState(!!stream);
@@ -146,6 +190,17 @@ function AssistantMessage({
           )}
         </div>
 
+        {linkedArtifact && !isStreaming && (
+          <ChatArtifactCard
+            artifact={linkedArtifact}
+            isActive={isArtifactActive}
+            status={message.metadata?.hitl_for_artifact_id ? "draft" : "accepted"}
+            onSelect={onArtifactSelect}
+            onPreview={onArtifactPreview}
+            onDownload={onArtifactDownload}
+          />
+        )}
+
         {/* Bottom bar: time + actions */}
         <div className="inline-flex items-center gap-1 rounded-sm bg-background px-2 py-1">
           <span className="text-[length:var(--text-12)] text-muted-foreground pr-1">
@@ -175,12 +230,43 @@ function AssistantMessage({
   );
 }
 
-function SystemMessage({ message, isFresh }: { message: Message; isFresh?: boolean }) {
+function SystemMessage({
+  message,
+  isFresh,
+  linkedArtifact,
+  isArtifactActive,
+  onArtifactSelect,
+  onArtifactPreview,
+  onArtifactDownload,
+}: {
+  message: Message;
+  isFresh?: boolean;
+  linkedArtifact?: Artifact | null;
+  isArtifactActive?: boolean;
+  onArtifactSelect?: (id: string) => void;
+  onArtifactPreview?: (a: Artifact) => void;
+  onArtifactDownload?: (a: Artifact) => void;
+}) {
   const cta = message.metadata?.cta;
   const artifactCompleted = message.metadata?.artifact_completed;
 
-  // Специальный вариант — «артефакт собран/принят»
+  // Специальный вариант — «артефакт принят». Если артефакт есть в данных проекта —
+  // показываем полную карточку, иначе fallback на короткий пилл.
   if (artifactCompleted) {
+    if (linkedArtifact) {
+      return (
+        <div className={`flex justify-center ${isFresh ? "rm-message-rise" : ""}`}>
+          <ChatArtifactCard
+            artifact={linkedArtifact}
+            isActive={!!isArtifactActive}
+            status="accepted"
+            onSelect={onArtifactSelect}
+            onPreview={onArtifactPreview}
+            onDownload={onArtifactDownload}
+          />
+        </div>
+      );
+    }
     return (
       <div className={`flex justify-center ${isFresh ? "rm-message-rise" : ""}`}>
         <div className="inline-flex items-center gap-2 rounded-sm border border-[var(--rm-yellow-700)] bg-[var(--rm-yellow-900)] px-3 py-2 text-[length:var(--text-12)] text-[var(--rm-yellow-fg-subtle)]">
@@ -310,6 +396,85 @@ function MarkdownContent({ content }: { content: string }) {
   }
 
   return <div className="space-y-1 whitespace-pre-wrap">{elements}</div>;
+}
+
+function ChatArtifactCard({
+  artifact,
+  isActive,
+  status,
+  onSelect,
+  onPreview,
+  onDownload,
+}: {
+  artifact: Artifact;
+  isActive: boolean;
+  status: "draft" | "accepted";
+  onSelect?: (id: string) => void;
+  onPreview?: (a: Artifact) => void;
+  onDownload?: (a: Artifact) => void;
+}) {
+  const isAccepted = status === "accepted";
+  return (
+    <div
+      onClick={() => onSelect?.(artifact.id)}
+      className={`group flex w-full max-w-md cursor-pointer items-start gap-3 rounded-sm border p-3 transition-colors ${
+        isActive
+          ? "border-[var(--rm-yellow-500)] bg-[var(--rm-yellow-900)]"
+          : isAccepted
+            ? "border-[var(--rm-yellow-700)] bg-[var(--rm-yellow-900)] hover:border-[var(--rm-yellow-500)]"
+            : "border-border bg-background hover:border-foreground"
+      }`}
+    >
+      {isAccepted ? (
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--rm-yellow-500)]" />
+      ) : (
+        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+      )}
+      <div className="min-w-0 flex-1">
+        <p
+          className={`truncate font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-bold uppercase leading-tight ${
+            isAccepted ? "text-[var(--rm-yellow-fg-subtle)]" : "text-foreground"
+          }`}
+        >
+          {artifact.title}
+        </p>
+        <p className="mt-0.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+          {artifact.expert_codename} · {isAccepted ? "Принят" : "Черновик"}
+        </p>
+        <p className="mt-1 line-clamp-2 text-[length:var(--text-12)] text-muted-foreground">
+          {artifact.preview}
+        </p>
+      </div>
+      <div className="flex shrink-0 gap-1">
+        {onPreview && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview(artifact);
+            }}
+            title="Пред просмотр"
+            className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+          >
+            <Eye className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {onDownload && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownload(artifact);
+            }}
+            title="Скачать"
+            className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function InlineMarkdown({ text }: { text: string }) {

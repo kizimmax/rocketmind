@@ -6,7 +6,13 @@ import { CheckCircle2, RotateCw, Sparkles } from "lucide-react";
 import { DotGridLens } from "@rocketmind/ui";
 import { MessageBubble } from "./message";
 import { ChatInput } from "./chat-input";
-import type { Agent, Expert, ExpertScenario, Message } from "@/lib/types";
+import type {
+  Agent,
+  Artifact,
+  Expert,
+  ExpertScenario,
+  Message,
+} from "@/lib/types";
 import { getInitials } from "@/lib/utils";
 
 interface ExpertChatProps {
@@ -15,6 +21,12 @@ interface ExpertChatProps {
   initialMessages?: Message[];
   /** Состояние сессии: определяет доступные действия (HITL, mode-picker). */
   sessionStatus?: "not_started" | "in_progress" | "awaiting_validation" | "completed";
+  /** Артефакты проекта — для привязки карточек к сообщениям. */
+  artifacts?: Artifact[];
+  activeArtifactId?: string | null;
+  onArtifactSelect?: (id: string) => void;
+  onArtifactPreview?: (artifact: Artifact) => void;
+  onArtifactDownload?: (artifact: Artifact) => void;
 }
 
 // Agent-адаптер для MessageBubble (исторический API)
@@ -35,6 +47,11 @@ export function ExpertChat({
   expert,
   initialMessages,
   sessionStatus,
+  artifacts,
+  activeArtifactId,
+  onArtifactSelect,
+  onArtifactPreview,
+  onArtifactDownload,
 }: ExpertChatProps) {
   const agentLike = expertToAgent(expert);
   const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
@@ -163,6 +180,12 @@ export function ExpertChat({
                       .reverse()
                       .find((m) => m.role === "user")
                   : undefined;
+              const linkedArtifactId =
+                msg.metadata?.artifact_completed ??
+                msg.metadata?.hitl_for_artifact_id;
+              const linkedArtifact = linkedArtifactId
+                ? artifacts?.find((a) => a.id === linkedArtifactId) ?? null
+                : null;
               return (
                 <MessageBubble
                   key={msg.id}
@@ -176,6 +199,13 @@ export function ExpertChat({
                       ? () => sendUserMessage(prevUserMsg.content)
                       : undefined
                   }
+                  linkedArtifact={linkedArtifact}
+                  isArtifactActive={
+                    !!linkedArtifact && activeArtifactId === linkedArtifact.id
+                  }
+                  onArtifactSelect={onArtifactSelect}
+                  onArtifactPreview={onArtifactPreview}
+                  onArtifactDownload={onArtifactDownload}
                 />
               );
             })}
