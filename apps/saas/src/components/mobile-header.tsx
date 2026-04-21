@@ -9,11 +9,9 @@ import { useTheme } from "next-themes";
 import {
   getMockCase,
   getMockCaseAgents,
-  getMockExpert,
   getMockManager,
   getMockProject,
 } from "@/lib/mock-data";
-import type { ExpertCodename } from "@/lib/types";
 import { Sidebar } from "./sidebar";
 import { cn } from "@rocketmind/ui";
 import { useRouter } from "next/navigation";
@@ -34,43 +32,20 @@ function BurgerIcon({ open }: { open: boolean }) {
 function MobileBreadcrumb({
   pathname,
   routeId,
-  expertCodename,
   agentId,
 }: {
   pathname: string;
   routeId?: string;
-  expertCodename?: string;
   agentId?: string;
 }) {
-  // /projects/[id] — проект + эксперт
+  // /projects/[id] — только название проекта
   if (routeId && pathname.startsWith("/projects/")) {
     const project = getMockProject(routeId);
-    const expert = expertCodename
-      ? getMockExpert(expertCodename as ExpertCodename)
-      : undefined;
     return (
-      <div className="flex min-w-0 flex-1 items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center">
         <span className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
           {project?.name ?? "Проект"}
         </span>
-        {expert && (
-          <>
-            <span className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
-              {expert.role}
-            </span>
-            {expert.avatar_url && (
-              <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full">
-                <Image
-                  src={expert.avatar_url}
-                  alt={expert.role}
-                  width={24}
-                  height={24}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            )}
-          </>
-        )}
       </div>
     );
   }
@@ -135,7 +110,6 @@ export function MobileHeader() {
 
   const routeId = params?.id as string | undefined;
   const agentId = searchParams?.get("agent") ?? undefined;
-  const expertCodename = searchParams?.get("expert") ?? undefined;
   const isAgentsPage = pathname === "/agents";
   const isCasePage = !!routeId && pathname?.startsWith("/cases/");
 
@@ -339,7 +313,6 @@ export function MobileHeader() {
               <MobileBreadcrumb
                 pathname={pathname ?? ""}
                 routeId={routeId}
-                expertCodename={expertCodename}
                 agentId={agentId}
               />
             </div>

@@ -6,11 +6,13 @@ import { CheckCircle2, FileText, RotateCw, Sparkles, Upload } from "lucide-react
 import { Button, DotGridLens, GlowingEffect, Textarea } from "@rocketmind/ui";
 import { MessageBubble } from "./message";
 import { ChatInput } from "./chat-input";
+import { FilePreviewDialog } from "./file-preview-dialog";
 import type {
   Agent,
   Artifact,
   Expert,
   ExpertScenario,
+  FileAttachment,
   Message,
 } from "@/lib/types";
 import { useAttachedFiles } from "@/lib/use-attached-files";
@@ -32,6 +34,10 @@ interface ExpertChatProps {
   onArtifactsOpenRequest?: () => void;
   /** Прогресс проекта (0–100) — рисуется снизу FAB-кнопки артефактов. */
   artifactsScore?: number | null;
+  /** Колбэк после отправки сообщения с прикреплёнными файлами. */
+  onFilesUpload?: (
+    files: Array<{ name: string; size: number; url?: string; type?: string }>
+  ) => void;
 }
 
 // Agent-адаптер для MessageBubble (исторический API)
@@ -60,6 +66,7 @@ export function ExpertChat({
   onArtifactDownload,
   onArtifactsOpenRequest,
   artifactsScore,
+  onFilesUpload,
 }: ExpertChatProps) {
   const agentLike = expertToAgent(expert);
   const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
@@ -73,6 +80,12 @@ export function ExpertChat({
   const attached = useAttachedFiles();
   const [isDragOver, setIsDragOver] = useState(false);
   const dragCounter = useRef(0);
+
+  // Preview для файлов, отправленных в чате
+  const [previewAttachment, setPreviewAttachment] = useState<FileAttachment | null>(
+    null
+  );
+
 
   function handleDragEnter(e: React.DragEvent) {
     if (!hasFilesInDrag(e)) return;
@@ -119,20 +132,34 @@ export function ExpertChat({
   // --- User interactions ---
 
   function sendUserMessage(content: string) {
-    const fileNames = attached.files.map((f) => f.name);
-    const suffix =
-      fileNames.length > 0
-        ? (content ? "\n\n" : "") + `📎 ${fileNames.join(", ")}`
-        : "";
+    const attachments: FileAttachment[] = attached.files.map((f) => ({
+      id: f.id,
+      name: f.name,
+      size: f.size,
+      url: f.url,
+      type: f.type,
+    }));
     const userMsg: Message = {
       id: `m_u_${Date.now()}`,
       conversation_id: `es_live_${expert.codename}`,
       role: "user",
-      content: content + suffix,
+      content,
       created_at: new Date().toISOString(),
       is_read: true,
+      metadata: attachments.length > 0 ? { attachments } : undefined,
     };
-    attached.clearFiles();
+    if (attachments.length > 0) {
+      onFilesUpload?.(
+        attachments.map((a) => ({
+          name: a.name,
+          size: a.size,
+          url: a.url,
+          type: a.type,
+        }))
+      );
+    }
+    // keepUrls — URL-ы теперь принадлежат сообщению, revoke произойдёт на unmount чата
+    attached.clearFiles({ keepUrls: true });
     pushFresh(userMsg);
     setIsSending(true);
 
@@ -372,6 +399,7 @@ export function ExpertChat({
                   onArtifactHover={onArtifactHover}
                   onArtifactPreview={onArtifactPreview}
                   onArtifactDownload={onArtifactDownload}
+                  onAttachmentPreview={setPreviewAttachment}
                 />
               );
             })}
@@ -433,6 +461,10 @@ export function ExpertChat({
           />
         )}
       </div>
+      <FilePreviewDialog
+        file={previewAttachment}
+        onOpenChange={(open) => !open && setPreviewAttachment(null)}
+      />
     </div>
   );
 }
@@ -523,15 +555,15 @@ function ScenarioButton({
       onClick={onPick}
       className={`group flex items-start gap-2.5 rounded-sm border px-3.5 py-3 text-left transition-colors ${
         isPrimary
-          ? "border-foreground bg-foreground text-background hover:opacity-90"
+          ? "border-[var(--rm-yellow-100)] bg-background text-foreground hover:bg-rm-gray-1"
           : "border-border bg-background/80 backdrop-blur-sm text-foreground hover:border-foreground"
       }`}
     >
       <Sparkles
         className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
           isPrimary
-            ? "text-[var(--rm-yellow-500)]"
-            : "text-[var(--rm-yellow-500)] opacity-60 group-hover:opacity-100 transition-opacity"
+            ? "text-[var(--rm-yellow-100)]"
+            : "text-[var(--rm-yellow-100)] opacity-60 group-hover:opacity-100 transition-opacity"
         }`}
       />
       <div className="flex flex-col">
@@ -546,7 +578,7 @@ function ScenarioButton({
           </span>
         )}
         {isPrimary && (
-          <span className="mt-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-500)]">
+          <span className="mt-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-100)]">
             Рекомендую
           </span>
         )}
@@ -589,15 +621,15 @@ function ModePicker({ onPick }: { onPick: (mode: "deep" | "fast") => void }) {
           <button
             type="button"
             onClick={() => onPick("deep")}
-            className="group flex items-start gap-2.5 rounded-sm border border-foreground bg-foreground px-3.5 py-3 text-left text-background transition-opacity hover:opacity-90"
+            className="group flex items-start gap-2.5 rounded-sm border border-[var(--rm-yellow-100)] bg-background px-3.5 py-3 text-left text-foreground transition-opacity hover:opacity-90"
           >
-            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)]" />
+            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)]" />
             <div className="flex flex-col">
               <span className="text-[length:var(--text-14)]">Глубокая работа</span>
               <span className="text-[length:var(--text-12)] opacity-80">
                 Несколько итераций с самопроверкой — точнее, 10–15 минут
               </span>
-              <span className="mt-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-500)]">
+              <span className="mt-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-100)]">
                 Рекомендую
               </span>
             </div>
@@ -607,7 +639,7 @@ function ModePicker({ onPick }: { onPick: (mode: "deep" | "fast") => void }) {
             onClick={() => onPick("fast")}
             className="group flex items-start gap-2.5 rounded-sm border border-border bg-background/80 backdrop-blur-sm px-3.5 py-3 text-left transition-colors hover:border-foreground"
           >
-            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)] opacity-60 group-hover:opacity-100 transition-opacity" />
+            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)] opacity-60 group-hover:opacity-100 transition-opacity" />
             <div className="flex flex-col">
               <span className="text-[length:var(--text-14)] text-foreground">Быстро</span>
               <span className="text-[length:var(--text-12)] text-muted-foreground">
@@ -638,9 +670,9 @@ function HitlPicker({
           <button
             type="button"
             onClick={onAccept}
-            className="group flex items-start gap-2.5 rounded-sm border border-foreground bg-foreground px-3.5 py-3 text-left text-background transition-opacity hover:opacity-90"
+            className="group flex items-start gap-2.5 rounded-sm border border-[var(--rm-yellow-100)] bg-background px-3.5 py-3 text-left text-foreground transition-opacity hover:opacity-90"
           >
-            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)]" />
+            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)]" />
             <div className="flex flex-col">
               <span className="text-[length:var(--text-14)]">Принять</span>
               <span className="text-[length:var(--text-12)] opacity-80">
@@ -705,8 +737,8 @@ function HitlReviseInput({
       <div className="mx-auto max-w-2xl space-y-2">
         {/* Активный вариант кнопки «Дать правки» — подсвечен как выбранный */}
         <div className="flex items-center justify-between gap-2">
-          <div className="inline-flex items-center gap-2 rounded-sm border border-foreground bg-foreground px-3 py-2 text-background">
-            <RotateCw className="h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)]" />
+          <div className="inline-flex items-center gap-2 rounded-sm border border-[var(--rm-yellow-100)] bg-background px-3 py-2 text-foreground">
+            <RotateCw className="h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)]" />
             <span className="text-[length:var(--text-14)]">Дать правки</span>
           </div>
           <button
@@ -717,7 +749,7 @@ function HitlReviseInput({
             Отмена
           </button>
         </div>
-        <div className="relative rounded-sm border border-border bg-background/80 backdrop-blur-sm transition-colors focus-within:border-2 focus-within:border-ring">
+        <div className="relative rounded-sm border-2 border-border bg-background/80 backdrop-blur-sm transition-colors focus-within:border-ring">
           <GlowingEffect variant="yellow" borderWidth={2} disabled={false} />
           <Textarea
             ref={textareaRef}
@@ -769,9 +801,9 @@ function HitlConfirmPicker({
           <button
             type="button"
             onClick={onConfirm}
-            className="group flex items-start gap-2.5 rounded-sm border border-foreground bg-foreground px-3.5 py-3 text-left text-background transition-opacity hover:opacity-90"
+            className="group flex items-start gap-2.5 rounded-sm border border-[var(--rm-yellow-100)] bg-background px-3.5 py-3 text-left text-foreground transition-opacity hover:opacity-90"
           >
-            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)]" />
+            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)]" />
             <div className="flex flex-col">
               <span className="text-[length:var(--text-14)]">Да, всё верно</span>
               <span className="text-[length:var(--text-12)] opacity-80">

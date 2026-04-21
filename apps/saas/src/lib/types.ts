@@ -184,11 +184,35 @@ export interface Case {
   updated_at: string;
 }
 
+/** Файл, прикреплённый к сообщению в чате. */
+export interface AttachedFile {
+  id: string;
+  name: string;
+  size: number;
+  /** 0..100 — прогресс загрузки. 100 = готов. */
+  progress: number;
+  /** Blob-URL для предпросмотра (изображения, PDF и пр.). */
+  url?: string;
+  /** MIME-тип. */
+  type?: string;
+}
+
+/** Снэпшот файла, прикреплённого к сообщению (после отправки). */
+export interface FileAttachment {
+  id: string;
+  name: string;
+  size: number;
+  url?: string;
+  type?: string;
+}
+
 export interface Agent {
   id: string;
   slug: string;
   name: string;
   description: string;
+  /** Короткая роль (напр. «Маркет-исследователь») — показывается под именем в чате. */
+  role?: string;
   avatar_url: string | null;
   greeting?: string;
   suggestions?: string[];
@@ -226,10 +250,14 @@ export interface MessageMetadata {
   mode_picker?: boolean;
   /** Message содержит HITL-controls (Принять / Дать правки) для artifact-valid. */
   hitl_for_artifact_id?: string;
+  /** Assistant-сообщение «правильно ли я понял правки» — ждёт подтверждения пользователя. */
+  revision_echo?: boolean;
   /** System-message-отметка завершения артефакта */
   artifact_completed?: string;
   /** System-message — плейсхолдер «артефакт от пользователя» для скипнутых этапов */
   user_provided_artifact?: string;
+  /** Прикреплённые к сообщению файлы (user role). */
+  attachments?: FileAttachment[];
 }
 
 /** Код сценария — заготовленного варианта помощи эксперта. */

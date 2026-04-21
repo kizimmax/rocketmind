@@ -610,7 +610,7 @@ function ExpertsNested({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.04em]">
+                <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.04em]">
                   {codename}
                 </span>
                 <span className="truncate text-[length:var(--text-14)]">

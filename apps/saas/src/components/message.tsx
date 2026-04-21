@@ -13,7 +13,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { Artifact, Message, Agent } from "@/lib/types";
+import type { Artifact, FileAttachment, Message, Agent } from "@/lib/types";
 import { formatTime, getInitials } from "@/lib/utils";
 
 export function MessageBubble({
@@ -28,6 +28,7 @@ export function MessageBubble({
   onArtifactHover,
   onArtifactPreview,
   onArtifactDownload,
+  onAttachmentPreview,
 }: {
   message: Message;
   agent?: Agent;
@@ -44,10 +45,18 @@ export function MessageBubble({
   onArtifactHover?: (id: string | null) => void;
   onArtifactPreview?: (a: Artifact) => void;
   onArtifactDownload?: (a: Artifact) => void;
+  /** Открыть предпросмотр файла, прикреплённого к сообщению. */
+  onAttachmentPreview?: (a: FileAttachment) => void;
 }) {
   switch (message.role) {
     case "user":
-      return <UserMessage message={message} isFresh={isFresh} />;
+      return (
+        <UserMessage
+          message={message}
+          isFresh={isFresh}
+          onAttachmentPreview={onAttachmentPreview}
+        />
+      );
     case "assistant":
       return (
         <AssistantMessage
@@ -79,19 +88,71 @@ export function MessageBubble({
   }
 }
 
-function UserMessage({ message, isFresh }: { message: Message; isFresh?: boolean }) {
+function UserMessage({
+  message,
+  isFresh,
+  onAttachmentPreview,
+}: {
+  message: Message;
+  isFresh?: boolean;
+  onAttachmentPreview?: (a: FileAttachment) => void;
+}) {
+  const attachments = message.metadata?.attachments ?? [];
   return (
     <div className={`flex justify-end ${isFresh ? "rm-message-rise" : ""}`}>
       <div className="max-w-[75%] space-y-1">
-        <div className="rounded-sm bg-rm-gray-2 px-4 py-3 text-[length:var(--text-14)] text-foreground">
-          <p className="whitespace-pre-wrap">{message.content}</p>
-        </div>
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap justify-end gap-1.5">
+            {attachments.map((a) => (
+              <MessageAttachmentChip
+                key={a.id}
+                attachment={a}
+                onClick={() => onAttachmentPreview?.(a)}
+              />
+            ))}
+          </div>
+        )}
+        {message.content && (
+          <div className="rounded-sm bg-rm-gray-2 px-4 py-3 text-[length:var(--text-14)] text-foreground">
+            <p className="whitespace-pre-wrap">{message.content}</p>
+          </div>
+        )}
         <p className="text-right text-[length:var(--text-12)] text-muted-foreground">
           {formatTime(message.created_at)}
         </p>
       </div>
     </div>
   );
+}
+
+function MessageAttachmentChip({
+  attachment,
+  onClick,
+}: {
+  attachment: FileAttachment;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-w-0 max-w-[220px] items-center gap-2 rounded-sm bg-rm-gray-2 px-2 py-1.5 text-left transition-colors hover:bg-rm-gray-1"
+    >
+      <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <p className="min-w-0 flex-1 truncate text-[length:var(--text-12)] font-medium text-foreground">
+        {attachment.name}
+      </p>
+      <span className="shrink-0 text-[length:var(--text-12)] text-muted-foreground">
+        {formatFileSize(attachment.size)}
+      </span>
+    </button>
+  );
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} Б`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} КБ`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
 }
 
 function AssistantMessage({
@@ -177,9 +238,16 @@ function AssistantMessage({
                 </span>
               )}
             </div>
-            <span className="text-[length:var(--text-12)] font-medium">
-              {agent.name}
-            </span>
+            <div className="flex flex-col">
+              <span className="text-[length:var(--text-12)] font-medium">
+                {agent.name}
+              </span>
+              {agent.role && (
+                <span className="text-[length:var(--text-12)] text-muted-foreground">
+                  {agent.role}
+                </span>
+              )}
+            </div>
           </div>
         )}
         <div className="relative rounded-sm bg-background px-4 py-3 text-[length:var(--text-14)] text-foreground">

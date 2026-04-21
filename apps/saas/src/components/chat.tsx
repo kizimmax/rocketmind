@@ -133,7 +133,7 @@ function EmptyChat({
               onClick={() => onSuggestionClick(text)}
               className="group flex items-start gap-2.5 rounded-sm border border-border bg-background/80 backdrop-blur-sm px-3.5 py-3 text-left text-[length:var(--text-14)] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
             >
-              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)] opacity-60 group-hover:opacity-100 transition-opacity" />
+              <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)] opacity-60 group-hover:opacity-100 transition-opacity" />
               <span>{text}</span>
             </button>
           ))}

@@ -768,6 +768,19 @@ export const mockArtifacts: Artifact[] = [
     created_at: "2026-04-12T14:00:00Z",
     updated_at: "2026-04-12T14:00:00Z",
   },
+  {
+    id: "a_1_rplus_draft",
+    project_id: "p_1",
+    session_id: "es_1_rplus",
+    expert_codename: "R+",
+    type: "synth_audience",
+    title: "Проверенные гипотезы",
+    preview:
+      "Резонанс оффера высокий (7/10). Ключевой барьер — страх «AI напишет что-то не то от моего имени». 3 из 10 респондентов требуют явного режима предпросмотра/approval. Рекомендация: добавить preview-режим до релиза.",
+    status: "draft",
+    created_at: "2026-04-17T16:28:00Z",
+    updated_at: "2026-04-17T16:28:00Z",
+  },
   // p_3 — полный набор артефактов (completed project)
   {
     id: "a_3_r1",

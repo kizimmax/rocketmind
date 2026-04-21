@@ -1,20 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RotateCw, Sparkles, X } from "lucide-react";
+import { RotateCw, Sparkles, Upload, X } from "lucide-react";
 import { DotGridLens } from "@rocketmind/ui";
 import { ChatInput } from "./chat-input";
-import { TypingText } from "./typing-text";
+import { MessageBubble } from "./message";
 import { useManager, useProjects } from "@/lib/hooks";
 import { computeStartingExpert, getMockExpert } from "@/lib/mock-data";
+import { useAttachedFiles } from "@/lib/use-attached-files";
 import type {
+  Agent,
+  FileAttachment,
+  Message,
   Project,
   ProjectRole,
   ProjectStage,
   ReadyArtifact,
 } from "@/lib/types";
+import { FilePreviewDialog } from "./file-preview-dialog";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // R-менеджер — чат-помощник. Base-mode = "free" (свободный чат + сценарии).
@@ -141,7 +145,12 @@ const MANAGER_SCENARIOS: ManagerScenario[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 
 type ManagerMsg = { id: string; role: "manager"; text: string };
-type UserMsg = { id: string; role: "user"; text: string };
+type UserMsg = {
+  id: string;
+  role: "user";
+  text: string;
+  attachments?: FileAttachment[];
+};
 type HistoryItem = ManagerMsg | UserMsg;
 
 interface Answers {
@@ -174,6 +183,19 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
   const router = useRouter();
   const manager = useManager();
   const { activeProjects, createProject } = useProjects();
+
+  const managerAsAgent: Agent = useMemo(
+    () => ({
+      id: manager.id,
+      slug: "manager",
+      name: manager.name,
+      description: manager.role,
+      role: manager.role,
+      avatar_url: manager.avatar_url,
+      config: {},
+    }),
+    [manager]
+  );
 
   const initialGreeting = prefill
     ? "Спасибо! Вижу ваш предварительный бриф. Давайте уточню пару деталей — это поможет определить, с какого эксперта начать."
@@ -215,6 +237,39 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
   const scrollRef = useRef<HTMLDivElement>(null);
   const didInitRef = useRef(false);
 
+  // Файлы, прикреплённые к следующему сообщению + drag-drop
+  const attached = useAttachedFiles();
+  const [isDragOver, setIsDragOver] = useState(false);
+  const dragCounter = useRef(0);
+  const [previewAttachment, setPreviewAttachment] = useState<FileAttachment | null>(
+    null
+  );
+
+  function handleDragEnter(e: React.DragEvent) {
+    if (!hasFilesInDrag(e)) return;
+    e.preventDefault();
+    dragCounter.current += 1;
+    setIsDragOver(true);
+  }
+  function handleDragOver(e: React.DragEvent) {
+    if (!hasFilesInDrag(e)) return;
+    e.preventDefault();
+  }
+  function handleDragLeave(e: React.DragEvent) {
+    if (!hasFilesInDrag(e)) return;
+    e.preventDefault();
+    dragCounter.current = Math.max(0, dragCounter.current - 1);
+    if (dragCounter.current === 0) setIsDragOver(false);
+  }
+  function handleDrop(e: React.DragEvent) {
+    if (!hasFilesInDrag(e)) return;
+    e.preventDefault();
+    dragCounter.current = 0;
+    setIsDragOver(false);
+    const dropped = Array.from(e.dataTransfer.files);
+    if (dropped.length > 0) attached.addFiles(dropped);
+  }
+
   // При старте с prefill — показать summary и первый вопрос; без prefill — остаёмся в free с pills
   useEffect(() => {
     if (didInitRef.current) return;
@@ -253,9 +308,9 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
 
   // ─── Helpers: пушим в историю ───────────────────────────────────────────
 
-  function pushUser(text: string) {
+  function pushUser(text: string, attachments?: FileAttachment[]) {
     const id = `u-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    setHistory((h) => [...h, { id, role: "user", text }]);
+    setHistory((h) => [...h, { id, role: "user", text, attachments }]);
     setFreshIds((prev) => new Set(prev).add(id));
   }
 
@@ -298,8 +353,18 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
   // ─── Free-text обработка ────────────────────────────────────────────────
 
   function handleUserInput(text: string) {
-    if (!text.trim()) return;
-    pushUser(text.trim());
+    const attachments: FileAttachment[] = attached.files.map((f) => ({
+      id: f.id,
+      name: f.name,
+      size: f.size,
+      url: f.url,
+      type: f.type,
+    }));
+    const trimmed = text.trim();
+    if (!trimmed && attachments.length === 0) return;
+    attached.clearFiles({ keepUrls: true });
+    pushUser(trimmed, attachments.length > 0 ? attachments : undefined);
+    if (!trimmed) return;
     const intent = detectIntent(text);
 
     // 1) stop-intent — только в активных сценариях имеет смысл
@@ -558,7 +623,23 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
   // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="relative flex h-full flex-1 flex-col overflow-hidden">
+    <div
+      className="relative flex h-full flex-1 flex-col overflow-hidden"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragOver && (
+        <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center border-2 border-dashed border-[var(--rm-yellow-100)] bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-2 text-foreground">
+            <Upload className="h-8 w-8 text-[var(--rm-yellow-100)]" />
+            <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em]">
+              Отпустите, чтобы прикрепить
+            </p>
+          </div>
+        </div>
+      )}
       <DotGridLens
         gridGap={10}
         baseRadius={0.75}
@@ -569,16 +650,18 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
 
       {/* Messages */}
       <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto">
-        <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 py-10">
+        <div className="mx-auto max-w-2xl space-y-4 px-5 py-16">
           {history.map((msg) => (
-            <Bubble
+            <MessageBubble
               key={msg.id}
-              msg={msg}
-              managerAvatar={manager.avatar_url}
+              message={historyItemToMessage(msg)}
+              agent={msg.role === "manager" ? managerAsAgent : undefined}
+              isNew={msg.role === "manager" && freshIds.has(msg.id)}
               isFresh={freshIds.has(msg.id)}
+              onAttachmentPreview={setPreviewAttachment}
             />
           ))}
-          {mode === "creating" && <TypingIndicator managerAvatar={manager.avatar_url} />}
+          {mode === "creating" && <TypingIndicator />}
         </div>
       </div>
 
@@ -612,8 +695,15 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
           onSend={handleUserInput}
           disabled={mode === "creating"}
           placeholder={inputPlaceholder(mode)}
+          files={attached.files}
+          onFilesAdd={attached.addFiles}
+          onFileRemove={attached.removeFile}
         />
       </div>
+      <FilePreviewDialog
+        file={previewAttachment}
+        onOpenChange={(open) => !open && setPreviewAttachment(null)}
+      />
     </div>
   );
 }
@@ -708,57 +798,23 @@ function PickerArea({
 // Под-компоненты
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Bubble({
-  msg,
-  managerAvatar,
-  isFresh,
-}: {
-  msg: HistoryItem;
-  managerAvatar: string;
-  isFresh: boolean;
-}) {
-  if (msg.role === "manager") {
-    return (
-      <div className={`flex items-start gap-3 ${isFresh ? "rm-message-rise" : ""}`}>
-        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full">
-          <Image
-            src={managerAvatar}
-            alt="R-менеджер"
-            width={36}
-            height={36}
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <div className="max-w-[calc(100%-3rem)] whitespace-pre-wrap rounded-sm bg-rm-gray-1 px-4 py-2.5 text-[length:var(--text-14)] leading-relaxed">
-          {isFresh ? (
-            <TypingText
-              text={msg.text}
-              animate
-              speed={16}
-              renderText={(t) => renderMarkdown(t)}
-            />
-          ) : (
-            renderMarkdown(msg.text)
-          )}
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className={`flex justify-end ${isFresh ? "rm-message-rise" : ""}`}>
-      <div className="max-w-[80%] whitespace-pre-wrap rounded-sm bg-foreground px-4 py-2.5 text-[length:var(--text-14)] leading-relaxed text-background">
-        {msg.text}
-      </div>
-    </div>
-  );
+function historyItemToMessage(msg: HistoryItem): Message {
+  const attachments =
+    msg.role === "user" ? msg.attachments : undefined;
+  return {
+    id: msg.id,
+    conversation_id: "manager",
+    role: msg.role === "manager" ? "assistant" : "user",
+    content: msg.text,
+    created_at: new Date().toISOString(),
+    is_read: true,
+    metadata: attachments && attachments.length > 0 ? { attachments } : undefined,
+  };
 }
 
-function TypingIndicator({ managerAvatar }: { managerAvatar: string }) {
+function TypingIndicator() {
   return (
-    <div className="flex items-start gap-3">
-      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full">
-        <Image src={managerAvatar} alt="" width={36} height={36} className="h-full w-full object-cover" />
-      </div>
+    <div className="flex justify-start">
       <div className="rounded-sm bg-rm-gray-1 px-4 py-2.5">
         <div className="flex space-x-1.5">
           <span className="h-2 w-2 rounded-full bg-rm-gray-3 animate-bounce [animation-delay:0ms]" />
@@ -796,15 +852,15 @@ function ScenarioPills({
             onClick={() => onPick(s)}
             className={`group flex items-start gap-2.5 rounded-sm border px-3.5 py-3 text-left transition-colors ${
               s.is_primary
-                ? "border-foreground bg-foreground text-background hover:opacity-90"
+                ? "border-[var(--rm-yellow-100)] bg-background text-foreground hover:bg-rm-gray-1"
                 : "border-border bg-background/80 backdrop-blur-sm text-foreground hover:border-foreground"
             }`}
           >
             <Sparkles
               className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
                 s.is_primary
-                  ? "text-[var(--rm-yellow-500)]"
-                  : "text-[var(--rm-yellow-500)] opacity-60 group-hover:opacity-100 transition-opacity"
+                  ? "text-[var(--rm-yellow-100)]"
+                  : "text-[var(--rm-yellow-100)] opacity-60 group-hover:opacity-100 transition-opacity"
               }`}
             />
             <div className="flex flex-col">
@@ -817,7 +873,7 @@ function ScenarioPills({
                 {s.hint}
               </span>
               {s.is_primary && (
-                <span className="mt-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-500)]">
+                <span className="mt-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-100)]">
                   Рекомендую
                 </span>
               )}
@@ -846,7 +902,7 @@ function ChoiceGrid({
             onClick={() => onPick(opt)}
             className="group flex items-start gap-2.5 rounded-sm border border-border bg-background/80 backdrop-blur-sm px-3.5 py-3 text-left transition-colors hover:border-foreground"
           >
-            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)] opacity-60 group-hover:opacity-100 transition-opacity" />
+            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)] opacity-60 group-hover:opacity-100 transition-opacity" />
             <div className="flex flex-col">
               <span className="text-[length:var(--text-14)] text-foreground">{opt.label}</span>
               {opt.hint && (
@@ -915,7 +971,7 @@ function ReadinessPicker({
               onClick={() => toggle(opt.value)}
               className={`rounded-full border px-3 py-1 text-[length:var(--text-12)] transition-colors ${
                 isOn
-                  ? "border-foreground bg-foreground text-background"
+                  ? "border-[var(--rm-yellow-100)] bg-background text-foreground"
                   : "border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground"
               }`}
             >
@@ -951,15 +1007,15 @@ function ResumeActions({
           <button
             type="button"
             onClick={onSkip}
-            className="group flex items-start gap-2.5 rounded-sm border border-foreground bg-foreground px-3.5 py-3 text-left text-background transition-opacity hover:opacity-90"
+            className="group flex items-start gap-2.5 rounded-sm border border-[var(--rm-yellow-100)] bg-background px-3.5 py-3 text-left text-foreground transition-opacity hover:opacity-90"
           >
-            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)]" />
+            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)]" />
             <div className="flex flex-col">
               <span className="text-[length:var(--text-14)]">Сэкономить время</span>
               <span className="text-[length:var(--text-12)] opacity-80">
                 Пропустить пройденные этапы
               </span>
-              <span className="mt-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-500)]">
+              <span className="mt-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-100)]">
                 Рекомендую
               </span>
             </div>
@@ -970,7 +1026,7 @@ function ResumeActions({
           onClick={onFullPath}
           className="group flex items-start gap-2.5 rounded-sm border border-border bg-background/80 px-3.5 py-3 text-left backdrop-blur-sm transition-colors hover:border-foreground"
         >
-          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)] opacity-60 group-hover:opacity-100 transition-opacity" />
+          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)] opacity-60 group-hover:opacity-100 transition-opacity" />
           <div className="flex flex-col">
             <span className="text-[length:var(--text-14)] text-foreground">Пройти полный путь</span>
             <span className="text-[length:var(--text-12)] text-muted-foreground">
@@ -1009,9 +1065,9 @@ function StopConfirm({
         <button
           type="button"
           onClick={onNo}
-          className="flex items-start gap-2.5 rounded-sm border border-foreground bg-foreground px-3.5 py-3 text-left text-background transition-opacity hover:opacity-90"
+          className="flex items-start gap-2.5 rounded-sm border border-[var(--rm-yellow-100)] bg-background px-3.5 py-3 text-left text-foreground transition-opacity hover:opacity-90"
         >
-          <RotateCw className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-500)]" />
+          <RotateCw className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--rm-yellow-100)]" />
           <div className="flex flex-col">
             <span className="text-[length:var(--text-14)] font-medium">Нет, продолжить</span>
             <span className="text-[length:var(--text-12)] opacity-80">
@@ -1160,6 +1216,10 @@ function makeProjectName(industry: string): string {
   return `${industry} — ${today}`;
 }
 
+function hasFilesInDrag(e: React.DragEvent): boolean {
+  return Array.from(e.dataTransfer?.types ?? []).includes("Files");
+}
+
 function pluralize(n: number, one: string, few: string, many: string): string {
   const mod10 = n % 10;
   const mod100 = n % 100;
@@ -1176,13 +1236,3 @@ function fieldFromStep(step: Step): keyof Answers {
   return "expected_result";
 }
 
-// Минимальный markdown: **bold**
-function renderMarkdown(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
-    }
-    return <span key={i}>{part}</span>;
-  });
-}

@@ -120,7 +120,7 @@ export function NewProjectModal({ open, onOpenChange }: NewProjectModalProps) {
                     onClick={() => setStage(opt.value)}
                     className={`rounded-full border px-3 py-1 text-[length:var(--text-12)] transition-colors ${
                       isOn
-                        ? "border-foreground bg-foreground text-background"
+                        ? "border-[var(--rm-yellow-100)] bg-background text-foreground"
                         : "border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground"
                     }`}
                   >
@@ -146,7 +146,7 @@ export function NewProjectModal({ open, onOpenChange }: NewProjectModalProps) {
                     onClick={() => toggleReadiness(opt.value)}
                     className={`rounded-full border px-3 py-1 text-[length:var(--text-12)] transition-colors ${
                       isOn
-                        ? "border-foreground bg-foreground text-background"
+                        ? "border-[var(--rm-yellow-100)] bg-background text-foreground"
                         : "border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground"
                     }`}
                   >

@@ -172,7 +172,7 @@ function ProjectMiniCard({ project }: { project: Project }) {
 function EmptyProjects() {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-10 px-4 text-center">
-      <Sparkles className="h-6 w-6 text-[var(--rm-yellow-500)]" />
+      <Sparkles className="h-6 w-6 text-[var(--rm-yellow-100)]" />
       <p className="text-[length:var(--text-12)] text-muted-foreground">
         Проектов пока нет. Начните диалог с R-менеджером слева — он поможет собрать первый.
       </p>

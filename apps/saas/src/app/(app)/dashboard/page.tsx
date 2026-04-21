@@ -17,7 +17,7 @@ export default function DashboardPage() {
       <div className="flex h-full flex-1 items-center justify-center px-6">
         <div className="max-w-sm space-y-4 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-sm bg-rm-gray-1">
-            <Sparkles className="h-6 w-6 text-[var(--rm-yellow-500)]" />
+            <Sparkles className="h-6 w-6 text-[var(--rm-yellow-100)]" />
           </div>
           <h2 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase">
             Добро пожаловать
