@@ -567,27 +567,6 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
         className="pointer-events-auto absolute inset-0 z-0"
       />
 
-      {/* Header */}
-      <div className="relative z-10 flex items-center gap-3 border-b border-border bg-background px-5 py-3">
-        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full">
-          <Image
-            src={manager.avatar_url}
-            alt={manager.name}
-            width={36}
-            height={36}
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-[family-name:var(--font-heading-family)] text-[length:var(--text-16)] font-bold uppercase leading-tight">
-            {manager.name}
-          </p>
-          <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
-            {manager.role}
-          </p>
-        </div>
-      </div>
-
       {/* Messages */}
       <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-2xl flex-col gap-4 px-5 py-10">
