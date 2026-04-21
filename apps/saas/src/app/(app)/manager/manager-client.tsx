@@ -9,8 +9,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Badge } from "@rocketmind/ui";
+import Image from "next/image";
 import { ManagerChat, type PrefillData } from "@/components/manager-chat";
-import { useNewProjects, useProjects } from "@/lib/hooks";
+import { useManager, useNewProjects, useProjects } from "@/lib/hooks";
 import type { Project, ProjectStage } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
@@ -36,6 +37,7 @@ const STAGE_VARIANT: Record<
 export default function ManagerClient() {
   const searchParams = useSearchParams();
   const { activeProjects } = useProjects();
+  const manager = useManager();
   const [listOpen, setListOpen] = useState(true);
 
   const prefill = useMemo<PrefillData | undefined>(() => {
@@ -52,13 +54,30 @@ export default function ManagerClient() {
     <div className="flex h-full flex-1 overflow-hidden">
       {/* Центр: чат с R-менеджером */}
       <div className="relative flex min-w-0 flex-1 flex-col">
-        {/* Toggle right-panel (только desktop) */}
-        <div className="absolute right-3 top-3 z-20 hidden lg:block">
+        {/* Header: одинаковой высоты с шапкой проектов */}
+        <div className="flex h-12 shrink-0 items-center gap-4 border-b border-border px-4">
+          <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+            R-менеджер
+          </p>
+          <div className="flex min-w-0 items-center gap-2">
+            <p className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+              {manager.role}
+            </p>
+            <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full">
+              <Image
+                src={manager.avatar_url}
+                alt={manager.role}
+                width={24}
+                height={24}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </div>
           <button
             type="button"
             onClick={() => setListOpen((v) => !v)}
             aria-label={listOpen ? "Скрыть проекты" : "Показать проекты"}
-            className="flex h-9 w-9 items-center justify-center rounded-sm border border-border bg-background/80 text-muted-foreground backdrop-blur-sm transition-colors hover:bg-rm-gray-1 hover:text-foreground"
+            className="hidden h-9 w-9 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-rm-gray-1 hover:text-foreground lg:flex"
           >
             {listOpen ? (
               <PanelRightClose className="h-4 w-4" />
@@ -77,7 +96,7 @@ export default function ManagerClient() {
       {/* Правая панель: список проектов (симметрично с project shell) */}
       {listOpen && (
         <aside className="hidden w-80 shrink-0 flex-col border-l border-border bg-background lg:flex">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
             <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
               Проекты · {activeProjects.length}
             </p>
