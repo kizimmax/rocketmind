@@ -312,18 +312,34 @@ function MobileArtifactsSheet({
     const { dy } = drag.current;
     const el = contentRef.current;
     if (!el) return;
-    el.style.transition = "transform 200ms ease-out";
+
     if (dy > 120) {
+      // Отключаем встроенный data-state=closed keyframe — слайд-закрытие
+      // полностью ведём через transform, иначе Radix проиграет вторую анимацию.
+      el.classList.add("rm-sheet-manual-close");
+      el.style.transition = "transform 220ms cubic-bezier(0.32, 0.72, 0, 1)";
       el.style.transform = "translateY(100%)";
-      window.setTimeout(() => {
+      const done = () => {
+        el.removeEventListener("transitionend", done);
         onOpenChange(false);
-        el.style.transform = "";
-        el.style.transition = "";
-      }, 180);
+      };
+      el.addEventListener("transitionend", done);
     } else {
+      el.style.transition = "transform 200ms ease-out";
       el.style.transform = "";
     }
   }
+
+  // Перед каждым открытием сбрасываем inline-стили и класс manual-close,
+  // чтобы следующая открытие-анимация сыграла чисто.
+  useEffect(() => {
+    if (!open) return;
+    const el = contentRef.current;
+    if (!el) return;
+    el.classList.remove("rm-sheet-manual-close");
+    el.style.transition = "";
+    el.style.transform = "";
+  }, [open]);
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
