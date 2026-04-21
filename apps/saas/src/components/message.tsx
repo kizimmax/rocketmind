@@ -8,7 +8,6 @@ import {
   Copy,
   Download,
   ExternalLink,
-  Eye,
   FileText,
   RotateCcw,
 } from "lucide-react";
@@ -401,7 +400,6 @@ function MarkdownContent({ content }: { content: string }) {
 function ChatArtifactCard({
   artifact,
   isActive,
-  status,
   onSelect,
   onPreview,
   onDownload,
@@ -413,52 +411,33 @@ function ChatArtifactCard({
   onPreview?: (a: Artifact) => void;
   onDownload?: (a: Artifact) => void;
 }) {
-  const isAccepted = status === "accepted";
   return (
     <div
-      onClick={() => onSelect?.(artifact.id)}
-      className={`group flex w-full max-w-md cursor-pointer items-start gap-3 rounded-sm border p-3 transition-colors ${
+      onClick={() => {
+        onSelect?.(artifact.id);
+        onPreview?.(artifact);
+      }}
+      className={`group flex w-full max-w-md cursor-pointer flex-col overflow-hidden rounded-sm border bg-background transition-colors ${
         isActive
-          ? "border-[var(--rm-yellow-500)] bg-[var(--rm-yellow-900)]"
-          : isAccepted
-            ? "border-[var(--rm-yellow-700)] bg-[var(--rm-yellow-900)] hover:border-[var(--rm-yellow-500)]"
-            : "border-border bg-background hover:border-foreground"
+          ? "border-[var(--rm-yellow-500)]"
+          : "border-border hover:border-foreground"
       }`}
     >
-      {isAccepted ? (
-        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--rm-yellow-500)]" />
-      ) : (
-        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-      )}
-      <div className="min-w-0 flex-1">
-        <p
-          className={`truncate font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-bold uppercase leading-tight ${
-            isAccepted ? "text-[var(--rm-yellow-fg-subtle)]" : "text-foreground"
-          }`}
-        >
+      {/* Header: иконка + название + кодовое имя эксперта */}
+      <div className="flex items-center gap-2 px-3 pt-3">
+        <FileText className="h-5 w-5 shrink-0 text-foreground" />
+        <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-medium uppercase leading-none tracking-[0.02em] text-foreground">
           {artifact.title}
         </p>
-        <p className="mt-0.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
-          {artifact.expert_codename} · {isAccepted ? "Принят" : "Черновик"}
-        </p>
-        <p className="mt-1 line-clamp-2 text-[length:var(--text-12)] text-muted-foreground">
+        <span className="shrink-0 font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-medium uppercase leading-none tracking-[0.02em] text-muted-foreground">
+          {artifact.expert_codename}
+        </span>
+      </div>
+      {/* Body: превью + кнопка скачивания справа */}
+      <div className="flex items-stretch pt-3">
+        <p className="min-w-0 flex-1 px-3 pb-4 text-[length:var(--text-12)] leading-[1.36] text-muted-foreground line-clamp-2">
           {artifact.preview}
         </p>
-      </div>
-      <div className="flex shrink-0 gap-1">
-        {onPreview && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onPreview(artifact);
-            }}
-            title="Пред просмотр"
-            className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
-          >
-            <Eye className="h-3.5 w-3.5" />
-          </button>
-        )}
         {onDownload && (
           <button
             type="button"
@@ -467,9 +446,10 @@ function ChatArtifactCard({
               onDownload(artifact);
             }}
             title="Скачать"
-            className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
+            aria-label="Скачать артефакт"
+            className="flex w-10 shrink-0 items-center justify-center self-stretch rounded-tl-[4px] rounded-br-[4px] bg-rm-gray-1 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Download className="h-3.5 w-3.5" />
+            <Download className="h-5 w-5" />
           </button>
         )}
       </div>

@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Download,
-  Eye,
   FileText,
   PanelRightClose,
   PanelRightOpen,
@@ -442,51 +441,44 @@ function ArtifactCard({
     <div
       ref={ref}
       data-artifact-id={artifact.id}
-      onClick={onSelect}
-      className={`flex cursor-pointer flex-col gap-2 rounded-sm border bg-background p-3 transition-colors ${
+      onClick={() => {
+        onSelect();
+        onPreview();
+      }}
+      className={`group flex cursor-pointer flex-col overflow-hidden rounded-sm border bg-background transition-colors ${
         isActive
           ? "border-[var(--rm-yellow-500)]"
           : "border-border hover:border-foreground"
       }`}
     >
-      <div className="flex items-start gap-2">
-        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-bold uppercase leading-tight">
-            {artifact.title}
-          </p>
-          <p className="mt-0.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.04em] text-muted-foreground">
-            {artifact.expert_codename}
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-1">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onPreview();
-            }}
-            title="Пред просмотр"
-            className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
-          >
-            <Eye className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDownload();
-            }}
-            title="Скачать"
-            className="flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
-          >
-            <Download className="h-3.5 w-3.5" />
-          </button>
-        </div>
+      {/* Header: иконка + название + кодовое имя эксперта */}
+      <div className="flex items-center gap-2 px-3 pt-3">
+        <FileText className="h-5 w-5 shrink-0 text-foreground" />
+        <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-medium uppercase leading-none tracking-[0.02em] text-foreground">
+          {artifact.title}
+        </p>
+        <span className="shrink-0 font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-medium uppercase leading-none tracking-[0.02em] text-muted-foreground">
+          {artifact.expert_codename}
+        </span>
       </div>
-      <p className="line-clamp-3 text-[length:var(--text-12)] text-muted-foreground">
-        {artifact.preview}
-      </p>
+      {/* Body: превью + кнопка скачивания справа */}
+      <div className="flex items-stretch pt-3">
+        <p className="min-w-0 flex-1 px-3 pb-4 text-[length:var(--text-12)] leading-[1.36] text-muted-foreground line-clamp-2">
+          {artifact.preview}
+        </p>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDownload();
+          }}
+          title="Скачать"
+          aria-label="Скачать артефакт"
+          className="flex w-10 shrink-0 items-center justify-center self-stretch rounded-tl-[4px] rounded-br-[4px] bg-rm-gray-1 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Download className="h-5 w-5" />
+        </button>
+      </div>
     </div>
   );
 }
