@@ -193,22 +193,19 @@ export default function ProjectClient({ id }: { id: string }) {
       {/* ── RIGHT: artifacts panel (collapsible) ───────────────────────────── */}
       {artifactsOpen && (
         <aside className="hidden w-80 shrink-0 flex-col border-l border-border bg-background lg:flex">
-          {/* Шапка-прогресс: фон интерполируется от бледно- к ярко-жёлтому по score */}
-          <div className="relative flex h-12 shrink-0 items-center justify-between overflow-hidden border-b border-border">
-            <div
-              aria-hidden
-              className="absolute inset-y-0 left-0 transition-[width,background-color] duration-500 ease-out"
-              style={{
-                width: `${project.score ?? 0}%`,
-                backgroundColor: `color-mix(in srgb, var(--rm-yellow-100) ${project.score ?? 0}%, var(--rm-yellow-900))`,
-              }}
-            />
-            <p className="relative z-10 px-4 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-foreground">
+          {/* Шапка: snizu — жёлтый прогресс-бар 4px, ширина = score% */}
+          <div className="relative flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
+            <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-foreground">
               Артефакты · {artifacts.length}
             </p>
-            <p className="relative z-10 px-4 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-foreground">
+            <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-100)]">
               {project.score ?? 0}%
             </p>
+            <div
+              aria-hidden
+              className="absolute bottom-0 left-0 h-1 bg-[var(--rm-yellow-100)] transition-[width] duration-500 ease-out"
+              style={{ width: `${project.score ?? 0}%` }}
+            />
           </div>
           <div className="flex-1 overflow-y-auto p-3">
             {artifacts.length === 0 ? (
