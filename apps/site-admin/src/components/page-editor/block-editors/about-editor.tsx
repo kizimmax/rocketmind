@@ -1,11 +1,17 @@
 "use client";
 
 import { useRef } from "react";
-import { Plus, GripVertical, ImagePlus, X as XIcon, CaseUpper } from "lucide-react";
+import { Plus, GripVertical, ImagePlus, X as XIcon } from "lucide-react";
 import { Switch } from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
 import { MdText } from "@/components/md-text";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 interface AboutEditorProps {
@@ -17,20 +23,12 @@ export function AboutEditor({ data, onUpdate }: AboutEditorProps) {
   const caption = (data.caption as string) || "";
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
-  type RawParagraph = string | { text?: string; uppercase?: boolean };
-  const rawParagraphs = data.paragraphs as RawParagraph[] | undefined;
-  const legacyDescription = (data.description as string) || "";
   const legacyUppercase = data.paragraphsUppercase === true;
-  const paragraphs: Array<{ text: string; uppercase: boolean }> =
-    Array.isArray(rawParagraphs) && rawParagraphs.length > 0
-      ? rawParagraphs.map((p) =>
-          typeof p === "string"
-            ? { text: p, uppercase: legacyUppercase }
-            : { text: p.text ?? "", uppercase: p.uppercase === true || legacyUppercase }
-        )
-      : legacyDescription
-        ? [{ text: legacyDescription, uppercase: legacyUppercase }]
-        : [];
+  const paragraphs = resolveParagraphs(
+    data.paragraphs,
+    (data.description as string) || "",
+    { uppercase: legacyUppercase, color: "secondary" },
+  );
   const rawAccordion =
     (data.accordion as Array<{
       title: string;
@@ -53,44 +51,15 @@ export function AboutEditor({ data, onUpdate }: AboutEditorProps) {
   const paragraphsRight = data.paragraphsRight === true;
   const aboutImageData = (data.aboutImageData as string) || "";
 
-  const uppercaseClass =
-    "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]";
-  const normalClass = "text-[length:var(--text-18)] leading-[1.2] text-[#939393]";
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const dnd = useItemDnd(accordion, (reordered) =>
     onUpdate({ accordion: reordered })
   );
-  const paragraphsDnd = useItemDnd(paragraphs, (reordered) =>
-    onUpdate({ paragraphs: reordered, description: undefined, paragraphsUppercase: undefined })
-  );
 
-  function updateParagraph(index: number, value: string) {
-    const updated = paragraphs.map((p, i) =>
-      i === index ? { ...p, text: value } : p
-    );
-    onUpdate({ paragraphs: updated, description: undefined, paragraphsUppercase: undefined });
-  }
-
-  function toggleParagraphUppercase(index: number) {
-    const updated = paragraphs.map((p, i) =>
-      i === index ? { ...p, uppercase: !p.uppercase } : p
-    );
-    onUpdate({ paragraphs: updated, description: undefined, paragraphsUppercase: undefined });
-  }
-
-  function addParagraph() {
+  function setParagraphs(next: StyledParagraph[]) {
     onUpdate({
-      paragraphs: [...paragraphs, { text: "", uppercase: false }],
-      description: undefined,
-      paragraphsUppercase: undefined,
-    });
-  }
-
-  function removeParagraph(index: number) {
-    onUpdate({
-      paragraphs: paragraphs.filter((_, i) => i !== index),
+      paragraphs: next,
       description: undefined,
       paragraphsUppercase: undefined,
     });
@@ -171,74 +140,12 @@ export function AboutEditor({ data, onUpdate }: AboutEditorProps) {
 
   function renderParagraphs() {
     return (
-      <div className="flex flex-col gap-3">
-        {paragraphs.map((p, index) => {
-          const { draggable, onDragStart, onDragOver, onDrop, onDragEnd, isDragging } =
-            paragraphsDnd.itemProps(index);
-
-          return (
-            <div
-              key={index}
-              draggable={draggable}
-              onDragStart={onDragStart}
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-              onDragEnd={onDragEnd}
-              className={`group/para relative transition-all ${
-                isDragging ? "opacity-60" : ""
-              }`}
-            >
-              <div className="absolute -right-1 -top-1 z-10 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/para:opacity-100">
-                <div
-                  className="flex h-5 w-5 cursor-grab items-center justify-center rounded-sm bg-[#F0F0F0] text-[#0A0A0A] select-none active:cursor-grabbing"
-                  onMouseDown={() => paragraphsDnd.onGripDown(index)}
-                  onMouseUp={paragraphsDnd.onGripUp}
-                >
-                  <GripVertical className="h-2.5 w-2.5" />
-                </div>
-                <button
-                  type="button"
-                  title="Капсом (label-18)"
-                  onClick={() => toggleParagraphUppercase(index)}
-                  className={`flex h-5 w-5 items-center justify-center rounded-sm transition-colors ${
-                    p.uppercase
-                      ? "bg-[#FFCC00] text-[#0A0A0A]"
-                      : "bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#FFCC00]"
-                  }`}
-                >
-                  <CaseUpper className="h-3 w-3" />
-                </button>
-                <InlineConfirmDelete
-                  onConfirm={() => removeParagraph(index)}
-                  className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"
-                />
-              </div>
-
-              <InlineEdit
-                value={p.text}
-                onSave={(v) => updateParagraph(index, v)}
-                multiline
-                copy
-                placeholder="Абзац описания..."
-              >
-                <MdText
-                  value={p.text}
-                  placeholder="Абзац описания"
-                  className={p.uppercase ? uppercaseClass : normalClass}
-                />
-              </InlineEdit>
-            </div>
-          );
-        })}
-
-        <button
-          onClick={addParagraph}
-          className="flex items-center justify-center gap-1 border border-dashed border-[#404040] py-3 text-[length:var(--text-14)] text-[#939393] transition-colors hover:border-[#FFCC00] hover:text-[#FFCC00]"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Добавить абзац
-        </button>
-      </div>
+      <ParagraphsEditor
+        paragraphs={paragraphs}
+        onChange={setParagraphs}
+        theme="dark"
+        defaults={{ uppercase: false, color: "secondary" }}
+      />
     );
   }
 
@@ -272,6 +179,7 @@ export function AboutEditor({ data, onUpdate }: AboutEditorProps) {
                 >
                   <GripVertical className="h-2.5 w-2.5" />
                 </div>
+                <ItemMoveButtons index={index} count={accordion.length} onMove={dnd.move} />
                 <InlineConfirmDelete
                   onConfirm={() => removeAccordion(index)}
                   className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"
@@ -546,6 +454,7 @@ function AccordionParagraphs({
               >
                 <GripVertical className="h-2.5 w-2.5" />
               </div>
+              <ItemMoveButtons index={pIndex} count={paragraphs.length} onMove={dnd.move} />
               <InlineConfirmDelete
                 onConfirm={() => onRemove(accIndex, pIndex)}
                 className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"

@@ -8,6 +8,7 @@ import { ABOUT_RM_DEFAULTS } from "@/components/sections/about-rocketmind-defaul
 import { ForWhomSection, ProcessSection, ResultsSection, ExpertsSection, ToolsSection, PartnershipBlock, ServicesSection } from "@rocketmind/ui";
 import type { ProductData, CustomSectionData } from "@/lib/products";
 import { getPartnershipsData } from "@/lib/partnerships";
+import { getAboutRocketmindPhotos } from "@/lib/about-rocketmind";
 
 function CustomSectionsAfter({
   type,
@@ -65,6 +66,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
   const hasProduct = "product" in props;
   const isAcademy = hasProduct && props.product.category === "academy";
   const partnerships = isAcademy ? getPartnershipsData() : null;
+  const aboutRmPhotos = getAboutRocketmindPhotos();
   const customSections: CustomSectionData[] = hasProduct ? props.product.customSections : [];
 
   return (
@@ -79,6 +81,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           title={props.product.hero.title}
           titleSecondary={props.product.hero.titleSecondary}
           description={props.product.hero.description}
+          paragraphs={props.product.hero.paragraphs}
           ctaText={props.product.hero.ctaText}
           factoids={props.product.hero.factoids}
           coverImage={props.product.heroImage}
@@ -92,6 +95,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           title={props.product.hero.title}
           titleSecondary={props.product.hero.titleSecondary}
           description={props.product.hero.description}
+          paragraphs={props.product.hero.paragraphs}
           ctaText={props.product.hero.ctaText}
           factoids={props.product.hero.factoids}
           coverImage={props.product.coverImage}
@@ -153,6 +157,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
               caption={partnerships.caption}
               title={partnerships.title}
               description={partnerships.description}
+              paragraphs={partnerships.paragraphs}
               logos={partnerships.logos}
               photos={partnerships.photos}
             />
@@ -169,6 +174,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           title={props.product.audience.title}
           titleSecondary={props.product.audience.titleSecondary}
           subtitle={props.product.audience.subtitle}
+          paragraphs={props.product.audience.paragraphs}
           facts={props.product.audience.facts}
           wideColumn={props.product.audience.wideColumn}
         />
@@ -182,8 +188,10 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           title={props.product.tools.title}
           titleSecondary={props.product.tools.titleSecondary}
           description={props.product.tools.description}
+          paragraphs={props.product.tools.paragraphs}
           tools={props.product.tools.tools}
           useIcons={props.product.tools.useIcons}
+          descriptionBelow={props.product.tools.descriptionBelow}
         />
       ) : null}
       <CustomSectionsAfter type="tools" sections={customSections} />
@@ -195,6 +203,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           title={props.product.results.title}
           titleSecondary={props.product.results.titleSecondary}
           description={props.product.results.description}
+          paragraphs={props.product.results.paragraphs}
           cards={props.product.results.cards}
         />
       ) : null}
@@ -207,6 +216,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           title={props.product.services.title}
           titleSecondary={props.product.services.titleSecondary}
           description={props.product.services.description}
+          paragraphs={props.product.services.paragraphs}
           cards={props.product.services.cards}
         />
       ) : null}
@@ -219,7 +229,9 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           title={props.product.process.title}
           titleSecondary={props.product.process.titleSecondary}
           subtitle={props.product.process.subtitle}
+          subtitleUppercase={props.product.process.subtitleUppercase}
           description={props.product.process.description}
+          paragraphs={props.product.process.paragraphs ?? props.product.process.descriptionParagraphs}
           steps={props.product.process.steps}
           participantsTag={props.product.process.participantsTag}
           participants={props.product.process.participants}
@@ -238,6 +250,7 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
       {(!hasProduct || props.product.aboutRocketmindEnabled) && (
         <AboutRocketmindSection
           {...ABOUT_RM_DEFAULTS}
+          {...aboutRmPhotos}
           {...(hasProduct && props.product.aboutRocketmind ? props.product.aboutRocketmind : {})}
         />
       )}

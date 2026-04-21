@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "../../lib/utils";
 import { RichText } from "./rich-text";
+import {
+  StyledParagraphs,
+  resolveStyledParagraphs,
+  type StyledParagraph,
+} from "./styled-paragraphs";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -15,7 +20,10 @@ export type ResultsSectionProps = {
   tag: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description (plain secondary text). */
   description?: string;
+  /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+  paragraphs?: StyledParagraph[];
   cards: ResultCard[];
   className?: string;
 };
@@ -87,9 +95,15 @@ export function ResultsSection({
   title,
   titleSecondary,
   description,
+  paragraphs,
   cards,
   className,
 }: ResultsSectionProps) {
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: false,
+    color: "secondary",
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
   const { progresses, sectionRef } = useResultsScroll(cards.length);
   const contentHeight = STEP_OFFSET * (cards.length - 1) + 240;
 
@@ -115,11 +129,8 @@ export function ResultsSection({
             </span>
             <div className="flex flex-col gap-6">
               <h2 className="h2"><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h2>
-              {description && (
-                <RichText
-                  text={description}
-                  className="text-[length:var(--text-18)] leading-[1.2] text-[#939393]"
-                />
+              {hasParagraphs && (
+                <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="18" />
               )}
             </div>
           </div>
@@ -185,11 +196,8 @@ export function ResultsSection({
               <span className="text-[#F0F0F0]">{title}</span>
               {titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}
             </h2>
-            {description && (
-              <RichText
-                text={description}
-                className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
-              />
+            {hasParagraphs && (
+              <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
             )}
           </div>
         </div>
@@ -222,11 +230,8 @@ export function ResultsSection({
           </span>
           <div className="flex flex-col gap-4">
             <h2 className="h3"><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h2>
-            {description && (
-              <RichText
-                text={description}
-                className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
-              />
+            {hasParagraphs && (
+              <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
             )}
           </div>
         </div>

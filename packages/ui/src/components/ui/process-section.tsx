@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { cn } from "../../lib/utils";
 import { RichText } from "./rich-text";
+import {
+  StyledParagraphs,
+  resolveStyledParagraphs,
+  type StyledParagraph,
+} from "./styled-paragraphs";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -18,12 +23,26 @@ export type ProcessParticipant = {
   text: string;
 };
 
+/** @deprecated Use `StyledParagraph` from `@rocketmind/ui` instead. */
+export type ProcessDescriptionParagraph = {
+  text: string;
+  /** If true, paragraph renders in the uppercase label-18 mono style. */
+  uppercase?: boolean;
+};
+
 export type ProcessSectionProps = {
   tag: string;
   title: string;
   titleSecondary?: string;
   subtitle: string;
+  /** If true (default), subtitle renders in uppercase label-18 mono. */
+  subtitleUppercase?: boolean;
+  /** Legacy single-string description (uppercase mono). */
   description?: string;
+  /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+  paragraphs?: StyledParagraph[];
+  /** @deprecated Use `paragraphs` instead. */
+  descriptionParagraphs?: ProcessDescriptionParagraph[];
   steps: ProcessStep[];
   participantsTag?: string;
   participants?: ProcessParticipant[];
@@ -263,7 +282,10 @@ export function ProcessSection({
   title,
   titleSecondary,
   subtitle,
+  subtitleUppercase = true,
   description,
+  paragraphs,
+  descriptionParagraphs,
   steps,
   participantsTag,
   participants,
@@ -273,6 +295,26 @@ export function ProcessSection({
   const { activeIndex, fills, containerRef } = useStepProgress(steps.length);
   const hasParticipants = participants && participants.length > 0 && participantsTag;
   const isAcademy = variant === "academy";
+  // Legacy descriptionParagraphs (uppercase-only per-paragraph) → upgrade to StyledParagraph with secondary color
+  const legacyMapped: StyledParagraph[] | undefined =
+    paragraphs && paragraphs.length > 0
+      ? undefined
+      : descriptionParagraphs && descriptionParagraphs.length > 0
+        ? descriptionParagraphs
+            .filter((p) => p && (p.text ?? "").length > 0)
+            .map((p) => ({ text: p.text, uppercase: p.uppercase !== false, color: "secondary" as const }))
+        : undefined;
+  const resolvedParagraphs = resolveStyledParagraphs(
+    paragraphs ?? legacyMapped,
+    description,
+    { uppercase: true, color: "secondary" },
+  );
+  const subtitleClassDesktop = subtitleUppercase
+    ? "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
+    : "text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]";
+  const subtitleClassSmall = subtitleUppercase
+    ? "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
+    : "text-[length:var(--text-16)] leading-[1.28] text-[#F0F0F0]";
 
   return (
     <section
@@ -293,16 +335,8 @@ export function ProcessSection({
                   <h2 className="h2"><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h2>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <RichText
-                    text={subtitle}
-                    className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
-                  />
-                  {description && (
-                    <RichText
-                      text={description}
-                      className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]"
-                    />
-                  )}
+                  <RichText text={subtitle} className={subtitleClassDesktop} />
+                  <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="18" />
                 </div>
               </div>
             </div>
@@ -352,16 +386,8 @@ export function ProcessSection({
                   </h2>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <RichText
-                    text={subtitle}
-                    className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
-                  />
-                  {description && (
-                    <RichText
-                      text={description}
-                      className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]"
-                    />
-                  )}
+                  <RichText text={subtitle} className={subtitleClassSmall} />
+                  <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
                 </div>
               </div>
             </div>
@@ -408,16 +434,8 @@ export function ProcessSection({
             <h2 className="h3"><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h2>
           </div>
           <div className="flex flex-col gap-1">
-            <RichText
-              text={subtitle}
-              className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
-            />
-            {description && (
-              <RichText
-                text={description}
-                className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]"
-              />
-            )}
+            <RichText text={subtitle} className={subtitleClassSmall} />
+            <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
           </div>
         </div>
 

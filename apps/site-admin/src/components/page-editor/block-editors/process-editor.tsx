@@ -1,10 +1,16 @@
 "use client";
 
-import { Plus, GripVertical } from "lucide-react";
+import { Plus, GripVertical, CaseUpper } from "lucide-react";
 import { Switch } from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
 import { MdText } from "@/components/md-text";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 interface ProcessEditorProps {
@@ -17,7 +23,19 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
   const subtitle = (data.subtitle as string) || "";
-  const description = (data.description as string) || "";
+  const subtitleUppercase = data.subtitleUppercase !== false;
+  const subtitleUppercaseClass =
+    "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]";
+  const subtitleNormalClass =
+    "text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]";
+
+  // ── Description paragraphs (multi, per-paragraph caps + color) ────────────
+  const paragraphs = resolveParagraphs(
+    data.paragraphs ?? data.descriptionParagraphs,
+    (data.description as string) || "",
+    { uppercase: true, color: "secondary" },
+  );
+
   const steps =
     (data.steps as Array<{
       number: string;
@@ -38,6 +56,10 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
   const partDnd = useItemDnd(participants, (reordered) =>
     onUpdate({ participants: reordered })
   );
+
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next, descriptionParagraphs: undefined, description: undefined });
+  }
 
   function updateStep(index: number, field: string, value: string) {
     const updated = steps.map((s, i) =>
@@ -130,34 +152,41 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
           </div>
 
           <div className="flex flex-col gap-1">
-            <InlineEdit
-              value={subtitle}
-              onSave={(v) => onUpdate({ subtitle: v })}
-              placeholder="Общий срок проекта: ~10 недель"
-            >
-              <MdText
-                value={subtitle}
-                placeholder="подзаголовок"
-                as="span"
-                className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
-              />
-            </InlineEdit>
-
-            {(description || true) && (
+            <div className="group/sub relative">
+              <div className="absolute -right-1 -top-1 z-10 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/sub:opacity-100">
+                <button
+                  type="button"
+                  title="Капсом (label-18)"
+                  onClick={() => onUpdate({ subtitleUppercase: !subtitleUppercase })}
+                  className={`flex h-5 w-5 items-center justify-center rounded-sm transition-colors ${
+                    subtitleUppercase
+                      ? "bg-[#FFCC00] text-[#0A0A0A]"
+                      : "bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#FFCC00]"
+                  }`}
+                >
+                  <CaseUpper className="h-3 w-3" />
+                </button>
+              </div>
               <InlineEdit
-                value={description}
-                onSave={(v) => onUpdate({ description: v })}
-                multiline
-                copy
-                placeholder="Описание процесса"
+                value={subtitle}
+                onSave={(v) => onUpdate({ subtitle: v })}
+                placeholder="Общий срок проекта: ~10 недель"
               >
                 <MdText
-                  value={description}
-                  placeholder="Описание"
-                  className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]"
+                  value={subtitle}
+                  placeholder="подзаголовок"
+                  as="span"
+                  className={subtitleUppercase ? subtitleUppercaseClass : subtitleNormalClass}
                 />
               </InlineEdit>
-            )}
+            </div>
+
+            <ParagraphsEditor
+              paragraphs={paragraphs}
+              onChange={setParagraphs}
+              theme="dark"
+              defaults={{ uppercase: false, color: "secondary" }}
+            />
           </div>
 
           {/* Participants block — optional, toggle with eye icon */}
@@ -208,6 +237,7 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
                         >
                           <GripVertical className="h-2.5 w-2.5" />
                         </div>
+                        <ItemMoveButtons index={index} count={participants.length} onMove={partDnd.move} />
                         <InlineConfirmDelete
                           onConfirm={() => removeParticipant(index)}
                           className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"
@@ -279,6 +309,7 @@ export function ProcessEditor({ data, onUpdate }: ProcessEditorProps) {
                   >
                     <GripVertical className="h-2.5 w-2.5" />
                   </div>
+                  <ItemMoveButtons index={index} count={steps.length} onMove={stepsDnd.move} />
                   <InlineConfirmDelete
                     onConfirm={() => removeStep(index)}
                     className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"

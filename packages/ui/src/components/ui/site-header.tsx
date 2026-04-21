@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "../../lib/utils";
+import type { NavSection } from "../../content/site-nav";
 import { MobileNav } from "./mobile-nav";
 import { RocketmindMenu } from "./rocketmind-menu";
 
@@ -12,9 +13,11 @@ export type SiteHeaderProps = {
   /** Base path for static assets (logo). Default: "" */
   basePath?: string;
   className?: string;
+  /** Navigation tree. Falls back to the hardcoded HEADER_NAV when omitted. */
+  nav?: NavSection[];
 };
 
-export function SiteHeader({ basePath = "", className }: SiteHeaderProps) {
+export function SiteHeader({ basePath = "", className, nav }: SiteHeaderProps) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [isVisible, setIsVisible] = useState(!isHome);
@@ -59,9 +62,10 @@ export function SiteHeader({ basePath = "", className }: SiteHeaderProps) {
           className="hero-menu-desktop ml-auto flex-1 items-center justify-end gap-5 lg:gap-7"
           itemClassName="!text-[18px]"
           showDropdowns={true}
+          nav={nav}
         />
 
-        <MobileNav className="ml-auto" />
+        <MobileNav className="ml-auto" nav={nav} />
       </div>
     </header>
   );

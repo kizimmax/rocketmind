@@ -882,6 +882,15 @@ code {
   animation: tooltip-in 120ms cubic-bezier(0, 0, 0.2, 1) forwards;
 }
 
+/* ── Breadcrumbs scroll (mobile) ── */
+.breadcrumbs-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.breadcrumbs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── InfiniteLogoMarquee ── */
 @keyframes hero-logo-marquee {
   from { transform: translate3d(0, 0, 0); }

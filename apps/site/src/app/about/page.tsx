@@ -5,13 +5,17 @@ import {
   ProcessSection,
   ExpertsSection,
   ToolsSection,
+  ContactsSection,
 } from "@rocketmind/ui";
 import { AboutHero } from "@/components/sections/AboutHero";
 import { AboutProduct } from "@/components/sections/AboutProduct";
 import { AboutProjects } from "@/components/sections/AboutProjects";
 import { LogoMarqueeSection } from "@/components/sections/LogoMarqueeSection";
 import { PageBottom } from "@/components/sections/PageBottom";
+import { AboutRocketmindSection } from "@/components/sections/AboutRocketmindSection";
+import { ABOUT_RM_DEFAULTS } from "@/components/sections/about-rocketmind-defaults";
 import { getAboutPage } from "@/lib/unique";
+import { getAboutRocketmindPhotos } from "@/lib/about-rocketmind";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = getAboutPage();
@@ -32,9 +36,14 @@ export default function AboutPage() {
         caption={page.hero.caption}
         title={page.hero.title}
         description={page.hero.description}
+        paragraphs={page.hero.paragraphs}
         ctaText={page.hero.ctaText}
         factoids={page.hero.factoids}
-        heroLogoData={page.hero.heroLogoData}
+        heading={page.hero.heading}
+        headingSecondary={page.hero.headingSecondary}
+        descriptionBelow={page.hero.descriptionBelow}
+        showExperts={page.hero.showExperts}
+        maxExperts={page.hero.maxExperts}
         experts={page.experts.map((e) => ({
           name: e.name,
           tag: e.shortBio || e.tag,
@@ -67,8 +76,10 @@ export default function AboutPage() {
           title={page.tools.title}
           titleSecondary={page.tools.titleSecondary}
           description={page.tools.description}
+          paragraphs={page.tools.paragraphs}
           tools={page.tools.tools}
           useIcons={page.tools.useIcons}
+          descriptionBelow={page.tools.descriptionBelow}
         />
       ) : null}
 
@@ -84,7 +95,9 @@ export default function AboutPage() {
           title={page.process.title}
           titleSecondary={page.process.titleSecondary}
           subtitle={page.process.subtitle}
+          subtitleUppercase={page.process.subtitleUppercase}
           description={page.process.description}
+          paragraphs={page.process.paragraphs ?? page.process.descriptionParagraphs}
           steps={page.process.steps}
           participantsTag={page.process.participantsTag}
           participants={page.process.participants}
@@ -97,19 +110,37 @@ export default function AboutPage() {
         <ExpertsSection experts={page.experts} />
       ) : null}
 
-      {/* 8. Контакты (audience-styled) */}
-      {page.audience ? (
+      {/* 8. О Rocketmind — сквозной блок */}
+      {page.aboutRocketmindEnabled ? (
+        <AboutRocketmindSection
+          {...ABOUT_RM_DEFAULTS}
+          {...getAboutRocketmindPhotos()}
+          {...(page.aboutRocketmind ?? {})}
+        />
+      ) : null}
+
+      {/* 9. Контакты */}
+      {page.contacts ? (
+        <ContactsSection
+          tag={page.contacts.tag}
+          title={page.contacts.title}
+          titleSecondary={page.contacts.titleSecondary}
+          paragraphs={page.contacts.paragraphs}
+          cards={page.contacts.cards}
+        />
+      ) : page.audience ? (
         <ForWhomSection
           tag={page.audience.tag}
           title={page.audience.title}
           titleSecondary={page.audience.titleSecondary}
           subtitle={page.audience.subtitle}
+          paragraphs={page.audience.paragraphs}
           facts={page.audience.facts}
           wideColumn={page.audience.wideColumn}
         />
       ) : null}
 
-      {/* 9. Сквозной pageBottom — кейсы + CTA */}
+      {/* 10. Сквозной pageBottom — кейсы + CTA */}
       <PageBottom />
     </div>
   );

@@ -22,6 +22,7 @@ const RoundGlassLens = dynamic(
 );
 import type { PartnerLogo } from "@/lib/partner-logos";
 import type { HomeHeroRotatingLine } from "@/lib/unique";
+import type { NavSection } from "@rocketmind/ui/content";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -44,6 +45,7 @@ type HeroSectionClientProps = {
   title: string;
   pikCaption: string;
   rotatingLines: HomeHeroRotatingLine[];
+  nav?: NavSection[];
 };
 
 type BreakpointKey = "mobile" | "tablet" | "desktop" | "wide";
@@ -300,7 +302,7 @@ function ControlSlider({
   );
 }
 
-export function HeroSectionClient({ logos, title, pikCaption, rotatingLines }: HeroSectionClientProps) {
+export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav }: HeroSectionClientProps) {
   const heroRef = useRef<HTMLElement | null>(null);
   const wordmarkRef = useRef<HTMLDivElement | null>(null);
   const staticGlassRef = useRef<HTMLDivElement | null>(null);
@@ -794,7 +796,7 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines }: H
             />
 
             <motion.div data-lens-hide="true" className="relative z-30" {...heroFadeUp(heroReady, 0.28)}>
-              <RocketmindMenu className="hero-menu-desktop w-full flex-wrap items-center justify-end gap-x-7 gap-y-4 text-right" />
+              <RocketmindMenu className="hero-menu-desktop w-full flex-wrap items-center justify-end gap-x-7 gap-y-4 text-right" nav={nav} />
             </motion.div>
           </div>
 

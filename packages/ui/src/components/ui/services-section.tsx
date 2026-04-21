@@ -2,7 +2,11 @@
 
 import { cn } from "../../lib/utils";
 import { GlowingEffect } from "./glowing-effect";
-import { RichText } from "./rich-text";
+import {
+  StyledParagraphs,
+  resolveStyledParagraphs,
+  type StyledParagraph,
+} from "./styled-paragraphs";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -28,7 +32,10 @@ export interface ServicesSectionProps {
   tag?: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description (plain secondary text). */
   description?: string;
+  /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+  paragraphs?: StyledParagraph[];
   cards: ServiceCardData[];
   className?: string;
 }
@@ -131,10 +138,16 @@ export function ServicesSection({
   title,
   titleSecondary,
   description,
+  paragraphs,
   cards,
   className,
 }: ServicesSectionProps) {
   if (!cards || cards.length === 0) return null;
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: false,
+    color: "secondary",
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
 
   return (
     <section className={cn("w-full border-t border-[#404040] bg-[#0A0A0A] py-10 md:py-16 lg:py-20", className)}>
@@ -152,12 +165,9 @@ export function ServicesSection({
               {titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}
             </h2>
           </div>
-          {description && (
+          {hasParagraphs && (
             <div className="lg:w-1/2 lg:flex lg:items-end">
-              <RichText
-                text={description}
-                className="text-[14px] md:text-[16px] leading-[1.4] text-[#939393]"
-              />
+              <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
             </div>
           )}
         </div>

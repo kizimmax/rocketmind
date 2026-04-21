@@ -275,9 +275,14 @@ export function ManagerChat({ prefill, hasExistingProjects }: ManagerChatProps) 
 
   function detectIntent(text: string): "stop" | "create" | "unknown" {
     const low = text.toLowerCase();
-    if (/\b(стоп|прерв|отмен|выйт(и|и)|хватит|не сейчас|выход)/.test(low))
+    // JS \b не работает с кириллицей — используем простое substring-матчение
+    if (/(стоп|прерв|отмен|выйти|хватит|не сейчас|выход|брось)/.test(low))
       return "stop";
-    if (/(новый проект|создать проект|хочу проект|запусти[тть] проект|нов[аы][юя] инициативу)/.test(low))
+    if (
+      /(новый проект|создать проект|создам проект|создам новый|хочу проект|хочу создать|запустить проект|запущу проект|нов(ую|ая) инициатив)/.test(
+        low
+      )
+    )
       return "create";
     return "unknown";
   }

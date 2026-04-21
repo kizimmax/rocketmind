@@ -56,6 +56,7 @@ export const BLOCK_TYPES: Record<BlockType, { label: string; description: string
   customSection: { label: "Произвольный блок", description: "Универсальный блок на основе «О продукте»" },
   caseCard: { label: "Карточка кейса", description: "Заголовок, описание, 3 показателя, итог" },
   casesList: { label: "Список кейсов", description: "Скролл-блок с отзывами и кейсами на странице /cases" },
+  contacts: { label: "Контакты", description: "Карточки с контактами: абзацы, соцсети и персоны" },
 };
 
 /** Block types that can be inserted between other blocks (as user-added custom sections). */

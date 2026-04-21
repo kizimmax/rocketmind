@@ -1,40 +1,49 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getAllArticles, getArticleBySlug, getAllTags } from "@/lib/articles";
+import { getExpertBySlug } from "@/lib/experts";
+import { ArticlePageClient } from "@/components/media/article-page-client";
 
-// Для static export нужен generateStaticParams
 export function generateStaticParams() {
-  // Заглушка — пока нет реальных статей
-  return [{ slug: "example-article" }];
+  return getAllArticles().map((a) => ({ slug: a.slug }));
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
-}): Metadata {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const article = getArticleBySlug(slug);
+  if (!article) {
+    return { title: "Статья не найдена | Rocketmind" };
+  }
   return {
-    title: `Статья | Rocketmind`,
-    description: "Статья блога Rocketmind.",
+    title: article.metaTitle || `${article.title} | Rocketmind`,
+    description: article.metaDescription || article.description,
   };
 }
 
-export default function ArticlePage({
+export default async function ArticlePage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
+  const article = getArticleBySlug(slug);
+  if (!article) notFound();
+
+  const expert = article.expertSlug ? getExpertBySlug(article.expertSlug) : null;
+  const tags = getAllTags();
+  const tagLabelById: Record<string, string> = {};
+  for (const t of tags) tagLabelById[t.id] = t.label;
+
   return (
-    <article className="px-5 py-24 md:px-8 xl:px-14">
-      <div className="mx-auto max-w-[800px]">
-        <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
-          Шаблон статьи
-        </p>
-        <h1 className="mt-4 font-heading text-4xl font-bold md:text-5xl">
-          Заголовок статьи
-        </h1>
-        <div className="mt-8 text-muted-foreground">
-          <p>Шаблонная страница статьи — контент будет добавлен позже.</p>
-        </div>
-      </div>
-    </article>
+    <ArticlePageClient
+      article={article}
+      expertName={expert?.name ?? null}
+      expertAvatarUrl={expert?.image ?? null}
+      tagLabels={article.tags.map((id) => tagLabelById[id] ?? id)}
+    />
   );
 }

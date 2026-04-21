@@ -22,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@rocketmind/ui";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
 import type { SitePage } from "@/lib/types";
 
 const STATUS_BADGE: Record<
@@ -162,6 +163,10 @@ interface PageCardProps {
   onToggleFeatured?: (id: string) => void;
   onGripDown?: () => void;
   onGripUp?: () => void;
+  /** Index of this card in the active list. Required alongside onMove/count for arrow move buttons. */
+  index?: number;
+  count?: number;
+  onMove?: (from: number, dir: "up" | "down") => void;
   /** Drag props for list-mode <tr> (applied directly since no wrapper div) */
   dragProps?: {
     draggable: boolean;
@@ -173,7 +178,7 @@ interface PageCardProps {
   };
 }
 
-export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDelete, onTogglePublish, onToggleFeatured, onGripDown, onGripUp, dragProps }: PageCardProps) {
+export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDelete, onTogglePublish, onToggleFeatured, onGripDown, onGripUp, index, count, onMove, dragProps }: PageCardProps) {
   const router = useRouter();
   const status = STATUS_BADGE[page.status] || STATUS_BADGE.hidden;
   const isArchived = page.status === "archived";
@@ -206,6 +211,14 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
                 onClick={(e) => e.stopPropagation()}
               >
                 <GripVertical className="h-3.5 w-3.5" />
+              </div>
+            )}
+            {onMove && typeof index === "number" && typeof count === "number" && (
+              <div
+                className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ItemMoveButtons index={index} count={count} onMove={onMove} size={16} />
               </div>
             )}
             <span className="text-[length:var(--text-12)] text-muted-foreground tabular-nums">
@@ -313,6 +326,16 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
           onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="h-3.5 w-3.5" />
+        </div>
+      )}
+
+      {/* Arrow move buttons — just to the right of drag handle */}
+      {onMove && typeof index === "number" && typeof count === "number" && (
+        <div
+          className="absolute left-7 top-1.5 z-10 flex items-center gap-0.5 rounded-sm bg-background/80 p-0.5 opacity-0 backdrop-blur transition-opacity group-hover:opacity-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ItemMoveButtons index={index} count={count} onMove={onMove} size={18} />
         </div>
       )}
 

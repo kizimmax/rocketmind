@@ -1,7 +1,7 @@
 ---
 slug: about
 category: unique
-menuTitle: О Rocketmind
+menuTitle: О нас
 menuDescription: 'Экосистема экспертов, цифровых решений и методов'
 cardTitle: О Rocketmind
 cardDescription: >-
@@ -15,20 +15,17 @@ metaDescription: >-
 expertProduct: true
 caseType: null
 featured: null
-order: 1
+order: 0
 caseCard: null
+homeHero: null
+methodology: null
+homeSections: null
 hero:
   variant: about
   factoidsLayout: 2x2
+  heading: 'Проектируем бизнес-модели, проверенные рынком'
   caption: о компании
   title: ЭКОСИСТЕМА ЭКСПЕРТОВ И МЕТОДОВ
-  description: >-
-    Экосистема экспертов, цифровых решений и методов для проектирования
-    бизнес-моделей, стратегий, платформ и экосистем.
-
-
-    Мы помогаем бизнесу быстро находить точки роста, проверять гипотезы и
-    строить устойчивую архитектуру.
   ctaText: связаться с нами
   factoids:
     - number: 120+
@@ -51,6 +48,16 @@ hero:
     - maxim-ilyakhov
     - natalie-dumas-lamborghini
   maxExperts: null
+  headingSecondary: ''
+  paragraphs:
+    - text: >-
+        Rocketmind — экосистема экспертов, ИИ-решений и методологий. Помогаем
+        компаниям создавать стратегии и запускать продукты на стыке технологий и
+        реального опыта.
+      uppercase: false
+      color: secondary
+  descriptionBelow: true
+  showExperts: false
 logoMarquee: null
 about:
   caption: О продукте
@@ -67,17 +74,39 @@ about:
   accordion: []
   imageMode: image
   hasImage: true
-audience:
+audience: null
+contacts:
   tag: контакты
   title: СВЯЗАТЬСЯ С НАМИ
-  subtitle: Выберите тип задачи — мы подберём формат сотрудничества.
-  facts:
-    - title: Крупные корпорации
-      text: 'Стратегические сессии, программы обучения, сопровождение трансформаций.'
-    - title: Платформы
-      text: Проектирование платформенных бизнес-моделей и партнёрских сетей.
-    - title: Растущие компании
-      text: 'Экспресс-стратегии, проверка гипотез, поиск новых направлений.'
+  paragraphs:
+    - text: Выберите тип задачи — мы подберём формат сотрудничества.
+      uppercase: true
+      color: primary
+  cards:
+    - id: card-corporations
+      title: Крупные корпорации
+      items:
+        - id: corp-p1
+          kind: paragraph
+          paragraph:
+            text: 'Стратегические сессии, программы обучения, сопровождение трансформаций.'
+            color: secondary
+    - id: card-platforms
+      title: Платформы
+      items:
+        - id: plat-p1
+          kind: paragraph
+          paragraph:
+            text: Проектирование платформенных бизнес-моделей и партнёрских сетей.
+            color: secondary
+    - id: card-growing
+      title: Растущие компании
+      items:
+        - id: grow-p1
+          kind: paragraph
+          paragraph:
+            text: 'Экспресс-стратегии, проверка гипотез, поиск новых направлений.'
+            color: secondary
 tools:
   tag: инструменты и методы
   title: 'ИНСТРУМЕНТЫ, КОТОРЫЕ МЫ ИСПОЛЬЗУЕМ'
@@ -107,58 +136,43 @@ services: null
 process:
   tag: хронология
   title: ИСТОРИЯ КОМПАНИИ
-  subtitle: Ключевые вехи Rocketmind от основания до наших дней.
+  subtitle: 'Ключевые вехи Rocketmind от основания до наших дней. '
   description: ''
   steps:
-    - number: '2008'
-      title: Первые стратегические проекты
-      text: Старт работы на стыке дизайна и инноваций.
-      duration: ''
-    - number: '2011'
-      title: Rocketmind как команда
-      text: Оформление бренда и первых методологических инструментов.
-      duration: ''
-    - number: '2013'
-      title: Запуск бренда «Госуслуги»
-      text: 'Проект, задавший стандарт цифровых государственных сервисов.'
-      duration: ''
-    - number: '2015'
-      title: Работа со Сбером и МШУ Сколково
-      text: 'Программы для топ-менеджеров, стратегические сессии.'
-      duration: ''
-    - number: '2018'
-      title: Platform Innovation Kit в России
-      text: 'Официальное представительство, обучение методологии.'
-      duration: ''
-    - number: '2019'
-      title: Корпоративные университеты
-      text: 'Работа с Газпром нефтью, Росатомом, ВТБ.'
+    - number: '2025'
+      title: AI-продукты Rocketmind
+      text: Запуск линейки AI-агентов для стратегического проектирования.
       duration: ''
     - number: '2022'
       title: Экосистемный консалтинг
       text: Фокус на построении устойчивых бизнес-экосистем.
       duration: ''
-    - number: '2025'
-      title: AI-продукты Rocketmind
-      text: Запуск линейки AI-агентов для стратегического проектирования.
+    - number: '2019'
+      title: Корпоративные университеты
+      text: 'Работа с Газпром нефтью, Росатомом, ВТБ.'
       duration: ''
-experts:
-  - alexey-eremin
-  - alexander-pavlovich
-  - andrey-kukushko
-  - matthias-walter
-  - maxim-ilyakhov
-  - natalie-dumas-lamborghini
-  - maria-terminasova
-  - igor-borozdin
-  - darya-lesnevskaya
-  - polina-savilova
-  - arseny-shcheltsin
-  - alexey-alekhin
-  - konstantin-tarasov
-  - alexander-cherkavsky
-  - kirill-sidorov
-  - vitaly-fedosov
+    - number: '2018'
+      title: Platform Innovation Kit в России
+      text: 'Официальное представительство, обучение методологии.'
+      duration: ''
+    - number: '2015'
+      title: Работа со Сбером и МШУ Сколково
+      text: 'Программы для топ-менеджеров, стратегические сессии.'
+      duration: ''
+    - number: '2013'
+      title: Запуск бренда «Госуслуги»
+      text: 'Проект, задавший стандарт цифровых государственных сервисов.'
+      duration: ''
+    - number: '2011'
+      title: Rocketmind как команда
+      text: Оформление бренда и первых методологических инструментов.
+      duration: ''
+    - number: '2008'
+      title: Первые стратегические проекты
+      text: Старт работы на стыке дизайна и инноваций.
+      duration: ''
+  subtitleUppercase: false
+experts: null
 aboutRocketmind: null
 projects:
   caption: проекты
@@ -298,7 +312,7 @@ projects:
         alt: x5
         src: /images/unique/about/logos/cell-clip-1744800000027.svg
         size: S
-pageBottom: null
+pageBottom: {}
 customSections: null
 socialProof: null
 duration: null

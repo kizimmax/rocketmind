@@ -6,6 +6,12 @@ import { Switch, Input, repackBento, type ServiceCardData } from "@rocketmind/ui
 import { InlineEdit } from "@/components/inline-edit";
 import { MdText } from "@/components/md-text";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 interface ServicesEditorProps {
@@ -28,12 +34,20 @@ export function ServicesEditor({ data, onUpdate }: ServicesEditorProps) {
   const tag = (data.tag as string) || "";
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
-  const description = (data.description as string) || "";
+  const paragraphs = resolveParagraphs(
+    data.paragraphs,
+    (data.description as string) || "",
+    { uppercase: false, color: "secondary" },
+  );
   const cards = (data.cards as Card[]) || [];
 
   const [linkEditIdx, setLinkEditIdx] = useState<number | null>(null);
 
   const dnd = useItemDnd(cards, (reordered) => onUpdate({ cards: reordered }));
+
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next, description: undefined });
+  }
 
   function updateCard(index: number, patch: Partial<Card>) {
     const updated = cards.map((c, i) => (i === index ? { ...c, ...patch } : c));
@@ -114,19 +128,12 @@ export function ServicesEditor({ data, onUpdate }: ServicesEditorProps) {
           </div>
 
           <div className="lg:w-1/2 lg:flex lg:items-end">
-            <InlineEdit
-              value={description}
-              onSave={(v) => onUpdate({ description: v })}
-              multiline
-              copy
-              placeholder="Описание блока"
-            >
-              <MdText
-                value={description}
-                placeholder="Описание блока"
-                className="text-[length:var(--text-16)] leading-[1.4] text-[#939393]"
-              />
-            </InlineEdit>
+            <ParagraphsEditor
+              paragraphs={paragraphs}
+              onChange={setParagraphs}
+              theme="dark"
+              defaults={{ uppercase: false, color: "secondary" }}
+            />
           </div>
         </div>
 
@@ -226,6 +233,7 @@ export function ServicesEditor({ data, onUpdate }: ServicesEditorProps) {
                   >
                     <GripVertical className="h-2.5 w-2.5" />
                   </div>
+                  <ItemMoveButtons index={index} count={cards.length} onMove={dnd.move} />
                   <InlineConfirmDelete
                     onConfirm={() => removeCard(index)}
                     className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"

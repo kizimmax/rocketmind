@@ -10,6 +10,7 @@ import { HomeSectionsEditor } from "./home-sections-editor";
 import { AboutEditor } from "./about-editor";
 import { ProjectsEditor } from "./projects-editor";
 import { AudienceEditor } from "./audience-editor";
+import { ContactsEditor } from "./contacts-editor";
 import { ToolsEditor } from "./tools-editor";
 import { ResultsEditor } from "./results-editor";
 import { ProcessEditor } from "./process-editor";
@@ -24,7 +25,6 @@ import { GenericEditor } from "./generic-editor";
 interface BlockEditorProps {
   block: PageBlock;
   sectionId: string;
-  pageSlug?: string;
   hasExperts: boolean;
   experts: Array<{ name: string; image: string | null }>;
   onUpdate: (data: Record<string, unknown>) => void;
@@ -32,12 +32,11 @@ interface BlockEditorProps {
 
 const IMAGE_HERO_SECTIONS = new Set(["academy", "ai-products"]);
 
-export function BlockEditor({ block, sectionId, pageSlug, hasExperts, experts, onUpdate }: BlockEditorProps) {
+export function BlockEditor({ block, sectionId, hasExperts, experts, onUpdate }: BlockEditorProps) {
   switch (block.type) {
     case "hero":
       if (block.data.variant === "about") {
-        const useHeading = sectionId === "unique" && pageSlug === "cases-index";
-        return <AboutHeroEditor data={block.data} useHeading={useHeading} onUpdate={onUpdate} />;
+        return <AboutHeroEditor data={block.data} experts={experts} onUpdate={onUpdate} />;
       }
       return IMAGE_HERO_SECTIONS.has(sectionId) ? (
         <HeroImageEditor data={block.data} hasExperts={hasExperts} onUpdate={onUpdate} />
@@ -57,6 +56,8 @@ export function BlockEditor({ block, sectionId, pageSlug, hasExperts, experts, o
       return <ProjectsEditor data={block.data} onUpdate={onUpdate} />;
     case "audience":
       return <AudienceEditor data={block.data} onUpdate={onUpdate} />;
+    case "contacts":
+      return <ContactsEditor data={block.data} onUpdate={onUpdate} />;
     case "tools":
       return <ToolsEditor data={block.data} onUpdate={onUpdate} />;
     case "results":

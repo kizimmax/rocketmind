@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { Plus, Trash2, GripVertical, RefreshCw, ZoomIn, ZoomOut } from "lucide-react";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 export interface LogoCell {
@@ -166,6 +167,11 @@ export function LogoGridEditor({ cells, onUpdate, onLoadPreset, loadingPreset }:
                 >
                   <GripVertical className="h-3.5 w-3.5" />
                 </button>
+
+                {/* Move up/down buttons — top left, next to grip */}
+                <div className="absolute top-1 left-7 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                  <ItemMoveButtons index={idx} count={cells.length} onMove={dnd.move} />
+                </div>
 
                 {/* Delete — top right */}
                 <button

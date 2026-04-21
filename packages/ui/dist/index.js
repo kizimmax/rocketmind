@@ -1956,223 +1956,8 @@ function TooltipContent({
   ) });
 }
 
-// src/components/ui/partnership-block.tsx
-import { jsx as jsx28, jsxs as jsxs11 } from "react/jsx-runtime";
-function PartnershipBlock({
-  caption,
-  title,
-  description,
-  logos,
-  photos,
-  className
-}) {
-  return /* @__PURE__ */ jsxs11(
-    "div",
-    {
-      className: cn(
-        "flex flex-col lg:flex-row lg:justify-between lg:items-center gap-10",
-        className
-      ),
-      children: [
-        /* @__PURE__ */ jsxs11("div", { className: "flex flex-col gap-8 lg:max-w-[560px]", children: [
-          /* @__PURE__ */ jsxs11("div", { className: "flex flex-col gap-2", children: [
-            /* @__PURE__ */ jsx28("span", { className: "font-[family-name:var(--font-mono-family)] text-[18px] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[var(--rm-yellow-100)]", children: caption }),
-            /* @__PURE__ */ jsxs11("div", { className: "flex flex-col gap-6", children: [
-              /* @__PURE__ */ jsx28("h3", { className: "font-[family-name:var(--font-heading-family)] text-[28px] md:text-[36px] lg:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em]", children: title }),
-              /* @__PURE__ */ jsx28("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[color:var(--color-muted-foreground)]", children: description })
-            ] })
-          ] }),
-          logos.length > 0 && /* @__PURE__ */ jsx28("div", { className: "flex items-center gap-8", children: logos.map((logo) => /* @__PURE__ */ jsx28(
-            "img",
-            {
-              src: logo.src,
-              alt: logo.alt,
-              className: "h-auto w-auto max-h-[56px] max-w-[45%] object-contain"
-            },
-            logo.src
-          )) })
-        ] }),
-        photos.length > 0 && /* @__PURE__ */ jsx28("div", { className: "grid grid-cols-2 gap-4 lg:w-[696px] shrink-0", children: photos.slice(0, 4).map((photo, i) => /* @__PURE__ */ jsx28("div", { className: "aspect-[340/252] overflow-hidden", children: /* @__PURE__ */ jsx28(
-          "img",
-          {
-            src: photo.src,
-            alt: photo.alt || "",
-            className: "w-full h-full object-cover"
-          }
-        ) }, i)) })
-      ]
-    }
-  );
-}
-
-// src/components/ui/product-card.tsx
-import Link2 from "next/link";
-import { Fragment as Fragment2, jsx as jsx29, jsxs as jsxs12 } from "react/jsx-runtime";
-function ProductCard({
-  title,
-  description,
-  icon,
-  experts,
-  tag,
-  href,
-  className
-}) {
-  const hasExperts = experts && experts.length > 0;
-  const exactlyThree = hasExperts && experts.length === 3;
-  const shown = hasExperts ? experts.slice(0, exactlyThree ? 3 : 2) : [];
-  const extra = hasExperts && !exactlyThree ? Math.max(0, experts.length - 2) : 0;
-  const rootCn = cn(
-    "group relative flex flex-col p-5 md:p-8 md:h-full",
-    "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
-    "border border-[#404040] transition-[border-color] duration-75",
-    "md:hover:z-10",
-    "md:active:[border-color:var(--rm-yellow-100)]",
-    className
-  );
-  const content = /* @__PURE__ */ jsxs12(Fragment2, { children: [
-    /* @__PURE__ */ jsx29("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx29(
-      GlowingEffect,
-      {
-        spread: 40,
-        glow: false,
-        disabled: false,
-        proximity: 40,
-        inactiveZone: 0.01,
-        borderWidth: 1,
-        variant: "yellow"
-      }
-    ) }),
-    /* @__PURE__ */ jsx29("div", { className: "absolute top-[2px] right-[2px] z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#404040] transition-all duration-200 group-hover:text-[#F0F0F0] group-hover:-top-[2px] group-hover:-right-[2px]", children: /* @__PURE__ */ jsx29("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx29(
-      "path",
-      {
-        d: "M1 10L10 1M10 1H3M10 1V8",
-        stroke: "currentColor",
-        strokeWidth: "2",
-        strokeLinecap: "round",
-        strokeLinejoin: "round"
-      }
-    ) }) }),
-    /* @__PURE__ */ jsxs12("div", { className: cn("flex flex-col", icon ? "gap-6 md:gap-8" : ""), children: [
-      icon && /* @__PURE__ */ jsxs12("div", { className: "relative flex items-center overflow-visible", children: [
-        /* @__PURE__ */ jsx29("div", { className: "w-[120px] h-[120px] shrink-0 z-0", children: icon }),
-        hasExperts && /* @__PURE__ */ jsxs12("div", { className: "flex items-center -ml-[18px] pb-10 pt-2 justify-end min-w-0", children: [
-          shown.map((e, i) => /* @__PURE__ */ jsx29(
-            "div",
-            {
-              className: cn(
-                "w-[72px] h-[72px] min-w-[52px] min-h-[52px] rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center",
-                i > 0 && "-ml-4"
-              ),
-              style: {
-                backgroundImage: `url(${e.image})`,
-                zIndex: shown.length + 1 - i
-              }
-            },
-            e.name
-          )),
-          extra > 0 && /* @__PURE__ */ jsx29("div", { className: "w-[72px] h-[72px] min-w-[52px] min-h-[52px] rounded-full bg-[#1A1A1A] flex items-center justify-center -ml-4 z-[1]", children: /* @__PURE__ */ jsxs12("span", { className: "font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: [
-            "+",
-            extra
-          ] }) })
-        ] }),
-        tag && /* @__PURE__ */ jsx29("span", { className: "absolute left-0 bottom-[-22px] inline-flex items-center px-2.5 py-1 bg-[#3D3300] border border-[#4A3C00] font-[family-name:var(--font-mono-family)] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466] z-10", children: tag })
-      ] }),
-      tag && !icon && /* @__PURE__ */ jsx29("span", { className: "inline-flex self-start items-center px-2.5 py-1 mb-4 md:mb-5 bg-[#3D3300] border border-[#4A3C00] font-[family-name:var(--font-mono-family)] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466]", children: tag }),
-      /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-4 md:gap-5", children: [
-        /* @__PURE__ */ jsx29("h3", { className: "font-heading font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] line-clamp-2 min-h-[2.4em] text-[20px] md:text-[clamp(16px,1.6vw,24px)]", children: title }),
-        /* @__PURE__ */ jsx29("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393] h-[54px] overflow-hidden line-clamp-3", children: description })
-      ] })
-    ] })
-  ] });
-  if (href) {
-    return /* @__PURE__ */ jsx29(Link2, { href, className: rootCn, children: content });
-  }
-  return /* @__PURE__ */ jsx29("div", { className: rootCn, children: content });
-}
-
-// src/components/ui/product-image-card.tsx
-import Link3 from "next/link";
-import { Fragment as Fragment3, jsx as jsx30, jsxs as jsxs13 } from "react/jsx-runtime";
-function ImagePlaceholder() {
-  return /* @__PURE__ */ jsx30("div", { className: "flex h-full w-full items-center justify-center bg-[#111] text-[#404040]", children: /* @__PURE__ */ jsxs13("svg", { width: "32", height: "32", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round", children: [
-    /* @__PURE__ */ jsx30("rect", { x: "3", y: "3", width: "18", height: "18", rx: "2" }),
-    /* @__PURE__ */ jsx30("circle", { cx: "8.5", cy: "8.5", r: "1.5" }),
-    /* @__PURE__ */ jsx30("path", { d: "m21 15-5-5L5 21" })
-  ] }) });
-}
-var tagCn = "inline-flex items-center px-2.5 py-1 bg-[#3D3300] border border-[#4A3C00] font-[family-name:var(--font-mono-family)] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466]";
-function ProductImageCard({
-  title,
-  description,
-  image,
-  tag,
-  href,
-  variant = "default",
-  factoids = [],
-  compact = false,
-  className
-}) {
-  if (variant === "wide") {
-    const maxFactoids = compact ? 2 : 3;
-    const rootCn2 = cn(
-      "group relative flex flex-col p-5 md:flex-row md:gap-8 md:p-8 md:pl-0 md:h-full",
-      compact ? "md:min-h-[350px]" : "md:min-h-[424px]",
-      "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
-      "border border-[#404040] transition-[border-color] duration-75",
-      "md:hover:z-10",
-      "md:active:[border-color:var(--rm-yellow-100)]",
-      className
-    );
-    const inner2 = /* @__PURE__ */ jsxs13(Fragment3, { children: [
-      /* @__PURE__ */ jsx30("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx30(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 1, variant: "yellow" }) }),
-      /* @__PURE__ */ jsx30("div", { className: "absolute top-[2px] right-[2px] z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#404040] transition-all duration-200 group-hover:text-[#F0F0F0] group-hover:-top-[2px] group-hover:-right-[2px]", children: /* @__PURE__ */ jsx30("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx30("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) }) }),
-      /* @__PURE__ */ jsxs13("div", { className: "relative md:w-1/2 h-[220px] md:h-auto md:self-stretch overflow-hidden shrink-0", children: [
-        image ? /* @__PURE__ */ jsx30("img", { src: image, alt: "", className: "w-full h-full object-cover" }) : /* @__PURE__ */ jsx30(ImagePlaceholder, {}),
-        tag && /* @__PURE__ */ jsx30("span", { className: cn(tagCn, "hidden md:inline-flex absolute left-0 top-0 z-10"), children: tag })
-      ] }),
-      tag && /* @__PURE__ */ jsx30("div", { className: "md:hidden -mt-[22px]", children: /* @__PURE__ */ jsx30("span", { className: tagCn, children: tag }) }),
-      /* @__PURE__ */ jsxs13("div", { className: "md:flex-1 flex flex-col md:justify-between gap-4 mt-6 md:mt-0 min-w-0", children: [
-        /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-4", children: [
-          /* @__PURE__ */ jsx30("h3", { className: "font-heading font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] line-clamp-2 min-h-[2.4em] text-[20px] md:text-[clamp(16px,1.6vw,24px)]", children: title }),
-          /* @__PURE__ */ jsx30("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393] line-clamp-3 h-[54px] overflow-hidden", children: description })
-        ] }),
-        factoids.length > 0 && /* @__PURE__ */ jsx30("div", { className: "hidden md:flex flex-col gap-4", children: factoids.slice(0, maxFactoids).map((f, i) => /* @__PURE__ */ jsxs13("div", { className: "flex gap-3 items-start", children: [
-          /* @__PURE__ */ jsx30("span", { className: "font-heading text-[24px] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0] shrink-0 w-[66px]", children: f.number }),
-          /* @__PURE__ */ jsx30("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#F0F0F0] pt-[5px] line-clamp-2", children: f.text })
-        ] }, i)) })
-      ] })
-    ] });
-    if (href) return /* @__PURE__ */ jsx30(Link3, { href, className: rootCn2, children: inner2 });
-    return /* @__PURE__ */ jsx30("div", { className: rootCn2, children: inner2 });
-  }
-  const rootCn = cn(
-    "group relative flex flex-col p-5 md:p-8",
-    "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
-    "border border-[#404040] transition-[border-color] duration-75",
-    "md:hover:z-10",
-    "md:active:[border-color:var(--rm-yellow-100)]",
-    className
-  );
-  const inner = /* @__PURE__ */ jsxs13(Fragment3, { children: [
-    /* @__PURE__ */ jsx30(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 2, variant: "yellow" }),
-    /* @__PURE__ */ jsx30("div", { className: "absolute top-[2px] right-[2px] z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#404040] transition-all duration-200 group-hover:text-[#F0F0F0] group-hover:-top-[2px] group-hover:-right-[2px]", children: /* @__PURE__ */ jsx30("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx30("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) }) }),
-    /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-6 md:gap-8", children: [
-      /* @__PURE__ */ jsxs13("div", { className: "flex flex-col", children: [
-        /* @__PURE__ */ jsx30("div", { className: "w-full h-[220px] overflow-hidden", children: image ? /* @__PURE__ */ jsx30("img", { src: image, alt: "", className: "w-full h-full object-cover" }) : /* @__PURE__ */ jsx30(ImagePlaceholder, {}) }),
-        tag && /* @__PURE__ */ jsx30("div", { className: "-mt-[22px]", children: /* @__PURE__ */ jsx30("span", { className: tagCn, children: tag }) })
-      ] }),
-      /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-4 md:gap-5", children: [
-        /* @__PURE__ */ jsx30("h3", { className: "font-heading font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] line-clamp-2 min-h-[2.4em] text-[20px] md:text-[clamp(16px,1.6vw,24px)]", children: title }),
-        /* @__PURE__ */ jsx30("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393] h-[54px] overflow-hidden line-clamp-3", children: description })
-      ] })
-    ] })
-  ] });
-  if (href) return /* @__PURE__ */ jsx30(Link3, { href, className: rootCn, children: inner });
-  return /* @__PURE__ */ jsx30("div", { className: rootCn, children: inner });
-}
-
 // src/components/ui/rich-text.tsx
-import { jsx as jsx31, jsxs as jsxs14 } from "react/jsx-runtime";
+import { jsx as jsx28, jsxs as jsxs11 } from "react/jsx-runtime";
 var BULLET_RE = /^\s*[-•·–—]\s+(.*)$/;
 var NUMBERED_RE = /^\s*\d+[.)]\s+(.*)$/;
 function parseBlocks(text) {
@@ -2215,10 +2000,10 @@ function RichText({ text, className, blockClassName }) {
   if (!text) return null;
   const blocks = parseBlocks(text);
   if (blocks.length === 0) return null;
-  return /* @__PURE__ */ jsx31("span", { className: cn("block", className), children: blocks.map((b, i) => {
+  return /* @__PURE__ */ jsx28("span", { className: cn("block", className), children: blocks.map((b, i) => {
     const isFirst = i === 0;
     if (b.kind === "ul") {
-      return /* @__PURE__ */ jsx31(
+      return /* @__PURE__ */ jsx28(
         "ul",
         {
           className: cn(
@@ -2227,13 +2012,13 @@ function RichText({ text, className, blockClassName }) {
             "[&>li]:mb-1 [&>li:last-child]:mb-0",
             blockClassName
           ),
-          children: b.items.map((it, j) => /* @__PURE__ */ jsx31("li", { children: it }, j))
+          children: b.items.map((it, j) => /* @__PURE__ */ jsx28("li", { children: it }, j))
         },
         i
       );
     }
     if (b.kind === "ol") {
-      return /* @__PURE__ */ jsx31(
+      return /* @__PURE__ */ jsx28(
         "ol",
         {
           className: cn(
@@ -2242,25 +2027,650 @@ function RichText({ text, className, blockClassName }) {
             "[&>li]:mb-1 [&>li:last-child]:mb-0",
             blockClassName
           ),
-          children: b.items.map((it, j) => /* @__PURE__ */ jsx31("li", { children: it }, j))
+          children: b.items.map((it, j) => /* @__PURE__ */ jsx28("li", { children: it }, j))
         },
         i
       );
     }
-    return /* @__PURE__ */ jsx31("p", { className: cn(!isFirst && "mt-1", blockClassName), children: b.lines.map((l, j) => /* @__PURE__ */ jsxs14("span", { children: [
-      j > 0 && /* @__PURE__ */ jsx31("br", {}),
+    return /* @__PURE__ */ jsx28("p", { className: cn(!isFirst && "mt-1", blockClassName), children: b.lines.map((l, j) => /* @__PURE__ */ jsxs11("span", { children: [
+      j > 0 && /* @__PURE__ */ jsx28("br", {}),
       l
     ] }, j)) }, i);
   }) });
 }
 
+// src/components/ui/styled-paragraphs.tsx
+import { jsx as jsx29 } from "react/jsx-runtime";
+function resolveStyledParagraphs(paragraphs, legacy, legacyDefaults = {}) {
+  if (paragraphs && paragraphs.length > 0) {
+    return paragraphs.filter((p) => p && (p.text ?? "").length > 0).map((p) => ({
+      text: p.text,
+      uppercase: p.uppercase === true,
+      color: p.color === "primary" ? "primary" : "secondary"
+    }));
+  }
+  if (legacy && legacy.trim().length > 0) {
+    return [
+      {
+        text: legacy,
+        uppercase: legacyDefaults.uppercase ?? false,
+        color: legacyDefaults.color ?? "secondary"
+      }
+    ];
+  }
+  return [];
+}
+function styledParagraphClassName(p, opts = {}) {
+  const theme = opts.theme ?? "dark";
+  const size = opts.size ?? "18";
+  const isPrimary = p.color === "primary";
+  const textColor = theme === "light" ? isPrimary ? "text-[#0A0A0A]" : "text-[#666666]" : isPrimary ? "text-[#F0F0F0]" : "text-[#939393]";
+  const sizeToken = size === "16" ? "text-[length:var(--text-16)]" : "text-[length:var(--text-18)]";
+  if (p.uppercase) {
+    return cn(
+      "font-[family-name:var(--font-mono-family)]",
+      sizeToken,
+      "font-medium uppercase leading-[1.12] tracking-[0.02em]",
+      textColor
+    );
+  }
+  return cn(sizeToken, "leading-[1.2]", textColor);
+}
+function StyledParagraphs({
+  paragraphs,
+  theme = "dark",
+  size = "18",
+  className
+}) {
+  if (!paragraphs || paragraphs.length === 0) return null;
+  return /* @__PURE__ */ jsx29("div", { className: cn("flex flex-col gap-3", className), children: paragraphs.map((p, i) => /* @__PURE__ */ jsx29(
+    RichText,
+    {
+      text: p.text,
+      className: styledParagraphClassName(p, { theme, size })
+    },
+    i
+  )) });
+}
+
+// src/components/ui/partnership-block.tsx
+import { jsx as jsx30, jsxs as jsxs12 } from "react/jsx-runtime";
+function PartnershipBlock({
+  caption,
+  title,
+  description,
+  paragraphs,
+  logos,
+  photos,
+  className
+}) {
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: false,
+    color: "secondary"
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
+  return /* @__PURE__ */ jsxs12(
+    "div",
+    {
+      className: cn(
+        "flex flex-col lg:flex-row lg:justify-between lg:items-center gap-10",
+        className
+      ),
+      children: [
+        /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-8 lg:max-w-[560px]", children: [
+          /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-2", children: [
+            /* @__PURE__ */ jsx30("span", { className: "font-[family-name:var(--font-mono-family)] text-[18px] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[var(--rm-yellow-100)]", children: caption }),
+            /* @__PURE__ */ jsxs12("div", { className: "flex flex-col gap-6", children: [
+              /* @__PURE__ */ jsx30("h3", { className: "font-[family-name:var(--font-heading-family)] text-[28px] md:text-[36px] lg:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em]", children: title }),
+              hasParagraphs && /* @__PURE__ */ jsx30(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
+            ] })
+          ] }),
+          logos.length > 0 && /* @__PURE__ */ jsx30("div", { className: "flex items-center gap-8", children: logos.map((logo) => /* @__PURE__ */ jsx30(
+            "img",
+            {
+              src: logo.src,
+              alt: logo.alt,
+              className: "h-auto w-auto max-h-[56px] max-w-[45%] object-contain"
+            },
+            logo.src
+          )) })
+        ] }),
+        photos.length > 0 && /* @__PURE__ */ jsx30("div", { className: "grid grid-cols-2 gap-4 lg:w-[696px] shrink-0", children: photos.slice(0, 4).map((photo, i) => /* @__PURE__ */ jsx30("div", { className: "aspect-[340/252] overflow-hidden", children: /* @__PURE__ */ jsx30(
+          "img",
+          {
+            src: photo.src,
+            alt: photo.alt || "",
+            className: "w-full h-full object-cover"
+          }
+        ) }, i)) })
+      ]
+    }
+  );
+}
+
+// src/components/ui/product-card.tsx
+import Link2 from "next/link";
+import { Fragment as Fragment2, jsx as jsx31, jsxs as jsxs13 } from "react/jsx-runtime";
+function ProductCard({
+  title,
+  description,
+  icon,
+  experts,
+  tag,
+  href,
+  className
+}) {
+  const hasExperts = experts && experts.length > 0;
+  const exactlyThree = hasExperts && experts.length === 3;
+  const shown = hasExperts ? experts.slice(0, exactlyThree ? 3 : 2) : [];
+  const extra = hasExperts && !exactlyThree ? Math.max(0, experts.length - 2) : 0;
+  const rootCn = cn(
+    "group relative flex flex-col p-5 md:p-8 md:h-full",
+    "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
+    "border border-[#404040] transition-[border-color] duration-75",
+    "md:hover:z-10",
+    "md:active:[border-color:var(--rm-yellow-100)]",
+    className
+  );
+  const content = /* @__PURE__ */ jsxs13(Fragment2, { children: [
+    /* @__PURE__ */ jsx31("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx31(
+      GlowingEffect,
+      {
+        spread: 40,
+        glow: false,
+        disabled: false,
+        proximity: 40,
+        inactiveZone: 0.01,
+        borderWidth: 1,
+        variant: "yellow"
+      }
+    ) }),
+    /* @__PURE__ */ jsx31("div", { className: "absolute top-[2px] right-[2px] z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#404040] transition-all duration-200 group-hover:text-[#F0F0F0] group-hover:-top-[2px] group-hover:-right-[2px]", children: /* @__PURE__ */ jsx31("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx31(
+      "path",
+      {
+        d: "M1 10L10 1M10 1H3M10 1V8",
+        stroke: "currentColor",
+        strokeWidth: "2",
+        strokeLinecap: "round",
+        strokeLinejoin: "round"
+      }
+    ) }) }),
+    /* @__PURE__ */ jsxs13("div", { className: cn("flex flex-col", icon ? "gap-6 md:gap-8" : ""), children: [
+      icon && /* @__PURE__ */ jsxs13("div", { className: "relative flex items-center overflow-visible", children: [
+        /* @__PURE__ */ jsx31("div", { className: "w-[120px] h-[120px] shrink-0 z-0", children: icon }),
+        hasExperts && /* @__PURE__ */ jsxs13("div", { className: "flex items-center -ml-[18px] pb-10 pt-2 justify-end min-w-0", children: [
+          shown.map((e, i) => /* @__PURE__ */ jsx31(
+            "div",
+            {
+              className: cn(
+                "w-[72px] h-[72px] min-w-[52px] min-h-[52px] rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center",
+                i > 0 && "-ml-4"
+              ),
+              style: {
+                backgroundImage: `url(${e.image})`,
+                zIndex: shown.length + 1 - i
+              }
+            },
+            e.name
+          )),
+          extra > 0 && /* @__PURE__ */ jsx31("div", { className: "w-[72px] h-[72px] min-w-[52px] min-h-[52px] rounded-full bg-[#1A1A1A] flex items-center justify-center -ml-4 z-[1]", children: /* @__PURE__ */ jsxs13("span", { className: "font-heading text-[24px] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: [
+            "+",
+            extra
+          ] }) })
+        ] }),
+        tag && /* @__PURE__ */ jsx31("span", { className: "absolute left-0 bottom-[-22px] inline-flex items-center px-2.5 py-1 bg-[#3D3300] border border-[#4A3C00] font-[family-name:var(--font-mono-family)] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466] z-10", children: tag })
+      ] }),
+      tag && !icon && /* @__PURE__ */ jsx31("span", { className: "inline-flex self-start items-center px-2.5 py-1 mb-4 md:mb-5 bg-[#3D3300] border border-[#4A3C00] font-[family-name:var(--font-mono-family)] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466]", children: tag }),
+      /* @__PURE__ */ jsxs13("div", { className: "flex flex-col gap-4 md:gap-5", children: [
+        /* @__PURE__ */ jsx31("h3", { className: "font-heading font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] line-clamp-2 min-h-[2.4em] text-[20px] md:text-[clamp(16px,1.6vw,24px)]", children: title }),
+        /* @__PURE__ */ jsx31("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393] h-[54px] overflow-hidden line-clamp-3", children: description })
+      ] })
+    ] })
+  ] });
+  if (href) {
+    return /* @__PURE__ */ jsx31(Link2, { href, className: rootCn, children: content });
+  }
+  return /* @__PURE__ */ jsx31("div", { className: rootCn, children: content });
+}
+
+// src/components/ui/product-image-card.tsx
+import Link3 from "next/link";
+import { Fragment as Fragment3, jsx as jsx32, jsxs as jsxs14 } from "react/jsx-runtime";
+function ImagePlaceholder() {
+  return /* @__PURE__ */ jsx32("div", { className: "flex h-full w-full items-center justify-center bg-[#111] text-[#404040]", children: /* @__PURE__ */ jsxs14("svg", { width: "32", height: "32", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinecap: "round", strokeLinejoin: "round", children: [
+    /* @__PURE__ */ jsx32("rect", { x: "3", y: "3", width: "18", height: "18", rx: "2" }),
+    /* @__PURE__ */ jsx32("circle", { cx: "8.5", cy: "8.5", r: "1.5" }),
+    /* @__PURE__ */ jsx32("path", { d: "m21 15-5-5L5 21" })
+  ] }) });
+}
+var tagCn = "inline-flex items-center px-2.5 py-1 bg-[#3D3300] border border-[#4A3C00] font-[family-name:var(--font-mono-family)] text-[12px] font-medium uppercase tracking-[0.02em] leading-[1.2] text-[#FFE466]";
+function ProductImageCard({
+  title,
+  description,
+  image,
+  tag,
+  href,
+  variant = "default",
+  factoids = [],
+  compact = false,
+  className
+}) {
+  if (variant === "wide") {
+    const maxFactoids = compact ? 2 : 3;
+    const rootCn2 = cn(
+      "group relative flex flex-col p-5 md:flex-row md:gap-8 md:p-8 md:pl-0 md:h-full",
+      compact ? "md:min-h-[350px]" : "md:min-h-[424px]",
+      "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
+      "border border-[#404040] transition-[border-color] duration-75",
+      "md:hover:z-10",
+      "md:active:[border-color:var(--rm-yellow-100)]",
+      className
+    );
+    const inner2 = /* @__PURE__ */ jsxs14(Fragment3, { children: [
+      /* @__PURE__ */ jsx32("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx32(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 1, variant: "yellow" }) }),
+      /* @__PURE__ */ jsx32("div", { className: "absolute top-[2px] right-[2px] z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#404040] transition-all duration-200 group-hover:text-[#F0F0F0] group-hover:-top-[2px] group-hover:-right-[2px]", children: /* @__PURE__ */ jsx32("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx32("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) }) }),
+      /* @__PURE__ */ jsxs14("div", { className: "relative md:w-1/2 h-[220px] md:h-auto md:self-stretch overflow-hidden shrink-0", children: [
+        image ? /* @__PURE__ */ jsx32("img", { src: image, alt: "", className: "w-full h-full object-cover" }) : /* @__PURE__ */ jsx32(ImagePlaceholder, {}),
+        tag && /* @__PURE__ */ jsx32("span", { className: cn(tagCn, "hidden md:inline-flex absolute left-0 top-0 z-10"), children: tag })
+      ] }),
+      tag && /* @__PURE__ */ jsx32("div", { className: "md:hidden -mt-[22px]", children: /* @__PURE__ */ jsx32("span", { className: tagCn, children: tag }) }),
+      /* @__PURE__ */ jsxs14("div", { className: "md:flex-1 flex flex-col md:justify-between gap-4 mt-6 md:mt-0 min-w-0", children: [
+        /* @__PURE__ */ jsxs14("div", { className: "flex flex-col gap-4", children: [
+          /* @__PURE__ */ jsx32("h3", { className: "font-heading font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] line-clamp-2 min-h-[2.4em] text-[20px] md:text-[clamp(16px,1.6vw,24px)]", children: title }),
+          /* @__PURE__ */ jsx32("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393] line-clamp-3 h-[54px] overflow-hidden", children: description })
+        ] }),
+        factoids.length > 0 && /* @__PURE__ */ jsx32("div", { className: "hidden md:flex flex-col gap-4", children: factoids.slice(0, maxFactoids).map((f, i) => /* @__PURE__ */ jsxs14("div", { className: "flex gap-3 items-start", children: [
+          /* @__PURE__ */ jsx32("span", { className: "font-heading text-[24px] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0] shrink-0 w-[66px]", children: f.number }),
+          /* @__PURE__ */ jsx32("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#F0F0F0] pt-[5px] line-clamp-2", children: f.text })
+        ] }, i)) })
+      ] })
+    ] });
+    if (href) return /* @__PURE__ */ jsx32(Link3, { href, className: rootCn2, children: inner2 });
+    return /* @__PURE__ */ jsx32("div", { className: rootCn2, children: inner2 });
+  }
+  const rootCn = cn(
+    "group relative flex flex-col p-5 md:p-8",
+    "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
+    "border border-[#404040] transition-[border-color] duration-75",
+    "md:hover:z-10",
+    "md:active:[border-color:var(--rm-yellow-100)]",
+    className
+  );
+  const inner = /* @__PURE__ */ jsxs14(Fragment3, { children: [
+    /* @__PURE__ */ jsx32(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 2, variant: "yellow" }),
+    /* @__PURE__ */ jsx32("div", { className: "absolute top-[2px] right-[2px] z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#404040] transition-all duration-200 group-hover:text-[#F0F0F0] group-hover:-top-[2px] group-hover:-right-[2px]", children: /* @__PURE__ */ jsx32("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx32("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) }) }),
+    /* @__PURE__ */ jsxs14("div", { className: "flex flex-col gap-6 md:gap-8", children: [
+      /* @__PURE__ */ jsxs14("div", { className: "flex flex-col", children: [
+        /* @__PURE__ */ jsx32("div", { className: "w-full h-[220px] overflow-hidden", children: image ? /* @__PURE__ */ jsx32("img", { src: image, alt: "", className: "w-full h-full object-cover" }) : /* @__PURE__ */ jsx32(ImagePlaceholder, {}) }),
+        tag && /* @__PURE__ */ jsx32("div", { className: "-mt-[22px]", children: /* @__PURE__ */ jsx32("span", { className: tagCn, children: tag }) })
+      ] }),
+      /* @__PURE__ */ jsxs14("div", { className: "flex flex-col gap-4 md:gap-5", children: [
+        /* @__PURE__ */ jsx32("h3", { className: "font-heading font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0] line-clamp-2 min-h-[2.4em] text-[20px] md:text-[clamp(16px,1.6vw,24px)]", children: title }),
+        /* @__PURE__ */ jsx32("p", { className: "text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393] h-[54px] overflow-hidden line-clamp-3", children: description })
+      ] })
+    ] })
+  ] });
+  if (href) return /* @__PURE__ */ jsx32(Link3, { href, className: rootCn, children: inner });
+  return /* @__PURE__ */ jsx32("div", { className: rootCn, children: inner });
+}
+
+// src/components/ui/breadcrumbs.tsx
+import * as React12 from "react";
+import { jsx as jsx33, jsxs as jsxs15 } from "react/jsx-runtime";
+var Breadcrumbs = React12.forwardRef(
+  ({ items, mobileScroll = true, className, ...props }, ref) => {
+    const scrollRef = React12.useRef(null);
+    React12.useEffect(() => {
+      if (!mobileScroll) return;
+      const el = scrollRef.current;
+      if (!el) return;
+      el.scrollLeft = el.scrollWidth;
+    }, [items, mobileScroll]);
+    return /* @__PURE__ */ jsx33(
+      "nav",
+      {
+        ref,
+        "aria-label": "\u0425\u043B\u0435\u0431\u043D\u044B\u0435 \u043A\u0440\u043E\u0448\u043A\u0438",
+        className: cn(
+          mobileScroll && "breadcrumbs-scroll overflow-x-auto",
+          className
+        ),
+        ...props,
+        children: /* @__PURE__ */ jsx33(
+          "ol",
+          {
+            ref: scrollRef,
+            className: cn(
+              "flex items-center gap-3 whitespace-nowrap",
+              mobileScroll && "min-w-max"
+            ),
+            children: items.map((item, i) => {
+              const isLast = i === items.length - 1;
+              return /* @__PURE__ */ jsxs15(
+                "li",
+                {
+                  className: "flex items-center gap-2 text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em]",
+                  children: [
+                    item.href && !isLast ? /* @__PURE__ */ jsx33(
+                      "a",
+                      {
+                        href: item.href,
+                        className: "text-[color:var(--rm-gray-4)] transition-colors hover:text-[color:var(--rm-gray-fg-sub)]",
+                        children: item.label
+                      }
+                    ) : /* @__PURE__ */ jsx33(
+                      "span",
+                      {
+                        className: cn(
+                          isLast ? "text-[color:var(--rm-gray-fg-sub)]" : "text-[color:var(--rm-gray-4)]"
+                        ),
+                        "aria-current": isLast ? "page" : void 0,
+                        children: item.label
+                      }
+                    ),
+                    !isLast && /* @__PURE__ */ jsx33(
+                      "span",
+                      {
+                        className: "text-[color:var(--rm-gray-3)]",
+                        "aria-hidden": true,
+                        children: "/"
+                      }
+                    )
+                  ]
+                },
+                `${item.label}-${i}`
+              );
+            })
+          }
+        )
+      }
+    );
+  }
+);
+Breadcrumbs.displayName = "Breadcrumbs";
+
+// src/components/ui/tag.tsx
+import { cva as cva8 } from "class-variance-authority";
+import { jsx as jsx34 } from "react/jsx-runtime";
+var tagVariants = cva8(
+  [
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border transition-colors",
+    "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] leading-[1.16]"
+  ],
+  {
+    variants: {
+      size: {
+        // Large — hero article page
+        l: "h-7 px-2.5 text-[length:var(--text-14)]",
+        // Medium — mobile hero
+        m: "h-7 px-2.5 text-[length:var(--text-12)]",
+        // Small — card tile
+        s: "py-1 px-2 text-[length:var(--text-12)]"
+      },
+      state: {
+        default: "bg-[color:var(--rm-gray-1)] border-[color:var(--rm-gray-3)] text-[color:var(--rm-gray-fg-sub)]",
+        interactive: "bg-[color:var(--rm-gray-1)] border-[color:var(--rm-gray-3)] text-[color:var(--rm-gray-fg-sub)] hover:border-[color:var(--rm-gray-4)] hover:text-[color:var(--rm-gray-fg-main)] cursor-pointer",
+        active: "bg-[color:var(--rm-yellow-100)] border-[color:var(--rm-yellow-100)] text-[color:var(--rm-yellow-fg)] cursor-pointer",
+        disabled: "bg-[color:var(--rm-gray-1)] border-[color:var(--rm-gray-3)] text-[color:var(--rm-gray-3)] cursor-not-allowed opacity-60"
+      }
+    },
+    defaultVariants: {
+      size: "l",
+      state: "default"
+    }
+  }
+);
+function Tag(props) {
+  const { size, state, className, as, ...rest } = props;
+  const classes = cn(tagVariants({ size, state }), className);
+  if (as === "button") {
+    return /* @__PURE__ */ jsx34(
+      "button",
+      {
+        type: "button",
+        ...rest,
+        className: classes
+      }
+    );
+  }
+  if (as === "a") {
+    return /* @__PURE__ */ jsx34("a", { ...rest, className: classes });
+  }
+  return /* @__PURE__ */ jsx34("span", { ...rest, className: classes });
+}
+
+// src/components/ui/author.tsx
+import { Calendar } from "lucide-react";
+import { Fragment as Fragment4, jsx as jsx35, jsxs as jsxs16 } from "react/jsx-runtime";
+var dateFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "numeric",
+  month: "long",
+  year: "numeric"
+});
+function formatDate(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return dateFormatter.format(d) + " \u0433.";
+}
+function Author({
+  name,
+  avatarUrl,
+  date,
+  variant = "full",
+  className,
+  ...props
+}) {
+  const formatted = formatDate(date);
+  const initials = name.split(" ").map((p) => p[0]).filter(Boolean).slice(0, 2).join("");
+  if (variant === "short") {
+    return /* @__PURE__ */ jsxs16(
+      "div",
+      {
+        className: cn("flex items-center gap-2 text-[length:var(--text-14)] min-w-0 flex-nowrap", className),
+        ...props,
+        children: [
+          /* @__PURE__ */ jsxs16(Avatar, { size: "xs", className: "shrink-0 border-0", children: [
+            avatarUrl ? /* @__PURE__ */ jsx35(AvatarImage, { src: avatarUrl, alt: name }) : null,
+            /* @__PURE__ */ jsx35(AvatarFallback, { className: "text-[10px]", children: initials })
+          ] }),
+          /* @__PURE__ */ jsx35("span", { className: "min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[color:var(--rm-gray-fg-sub)]", children: name }),
+          formatted && /* @__PURE__ */ jsxs16(Fragment4, { children: [
+            /* @__PURE__ */ jsx35("span", { className: "mx-1 h-3 w-px shrink-0 bg-[color:var(--rm-gray-3)]", "aria-hidden": true }),
+            /* @__PURE__ */ jsxs16("span", { className: "inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[color:var(--rm-gray-fg-sub)] leading-[1.32] tracking-[0.01em]", children: [
+              /* @__PURE__ */ jsx35(Calendar, { className: "h-4 w-4", strokeWidth: 1.5, "aria-hidden": true }),
+              formatted
+            ] })
+          ] })
+        ]
+      }
+    );
+  }
+  return /* @__PURE__ */ jsxs16(
+    "div",
+    {
+      className: cn("flex items-stretch gap-3", className),
+      ...props,
+      children: [
+        /* @__PURE__ */ jsxs16(Avatar, { size: "md", className: "shrink-0 border-0", children: [
+          avatarUrl ? /* @__PURE__ */ jsx35(AvatarImage, { src: avatarUrl, alt: name }) : null,
+          /* @__PURE__ */ jsx35(AvatarFallback, { className: "text-[length:var(--text-12)]", children: initials })
+        ] }),
+        /* @__PURE__ */ jsxs16("div", { className: "flex flex-col justify-center gap-1 min-w-0 flex-1", children: [
+          /* @__PURE__ */ jsx35("span", { className: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] truncate", children: name }),
+          formatted && /* @__PURE__ */ jsxs16("span", { className: "inline-flex items-center gap-1 text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[color:var(--rm-gray-fg-sub)]", children: [
+            /* @__PURE__ */ jsx35(Calendar, { className: "h-4 w-4", strokeWidth: 1.5, "aria-hidden": true }),
+            formatted
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+
+// src/components/ui/key-thoughts.tsx
+import { jsx as jsx36 } from "react/jsx-runtime";
+function KeyThoughts({ thoughts, className, ...props }) {
+  if (!thoughts.length) return null;
+  return /* @__PURE__ */ jsx36(
+    "ul",
+    {
+      className: cn(
+        "flex flex-col gap-5 border-l border-[color:var(--rm-gray-3)] pl-[26px]",
+        className
+      ),
+      ...props,
+      children: thoughts.map((t, i) => /* @__PURE__ */ jsx36(
+        "li",
+        {
+          className: "font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-16)] uppercase tracking-[0.02em] leading-[1.12] text-[color:var(--rm-gray-fg-sub)]",
+          children: t
+        },
+        i
+      ))
+    }
+  );
+}
+
+// src/components/ui/article-nav.tsx
+import { jsx as jsx37 } from "react/jsx-runtime";
+function ArticleNav({
+  items,
+  activeId,
+  onNavigate,
+  className,
+  ...props
+}) {
+  if (!items.length) return null;
+  return /* @__PURE__ */ jsx37(
+    "nav",
+    {
+      "aria-label": "\u0421\u043E\u0434\u0435\u0440\u0436\u0430\u043D\u0438\u0435 \u0441\u0442\u0430\u0442\u044C\u0438",
+      className: cn("flex w-[268px] flex-col gap-6", className),
+      ...props,
+      children: /* @__PURE__ */ jsx37("ul", { className: "flex flex-col gap-5", children: items.map((item) => {
+        const isActive = item.id === activeId;
+        return /* @__PURE__ */ jsx37("li", { children: /* @__PURE__ */ jsx37(
+          "a",
+          {
+            href: `#${item.id}`,
+            onClick: (e) => {
+              if (!onNavigate) return;
+              e.preventDefault();
+              onNavigate(item.id);
+            },
+            "aria-current": isActive ? "true" : void 0,
+            className: cn(
+              "block font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-18)] uppercase tracking-[0.02em] leading-[1.12] transition-colors",
+              isActive ? "text-[color:var(--rm-yellow-100)]" : "text-[color:var(--rm-gray-fg-sub)] hover:text-[color:var(--rm-gray-fg-main)]"
+            ),
+            children: item.label
+          }
+        ) }, item.id);
+      }) })
+    }
+  );
+}
+
+// src/components/ui/article-card.tsx
+import { ArrowUpRight } from "lucide-react";
+import { Fragment as Fragment5, jsx as jsx38, jsxs as jsxs17 } from "react/jsx-runtime";
+function ArticleCard({
+  href,
+  title,
+  description,
+  coverUrl,
+  tags,
+  authorName,
+  authorAvatarUrl,
+  date,
+  maxTags = 3,
+  className,
+  ...props
+}) {
+  const visibleTags = (tags ?? []).slice(0, maxTags);
+  return /* @__PURE__ */ jsxs17(
+    "article",
+    {
+      className: cn(
+        "group relative flex w-[350px] flex-col",
+        "rounded-sm border border-[color:var(--rm-gray-3)]",
+        "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
+        "p-8",
+        className
+      ),
+      ...props,
+      children: [
+        href && /* @__PURE__ */ jsxs17(Fragment5, { children: [
+          /* @__PURE__ */ jsx38(
+            "a",
+            {
+              href,
+              className: "absolute inset-0 z-[1] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--rm-yellow-100)]",
+              "aria-label": title
+            }
+          ),
+          /* @__PURE__ */ jsx38(
+            "span",
+            {
+              className: "absolute right-2 top-2 z-[2] inline-flex h-10 w-10 items-center justify-center rounded-sm text-[color:var(--rm-gray-fg-main)] transition-colors group-hover:text-[color:var(--rm-yellow-100)]",
+              "aria-hidden": true,
+              children: /* @__PURE__ */ jsx38(ArrowUpRight, { className: "h-5 w-5", strokeWidth: 1.5 })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs17("div", { className: "relative -mx-[0] mb-[-53px] h-56 overflow-hidden", children: [
+          coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            /* @__PURE__ */ jsx38(
+              "img",
+              {
+                src: coverUrl,
+                alt: "",
+                className: "h-full w-full object-cover",
+                "aria-hidden": true
+              }
+            )
+          ) : /* @__PURE__ */ jsx38("div", { className: "h-full w-full bg-[color:var(--rm-gray-1)]", "aria-hidden": true }),
+          /* @__PURE__ */ jsx38(
+            "div",
+            {
+              className: "pointer-events-none absolute inset-0",
+              style: {
+                background: "linear-gradient(0deg, rgba(10,10,10,1) 0%, rgba(10,10,10,0.72) 22%, rgba(10,10,10,0) 100%)"
+              },
+              "aria-hidden": true
+            }
+          )
+        ] }),
+        visibleTags.length > 0 && /* @__PURE__ */ jsx38("div", { className: "relative z-[1] mt-[-24px] flex flex-wrap gap-x-2 gap-y-1", children: visibleTags.map((t) => /* @__PURE__ */ jsx38(Tag, { size: "s", children: t }, t)) }),
+        /* @__PURE__ */ jsxs17("div", { className: "relative z-[1] mt-7 flex flex-col gap-5", children: [
+          /* @__PURE__ */ jsxs17("div", { className: "flex flex-col gap-3", children: [
+            /* @__PURE__ */ jsx38("h3", { className: "font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] uppercase tracking-[-0.01em] leading-[1.2] text-[color:var(--rm-gray-fg-main)]", children: title }),
+            description && /* @__PURE__ */ jsx38("p", { className: "line-clamp-3 text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[color:var(--rm-gray-fg-sub)]", children: description })
+          ] }),
+          authorName && /* @__PURE__ */ jsx38(
+            Author,
+            {
+              variant: "short",
+              name: authorName,
+              avatarUrl: authorAvatarUrl,
+              date
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
+
 // src/components/ui/for-whom-section.tsx
-import { Fragment as Fragment4, jsx as jsx32, jsxs as jsxs15 } from "react/jsx-runtime";
+import { Fragment as Fragment6, jsx as jsx39, jsxs as jsxs18 } from "react/jsx-runtime";
 function FactCard({ title, text }) {
-  return /* @__PURE__ */ jsxs15("div", { className: "grid grid-rows-[subgrid] row-span-3 gap-4", children: [
-    /* @__PURE__ */ jsx32("div", { className: "flex items-end", children: /* @__PURE__ */ jsx32("h4", { className: "h4 text-[#0A0A0A]", children: title }) }),
-    /* @__PURE__ */ jsx32("div", { className: "h-0 w-full border-t border-[#404040]" }),
-    /* @__PURE__ */ jsx32("div", { children: /* @__PURE__ */ jsx32(
+  return /* @__PURE__ */ jsxs18("div", { className: "grid grid-rows-[subgrid] row-span-3 gap-4", children: [
+    /* @__PURE__ */ jsx39("div", { className: "flex items-end", children: /* @__PURE__ */ jsx39("h4", { className: "h4 text-[#0A0A0A]", children: title }) }),
+    /* @__PURE__ */ jsx39("div", { className: "h-0 w-full border-t border-[#404040]" }),
+    /* @__PURE__ */ jsx39("div", { children: /* @__PURE__ */ jsx39(
       RichText,
       {
         text,
@@ -2274,29 +2684,29 @@ function ForWhomSection({
   title,
   titleSecondary,
   subtitle,
+  paragraphs,
   facts,
   wideColumn = "right",
   className
 }) {
-  return /* @__PURE__ */ jsxs15("section", { className: cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className), children: [
-    /* @__PURE__ */ jsxs15("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-      /* @__PURE__ */ jsxs15("div", { className: "flex flex-col gap-2", children: [
-        /* @__PURE__ */ jsx32("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
-        /* @__PURE__ */ jsxs15("div", { className: "flex", children: [
-          /* @__PURE__ */ jsx32("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ jsxs15("h2", { className: "h2", children: [
-            /* @__PURE__ */ jsx32("span", { className: "text-[#0A0A0A]", children: title }),
-            titleSecondary ? /* @__PURE__ */ jsxs15(Fragment4, { children: [
-              /* @__PURE__ */ jsx32("span", { className: "text-[#0A0A0A]", children: " " }),
-              /* @__PURE__ */ jsx32("span", { className: "text-[#666666]", children: titleSecondary })
+  const resolvedParagraphsDesktop = resolveStyledParagraphs(paragraphs, subtitle, {
+    uppercase: true,
+    color: "primary"
+  });
+  const hasParagraphs = resolvedParagraphsDesktop.length > 0;
+  return /* @__PURE__ */ jsxs18("section", { className: cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className), children: [
+    /* @__PURE__ */ jsxs18("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+      /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx39("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
+        /* @__PURE__ */ jsxs18("div", { className: "flex", children: [
+          /* @__PURE__ */ jsx39("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ jsxs18("h2", { className: "h2", children: [
+            /* @__PURE__ */ jsx39("span", { className: "text-[#0A0A0A]", children: title }),
+            titleSecondary ? /* @__PURE__ */ jsxs18(Fragment6, { children: [
+              /* @__PURE__ */ jsx39("span", { className: "text-[#0A0A0A]", children: " " }),
+              /* @__PURE__ */ jsx39("span", { className: "text-[#666666]", children: titleSecondary })
             ] }) : null
           ] }) }),
-          subtitle && /* @__PURE__ */ jsx32("div", { className: "w-1/2", children: /* @__PURE__ */ jsx32(
-            RichText,
-            {
-              text: subtitle,
-              className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]"
-            }
-          ) })
+          hasParagraphs && /* @__PURE__ */ jsx39("div", { className: "w-1/2", children: /* @__PURE__ */ jsx39("div", { className: "max-w-[480px]", children: /* @__PURE__ */ jsx39(StyledParagraphs, { paragraphs: resolvedParagraphsDesktop, theme: "light", size: "18" }) }) })
         ] })
       ] }),
       (() => {
@@ -2317,10 +2727,10 @@ function ForWhomSection({
           leftFacts = [facts[0], facts[1]];
           rightFacts = [facts[2], facts[3]];
         }
-        const renderCard = (f, i) => /* @__PURE__ */ jsxs15("div", { className: "flex flex-col gap-4", children: [
-          /* @__PURE__ */ jsx32("div", { className: "flex items-end", children: /* @__PURE__ */ jsx32("h4", { className: "h4 text-[#0A0A0A]", children: f.title }) }),
-          /* @__PURE__ */ jsx32("div", { className: "h-0 w-full border-t border-[#404040]" }),
-          /* @__PURE__ */ jsx32(
+        const renderCard = (f, i) => /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-4", children: [
+          /* @__PURE__ */ jsx39("div", { className: "flex items-end", children: /* @__PURE__ */ jsx39("h4", { className: "h4 text-[#0A0A0A]", children: f.title }) }),
+          /* @__PURE__ */ jsx39("div", { className: "h-0 w-full border-t border-[#404040]" }),
+          /* @__PURE__ */ jsx39(
             RichText,
             {
               text: f.text,
@@ -2328,46 +2738,317 @@ function ForWhomSection({
             }
           )
         ] }, i);
-        return /* @__PURE__ */ jsxs15("div", { className: "flex", children: [
-          /* @__PURE__ */ jsx32("div", { className: "w-1/2 flex gap-4 pr-4", children: leftFacts.map((f, i) => /* @__PURE__ */ jsx32("div", { className: "flex-1", children: renderCard(f, i) }, i)) }),
-          /* @__PURE__ */ jsx32("div", { className: "w-1/2 flex gap-4", children: rightFacts.map((f, i) => /* @__PURE__ */ jsx32("div", { className: "flex-1", children: renderCard(f, i) }, i)) })
+        return /* @__PURE__ */ jsxs18("div", { className: "flex", children: [
+          /* @__PURE__ */ jsx39("div", { className: "w-1/2 flex gap-4 pr-4", children: leftFacts.map((f, i) => /* @__PURE__ */ jsx39("div", { className: "flex-1", children: renderCard(f, i) }, i)) }),
+          /* @__PURE__ */ jsx39("div", { className: "w-1/2 flex gap-4", children: rightFacts.map((f, i) => /* @__PURE__ */ jsx39("div", { className: "flex-1", children: renderCard(f, i) }, i)) })
         ] });
       })()
     ] }),
-    /* @__PURE__ */ jsxs15("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
-      /* @__PURE__ */ jsxs15("div", { className: "flex flex-col gap-2", children: [
-        /* @__PURE__ */ jsx32("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
-        /* @__PURE__ */ jsxs15("h2", { className: "h3", children: [
-          /* @__PURE__ */ jsx32("span", { className: "text-[#0A0A0A]", children: title }),
-          titleSecondary ? /* @__PURE__ */ jsxs15(Fragment4, { children: [
-            /* @__PURE__ */ jsx32("span", { className: "text-[#0A0A0A]", children: " " }),
-            /* @__PURE__ */ jsx32("span", { className: "text-[#666666]", children: titleSecondary })
+    /* @__PURE__ */ jsxs18("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
+      /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx39("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
+        /* @__PURE__ */ jsxs18("h2", { className: "h3", children: [
+          /* @__PURE__ */ jsx39("span", { className: "text-[#0A0A0A]", children: title }),
+          titleSecondary ? /* @__PURE__ */ jsxs18(Fragment6, { children: [
+            /* @__PURE__ */ jsx39("span", { className: "text-[#0A0A0A]", children: " " }),
+            /* @__PURE__ */ jsx39("span", { className: "text-[#666666]", children: titleSecondary })
           ] }) : null
         ] }),
-        subtitle && /* @__PURE__ */ jsx32(
-          RichText,
+        hasParagraphs && /* @__PURE__ */ jsx39("div", { className: "mt-1", children: /* @__PURE__ */ jsx39(StyledParagraphs, { paragraphs: resolvedParagraphsDesktop, theme: "light", size: "16" }) })
+      ] }),
+      /* @__PURE__ */ jsx39("div", { className: "flex flex-col gap-7", children: facts.map((f, i) => /* @__PURE__ */ jsx39("div", { className: "grid", style: { gridTemplateRows: "auto auto 1fr" }, children: /* @__PURE__ */ jsx39(FactCard, { ...f }) }, i)) })
+    ] })
+  ] });
+}
+
+// src/components/ui/contacts-section.tsx
+import * as React13 from "react";
+
+// src/components/icons/socials/vk.tsx
+import { jsx as jsx40, jsxs as jsxs19 } from "react/jsx-runtime";
+function VkIcon({ className, ...props }) {
+  return /* @__PURE__ */ jsxs19(
+    "svg",
+    {
+      width: "40",
+      height: "40",
+      viewBox: "0 0 40 40",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg",
+      className,
+      ...props,
+      children: [
+        /* @__PURE__ */ jsx40("rect", { x: "0.75", y: "0.75", width: "38.5", height: "38.5", rx: "4", stroke: "currentColor", strokeWidth: "1.5" }),
+        /* @__PURE__ */ jsx40(
+          "path",
           {
-            text: subtitle,
-            className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] mt-1"
+            d: "M10 14 L14.5 26 L17 26 L21.5 14",
+            stroke: "currentColor",
+            strokeWidth: "1.5",
+            strokeLinecap: "round",
+            strokeLinejoin: "round"
+          }
+        ),
+        /* @__PURE__ */ jsx40(
+          "path",
+          {
+            d: "M24 14 L24 26 M24 20.5 L30 14 M24 20.5 L30 26",
+            stroke: "currentColor",
+            strokeWidth: "1.5",
+            strokeLinecap: "round",
+            strokeLinejoin: "round"
           }
         )
+      ]
+    }
+  );
+}
+
+// src/components/icons/socials/telegram.tsx
+import { jsx as jsx41, jsxs as jsxs20 } from "react/jsx-runtime";
+function TelegramIcon({ className, ...props }) {
+  return /* @__PURE__ */ jsxs20(
+    "svg",
+    {
+      width: "40",
+      height: "40",
+      viewBox: "0 0 40 40",
+      fill: "none",
+      xmlns: "http://www.w3.org/2000/svg",
+      className,
+      ...props,
+      children: [
+        /* @__PURE__ */ jsx41("rect", { x: "0.75", y: "0.75", width: "38.5", height: "38.5", rx: "4", stroke: "currentColor", strokeWidth: "1.5" }),
+        /* @__PURE__ */ jsx41(
+          "path",
+          {
+            d: "M29.5 12.5 L10.5 20 L16.5 22.5 L19 28.5 L22.5 24.5 L27.5 28 L29.5 12.5 Z",
+            stroke: "currentColor",
+            strokeWidth: "1.5",
+            strokeLinecap: "round",
+            strokeLinejoin: "round"
+          }
+        ),
+        /* @__PURE__ */ jsx41(
+          "path",
+          {
+            d: "M16.5 22.5 L26 15.5 M19 28.5 L22.5 24.5",
+            stroke: "currentColor",
+            strokeWidth: "1.5",
+            strokeLinecap: "round",
+            strokeLinejoin: "round"
+          }
+        )
+      ]
+    }
+  );
+}
+
+// src/components/ui/contacts-section.tsx
+import { Fragment as Fragment8, jsx as jsx42, jsxs as jsxs21 } from "react/jsx-runtime";
+function SocialIcon({
+  kind,
+  iconSrc,
+  className
+}) {
+  if (kind === "vk") return /* @__PURE__ */ jsx42(VkIcon, { className });
+  if (kind === "telegram") return /* @__PURE__ */ jsx42(TelegramIcon, { className });
+  if (!iconSrc) return null;
+  return /* @__PURE__ */ jsx42(
+    "span",
+    {
+      className: cn(
+        "inline-flex h-10 w-10 items-center justify-center rounded-sm border border-current",
+        className
+      ),
+      children: /* @__PURE__ */ jsx42("img", { src: iconSrc, alt: "", className: "h-5 w-5 object-contain" })
+    }
+  );
+}
+function socialTooltipText(social) {
+  const username = social.username || "";
+  if (!username) return "";
+  if (social.kind === "telegram") {
+    return username.startsWith("@") ? username : `@${username}`;
+  }
+  if (social.kind === "vk") {
+    return `vk.com/${username.replace(/^\//, "")}`;
+  }
+  return username;
+}
+function ParagraphItem({ paragraph }) {
+  const color = paragraph.color === "primary" ? "text-[#0A0A0A]" : "text-[#404040]";
+  const caps = paragraph.uppercase ? "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase tracking-[0.02em]" : "text-[length:var(--text-16)] leading-[1.28]";
+  return /* @__PURE__ */ jsx42(
+    RichText,
+    {
+      text: paragraph.text,
+      className: cn(caps, color, "max-w-[480px]")
+    }
+  );
+}
+function SocialsItem({ socials }) {
+  if (!socials.length) return null;
+  return /* @__PURE__ */ jsx42(TooltipProvider, { delay: 150, children: /* @__PURE__ */ jsx42("div", { className: "flex flex-wrap items-center gap-2 text-[#0A0A0A]", children: socials.map((s) => {
+    const label = socialTooltipText(s);
+    const icon = /* @__PURE__ */ jsx42(
+      SocialIcon,
+      {
+        kind: s.kind,
+        iconSrc: s.iconSrc,
+        className: "transition-colors group-hover/social:text-[#404040]"
+      }
+    );
+    const trigger = s.url ? /* @__PURE__ */ jsx42(
+      "a",
+      {
+        href: s.url,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        "aria-label": label || s.username,
+        className: "group/social inline-flex text-[#0A0A0A] hover:text-[#404040]",
+        children: icon
+      }
+    ) : /* @__PURE__ */ jsx42("span", { "aria-label": label || s.username, className: "group/social inline-flex", children: icon });
+    if (!label) return /* @__PURE__ */ jsx42(React13.Fragment, { children: trigger }, s.id);
+    return /* @__PURE__ */ jsxs21(Tooltip, { children: [
+      /* @__PURE__ */ jsx42(TooltipTrigger, { render: trigger }),
+      /* @__PURE__ */ jsx42(TooltipContent, { children: label })
+    ] }, s.id);
+  }) }) });
+}
+function PersonItem({ person }) {
+  const socialLabel = person.social ? socialTooltipText(person.social) : "";
+  return /* @__PURE__ */ jsxs21("div", { className: "flex items-start gap-4", children: [
+    /* @__PURE__ */ jsx42(
+      "div",
+      {
+        className: "h-14 w-14 shrink-0 rounded-sm bg-[#E0E0E0] bg-cover bg-center",
+        style: person.avatar ? { backgroundImage: `url(${person.avatar})` } : void 0
+      }
+    ),
+    /* @__PURE__ */ jsxs21("div", { className: "flex min-w-0 flex-1 flex-col gap-1", children: [
+      /* @__PURE__ */ jsx42("div", { className: "text-[length:var(--text-16)] font-medium leading-[1.28] text-[#0A0A0A]", children: person.name }),
+      person.role ? /* @__PURE__ */ jsx42("div", { className: "text-[length:var(--text-14)] leading-[1.32] text-[#404040]", children: person.role }) : null,
+      person.phone ? /* @__PURE__ */ jsx42(
+        "a",
+        {
+          href: `tel:${person.phone.replace(/[^+\d]/g, "")}`,
+          className: "text-[length:var(--text-14)] leading-[1.32] text-[#0A0A0A] hover:text-[#404040]",
+          children: person.phone
+        }
+      ) : null,
+      person.social && (person.social.url || person.social.username) ? /* @__PURE__ */ jsx42(TooltipProvider, { delay: 150, children: /* @__PURE__ */ jsx42("div", { className: "mt-1 inline-flex text-[#0A0A0A]", children: /* @__PURE__ */ jsxs21(Tooltip, { children: [
+        /* @__PURE__ */ jsx42(
+          TooltipTrigger,
+          {
+            render: person.social.url ? /* @__PURE__ */ jsx42(
+              "a",
+              {
+                href: person.social.url,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                "aria-label": socialLabel || person.social.username,
+                className: "inline-flex hover:text-[#404040]",
+                children: /* @__PURE__ */ jsx42(
+                  SocialIcon,
+                  {
+                    kind: person.social.kind,
+                    iconSrc: person.social.iconSrc
+                  }
+                )
+              }
+            ) : /* @__PURE__ */ jsx42("span", { className: "inline-flex", children: /* @__PURE__ */ jsx42(
+              SocialIcon,
+              {
+                kind: person.social.kind,
+                iconSrc: person.social.iconSrc
+              }
+            ) })
+          }
+        ),
+        socialLabel ? /* @__PURE__ */ jsx42(TooltipContent, { children: socialLabel }) : null
+      ] }) }) }) : null
+    ] })
+  ] });
+}
+function CardItemRenderer({ item }) {
+  if (item.kind === "paragraph") return /* @__PURE__ */ jsx42(ParagraphItem, { paragraph: item.paragraph });
+  if (item.kind === "socials") return /* @__PURE__ */ jsx42(SocialsItem, { socials: item.socials });
+  return /* @__PURE__ */ jsx42(PersonItem, { person: item.person });
+}
+function ContactCardView({ card }) {
+  return /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-4", children: [
+    /* @__PURE__ */ jsx42("div", { className: "flex items-end", children: /* @__PURE__ */ jsx42("h4", { className: "h4 text-[#0A0A0A]", children: card.title }) }),
+    /* @__PURE__ */ jsx42("div", { className: "h-0 w-full border-t border-[#404040]" }),
+    /* @__PURE__ */ jsx42("div", { className: "flex flex-col gap-4", children: card.items.map((item) => /* @__PURE__ */ jsx42(CardItemRenderer, { item }, item.id)) })
+  ] });
+}
+function ContactsSection({
+  tag,
+  title,
+  titleSecondary,
+  subtitle,
+  paragraphs,
+  cards,
+  className
+}) {
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, subtitle, {
+    uppercase: true,
+    color: "primary"
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
+  const splitIndex = Math.ceil(cards.length / 2);
+  const leftCards = cards.slice(0, splitIndex);
+  const rightCards = cards.slice(splitIndex);
+  return /* @__PURE__ */ jsxs21("section", { className: cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className), children: [
+    /* @__PURE__ */ jsxs21("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+      /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx42("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
+        /* @__PURE__ */ jsxs21("div", { className: "flex", children: [
+          /* @__PURE__ */ jsx42("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ jsxs21("h2", { className: "h2", children: [
+            /* @__PURE__ */ jsx42("span", { className: "text-[#0A0A0A]", children: title }),
+            titleSecondary ? /* @__PURE__ */ jsxs21(Fragment8, { children: [
+              /* @__PURE__ */ jsx42("span", { className: "text-[#0A0A0A]", children: " " }),
+              /* @__PURE__ */ jsx42("span", { className: "text-[#666666]", children: titleSecondary })
+            ] }) : null
+          ] }) }),
+          hasParagraphs && /* @__PURE__ */ jsx42("div", { className: "w-1/2", children: /* @__PURE__ */ jsx42("div", { className: "max-w-[480px]", children: /* @__PURE__ */ jsx42(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "light", size: "18" }) }) })
+        ] })
       ] }),
-      /* @__PURE__ */ jsx32("div", { className: "flex flex-col gap-7", children: facts.map((f, i) => /* @__PURE__ */ jsx32("div", { className: "grid", style: { gridTemplateRows: "auto auto 1fr" }, children: /* @__PURE__ */ jsx32(FactCard, { ...f }) }, i)) })
+      cards.length > 0 && /* @__PURE__ */ jsxs21("div", { className: "flex", children: [
+        /* @__PURE__ */ jsx42("div", { className: "w-1/2 flex gap-4 pr-4", children: leftCards.map((card) => /* @__PURE__ */ jsx42("div", { className: "flex-1", children: /* @__PURE__ */ jsx42(ContactCardView, { card }) }, card.id)) }),
+        /* @__PURE__ */ jsx42("div", { className: "w-1/2 flex gap-4", children: rightCards.map((card) => /* @__PURE__ */ jsx42("div", { className: "flex-1", children: /* @__PURE__ */ jsx42(ContactCardView, { card }) }, card.id)) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs21("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
+      /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx42("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
+        /* @__PURE__ */ jsxs21("h2", { className: "h3", children: [
+          /* @__PURE__ */ jsx42("span", { className: "text-[#0A0A0A]", children: title }),
+          titleSecondary ? /* @__PURE__ */ jsxs21(Fragment8, { children: [
+            /* @__PURE__ */ jsx42("span", { className: "text-[#0A0A0A]", children: " " }),
+            /* @__PURE__ */ jsx42("span", { className: "text-[#666666]", children: titleSecondary })
+          ] }) : null
+        ] }),
+        hasParagraphs && /* @__PURE__ */ jsx42("div", { className: "mt-1", children: /* @__PURE__ */ jsx42(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "light", size: "16" }) })
+      ] }),
+      /* @__PURE__ */ jsx42("div", { className: "flex flex-col gap-7", children: cards.map((card) => /* @__PURE__ */ jsx42(ContactCardView, { card }, card.id)) })
     ] })
   ] });
 }
 
 // src/components/ui/process-section.tsx
-import { useEffect as useEffect5, useRef as useRef6, useState as useState2, useCallback as useCallback2 } from "react";
-import { Fragment as Fragment5, jsx as jsx33, jsxs as jsxs16 } from "react/jsx-runtime";
+import { useEffect as useEffect6, useRef as useRef7, useState as useState2, useCallback as useCallback2 } from "react";
+import { Fragment as Fragment9, jsx as jsx43, jsxs as jsxs22 } from "react/jsx-runtime";
 function TimelineColumn({
   isActive,
   isLast,
   fillProgress
 }) {
-  return /* @__PURE__ */ jsxs16("div", { className: "relative w-px shrink-0 self-stretch", children: [
-    /* @__PURE__ */ jsx33("div", { className: "absolute inset-0 bg-[#404040]" }),
-    /* @__PURE__ */ jsx33(
+  return /* @__PURE__ */ jsxs22("div", { className: "relative w-px shrink-0 self-stretch", children: [
+    /* @__PURE__ */ jsx43("div", { className: "absolute inset-0 bg-[#404040]" }),
+    /* @__PURE__ */ jsx43(
       "div",
       {
         className: "absolute top-0 left-0 right-0 h-full origin-top bg-[#F0F0F0]",
@@ -2377,7 +3058,7 @@ function TimelineColumn({
         }
       }
     ),
-    /* @__PURE__ */ jsx33(
+    /* @__PURE__ */ jsx43(
       "div",
       {
         className: "absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 shrink-0 transition-all duration-300",
@@ -2397,11 +3078,11 @@ function StepCard({
   className,
   titleClass
 }) {
-  return /* @__PURE__ */ jsxs16("div", { className: cn("flex gap-10 max-w-[364px]", className), children: [
-    /* @__PURE__ */ jsx33(TimelineColumn, { isActive, isLast, fillProgress }),
-    /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-3 pb-16", children: [
-      /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-2", children: [
-        /* @__PURE__ */ jsx33(
+  return /* @__PURE__ */ jsxs22("div", { className: cn("flex gap-10 max-w-[364px]", className), children: [
+    /* @__PURE__ */ jsx43(TimelineColumn, { isActive, isLast, fillProgress }),
+    /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-3 pb-16", children: [
+      /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx43(
           "span",
           {
             className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] transition-colors duration-300",
@@ -2409,7 +3090,7 @@ function StepCard({
             children: step.number
           }
         ),
-        /* @__PURE__ */ jsx33(
+        /* @__PURE__ */ jsx43(
           "h3",
           {
             className: cn(titleClass || "h3", "transition-colors duration-300"),
@@ -2418,14 +3099,14 @@ function StepCard({
           }
         )
       ] }),
-      /* @__PURE__ */ jsx33("div", { style: { color: isActive ? "#939393" : "rgba(147,147,147,0.5)" }, children: /* @__PURE__ */ jsx33(
+      /* @__PURE__ */ jsx43("div", { style: { color: isActive ? "#939393" : "rgba(147,147,147,0.5)" }, children: /* @__PURE__ */ jsx43(
         RichText,
         {
           text: step.text,
           className: "text-[length:var(--text-16)] leading-[1.28] transition-colors duration-300"
         }
       ) }),
-      /* @__PURE__ */ jsx33(
+      /* @__PURE__ */ jsx43(
         "span",
         {
           className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] transition-colors duration-300",
@@ -2441,11 +3122,11 @@ function ParticipantsBlock({
   participants,
   className
 }) {
-  return /* @__PURE__ */ jsxs16("div", { className: cn("bg-[#121212] rounded p-8 flex flex-col gap-8 max-w-[648px]", className), children: [
-    /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-    /* @__PURE__ */ jsx33("div", { className: "flex flex-col gap-5", children: participants.map((p, i) => /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-2", children: [
-      /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]", children: p.role }),
-      /* @__PURE__ */ jsx33(
+  return /* @__PURE__ */ jsxs22("div", { className: cn("bg-[#121212] rounded p-8 flex flex-col gap-8 max-w-[648px]", className), children: [
+    /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+    /* @__PURE__ */ jsx43("div", { className: "flex flex-col gap-5", children: participants.map((p, i) => /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
+      /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]", children: p.role }),
+      /* @__PURE__ */ jsx43(
         RichText,
         {
           text: p.text,
@@ -2460,7 +3141,7 @@ function AcademyStepCard({
   isFirst,
   className
 }) {
-  return /* @__PURE__ */ jsxs16(
+  return /* @__PURE__ */ jsxs22(
     "div",
     {
       className: cn(
@@ -2469,11 +3150,11 @@ function AcademyStepCard({
         className
       ),
       children: [
-        /* @__PURE__ */ jsxs16("div", { className: "flex items-start gap-6 lg:w-1/2 lg:items-center", children: [
-          /* @__PURE__ */ jsx33("span", { className: "flex-1 h4 text-[#F0F0F0]", children: step.title }),
-          /* @__PURE__ */ jsx33("span", { className: "w-[100px] shrink-0 text-right lg:text-left lg:order-first font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: step.number })
+        /* @__PURE__ */ jsxs22("div", { className: "flex items-start gap-6 lg:w-1/2 lg:items-center", children: [
+          /* @__PURE__ */ jsx43("span", { className: "flex-1 h4 text-[#F0F0F0]", children: step.title }),
+          /* @__PURE__ */ jsx43("span", { className: "w-[100px] shrink-0 text-right lg:text-left lg:order-first font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: step.number })
         ] }),
-        /* @__PURE__ */ jsx33("div", { className: "pl-0 lg:w-1/2 lg:pl-4", children: /* @__PURE__ */ jsx33(
+        /* @__PURE__ */ jsx43("div", { className: "pl-0 lg:w-1/2 lg:pl-4", children: /* @__PURE__ */ jsx43(
           RichText,
           {
             text: step.text,
@@ -2487,7 +3168,7 @@ function AcademyStepCard({
 function useStepProgress(stepCount) {
   const [activeIndex, setActiveIndex] = useState2(-1);
   const [fills, setFills] = useState2(() => Array(stepCount).fill(0));
-  const containerRef = useRef6(null);
+  const containerRef = useRef7(null);
   const update = useCallback2(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -2514,7 +3195,7 @@ function useStepProgress(stepCount) {
     setActiveIndex(newActive);
     setFills(newFills);
   }, [stepCount]);
-  useEffect5(() => {
+  useEffect6(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -2536,7 +3217,10 @@ function ProcessSection({
   title,
   titleSecondary,
   subtitle,
+  subtitleUppercase = true,
   description,
+  paragraphs,
+  descriptionParagraphs,
   steps,
   participantsTag,
   participants,
@@ -2546,45 +3230,41 @@ function ProcessSection({
   const { activeIndex, fills, containerRef } = useStepProgress(steps.length);
   const hasParticipants = participants && participants.length > 0 && participantsTag;
   const isAcademy = variant === "academy";
-  return /* @__PURE__ */ jsxs16(
+  const legacyMapped = paragraphs && paragraphs.length > 0 ? void 0 : descriptionParagraphs && descriptionParagraphs.length > 0 ? descriptionParagraphs.filter((p) => p && (p.text ?? "").length > 0).map((p) => ({ text: p.text, uppercase: p.uppercase !== false, color: "secondary" })) : void 0;
+  const resolvedParagraphs = resolveStyledParagraphs(
+    paragraphs ?? legacyMapped,
+    description,
+    { uppercase: true, color: "secondary" }
+  );
+  const subtitleClassDesktop = subtitleUppercase ? "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]" : "text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]";
+  const subtitleClassSmall = subtitleUppercase ? "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]" : "text-[length:var(--text-16)] leading-[1.28] text-[#F0F0F0]";
+  return /* @__PURE__ */ jsxs22(
     "section",
     {
       ref: containerRef,
       className: cn("w-full bg-[#0A0A0A] border-t border-border py-10 md:py-16 lg:py-20", className),
       children: [
-        /* @__PURE__ */ jsxs16("div", { className: "hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-          /* @__PURE__ */ jsxs16("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col", children: [
-            /* @__PURE__ */ jsx33("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx33("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-8 max-w-[560px]", children: [
-              /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-2", children: [
-                /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-                /* @__PURE__ */ jsxs16("h2", { className: "h2", children: [
-                  /* @__PURE__ */ jsx33("span", { className: "text-[#F0F0F0]", children: title }),
-                  titleSecondary ? /* @__PURE__ */ jsxs16(Fragment5, { children: [
-                    /* @__PURE__ */ jsx33("span", { className: "text-[#F0F0F0]", children: " " }),
-                    /* @__PURE__ */ jsx33("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs22("div", { className: "hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+          /* @__PURE__ */ jsxs22("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col", children: [
+            /* @__PURE__ */ jsx43("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx43("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-8 max-w-[560px]", children: [
+              /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
+                /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+                /* @__PURE__ */ jsxs22("h2", { className: "h2", children: [
+                  /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: title }),
+                  titleSecondary ? /* @__PURE__ */ jsxs22(Fragment9, { children: [
+                    /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: " " }),
+                    /* @__PURE__ */ jsx43("span", { className: "text-[#939393]", children: titleSecondary })
                   ] }) : null
                 ] })
               ] }),
-              /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-1", children: [
-                /* @__PURE__ */ jsx33(
-                  RichText,
-                  {
-                    text: subtitle,
-                    className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
-                  }
-                ),
-                description && /* @__PURE__ */ jsx33(
-                  RichText,
-                  {
-                    text: description,
-                    className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]"
-                  }
-                )
+              /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-1", children: [
+                /* @__PURE__ */ jsx43(RichText, { text: subtitle, className: subtitleClassDesktop }),
+                /* @__PURE__ */ jsx43(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" })
               ] })
             ] }) }) }),
-            hasParticipants && /* @__PURE__ */ jsx33("div", { className: "max-w-[648px]", children: /* @__PURE__ */ jsx33(ParticipantsBlock, { tag: participantsTag, participants }) })
+            hasParticipants && /* @__PURE__ */ jsx43("div", { className: "max-w-[648px]", children: /* @__PURE__ */ jsx43(ParticipantsBlock, { tag: participantsTag, participants }) })
           ] }),
-          /* @__PURE__ */ jsx33("div", { className: "w-1/2 pt-10", children: /* @__PURE__ */ jsx33("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx33(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx33("div", { "data-step": true, children: /* @__PURE__ */ jsx33(
+          /* @__PURE__ */ jsx43("div", { className: "w-1/2 pt-10", children: /* @__PURE__ */ jsx43("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx43(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx43("div", { "data-step": true, children: /* @__PURE__ */ jsx43(
             StepCard,
             {
               step,
@@ -2594,37 +3274,25 @@ function ProcessSection({
             }
           ) }, i)) }) })
         ] }),
-        /* @__PURE__ */ jsxs16("div", { className: "hidden md:flex lg:hidden gap-10 px-8", children: [
-          /* @__PURE__ */ jsxs16("div", { className: "w-[45%] shrink-0 flex flex-col", children: [
-            /* @__PURE__ */ jsx33("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx33("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-4", children: [
-              /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-2", children: [
-                /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-                /* @__PURE__ */ jsxs16("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
-                  /* @__PURE__ */ jsx33("span", { className: "text-[#F0F0F0]", children: title }),
-                  titleSecondary ? /* @__PURE__ */ jsxs16(Fragment5, { children: [
-                    /* @__PURE__ */ jsx33("span", { className: "text-[#F0F0F0]", children: " " }),
-                    /* @__PURE__ */ jsx33("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs22("div", { className: "hidden md:flex lg:hidden gap-10 px-8", children: [
+          /* @__PURE__ */ jsxs22("div", { className: "w-[45%] shrink-0 flex flex-col", children: [
+            /* @__PURE__ */ jsx43("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx43("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-4", children: [
+              /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
+                /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+                /* @__PURE__ */ jsxs22("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
+                  /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: title }),
+                  titleSecondary ? /* @__PURE__ */ jsxs22(Fragment9, { children: [
+                    /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: " " }),
+                    /* @__PURE__ */ jsx43("span", { className: "text-[#939393]", children: titleSecondary })
                   ] }) : null
                 ] })
               ] }),
-              /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-1", children: [
-                /* @__PURE__ */ jsx33(
-                  RichText,
-                  {
-                    text: subtitle,
-                    className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
-                  }
-                ),
-                description && /* @__PURE__ */ jsx33(
-                  RichText,
-                  {
-                    text: description,
-                    className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]"
-                  }
-                )
+              /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-1", children: [
+                /* @__PURE__ */ jsx43(RichText, { text: subtitle, className: subtitleClassSmall }),
+                /* @__PURE__ */ jsx43(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
               ] })
             ] }) }) }),
-            hasParticipants && /* @__PURE__ */ jsx33(
+            hasParticipants && /* @__PURE__ */ jsx43(
               ParticipantsBlock,
               {
                 tag: participantsTag,
@@ -2633,7 +3301,7 @@ function ProcessSection({
               }
             )
           ] }),
-          /* @__PURE__ */ jsx33("div", { className: "flex-1 pt-10", children: /* @__PURE__ */ jsx33("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx33(AcademyStepCard, { step, isFirst: i === 0, className: "lg:flex-col lg:items-start" }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx33("div", { "data-step": true, children: /* @__PURE__ */ jsx33(
+          /* @__PURE__ */ jsx43("div", { className: "flex-1 pt-10", children: /* @__PURE__ */ jsx43("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx43(AcademyStepCard, { step, isFirst: i === 0, className: "lg:flex-col lg:items-start" }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx43("div", { "data-step": true, children: /* @__PURE__ */ jsx43(
             StepCard,
             {
               step,
@@ -2645,36 +3313,24 @@ function ProcessSection({
             }
           ) }, i)) }) })
         ] }),
-        /* @__PURE__ */ jsxs16("div", { className: "flex md:hidden flex-col px-5", children: [
-          /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-4 mb-10", children: [
-            /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-2", children: [
-              /* @__PURE__ */ jsx33("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-              /* @__PURE__ */ jsxs16("h2", { className: "h3", children: [
-                /* @__PURE__ */ jsx33("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs16(Fragment5, { children: [
-                  /* @__PURE__ */ jsx33("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx33("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs22("div", { className: "flex md:hidden flex-col px-5", children: [
+          /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-4 mb-10", children: [
+            /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
+              /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+              /* @__PURE__ */ jsxs22("h2", { className: "h3", children: [
+                /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs22(Fragment9, { children: [
+                  /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx43("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] })
             ] }),
-            /* @__PURE__ */ jsxs16("div", { className: "flex flex-col gap-1", children: [
-              /* @__PURE__ */ jsx33(
-                RichText,
-                {
-                  text: subtitle,
-                  className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]"
-                }
-              ),
-              description && /* @__PURE__ */ jsx33(
-                RichText,
-                {
-                  text: description,
-                  className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]"
-                }
-              )
+            /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-1", children: [
+              /* @__PURE__ */ jsx43(RichText, { text: subtitle, className: subtitleClassSmall }),
+              /* @__PURE__ */ jsx43(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
             ] })
           ] }),
-          /* @__PURE__ */ jsx33("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx33(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx33("div", { "data-step": true, children: /* @__PURE__ */ jsx33(
+          /* @__PURE__ */ jsx43("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx43(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx43("div", { "data-step": true, children: /* @__PURE__ */ jsx43(
             StepCard,
             {
               step,
@@ -2683,7 +3339,7 @@ function ProcessSection({
               fillProgress: fills[i]
             }
           ) }, i)) }),
-          hasParticipants && /* @__PURE__ */ jsx33("div", { className: "mt-4", children: /* @__PURE__ */ jsx33(ParticipantsBlock, { tag: participantsTag, participants }) })
+          hasParticipants && /* @__PURE__ */ jsx43("div", { className: "mt-4", children: /* @__PURE__ */ jsx43(ParticipantsBlock, { tag: participantsTag, participants }) })
         ] })
       ]
     }
@@ -2691,8 +3347,8 @@ function ProcessSection({
 }
 
 // src/components/ui/results-section.tsx
-import { useEffect as useEffect6, useRef as useRef7, useState as useState3, useCallback as useCallback3 } from "react";
-import { Fragment as Fragment6, jsx as jsx34, jsxs as jsxs17 } from "react/jsx-runtime";
+import { useEffect as useEffect7, useRef as useRef8, useState as useState3, useCallback as useCallback3 } from "react";
+import { Fragment as Fragment10, jsx as jsx44, jsxs as jsxs23 } from "react/jsx-runtime";
 var STEP_OFFSET = 88;
 var STAGGER = 0.18;
 var CARD_DURATION = 0.25;
@@ -2702,7 +3358,7 @@ function useResultsScroll(cardCount) {
     arr[0] = 1;
     return arr;
   });
-  const sectionRef = useRef7(null);
+  const sectionRef = useRef8(null);
   const update = useCallback3(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -2724,7 +3380,7 @@ function useResultsScroll(cardCount) {
     }
     setProgresses(newProgresses);
   }, [cardCount]);
-  useEffect6(() => {
+  useEffect7(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -2746,9 +3402,15 @@ function ResultsSection({
   title,
   titleSecondary,
   description,
+  paragraphs,
   cards,
   className
 }) {
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: false,
+    color: "secondary"
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
   const { progresses, sectionRef } = useResultsScroll(cards.length);
   const contentHeight = STEP_OFFSET * (cards.length - 1) + 240;
   let currentIndex = 0;
@@ -2758,43 +3420,37 @@ function ResultsSection({
       break;
     }
   }
-  return /* @__PURE__ */ jsxs17(
+  return /* @__PURE__ */ jsxs23(
     "section",
     {
       ref: sectionRef,
       className: cn("w-full bg-[#0A0A0A] border-t border-border py-10 md:py-16 lg:py-20", className),
       children: [
-        /* @__PURE__ */ jsx34("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs17("div", { className: "relative", style: { minHeight: `${contentHeight}px` }, children: [
-          /* @__PURE__ */ jsxs17("div", { className: "flex flex-col gap-2 max-w-[560px]", children: [
-            /* @__PURE__ */ jsx34("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs17("div", { className: "flex flex-col gap-6", children: [
-              /* @__PURE__ */ jsxs17("h2", { className: "h2", children: [
-                /* @__PURE__ */ jsx34("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs17(Fragment6, { children: [
-                  /* @__PURE__ */ jsx34("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx34("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsx44("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs23("div", { className: "relative", style: { minHeight: `${contentHeight}px` }, children: [
+          /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-2 max-w-[560px]", children: [
+            /* @__PURE__ */ jsx44("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-6", children: [
+              /* @__PURE__ */ jsxs23("h2", { className: "h2", children: [
+                /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs23(Fragment10, { children: [
+                  /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx44("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] }),
-              description && /* @__PURE__ */ jsx34(
-                RichText,
-                {
-                  text: description,
-                  className: "text-[length:var(--text-18)] leading-[1.2] text-[#939393]"
-                }
-              )
+              hasParagraphs && /* @__PURE__ */ jsx44(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" })
             ] })
           ] }),
-          /* @__PURE__ */ jsx34("div", { className: "absolute bottom-0 left-0 right-0 flex", children: cards.map((card, i) => {
+          /* @__PURE__ */ jsx44("div", { className: "absolute bottom-0 left-0 right-0 flex", children: cards.map((card, i) => {
             const progress = progresses[i];
             const offset = i === 0 ? 0 : -i * STEP_OFFSET * (1 - progress);
             const isCurrent = i === currentIndex;
             const isPast = progress >= 1 && !isCurrent;
-            return /* @__PURE__ */ jsx34(
+            return /* @__PURE__ */ jsx44(
               "div",
               {
                 className: "flex-1",
                 style: { transform: `translateY(${offset}px)` },
-                children: /* @__PURE__ */ jsxs17(
+                children: /* @__PURE__ */ jsxs23(
                   "div",
                   {
                     className: cn(
@@ -2802,7 +3458,7 @@ function ResultsSection({
                       isCurrent ? "bg-[#FFCC00] border-[#FFCC00]" : "border-[#404040]"
                     ),
                     children: [
-                      /* @__PURE__ */ jsx34(
+                      /* @__PURE__ */ jsx44(
                         "h3",
                         {
                           className: cn(
@@ -2812,7 +3468,7 @@ function ResultsSection({
                           children: card.title
                         }
                       ),
-                      /* @__PURE__ */ jsx34(
+                      /* @__PURE__ */ jsx44(
                         RichText,
                         {
                           text: card.text,
@@ -2830,33 +3486,27 @@ function ResultsSection({
             );
           }) })
         ] }) }),
-        /* @__PURE__ */ jsxs17("div", { className: "hidden md:flex lg:hidden flex-col px-8", children: [
-          /* @__PURE__ */ jsxs17("div", { className: "flex flex-col gap-2 mb-6", children: [
-            /* @__PURE__ */ jsx34("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs17("div", { className: "flex flex-col gap-4", children: [
-              /* @__PURE__ */ jsxs17("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
-                /* @__PURE__ */ jsx34("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs17(Fragment6, { children: [
-                  /* @__PURE__ */ jsx34("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx34("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs23("div", { className: "hidden md:flex lg:hidden flex-col px-8", children: [
+          /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-2 mb-6", children: [
+            /* @__PURE__ */ jsx44("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-4", children: [
+              /* @__PURE__ */ jsxs23("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
+                /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs23(Fragment10, { children: [
+                  /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx44("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] }),
-              description && /* @__PURE__ */ jsx34(
-                RichText,
-                {
-                  text: description,
-                  className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
-                }
-              )
+              hasParagraphs && /* @__PURE__ */ jsx44(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
             ] })
           ] }),
-          /* @__PURE__ */ jsx34("div", { className: "grid grid-cols-2 gap-2", children: cards.map((card, i) => /* @__PURE__ */ jsxs17(
+          /* @__PURE__ */ jsx44("div", { className: "grid grid-cols-2 gap-2", children: cards.map((card, i) => /* @__PURE__ */ jsxs23(
             "div",
             {
               className: "bg-[#FFCC00] flex flex-col justify-between p-5 h-[240px]",
               children: [
-                /* @__PURE__ */ jsx34("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
-                /* @__PURE__ */ jsx34(
+                /* @__PURE__ */ jsx44("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
+                /* @__PURE__ */ jsx44(
                   RichText,
                   {
                     text: card.text,
@@ -2868,45 +3518,39 @@ function ResultsSection({
             i
           )) })
         ] }),
-        /* @__PURE__ */ jsxs17("div", { className: "flex md:hidden flex-col px-5", children: [
-          /* @__PURE__ */ jsxs17("div", { className: "flex flex-col gap-2 mb-6", children: [
-            /* @__PURE__ */ jsx34("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs17("div", { className: "flex flex-col gap-4", children: [
-              /* @__PURE__ */ jsxs17("h2", { className: "h3", children: [
-                /* @__PURE__ */ jsx34("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs17(Fragment6, { children: [
-                  /* @__PURE__ */ jsx34("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx34("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs23("div", { className: "flex md:hidden flex-col px-5", children: [
+          /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-2 mb-6", children: [
+            /* @__PURE__ */ jsx44("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-4", children: [
+              /* @__PURE__ */ jsxs23("h2", { className: "h3", children: [
+                /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs23(Fragment10, { children: [
+                  /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx44("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] }),
-              description && /* @__PURE__ */ jsx34(
-                RichText,
-                {
-                  text: description,
-                  className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
-                }
-              )
+              hasParagraphs && /* @__PURE__ */ jsx44(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
             ] })
           ] }),
-          /* @__PURE__ */ jsx34(
+          /* @__PURE__ */ jsx44(
             "div",
             {
               className: "overflow-x-auto -mx-5",
               style: { scrollbarWidth: "none" },
-              children: /* @__PURE__ */ jsx34("div", { className: "px-5 w-fit", children: /* @__PURE__ */ jsx34(
+              children: /* @__PURE__ */ jsx44("div", { className: "px-5 w-fit", children: /* @__PURE__ */ jsx44(
                 "div",
                 {
                   className: "grid grid-rows-2 gap-2",
                   style: {
                     gridTemplateColumns: `repeat(${Math.ceil(cards.length / 2)}, 350px)`
                   },
-                  children: cards.map((card, i) => /* @__PURE__ */ jsxs17(
+                  children: cards.map((card, i) => /* @__PURE__ */ jsxs23(
                     "div",
                     {
                       className: "bg-[#FFCC00] flex flex-col justify-between p-5 h-[240px]",
                       children: [
-                        /* @__PURE__ */ jsx34("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
-                        /* @__PURE__ */ jsx34("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A]", children: card.text })
+                        /* @__PURE__ */ jsx44("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
+                        /* @__PURE__ */ jsx44("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A]", children: card.text })
                       ]
                     },
                     i
@@ -2922,9 +3566,9 @@ function ResultsSection({
 }
 
 // src/components/ui/services-section.tsx
-import { Fragment as Fragment7, jsx as jsx35, jsxs as jsxs18 } from "react/jsx-runtime";
+import { Fragment as Fragment11, jsx as jsx45, jsxs as jsxs24 } from "react/jsx-runtime";
 function Arrow({ featured }) {
-  return /* @__PURE__ */ jsx35(
+  return /* @__PURE__ */ jsx45(
     "div",
     {
       className: cn(
@@ -2932,7 +3576,7 @@ function Arrow({ featured }) {
         featured ? "text-[#0A0A0A] group-hover/card:text-[#F0F0F0]" : "text-[#404040] group-hover/card:text-[#0A0A0A]",
         "group-hover/card:-top-[2px] group-hover/card:-right-[2px]"
       ),
-      children: /* @__PURE__ */ jsx35("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx35("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
+      children: /* @__PURE__ */ jsx45("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx45("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
     }
   );
 }
@@ -2947,10 +3591,10 @@ function ServiceCard({ card }) {
     colSpan === 2 && "md:col-span-2",
     rowSpan === 2 && "lg:row-span-2"
   );
-  const content = /* @__PURE__ */ jsxs18(Fragment7, { children: [
-    !featured && /* @__PURE__ */ jsx35(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 1, variant: "yellow" }),
-    card.showArrow !== false && /* @__PURE__ */ jsx35(Arrow, { featured }),
-    /* @__PURE__ */ jsx35(
+  const content = /* @__PURE__ */ jsxs24(Fragment11, { children: [
+    !featured && /* @__PURE__ */ jsx45(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 1, variant: "yellow" }),
+    card.showArrow !== false && /* @__PURE__ */ jsx45(Arrow, { featured }),
+    /* @__PURE__ */ jsx45(
       "h3",
       {
         className: cn(
@@ -2960,14 +3604,14 @@ function ServiceCard({ card }) {
         children: card.title || "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0443\u0441\u043B\u0443\u0433\u0438"
       }
     ),
-    /* @__PURE__ */ jsx35(
+    /* @__PURE__ */ jsx45(
       "div",
       {
         className: cn(
           "gap-3 md:gap-x-10",
           card.paragraphsTwoCol && colSpan === 2 ? "grid grid-cols-1 md:grid-cols-2" : "flex flex-col"
         ),
-        children: (card.paragraphs.length > 0 ? card.paragraphs : [""]).map((p, i) => /* @__PURE__ */ jsx35(
+        children: (card.paragraphs.length > 0 ? card.paragraphs : [""]).map((p, i) => /* @__PURE__ */ jsx45(
           "p",
           {
             className: cn(
@@ -2982,40 +3626,40 @@ function ServiceCard({ card }) {
     )
   ] });
   if (card.href) {
-    return /* @__PURE__ */ jsx35("a", { href: card.href, className: rootCn, children: content });
+    return /* @__PURE__ */ jsx45("a", { href: card.href, className: rootCn, children: content });
   }
-  return /* @__PURE__ */ jsx35("div", { className: rootCn, children: content });
+  return /* @__PURE__ */ jsx45("div", { className: rootCn, children: content });
 }
 function ServicesSection({
   tag,
   title,
   titleSecondary,
   description,
+  paragraphs,
   cards,
   className
 }) {
   if (!cards || cards.length === 0) return null;
-  return /* @__PURE__ */ jsx35("section", { className: cn("w-full border-t border-[#404040] bg-[#0A0A0A] py-10 md:py-16 lg:py-20", className), children: /* @__PURE__ */ jsxs18("div", { className: "mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-    /* @__PURE__ */ jsxs18("div", { className: "mb-8 md:mb-12 flex flex-col gap-4 lg:flex-row lg:gap-10", children: [
-      /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-4 lg:w-1/2", children: [
-        tag && /* @__PURE__ */ jsx35("span", { className: "font-[family-name:var(--font-mono-family)] text-[18px] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[var(--rm-yellow-100)]", children: tag }),
-        /* @__PURE__ */ jsxs18("h2", { className: "font-[family-name:var(--font-heading-family)] text-[28px] md:text-[36px] lg:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em]", children: [
-          /* @__PURE__ */ jsx35("span", { className: "text-[#F0F0F0]", children: title }),
-          titleSecondary ? /* @__PURE__ */ jsxs18(Fragment7, { children: [
-            /* @__PURE__ */ jsx35("span", { className: "text-[#F0F0F0]", children: " " }),
-            /* @__PURE__ */ jsx35("span", { className: "text-[#939393]", children: titleSecondary })
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: false,
+    color: "secondary"
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
+  return /* @__PURE__ */ jsx45("section", { className: cn("w-full border-t border-[#404040] bg-[#0A0A0A] py-10 md:py-16 lg:py-20", className), children: /* @__PURE__ */ jsxs24("div", { className: "mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+    /* @__PURE__ */ jsxs24("div", { className: "mb-8 md:mb-12 flex flex-col gap-4 lg:flex-row lg:gap-10", children: [
+      /* @__PURE__ */ jsxs24("div", { className: "flex flex-col gap-4 lg:w-1/2", children: [
+        tag && /* @__PURE__ */ jsx45("span", { className: "font-[family-name:var(--font-mono-family)] text-[18px] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[var(--rm-yellow-100)]", children: tag }),
+        /* @__PURE__ */ jsxs24("h2", { className: "font-[family-name:var(--font-heading-family)] text-[28px] md:text-[36px] lg:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em]", children: [
+          /* @__PURE__ */ jsx45("span", { className: "text-[#F0F0F0]", children: title }),
+          titleSecondary ? /* @__PURE__ */ jsxs24(Fragment11, { children: [
+            /* @__PURE__ */ jsx45("span", { className: "text-[#F0F0F0]", children: " " }),
+            /* @__PURE__ */ jsx45("span", { className: "text-[#939393]", children: titleSecondary })
           ] }) : null
         ] })
       ] }),
-      description && /* @__PURE__ */ jsx35("div", { className: "lg:w-1/2 lg:flex lg:items-end", children: /* @__PURE__ */ jsx35(
-        RichText,
-        {
-          text: description,
-          className: "text-[14px] md:text-[16px] leading-[1.4] text-[#939393]"
-        }
-      ) })
+      hasParagraphs && /* @__PURE__ */ jsx45("div", { className: "lg:w-1/2 lg:flex lg:items-end", children: /* @__PURE__ */ jsx45(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" }) })
     ] }),
-    /* @__PURE__ */ jsx35("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 auto-rows-[minmax(260px,auto)]", children: cards.map((card, i) => /* @__PURE__ */ jsx35(ServiceCard, { card }, i)) })
+    /* @__PURE__ */ jsx45("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 auto-rows-[minmax(260px,auto)]", children: cards.map((card, i) => /* @__PURE__ */ jsx45(ServiceCard, { card }, i)) })
   ] }) });
 }
 function repackBento(cards) {
@@ -3033,9 +3677,9 @@ function repackBento(cards) {
 }
 
 // src/components/ui/experts-section.tsx
-import { jsx as jsx36, jsxs as jsxs19 } from "react/jsx-runtime";
+import { jsx as jsx46, jsxs as jsxs25 } from "react/jsx-runtime";
 function CirclePattern({ className }) {
-  return /* @__PURE__ */ jsxs19(
+  return /* @__PURE__ */ jsxs25(
     "svg",
     {
       viewBox: "0 0 698 349",
@@ -3044,21 +3688,21 @@ function CirclePattern({ className }) {
       className,
       preserveAspectRatio: "xMidYMid meet",
       children: [
-        /* @__PURE__ */ jsx36("circle", { cx: "137.5", cy: "104.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx36("circle", { cx: "277.5", cy: "104.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx36("circle", { cx: "417.5", cy: "104.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx36("circle", { cx: "557.5", cy: "104.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx36("circle", { cx: "137.5", cy: "244.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx36("circle", { cx: "417.5", cy: "244.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx36("circle", { cx: "277.5", cy: "244.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx36("circle", { cx: "557.5", cy: "244.5", r: "88", stroke: "#404040" })
+        /* @__PURE__ */ jsx46("circle", { cx: "137.5", cy: "104.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx46("circle", { cx: "277.5", cy: "104.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx46("circle", { cx: "417.5", cy: "104.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx46("circle", { cx: "557.5", cy: "104.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx46("circle", { cx: "137.5", cy: "244.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx46("circle", { cx: "417.5", cy: "244.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx46("circle", { cx: "277.5", cy: "244.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx46("circle", { cx: "557.5", cy: "244.5", r: "88", stroke: "#404040" })
       ]
     }
   );
 }
 function ExpertCardHorizontal({ expert }) {
-  return /* @__PURE__ */ jsxs19("div", { className: "flex bg-[#121212] p-8 gap-8 h-[349px]", children: [
-    /* @__PURE__ */ jsx36(
+  return /* @__PURE__ */ jsxs25("div", { className: "flex bg-[#121212] p-8 gap-8 h-[349px]", children: [
+    /* @__PURE__ */ jsx46(
       "div",
       {
         className: "w-full h-full shrink-0 bg-cover bg-center",
@@ -3068,11 +3712,11 @@ function ExpertCardHorizontal({ expert }) {
         }
       }
     ),
-    /* @__PURE__ */ jsxs19("div", { className: "flex flex-col gap-2 flex-1", children: [
-      /* @__PURE__ */ jsx36("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: expert.tag ?? "\u042D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430" }),
-      /* @__PURE__ */ jsxs19("div", { className: "flex flex-col gap-6 flex-1", children: [
-        /* @__PURE__ */ jsx36("h3", { className: "h3 text-[#F0F0F0]", children: expert.name }),
-        /* @__PURE__ */ jsx36("div", { className: "flex-1 flex items-end", children: /* @__PURE__ */ jsx36(
+    /* @__PURE__ */ jsxs25("div", { className: "flex flex-col gap-2 flex-1", children: [
+      /* @__PURE__ */ jsx46("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: expert.tag ?? "\u042D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430" }),
+      /* @__PURE__ */ jsxs25("div", { className: "flex flex-col gap-6 flex-1", children: [
+        /* @__PURE__ */ jsx46("h3", { className: "h3 text-[#F0F0F0]", children: expert.name }),
+        /* @__PURE__ */ jsx46("div", { className: "flex-1 flex items-end", children: /* @__PURE__ */ jsx46(
           RichText,
           {
             text: expert.bio,
@@ -3084,19 +3728,19 @@ function ExpertCardHorizontal({ expert }) {
   ] });
 }
 function ExpertCardVertical({ expert }) {
-  return /* @__PURE__ */ jsxs19("div", { className: "flex flex-col bg-[#121212] p-5 gap-8", children: [
-    /* @__PURE__ */ jsx36(
+  return /* @__PURE__ */ jsxs25("div", { className: "flex flex-col bg-[#121212] p-5 gap-8", children: [
+    /* @__PURE__ */ jsx46(
       "div",
       {
         className: "w-full h-[272px] bg-cover bg-center",
         style: { backgroundImage: `url(${expert.image})` }
       }
     ),
-    /* @__PURE__ */ jsxs19("div", { className: "flex flex-col gap-2", children: [
-      /* @__PURE__ */ jsx36("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: expert.tag ?? "\u042D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430" }),
-      /* @__PURE__ */ jsxs19("div", { className: "flex flex-col gap-4", children: [
-        /* @__PURE__ */ jsx36("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
-        /* @__PURE__ */ jsx36(
+    /* @__PURE__ */ jsxs25("div", { className: "flex flex-col gap-2", children: [
+      /* @__PURE__ */ jsx46("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: expert.tag ?? "\u042D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430" }),
+      /* @__PURE__ */ jsxs25("div", { className: "flex flex-col gap-4", children: [
+        /* @__PURE__ */ jsx46("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
+        /* @__PURE__ */ jsx46(
           RichText,
           {
             text: expert.bio,
@@ -3113,7 +3757,7 @@ function ExpertsSection({
 }) {
   if (experts.length === 0) return null;
   const isOdd = experts.length % 2 !== 0;
-  return /* @__PURE__ */ jsxs19(
+  return /* @__PURE__ */ jsxs25(
     "section",
     {
       className: cn(
@@ -3121,20 +3765,20 @@ function ExpertsSection({
         className
       ),
       children: [
-        /* @__PURE__ */ jsx36("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs19("div", { className: "grid grid-cols-2 gap-1", children: [
-          experts.map((expert, i) => /* @__PURE__ */ jsx36(ExpertCardHorizontal, { expert }, i)),
-          isOdd && /* @__PURE__ */ jsx36("div", { className: "flex items-center justify-center h-[349px] p-4", children: /* @__PURE__ */ jsx36(CirclePattern, { className: "w-full h-full" }) })
+        /* @__PURE__ */ jsx46("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs25("div", { className: "grid grid-cols-2 gap-1", children: [
+          experts.map((expert, i) => /* @__PURE__ */ jsx46(ExpertCardHorizontal, { expert }, i)),
+          isOdd && /* @__PURE__ */ jsx46("div", { className: "flex items-center justify-center h-[349px] p-4", children: /* @__PURE__ */ jsx46(CirclePattern, { className: "w-full h-full" }) })
         ] }) }),
-        /* @__PURE__ */ jsx36("div", { className: "hidden md:block lg:hidden px-8", children: /* @__PURE__ */ jsx36("div", { className: "flex flex-col gap-1", children: experts.map((expert, i) => /* @__PURE__ */ jsx36(ExpertCardHorizontal, { expert }, i)) }) }),
-        /* @__PURE__ */ jsx36("div", { className: "block md:hidden px-5", children: /* @__PURE__ */ jsx36("div", { className: "flex flex-col gap-1", children: experts.map((expert, i) => /* @__PURE__ */ jsx36(ExpertCardVertical, { expert }, i)) }) })
+        /* @__PURE__ */ jsx46("div", { className: "hidden md:block lg:hidden px-8", children: /* @__PURE__ */ jsx46("div", { className: "flex flex-col gap-1", children: experts.map((expert, i) => /* @__PURE__ */ jsx46(ExpertCardHorizontal, { expert }, i)) }) }),
+        /* @__PURE__ */ jsx46("div", { className: "block md:hidden px-5", children: /* @__PURE__ */ jsx46("div", { className: "flex flex-col gap-1", children: experts.map((expert, i) => /* @__PURE__ */ jsx46(ExpertCardVertical, { expert }, i)) }) })
       ]
     }
   );
 }
 
 // src/components/ui/hero-experts.tsx
-import { useState as useState4, useRef as useRef8, useEffect as useEffect7, useCallback as useCallback4 } from "react";
-import { jsx as jsx37, jsxs as jsxs20 } from "react/jsx-runtime";
+import { useState as useState4, useRef as useRef9, useEffect as useEffect8, useCallback as useCallback4 } from "react";
+import { jsx as jsx47, jsxs as jsxs26 } from "react/jsx-runtime";
 var AVATAR_SIZE = 80;
 var AVATAR_OVERLAP = 16;
 var EFFECTIVE_WIDTH = AVATAR_SIZE - AVATAR_OVERLAP;
@@ -3147,7 +3791,7 @@ function Avatar2({
   onHover,
   onLeave
 }) {
-  return /* @__PURE__ */ jsx37(
+  return /* @__PURE__ */ jsx47(
     "div",
     {
       onMouseEnter: onHover,
@@ -3161,14 +3805,14 @@ function Avatar2({
         backgroundImage: expert.image ? `url(${expert.image})` : void 0
       },
       "aria-label": expert.name,
-      children: !expert.image && /* @__PURE__ */ jsx37("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
+      children: !expert.image && /* @__PURE__ */ jsx47("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
     }
   );
 }
 function SingleExpert({ expert, quote }) {
-  return /* @__PURE__ */ jsxs20("div", { className: "flex flex-col gap-4", children: [
-    /* @__PURE__ */ jsxs20("div", { className: "flex items-center gap-4", children: [
-      /* @__PURE__ */ jsx37(
+  return /* @__PURE__ */ jsxs26("div", { className: "flex flex-col gap-4", children: [
+    /* @__PURE__ */ jsxs26("div", { className: "flex items-center gap-4", children: [
+      /* @__PURE__ */ jsx47(
         "div",
         {
           className: "relative shrink-0 rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center",
@@ -3177,15 +3821,15 @@ function SingleExpert({ expert, quote }) {
             height: AVATAR_SIZE,
             backgroundImage: expert.image ? `url(${expert.image})` : void 0
           },
-          children: !expert.image && /* @__PURE__ */ jsx37("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
+          children: !expert.image && /* @__PURE__ */ jsx47("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
         }
       ),
-      /* @__PURE__ */ jsxs20("div", { className: "flex flex-col justify-center gap-1", children: [
-        /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
-        expert.tag && /* @__PURE__ */ jsx37("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: expert.tag })
+      /* @__PURE__ */ jsxs26("div", { className: "flex flex-col justify-center gap-1", children: [
+        /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
+        expert.tag && /* @__PURE__ */ jsx47("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: expert.tag })
       ] })
     ] }),
-    quote && /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
+    quote && /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
   ] });
 }
 function MultiExperts({
@@ -3193,8 +3837,8 @@ function MultiExperts({
   quote,
   maxVisible
 }) {
-  const containerRef = useRef8(null);
-  const containerWidthRef = useRef8(0);
+  const containerRef = useRef9(null);
+  const containerWidthRef = useRef9(0);
   const [containerWidth, setContainerWidth] = useState4(0);
   const [dynamicMax, setDynamicMax] = useState4(maxVisible);
   const [activeIndex, setActiveIndex] = useState4(null);
@@ -3202,9 +3846,9 @@ function MultiExperts({
   const [tipLeft, setTipLeft] = useState4(0);
   const [tipFlipped, setTipFlipped] = useState4(false);
   const [tipContent, setTipContent] = useState4(null);
-  const pendingRef = useRef8(null);
-  const timerRef = useRef8(null);
-  useEffect7(() => {
+  const pendingRef = useRef9(null);
+  const timerRef = useRef9(null);
+  useEffect8(() => {
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver(([entry]) => {
@@ -3217,7 +3861,7 @@ function MultiExperts({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  useEffect7(() => () => {
+  useEffect8(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   }, []);
   const effectiveMax = Math.min(dynamicMax, maxVisible);
@@ -3268,9 +3912,9 @@ function MultiExperts({
     pendingRef.current = null;
     setTipVisible(false);
   };
-  return /* @__PURE__ */ jsxs20("div", { className: "flex flex-col gap-4", children: [
-    /* @__PURE__ */ jsxs20("div", { className: "relative w-full", ref: containerRef, children: [
-      /* @__PURE__ */ jsx37(
+  return /* @__PURE__ */ jsxs26("div", { className: "flex flex-col gap-4", children: [
+    /* @__PURE__ */ jsxs26("div", { className: "relative w-full", ref: containerRef, children: [
+      /* @__PURE__ */ jsx47(
         "div",
         {
           className: "pointer-events-none absolute z-50 bottom-full mb-3",
@@ -3278,7 +3922,7 @@ function MultiExperts({
             left: tipLeft,
             transform: tipFlipped ? "translateX(-100%)" : "translateX(0)"
           },
-          children: /* @__PURE__ */ jsx37(
+          children: /* @__PURE__ */ jsx47(
             "div",
             {
               className: `w-max bg-[#121212] px-5 py-4 will-change-[opacity,transform] ${tipFlipped ? "border-r" : "border-l"} border-[#F0F0F0]`,
@@ -3289,15 +3933,15 @@ function MultiExperts({
                 transform: tipVisible ? "translateY(0)" : "translateY(10px)",
                 transition: `opacity ${COLLAPSE_MS}ms ease-out, transform ${COLLAPSE_MS}ms ease-out`
               },
-              children: tipContent && /* @__PURE__ */ jsxs20("div", { className: "flex flex-col gap-1", children: [
-                /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: tipContent.name }),
-                tipContent.tag && /* @__PURE__ */ jsx37("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: tipContent.tag })
+              children: tipContent && /* @__PURE__ */ jsxs26("div", { className: "flex flex-col gap-1", children: [
+                /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: tipContent.name }),
+                tipContent.tag && /* @__PURE__ */ jsx47("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: tipContent.tag })
               ] })
             }
           )
         }
       ),
-      /* @__PURE__ */ jsx37("div", { className: "flex items-center", children: visible.map((expert, i) => /* @__PURE__ */ jsx37(
+      /* @__PURE__ */ jsx47("div", { className: "flex items-center", children: visible.map((expert, i) => /* @__PURE__ */ jsx47(
         Avatar2,
         {
           expert,
@@ -3310,7 +3954,7 @@ function MultiExperts({
         `${expert.name}-${i}`
       )) })
     ] }),
-    quote && /* @__PURE__ */ jsx37("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
+    quote && /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
   ] });
 }
 function HeroExperts({
@@ -3320,25 +3964,25 @@ function HeroExperts({
   className
 }) {
   if (experts.length === 0) return null;
-  return /* @__PURE__ */ jsx37("div", { className, children: experts.length === 1 ? /* @__PURE__ */ jsx37(SingleExpert, { expert: experts[0], quote }) : /* @__PURE__ */ jsx37(MultiExperts, { experts, quote, maxVisible }) });
+  return /* @__PURE__ */ jsx47("div", { className, children: experts.length === 1 ? /* @__PURE__ */ jsx47(SingleExpert, { expert: experts[0], quote }) : /* @__PURE__ */ jsx47(MultiExperts, { experts, quote, maxVisible }) });
 }
 
 // src/components/ui/tools-section.tsx
-import { Fragment as Fragment8, jsx as jsx38, jsxs as jsxs21 } from "react/jsx-runtime";
+import { Fragment as Fragment12, jsx as jsx48, jsxs as jsxs27 } from "react/jsx-runtime";
 function ToolCardItem({
   tool,
   useIcons
 }) {
-  return /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-4 h-full", children: [
-    /* @__PURE__ */ jsx38("div", { className: "flex items-end", children: useIcons && tool.icon ? /* @__PURE__ */ jsx38(
+  return /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-4 h-full", children: [
+    /* @__PURE__ */ jsx48("div", { className: "flex items-end", children: useIcons && tool.icon ? /* @__PURE__ */ jsx48(
       "div",
       {
         className: "h-[86px] w-[86px] bg-contain bg-center bg-no-repeat",
         style: { backgroundImage: `url(${tool.icon})` }
       }
-    ) : /* @__PURE__ */ jsx38("span", { className: "font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent [-webkit-text-stroke:1px_#404040]", children: tool.number }) }),
-    /* @__PURE__ */ jsx38("h4", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: tool.title }),
-    /* @__PURE__ */ jsx38(
+    ) : /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent [-webkit-text-stroke:1px_#404040]", children: tool.number }) }),
+    /* @__PURE__ */ jsx48("h4", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: tool.title }),
+    /* @__PURE__ */ jsx48(
       RichText,
       {
         text: tool.text,
@@ -3352,11 +3996,18 @@ function ToolsSection({
   title,
   titleSecondary,
   description,
+  paragraphs,
   tools,
   useIcons,
+  descriptionBelow,
   className
 }) {
-  return /* @__PURE__ */ jsxs21(
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: true,
+    color: "secondary"
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
+  return /* @__PURE__ */ jsxs27(
     "section",
     {
       className: cn(
@@ -3364,30 +4015,36 @@ function ToolsSection({
         className
       ),
       children: [
-        /* @__PURE__ */ jsxs21("div", { className: "hidden lg:flex flex-col gap-[88px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-          /* @__PURE__ */ jsxs21("div", { className: "flex", children: [
-            /* @__PURE__ */ jsxs21("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col gap-2", children: [
-              /* @__PURE__ */ jsx38("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-              /* @__PURE__ */ jsxs21("h2", { className: "h2", children: [
-                /* @__PURE__ */ jsx38("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs21(Fragment8, { children: [
-                  /* @__PURE__ */ jsx38("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx38("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs27("div", { className: "hidden lg:flex flex-col gap-[88px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+          descriptionBelow ? /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-4", children: [
+            /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-2", children: [
+              /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+              /* @__PURE__ */ jsxs27("h2", { className: "h2", children: [
+                /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
+                  /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx48("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] })
             ] }),
-            description && /* @__PURE__ */ jsx38("div", { className: "w-1/2 flex items-end", children: /* @__PURE__ */ jsx38(
-              RichText,
-              {
-                text: description,
-                className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393] max-w-[668px]"
-              }
-            ) })
+            hasParagraphs && /* @__PURE__ */ jsx48("div", { className: "max-w-[668px]", children: /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" }) })
+          ] }) : /* @__PURE__ */ jsxs27("div", { className: "flex", children: [
+            /* @__PURE__ */ jsxs27("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col gap-2", children: [
+              /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+              /* @__PURE__ */ jsxs27("h2", { className: "h2", children: [
+                /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
+                  /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx48("span", { className: "text-[#939393]", children: titleSecondary })
+                ] }) : null
+              ] })
+            ] }),
+            hasParagraphs && /* @__PURE__ */ jsx48("div", { className: "w-1/2 flex items-end", children: /* @__PURE__ */ jsx48("div", { className: "max-w-[668px]", children: /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" }) }) })
           ] }),
           (() => {
             const totalUnits = tools.reduce((sum, t) => sum + (t.wide ? 2 : 1), 0);
             let col = 1;
-            return /* @__PURE__ */ jsx38(
+            return /* @__PURE__ */ jsx48(
               "div",
               {
                 className: "grid",
@@ -3396,12 +4053,12 @@ function ToolsSection({
                   const span = tool.wide ? 2 : 1;
                   const start = col;
                   col += span;
-                  return /* @__PURE__ */ jsx38(
+                  return /* @__PURE__ */ jsx48(
                     "div",
                     {
                       className: "border border-[#404040] p-8",
                       style: { gridColumn: `${start} / span ${span}` },
-                      children: /* @__PURE__ */ jsx38(ToolCardItem, { tool, useIcons })
+                      children: /* @__PURE__ */ jsx48(ToolCardItem, { tool, useIcons })
                     },
                     i
                   );
@@ -3410,45 +4067,33 @@ function ToolsSection({
             );
           })()
         ] }),
-        /* @__PURE__ */ jsxs21("div", { className: "hidden md:flex lg:hidden flex-col gap-10 px-8", children: [
-          /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-2", children: [
-            /* @__PURE__ */ jsx38("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs21("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
-              /* @__PURE__ */ jsx38("span", { className: "text-[#F0F0F0]", children: title }),
-              titleSecondary ? /* @__PURE__ */ jsxs21(Fragment8, { children: [
-                /* @__PURE__ */ jsx38("span", { className: "text-[#F0F0F0]", children: " " }),
-                /* @__PURE__ */ jsx38("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs27("div", { className: "hidden md:flex lg:hidden flex-col gap-10 px-8", children: [
+          /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-2", children: [
+            /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs27("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
+              /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: title }),
+              titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
+                /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: " " }),
+                /* @__PURE__ */ jsx48("span", { className: "text-[#939393]", children: titleSecondary })
               ] }) : null
             ] }),
-            description && /* @__PURE__ */ jsx38(
-              RichText,
-              {
-                text: description,
-                className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393] mt-2"
-              }
-            )
+            hasParagraphs && /* @__PURE__ */ jsx48("div", { className: "mt-2", children: /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" }) })
           ] }),
-          /* @__PURE__ */ jsx38("div", { className: "grid grid-cols-2 gap-px bg-[#404040]", children: tools.map((tool, i) => /* @__PURE__ */ jsx38("div", { className: "bg-[#0A0A0A] p-8", children: /* @__PURE__ */ jsx38(ToolCardItem, { tool, useIcons }) }, i)) })
+          /* @__PURE__ */ jsx48("div", { className: "grid grid-cols-2 gap-px bg-[#404040]", children: tools.map((tool, i) => /* @__PURE__ */ jsx48("div", { className: "bg-[#0A0A0A] p-8", children: /* @__PURE__ */ jsx48(ToolCardItem, { tool, useIcons }) }, i)) })
         ] }),
-        /* @__PURE__ */ jsxs21("div", { className: "flex md:hidden flex-col gap-8 px-5", children: [
-          /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-2", children: [
-            /* @__PURE__ */ jsx38("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs21("h2", { className: "h3", children: [
-              /* @__PURE__ */ jsx38("span", { className: "text-[#F0F0F0]", children: title }),
-              titleSecondary ? /* @__PURE__ */ jsxs21(Fragment8, { children: [
-                /* @__PURE__ */ jsx38("span", { className: "text-[#F0F0F0]", children: " " }),
-                /* @__PURE__ */ jsx38("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs27("div", { className: "flex md:hidden flex-col gap-8 px-5", children: [
+          /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-2", children: [
+            /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs27("h2", { className: "h3", children: [
+              /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: title }),
+              titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
+                /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: " " }),
+                /* @__PURE__ */ jsx48("span", { className: "text-[#939393]", children: titleSecondary })
               ] }) : null
             ] }),
-            description && /* @__PURE__ */ jsx38(
-              RichText,
-              {
-                text: description,
-                className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
-              }
-            )
+            hasParagraphs && /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
           ] }),
-          /* @__PURE__ */ jsx38("div", { className: "flex flex-col", children: tools.map((tool, i) => /* @__PURE__ */ jsx38("div", { className: "border border-[#404040] p-6", children: /* @__PURE__ */ jsx38(ToolCardItem, { tool, useIcons }) }, i)) })
+          /* @__PURE__ */ jsx48("div", { className: "flex flex-col", children: tools.map((tool, i) => /* @__PURE__ */ jsx48("div", { className: "border border-[#404040] p-6", children: /* @__PURE__ */ jsx48(ToolCardItem, { tool, useIcons }) }, i)) })
         ] })
       ]
     }
@@ -3457,7 +4102,7 @@ function ToolsSection({
 
 // src/components/ui/accordion-faq.tsx
 import { Accordion } from "@base-ui/react";
-import { jsx as jsx39, jsxs as jsxs22 } from "react/jsx-runtime";
+import { jsx as jsx49, jsxs as jsxs28 } from "react/jsx-runtime";
 var DEFAULT_ITEMS = [
   { id: "1", q: "\u0427\u0442\u043E \u0442\u0430\u043A\u043E\u0435 Rocketmind?", a: "Rocketmind \u2014 SaaS-\u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430 \u0441 \u0433\u043E\u0442\u043E\u0432\u044B\u043C\u0438 AI-\u0430\u0433\u0435\u043D\u0442\u0430\u043C\u0438 \u0434\u043B\u044F \u0432\u0435\u0434\u0435\u043D\u0438\u044F \u043A\u0435\u0439\u0441\u043E\u0432. \u041A\u0430\u0436\u0434\u044B\u0439 \u0430\u0433\u0435\u043D\u0442 \u0441\u043F\u0435\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u043D\u0430 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0439 \u0437\u0430\u0434\u0430\u0447\u0435: \u0430\u043D\u0430\u043B\u0438\u0437, \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u044F, \u0438\u0441\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u0435 \u0440\u044B\u043D\u043A\u0430, \u0442\u0435\u0441\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0433\u0438\u043F\u043E\u0442\u0435\u0437." },
   { id: "2", q: "\u041A\u0430\u043A \u043D\u0430\u0447\u0430\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u0443?", a: "\u041F\u0435\u0440\u0435\u0439\u0434\u0438\u0442\u0435 \u043F\u043E \u0441\u0441\u044B\u043B\u043A\u0435 /a/{agent_slug}, \u0432\u0432\u0435\u0434\u0438\u0442\u0435 email \u2014 \u0438 \u0441\u0440\u0430\u0437\u0443 \u043D\u0430\u0447\u0438\u043D\u0430\u0439\u0442\u0435 \u0434\u0438\u0430\u043B\u043E\u0433. \u041D\u0438\u043A\u0430\u043A\u0438\u0445 \u0434\u043E\u043B\u0433\u0438\u0445 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0439 \u0438 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A." },
@@ -3470,17 +4115,17 @@ function AccordionFAQ({
   defaultOpen = ["3"],
   className
 }) {
-  return /* @__PURE__ */ jsx39("div", { className: cn("w-full max-w-3xl", className), children: /* @__PURE__ */ jsx39(Accordion.Root, { defaultValue: defaultOpen, className: "w-full", children: items.map((item) => /* @__PURE__ */ jsxs22(
+  return /* @__PURE__ */ jsx49("div", { className: cn("w-full max-w-3xl", className), children: /* @__PURE__ */ jsx49(Accordion.Root, { defaultValue: defaultOpen, className: "w-full", children: items.map((item) => /* @__PURE__ */ jsxs28(
     Accordion.Item,
     {
       value: item.id,
       className: "border-b border-border",
       children: [
-        /* @__PURE__ */ jsx39(Accordion.Header, { children: /* @__PURE__ */ jsxs22(Accordion.Trigger, { className: "w-full text-left py-5 pl-6 md:pl-14 flex items-start gap-4 cursor-pointer text-foreground/20 transition-colors duration-200 data-[panel-open]:text-primary hover:text-foreground/50", children: [
-          /* @__PURE__ */ jsx39("span", { className: "text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] mt-2 shrink-0 tabular-nums", children: item.id }),
-          /* @__PURE__ */ jsx39("span", { className: "font-[family-name:var(--font-heading-family)] font-bold uppercase text-3xl md:text-[length:var(--text-52)] leading-none tracking-[-0.02em]", children: item.q })
+        /* @__PURE__ */ jsx49(Accordion.Header, { children: /* @__PURE__ */ jsxs28(Accordion.Trigger, { className: "w-full text-left py-5 pl-6 md:pl-14 flex items-start gap-4 cursor-pointer text-foreground/20 transition-colors duration-200 data-[panel-open]:text-primary hover:text-foreground/50", children: [
+          /* @__PURE__ */ jsx49("span", { className: "text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] mt-2 shrink-0 tabular-nums", children: item.id }),
+          /* @__PURE__ */ jsx49("span", { className: "font-[family-name:var(--font-heading-family)] font-bold uppercase text-3xl md:text-[length:var(--text-52)] leading-none tracking-[-0.02em]", children: item.q })
         ] }) }),
-        /* @__PURE__ */ jsx39(Accordion.Panel, { className: "accordion-05-panel", children: /* @__PURE__ */ jsx39("div", { className: "overflow-hidden", children: /* @__PURE__ */ jsx39("p", { className: "pb-6 pl-6 md:px-20 text-[length:var(--text-14)] text-muted-foreground", children: item.a }) }) })
+        /* @__PURE__ */ jsx49(Accordion.Panel, { className: "accordion-05-panel", children: /* @__PURE__ */ jsx49("div", { className: "overflow-hidden", children: /* @__PURE__ */ jsx49("p", { className: "pb-6 pl-6 md:px-20 text-[length:var(--text-14)] text-muted-foreground", children: item.a }) }) })
       ]
     },
     item.id
@@ -3488,7 +4133,7 @@ function AccordionFAQ({
 }
 
 // src/components/ui/cta-section-dark.tsx
-import { jsx as jsx40, jsxs as jsxs23 } from "react/jsx-runtime";
+import { jsx as jsx50, jsxs as jsxs29 } from "react/jsx-runtime";
 function CTASectionDark({
   heading = "\u0425\u043E\u0442\u0438\u0442\u0435 \u0443\u0432\u0438\u0434\u0435\u0442\u044C, \u043A\u0430\u043A \u043A\u043E\u043C\u0430\u043D\u0434\u0430 Rocketmind \u0440\u0435\u0448\u0438\u0442 \u0432\u0430\u0448\u0443 \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0447\u0435\u0441\u043A\u0443\u044E \u0437\u0430\u0434\u0430\u0447\u0443?",
   body = "\u0417\u0430\u043F\u043E\u043B\u043D\u0438\u0442\u0435 \u0444\u043E\u0440\u043C\u0443 \u2014 \u043C\u044B \u043F\u0440\u043E\u0432\u0435\u0434\u0451\u043C \u044D\u043A\u0441\u043F\u0440\u0435\u0441\u0441\u2011\u043E\u0446\u0435\u043D\u043A\u0443 \u0441\u0438\u0442\u0443\u0430\u0446\u0438\u0438, \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0438\u043C \u0432\u043E\u0437\u043C\u043E\u0436\u043D\u044B\u0435 \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u0438 \u0440\u0435\u0448\u0435\u043D\u0438\u044F \u0438 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0438\u043C \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u0448\u0430\u0433",
@@ -3496,8 +4141,8 @@ function CTASectionDark({
   href = "#contact",
   className
 }) {
-  return /* @__PURE__ */ jsx40("section", { className: cn("dark bg-background text-foreground", className), children: /* @__PURE__ */ jsx40("div", { className: "mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14 pb-14 xl:pb-20", children: /* @__PURE__ */ jsxs23("div", { className: "relative overflow-hidden border border-border bg-[#0A0A0A] min-h-[320px] xl:min-h-[424px]", children: [
-    /* @__PURE__ */ jsx40(
+  return /* @__PURE__ */ jsx50("section", { className: cn("dark bg-background text-foreground", className), children: /* @__PURE__ */ jsx50("div", { className: "mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14 pb-14 xl:pb-20", children: /* @__PURE__ */ jsxs29("div", { className: "relative overflow-hidden border border-border bg-[#0A0A0A] min-h-[320px] xl:min-h-[424px]", children: [
+    /* @__PURE__ */ jsx50(
       "div",
       {
         className: "absolute pointer-events-none",
@@ -3507,7 +4152,7 @@ function CTASectionDark({
           left: "calc(39.6%)",
           top: -182
         },
-        children: /* @__PURE__ */ jsx40(
+        children: /* @__PURE__ */ jsx50(
           "div",
           {
             className: "w-full h-full rounded-full",
@@ -3523,7 +4168,7 @@ function CTASectionDark({
         )
       }
     ),
-    /* @__PURE__ */ jsx40(
+    /* @__PURE__ */ jsx50(
       "div",
       {
         className: "absolute inset-0 pointer-events-none",
@@ -3532,12 +4177,12 @@ function CTASectionDark({
         }
       }
     ),
-    /* @__PURE__ */ jsxs23("div", { className: "relative z-10 flex flex-col gap-9 p-8 xl:p-14 xl:max-w-[764px]", children: [
-      /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-4", children: [
-        /* @__PURE__ */ jsx40("h2", { className: "font-heading text-[28px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-foreground", children: heading }),
-        /* @__PURE__ */ jsx40("p", { className: "text-[15px] xl:text-[18px] leading-[1.2] text-muted-foreground xl:max-w-[672px]", children: body })
+    /* @__PURE__ */ jsxs29("div", { className: "relative z-10 flex flex-col gap-9 p-8 xl:p-14 xl:max-w-[764px]", children: [
+      /* @__PURE__ */ jsxs29("div", { className: "flex flex-col gap-4", children: [
+        /* @__PURE__ */ jsx50("h2", { className: "font-heading text-[28px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-foreground", children: heading }),
+        /* @__PURE__ */ jsx50("p", { className: "text-[15px] xl:text-[18px] leading-[1.2] text-muted-foreground xl:max-w-[672px]", children: body })
       ] }),
-      /* @__PURE__ */ jsx40(
+      /* @__PURE__ */ jsx50(
         "a",
         {
           href,
@@ -3550,16 +4195,16 @@ function CTASectionDark({
 }
 
 // src/components/ui/cta-section-yellow.tsx
-import { jsx as jsx41, jsxs as jsxs24 } from "react/jsx-runtime";
+import { jsx as jsx51, jsxs as jsxs30 } from "react/jsx-runtime";
 function SpiralMobile({ className }) {
-  return /* @__PURE__ */ jsx41(
+  return /* @__PURE__ */ jsx51(
     "svg",
     {
       className,
       viewBox: "0 0 353 571",
       fill: "none",
       xmlns: "http://www.w3.org/2000/svg",
-      children: /* @__PURE__ */ jsx41(
+      children: /* @__PURE__ */ jsx51(
         "path",
         {
           d: "M0.722732 352.267L78.3109 352.267C79.9663 352.169 81.6264 352.119 83.2889 352.12C84.5725 352.12 85.8512 352.167 87.1229 352.26L135.225 352.26C135.25 352.26 135.274 352.263 135.297 352.267L352.099 352.267C351.495 157.943 194.439 0.882944 0.441071 0.882921L0.441071 -1.54108e-05C195.017 7.63774e-06 352.52 157.6 352.981 352.535C352.982 352.543 352.984 352.552 352.984 352.561L352.984 352.595C352.993 352.631 353 352.669 353 352.709C353 352.748 352.993 352.786 352.984 352.823L352.984 353.392C352.984 353.401 352.981 353.41 352.98 353.418C352.52 473.47 255.519 570.479 135.679 570.585C135.666 570.788 135.518 570.953 135.323 570.99C135.294 570.996 135.264 571 135.234 571C134.998 571 134.808 570.815 134.795 570.582C117.234 570.503 99.853 567.005 83.6222 560.271C67.1798 553.45 52.2405 543.446 39.6581 530.833C27.0749 518.22 17.0958 503.244 10.291 486.762C3.59834 470.552 0.108257 453.197 0.00519946 435.66C0.00324634 435.643 4.19933e-05 435.626 1.14765e-05 435.609L1.15128e-05 434.778C4.20312e-05 434.759 0.00382621 434.741 0.006054 434.723C0.113202 424.059 2.25676 413.51 6.32689 403.651C10.5104 393.519 16.6449 384.313 24.3797 376.559C32.1156 368.805 41.3003 362.655 51.4082 358.462C57.4569 355.952 63.7655 354.173 70.201 353.15L0.722732 353.15C0.479202 353.15 0.281692 352.953 0.281692 352.709C0.281692 352.465 0.479202 352.267 0.722732 352.267ZM78.3342 353.15C69.2049 353.696 60.2178 355.762 51.7459 359.277C41.7452 363.427 32.6581 369.51 25.0043 377.183C17.3513 384.854 11.281 393.963 7.14174 403.988C3.05504 413.888 0.931653 424.49 0.884655 435.201C0.884716 435.22 0.885449 435.239 0.88551 435.258L83.0718 435.258L83.0718 417.921C82.9238 416.909 82.847 415.882 82.847 414.847C82.847 414.12 82.9271 413.412 83.0787 412.729L83.0787 353.15L78.3342 353.15ZM83.5128 436.165C83.5076 436.165 83.5025 436.164 83.4973 436.163L0.890697 436.163C1.05699 453.414 4.52143 470.477 11.1058 486.425C17.8664 502.8 27.7805 517.679 40.2817 530.21C52.7822 542.741 67.6246 552.679 83.9599 559.455C100.083 566.144 117.348 569.621 134.793 569.7L134.793 436.165L83.5128 436.165ZM98.3545 435.281C94.8645 434.311 91.6484 432.452 89.0429 429.84C86.7192 427.51 84.993 424.695 83.9608 421.632L83.9608 435.281L98.3545 435.281ZM83.9608 415.511L83.9608 417.906C84.6075 422.163 86.5925 426.133 89.6674 429.216C93.3783 432.935 98.3804 435.063 103.618 435.162L103.618 415.511L83.9608 415.511ZM134.784 399.721C133.601 387.857 128.368 376.702 119.883 368.197C111.1 359.393 99.4854 354.081 87.1849 353.15L83.9616 353.15L83.9616 404.04L94.0751 404.04C94.078 404.04 94.0809 404.041 94.0837 404.041L104.05 404.041C104.053 404.041 104.056 404.04 104.059 404.04L134.784 404.041L134.784 399.721ZM93.6341 405.332C88.8365 405.51 84.9291 408.683 83.9616 412.839L83.9616 414.62L93.6341 414.62L93.6341 405.332ZM83.9616 404.924L83.9616 410.313C85.2959 407.754 87.7245 405.789 90.6735 404.924L83.9616 404.924ZM93.6384 353.15C103.743 355.182 113.112 360.16 120.508 367.573C127.771 374.854 132.691 384.043 134.784 393.965L134.784 353.15L93.6384 353.15ZM94.5161 404.924L94.5161 414.628L103.618 414.628L103.618 404.924L94.5161 404.924ZM104.5 404.924L104.5 414.981C104.505 415.009 104.508 415.039 104.508 415.07L104.508 435.161C112.557 435.029 120.248 431.768 125.95 426.054C130.825 421.167 133.91 414.821 134.784 408.04L134.784 404.924L104.5 404.924ZM134.784 412.518C133.331 417.826 130.525 422.717 126.574 426.677C122.255 431.006 116.826 433.967 110.957 435.281L134.784 435.281L134.784 412.518ZM135.675 353.15L135.675 399.768C135.81 401.159 135.891 402.558 135.915 403.965L135.923 404.051L135.923 404.881C135.923 404.919 135.917 404.955 135.908 404.99C135.878 406.012 135.801 407.028 135.675 408.035L135.675 435.651C135.678 435.674 135.682 435.698 135.682 435.722L135.682 569.702C255.121 569.595 351.784 472.838 352.1 353.15L135.675 353.15Z",
@@ -3570,14 +4215,14 @@ function SpiralMobile({ className }) {
   );
 }
 function SpiralDesktop({ className }) {
-  return /* @__PURE__ */ jsx41(
+  return /* @__PURE__ */ jsx51(
     "svg",
     {
       className,
       viewBox: "0 0 647 401",
       fill: "none",
       xmlns: "http://www.w3.org/2000/svg",
-      children: /* @__PURE__ */ jsx41(
+      children: /* @__PURE__ */ jsx51(
         "path",
         {
           d: "M399.155 399.564V311.561C399.043 309.683 398.986 307.8 398.988 305.915C398.988 304.459 399.041 303.009 399.147 301.566V247.007C399.147 246.979 399.15 246.952 399.155 246.925V1.02195C178.965 1.70684 1.00047 179.844 1.00046 399.883H0C1.64792e-05 179.19 178.577 0.543883 399.457 0.0214942C399.468 0.0208892 399.478 0.018565 399.488 0.0185631H399.526C399.567 0.00753993 399.61 0 399.655 0C399.7 0 399.743 0.00753993 399.784 0.0185631H400.429C400.439 0.0185631 400.449 0.0218754 400.459 0.0224712C536.489 0.543841 646.411 110.566 646.531 246.492C646.761 246.507 646.947 246.674 646.989 246.896C646.996 246.929 647.001 246.963 647.001 246.997C647.001 247.265 646.791 247.481 646.527 247.495C646.438 267.413 642.474 287.127 634.844 305.537C627.115 324.186 615.78 341.131 601.488 355.402C587.196 369.674 570.227 380.993 551.551 388.711C533.183 396.302 513.519 400.261 493.647 400.378C493.628 400.38 493.609 400.384 493.589 400.384H492.647C492.626 400.384 492.606 400.379 492.586 400.377C480.502 400.255 468.549 397.824 457.377 393.208C445.897 388.463 435.465 381.504 426.68 372.731C417.893 363.957 410.925 353.54 406.173 342.075C403.33 335.214 401.314 328.059 400.155 320.759V399.564C400.155 399.84 399.931 400.064 399.655 400.064C399.379 400.064 399.155 399.84 399.155 399.564ZM400.155 311.535C400.774 321.889 403.115 332.083 407.098 341.692C411.799 353.035 418.693 363.342 427.386 372.023C436.079 380.703 446.4 387.588 457.759 392.283C468.977 396.919 480.99 399.327 493.127 399.38C493.149 399.38 493.17 399.379 493.192 399.379V306.161H473.547C472.4 306.329 471.237 306.416 470.064 306.416C469.241 306.416 468.438 306.325 467.663 306.153H400.155V311.535ZM494.219 305.661C494.219 305.667 494.218 305.673 494.217 305.678V399.373C513.764 399.185 533.098 395.255 551.169 387.787C569.724 380.119 586.582 368.874 600.782 354.695C614.98 340.516 626.241 323.682 633.92 305.154C641.499 286.867 645.438 267.284 645.528 247.498H494.219V305.661ZM493.217 288.827C492.119 292.785 490.012 296.433 487.052 299.388C484.413 302.024 481.222 303.982 477.752 305.153H493.217V288.827ZM470.816 305.153H473.53C478.354 304.419 482.852 302.168 486.345 298.68C490.56 294.471 492.971 288.798 493.083 282.857H470.816V305.153ZM452.924 247.507C439.481 248.849 426.842 254.785 417.205 264.409C407.229 274.371 401.209 287.544 400.155 301.496V305.152H457.818V293.681C457.818 293.677 457.819 293.674 457.819 293.671V282.367C457.819 282.364 457.818 282.36 457.818 282.357L457.819 247.507H452.924ZM459.283 294.181C459.484 299.623 463.08 304.054 467.788 305.152H469.807V294.181H459.283ZM458.819 305.152H464.926C462.026 303.638 459.8 300.884 458.819 297.539V305.152ZM400.155 294.176C402.457 282.715 408.098 272.088 416.497 263.7C424.747 255.462 435.16 249.881 446.403 247.507H400.155V294.176ZM458.819 293.181H469.816V282.857H458.819V293.181ZM458.819 281.857H470.215C470.248 281.85 470.281 281.847 470.316 281.847H493.081C492.932 272.718 489.238 263.995 482.762 257.528C477.225 251.998 470.034 248.499 462.35 247.507H458.819V281.857ZM467.425 247.507C473.439 249.155 478.981 252.339 483.468 256.819C488.374 261.718 491.728 267.876 493.217 274.532V247.507H467.425ZM400.155 246.497H452.978C454.553 246.344 456.14 246.252 457.733 246.225L457.831 246.216H458.772C458.814 246.216 458.855 246.222 458.895 246.232C460.053 246.266 461.204 246.354 462.345 246.497H493.637C493.663 246.493 493.69 246.489 493.717 246.489H645.531C645.409 111.017 535.773 1.37951 400.155 1.02097V246.497Z",
@@ -3594,29 +4239,29 @@ function CTASectionYellow({
   href = "#contact",
   className
 }) {
-  return /* @__PURE__ */ jsx41("section", { className: cn("px-5 md:px-8 xl:px-14 pb-5 md:pb-8 xl:pb-14", className), children: /* @__PURE__ */ jsx41("div", { className: "mx-auto max-w-[1512px]", children: /* @__PURE__ */ jsxs24("div", { className: "bg-[#FFCC00] relative overflow-hidden rounded-none aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]", children: [
-    /* @__PURE__ */ jsx41(
+  return /* @__PURE__ */ jsx51("section", { className: cn("px-5 md:px-8 xl:px-14 pb-5 md:pb-8 xl:pb-14", className), children: /* @__PURE__ */ jsx51("div", { className: "mx-auto max-w-[1512px]", children: /* @__PURE__ */ jsxs30("div", { className: "bg-[#FFCC00] relative overflow-hidden rounded-none aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]", children: [
+    /* @__PURE__ */ jsx51(
       "div",
       {
         className: "absolute inset-0 pointer-events-none md:hidden",
         "aria-hidden": "true",
-        children: /* @__PURE__ */ jsx41(SpiralMobile, { className: "w-full h-full object-cover object-center" })
+        children: /* @__PURE__ */ jsx51(SpiralMobile, { className: "w-full h-full object-cover object-center" })
       }
     ),
-    /* @__PURE__ */ jsx41(
+    /* @__PURE__ */ jsx51(
       "div",
       {
         className: "absolute right-0 top-0 bottom-0 pointer-events-none hidden md:flex items-center",
         "aria-hidden": "true",
-        children: /* @__PURE__ */ jsx41(SpiralDesktop, { className: "h-full w-auto object-contain" })
+        children: /* @__PURE__ */ jsx51(SpiralDesktop, { className: "h-full w-auto object-contain" })
       }
     ),
-    /* @__PURE__ */ jsx41("div", { className: "relative z-10 p-5 md:px-8 md:py-11 xl:px-14", children: /* @__PURE__ */ jsxs24("div", { className: "flex flex-col gap-9 md:max-w-[75%] lg:max-w-[50%]", children: [
-      /* @__PURE__ */ jsxs24("div", { className: "flex flex-col gap-4", children: [
-        /* @__PURE__ */ jsx41("h2", { className: "font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]", children: heading }),
-        /* @__PURE__ */ jsx41("p", { className: "text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A]", children: body })
+    /* @__PURE__ */ jsx51("div", { className: "relative z-10 p-5 md:px-8 md:py-11 xl:px-14", children: /* @__PURE__ */ jsxs30("div", { className: "flex flex-col gap-9 md:max-w-[75%] lg:max-w-[50%]", children: [
+      /* @__PURE__ */ jsxs30("div", { className: "flex flex-col gap-4", children: [
+        /* @__PURE__ */ jsx51("h2", { className: "font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]", children: heading }),
+        /* @__PURE__ */ jsx51("p", { className: "text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A]", children: body })
       ] }),
-      /* @__PURE__ */ jsx41(
+      /* @__PURE__ */ jsx51(
         "a",
         {
           href,
@@ -3629,22 +4274,22 @@ function CTASectionYellow({
 }
 
 // src/components/ui/infinite-logo-marquee.tsx
-import { jsx as jsx42, jsxs as jsxs25 } from "react/jsx-runtime";
+import { jsx as jsx52, jsxs as jsxs31 } from "react/jsx-runtime";
 function LogoSequence({
   logos,
   gap,
   maxLogoHeight
 }) {
-  return /* @__PURE__ */ jsx42(
+  return /* @__PURE__ */ jsx52(
     "div",
     {
       className: "flex shrink-0 items-center py-[10px]",
       style: { gap: `${gap}px`, paddingRight: `${gap}px` },
-      children: logos.map((logo) => /* @__PURE__ */ jsx42(
+      children: logos.map((logo) => /* @__PURE__ */ jsx52(
         "div",
         {
           className: "flex shrink-0 items-center justify-center opacity-90",
-          children: /* @__PURE__ */ jsx42(
+          children: /* @__PURE__ */ jsx52(
             "img",
             {
               src: logo.src,
@@ -3682,7 +4327,7 @@ function InfiniteLogoMarquee({
   const marqueeStyle = {
     "--hero-marquee-duration": `${speedSeconds}s`
   };
-  return /* @__PURE__ */ jsx42(
+  return /* @__PURE__ */ jsx52(
     "div",
     {
       className: cn(
@@ -3690,16 +4335,16 @@ function InfiniteLogoMarquee({
         className
       ),
       style: buildFadeMask(fadeWidth),
-      children: /* @__PURE__ */ jsxs25("div", { className: `partner-logo-marquee-track${reverse ? " partner-logo-marquee-track--ltr" : ""}`, style: marqueeStyle, children: [
-        /* @__PURE__ */ jsx42(LogoSequence, { logos, gap, maxLogoHeight }),
-        /* @__PURE__ */ jsx42(LogoSequence, { logos, gap, maxLogoHeight })
+      children: /* @__PURE__ */ jsxs31("div", { className: `partner-logo-marquee-track${reverse ? " partner-logo-marquee-track--ltr" : ""}`, style: marqueeStyle, children: [
+        /* @__PURE__ */ jsx52(LogoSequence, { logos, gap, maxLogoHeight }),
+        /* @__PURE__ */ jsx52(LogoSequence, { logos, gap, maxLogoHeight })
       ] })
     }
   );
 }
 
 // src/components/ui/mobile-nav.tsx
-import { useState as useState5, useCallback as useCallback5, useEffect as useEffect8, useRef as useRef9 } from "react";
+import { useState as useState5, useCallback as useCallback5, useEffect as useEffect9, useRef as useRef10 } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import Link4 from "next/link";
@@ -3797,7 +4442,7 @@ var LEGAL_LINKS = [
 ];
 
 // src/components/ui/mobile-nav.tsx
-import { Fragment as Fragment9, jsx as jsx43, jsxs as jsxs26 } from "react/jsx-runtime";
+import { Fragment as Fragment13, jsx as jsx53, jsxs as jsxs32 } from "react/jsx-runtime";
 function BurgerIcon({
   open,
   barClass = "bg-foreground"
@@ -3806,18 +4451,22 @@ function BurgerIcon({
     "absolute left-0 block h-[2px] w-full rounded-full transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
     barClass
   );
-  return /* @__PURE__ */ jsxs26("div", { className: "relative h-[10px] w-[40px]", children: [
-    /* @__PURE__ */ jsx43("span", { className: cn(bar, open ? "top-[4px] rotate-45" : "top-0") }),
-    /* @__PURE__ */ jsx43("span", { className: cn(bar, open ? "top-[4px] -rotate-45" : "top-[8px]") })
+  return /* @__PURE__ */ jsxs32("div", { className: "relative h-[10px] w-[40px]", children: [
+    /* @__PURE__ */ jsx53("span", { className: cn(bar, open ? "top-[4px] rotate-45" : "top-0") }),
+    /* @__PURE__ */ jsx53("span", { className: cn(bar, open ? "top-[4px] -rotate-45" : "top-[8px]") })
   ] });
 }
-function MobileNav({ className }) {
+function MobileNav({
+  className,
+  nav
+}) {
+  const navItems = nav ?? HEADER_NAV;
   const [isOpen, setIsOpen] = useState5(false);
   const [accordions, setAccordions] = useState5({});
   const [mounted, setMounted] = useState5(false);
   const [origin, setOrigin] = useState5(null);
-  const triggerRef = useRef9(null);
-  useEffect8(() => setMounted(true), []);
+  const triggerRef = useRef10(null);
+  useEffect9(() => setMounted(true), []);
   const open = useCallback5(() => {
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect();
@@ -3838,13 +4487,13 @@ function MobileNav({ className }) {
   const toggleAccordion = useCallback5((label) => {
     setAccordions((prev) => ({ ...prev, [label]: !prev[label] }));
   }, []);
-  useEffect8(() => {
+  useEffect9(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-  useEffect8(() => {
+  useEffect9(() => {
     if (!isOpen) return;
     const handler = (e) => {
       if (e.key === "Escape") close();
@@ -3856,7 +4505,7 @@ function MobileNav({ className }) {
   const cy = origin?.cy ?? 28;
   const clipOrigin = `${cx}px ${cy}px`;
   const overlay = mounted ? createPortal(
-    /* @__PURE__ */ jsx43(AnimatePresence, { children: isOpen && /* @__PURE__ */ jsxs26(
+    /* @__PURE__ */ jsx53(AnimatePresence, { children: isOpen && /* @__PURE__ */ jsxs32(
       motion.div,
       {
         initial: { clipPath: `circle(0px at ${clipOrigin})` },
@@ -3870,7 +4519,7 @@ function MobileNav({ className }) {
         },
         className: "fixed inset-0 z-[55] overflow-y-auto bg-white",
         children: [
-          origin && /* @__PURE__ */ jsx43(
+          origin && /* @__PURE__ */ jsx53(
             "button",
             {
               type: "button",
@@ -3878,20 +4527,20 @@ function MobileNav({ className }) {
               className: "absolute flex h-7 w-10 items-center justify-center",
               style: { top: origin.top, right: origin.right },
               "aria-label": "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E",
-              children: /* @__PURE__ */ jsx43(BurgerIcon, { open: true, barClass: "bg-black" })
+              children: /* @__PURE__ */ jsx53(BurgerIcon, { open: true, barClass: "bg-black" })
             }
           ),
-          /* @__PURE__ */ jsxs26(
+          /* @__PURE__ */ jsxs32(
             "nav",
             {
               className: "flex flex-col px-5 pb-16 pt-28 md:px-24",
               "aria-label": "\u041C\u043E\u0431\u0438\u043B\u044C\u043D\u0430\u044F \u043D\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044F",
               children: [
-                /* @__PURE__ */ jsx43("p", { className: "mb-6 font-mono text-[11px] uppercase tracking-[0.1em] text-black/30", children: "Navigation" }),
-                HEADER_NAV.map((item, index) => {
+                /* @__PURE__ */ jsx53("p", { className: "mb-6 font-mono text-[11px] uppercase tracking-[0.1em] text-black/30", children: "Navigation" }),
+                navItems.map((item, index) => {
                   const hasDropdown = item.items && item.items.length > 0;
                   const isExpanded = accordions[item.label] ?? false;
-                  return /* @__PURE__ */ jsx43(
+                  return /* @__PURE__ */ jsx53(
                     motion.div,
                     {
                       initial: { opacity: 0, y: 16 },
@@ -3902,8 +4551,8 @@ function MobileNav({ className }) {
                         ease: [0.23, 1, 0.32, 1]
                       },
                       className: "border-b border-black/10",
-                      children: hasDropdown ? /* @__PURE__ */ jsxs26(Fragment9, { children: [
-                        /* @__PURE__ */ jsxs26(
+                      children: hasDropdown ? /* @__PURE__ */ jsxs32(Fragment13, { children: [
+                        /* @__PURE__ */ jsxs32(
                           "button",
                           {
                             type: "button",
@@ -3911,8 +4560,8 @@ function MobileNav({ className }) {
                             className: "flex w-full items-center justify-between gap-4 py-5 font-mono text-[22px] font-light uppercase leading-[1.16] tracking-[0.02em] text-black",
                             "aria-expanded": isExpanded,
                             children: [
-                              /* @__PURE__ */ jsx43("span", { children: item.label }),
-                              /* @__PURE__ */ jsx43(
+                              /* @__PURE__ */ jsx53("span", { children: item.label }),
+                              /* @__PURE__ */ jsx53(
                                 "svg",
                                 {
                                   xmlns: "http://www.w3.org/2000/svg",
@@ -3928,13 +4577,13 @@ function MobileNav({ className }) {
                                     "shrink-0 text-black/30 transition-transform duration-300",
                                     isExpanded && "rotate-180"
                                   ),
-                                  children: /* @__PURE__ */ jsx43("path", { d: "M1 1L5 5L9 1" })
+                                  children: /* @__PURE__ */ jsx53("path", { d: "M1 1L5 5L9 1" })
                                 }
                               )
                             ]
                           }
                         ),
-                        /* @__PURE__ */ jsx43(AnimatePresence, { initial: false, children: isExpanded && /* @__PURE__ */ jsx43(
+                        /* @__PURE__ */ jsx53(AnimatePresence, { initial: false, children: isExpanded && /* @__PURE__ */ jsx53(
                           motion.div,
                           {
                             initial: { height: 0, opacity: 0 },
@@ -3945,25 +4594,25 @@ function MobileNav({ className }) {
                               opacity: { duration: 0.25 }
                             },
                             className: "overflow-hidden",
-                            children: /* @__PURE__ */ jsxs26("div", { className: "grid gap-0.5 pb-5", children: [
-                              /* @__PURE__ */ jsx43(
+                            children: /* @__PURE__ */ jsxs32("div", { className: "grid gap-0.5 pb-5", children: [
+                              /* @__PURE__ */ jsx53(
                                 Link4,
                                 {
                                   href: item.href,
                                   onClick: close,
                                   className: "rounded-sm px-3 py-3 transition-colors duration-150 hover:bg-black/5 border-b border-black/10 mb-1",
-                                  children: /* @__PURE__ */ jsx43("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black/50", children: "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u043A \u0440\u0430\u0437\u0434\u0435\u043B\u0443" })
+                                  children: /* @__PURE__ */ jsx53("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black/50", children: "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u043A \u0440\u0430\u0437\u0434\u0435\u043B\u0443" })
                                 }
                               ),
-                              item.items.map((sub) => /* @__PURE__ */ jsxs26(
+                              item.items.map((sub) => /* @__PURE__ */ jsxs32(
                                 Link4,
                                 {
                                   href: sub.href,
                                   onClick: close,
                                   className: "rounded-sm px-3 py-3 transition-colors duration-150 hover:bg-black/5",
                                   children: [
-                                    /* @__PURE__ */ jsx43("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black", children: sub.title }),
-                                    /* @__PURE__ */ jsx43("span", { className: "mt-1 block text-[13px] leading-[1.45] text-black/50", children: sub.description })
+                                    /* @__PURE__ */ jsx53("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black", children: sub.title }),
+                                    /* @__PURE__ */ jsx53("span", { className: "mt-1 block text-[13px] leading-[1.45] text-black/50", children: sub.description })
                                   ]
                                 },
                                 sub.href
@@ -3971,7 +4620,7 @@ function MobileNav({ className }) {
                             ] })
                           }
                         ) })
-                      ] }) : /* @__PURE__ */ jsx43(
+                      ] }) : /* @__PURE__ */ jsx53(
                         Link4,
                         {
                           href: item.href,
@@ -3993,8 +4642,8 @@ function MobileNav({ className }) {
     ) }),
     document.body
   ) : null;
-  return /* @__PURE__ */ jsxs26("div", { className: cn("hero-burger", className), children: [
-    /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsxs32("div", { className: cn("hero-burger", className), children: [
+    /* @__PURE__ */ jsx53(
       "button",
       {
         ref: triggerRef,
@@ -4003,7 +4652,7 @@ function MobileNav({ className }) {
         className: "relative z-[60] flex h-7 w-10 items-center justify-center",
         "aria-label": isOpen ? "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E" : "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E",
         "aria-expanded": isOpen,
-        children: /* @__PURE__ */ jsx43(BurgerIcon, { open: isOpen })
+        children: /* @__PURE__ */ jsx53(BurgerIcon, { open: isOpen })
       }
     ),
     overlay
@@ -4013,14 +4662,16 @@ function MobileNav({ className }) {
 // src/components/ui/rocketmind-menu.tsx
 import Link5 from "next/link";
 import { useRouter } from "next/navigation";
-import { jsx as jsx44, jsxs as jsxs27 } from "react/jsx-runtime";
+import { jsx as jsx54, jsxs as jsxs33 } from "react/jsx-runtime";
 function RocketmindMenu({
   className,
   itemClassName,
-  showDropdowns = true
+  showDropdowns = true,
+  nav
 }) {
-  const dropdownItems = showDropdowns ? HEADER_NAV.filter((item) => item.items && item.items.length > 0) : [];
-  const plainItems = HEADER_NAV.filter(
+  const source = nav ?? HEADER_NAV;
+  const dropdownItems = showDropdowns ? source.filter((item) => item.items && item.items.length > 0) : [];
+  const plainItems = source.filter(
     (item) => !showDropdowns || !item.items || item.items.length === 0
   );
   const linkClass = cn(
@@ -4032,15 +4683,15 @@ function RocketmindMenu({
   );
   return (
     // gap-0.5 at the end wins over gap-5 lg:gap-7 coming from className via tailwind-merge
-    /* @__PURE__ */ jsxs27("div", { className: cn("relative z-10 flex items-center", className, "gap-0 lg:gap-0"), children: [
-      dropdownItems.length > 0 && /* @__PURE__ */ jsx44(
+    /* @__PURE__ */ jsxs33("div", { className: cn("relative z-10 flex items-center", className, "gap-0 lg:gap-0"), children: [
+      dropdownItems.length > 0 && /* @__PURE__ */ jsx54(
         NavigationMenu,
         {
           className: cn(
             "relative flex max-w-max items-center",
             "[&>div]:left-auto [&>div]:right-0 [&>div]:justify-end"
           ),
-          children: /* @__PURE__ */ jsx44(NavigationMenuList, { className: "flex list-none items-center gap-0.5", children: dropdownItems.map((item) => /* @__PURE__ */ jsx44(
+          children: /* @__PURE__ */ jsx54(NavigationMenuList, { className: "flex list-none items-center gap-0.5", children: dropdownItems.map((item) => /* @__PURE__ */ jsx54(
             DropdownSection,
             {
               item,
@@ -4050,7 +4701,7 @@ function RocketmindMenu({
           )) })
         }
       ),
-      plainItems.length > 0 && /* @__PURE__ */ jsx44("nav", { className: "flex list-none items-center gap-0.5", children: plainItems.map((item) => /* @__PURE__ */ jsx44(Link5, { href: item.href, className: linkClass, children: /* @__PURE__ */ jsx44("span", { children: item.label }) }, item.label)) })
+      plainItems.length > 0 && /* @__PURE__ */ jsx54("nav", { className: "flex list-none items-center gap-0.5", children: plainItems.map((item) => /* @__PURE__ */ jsx54(Link5, { href: item.href, className: linkClass, children: /* @__PURE__ */ jsx54("span", { children: item.label }) }, item.label)) })
     ] })
   );
 }
@@ -4059,8 +4710,8 @@ function DropdownSection({
   itemClassName
 }) {
   const router = useRouter();
-  return /* @__PURE__ */ jsxs27(NavigationMenuItem, { children: [
-    /* @__PURE__ */ jsx44(
+  return /* @__PURE__ */ jsxs33(NavigationMenuItem, { children: [
+    /* @__PURE__ */ jsx54(
       NavigationMenuTrigger,
       {
         className: cn(
@@ -4072,24 +4723,24 @@ function DropdownSection({
           itemClassName
         ),
         onClick: () => router.push(item.href),
-        children: /* @__PURE__ */ jsx44("span", { children: item.label })
+        children: /* @__PURE__ */ jsx54("span", { children: item.label })
       }
     ),
-    /* @__PURE__ */ jsx44(NavigationMenuContent, { children: /* @__PURE__ */ jsx44(
+    /* @__PURE__ */ jsx54(NavigationMenuContent, { children: /* @__PURE__ */ jsx54(
       "ul",
       {
         className: cn(
           "grid gap-0.5 p-2",
           item.items.length > 4 ? "w-[680px] grid-cols-3" : "w-[420px] grid-cols-2"
         ),
-        children: item.items.map((navItem) => /* @__PURE__ */ jsx44("li", { children: /* @__PURE__ */ jsx44(NavigationMenuLink, { asChild: true, children: /* @__PURE__ */ jsxs27(
+        children: item.items.map((navItem) => /* @__PURE__ */ jsx54("li", { children: /* @__PURE__ */ jsx54(NavigationMenuLink, { asChild: true, children: /* @__PURE__ */ jsxs33(
           Link5,
           {
             href: navItem.href,
             className: "flex flex-col rounded-sm px-2.5 py-2 text-left transition-[background-color,color,opacity] duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
             children: [
-              /* @__PURE__ */ jsx44("span", { className: "font-mono text-[11px] uppercase tracking-[0.08em] text-foreground", children: navItem.title }),
-              /* @__PURE__ */ jsx44("span", { className: "mt-0.5 text-[12px] leading-[1.4] text-muted-foreground", children: navItem.description })
+              /* @__PURE__ */ jsx54("span", { className: "font-mono text-[11px] uppercase tracking-[0.08em] text-foreground", children: navItem.title }),
+              /* @__PURE__ */ jsx54("span", { className: "mt-0.5 text-[12px] leading-[1.4] text-muted-foreground", children: navItem.description })
             ]
           }
         ) }) }, navItem.href))
@@ -4099,9 +4750,9 @@ function DropdownSection({
 }
 
 // src/components/ui/wave-animation.tsx
-import { useEffect as useEffect9, useRef as useRef10 } from "react";
+import { useEffect as useEffect10, useRef as useRef11 } from "react";
 import * as THREE from "three";
-import { jsx as jsx45 } from "react/jsx-runtime";
+import { jsx as jsx55 } from "react/jsx-runtime";
 function WaveAnimation({
   width,
   height,
@@ -4114,8 +4765,8 @@ function WaveAnimation({
   fadeFar = 200,
   className
 }) {
-  const containerRef = useRef10(null);
-  useEffect9(() => {
+  const containerRef = useRef11(null);
+  useEffect10(() => {
     const container = containerRef.current;
     if (!container) return;
     const fixed = typeof width === "number" && typeof height === "number";
@@ -4246,7 +4897,7 @@ function WaveAnimation({
     fadeFar
   ]);
   const hasFixedSize = typeof width === "number" && typeof height === "number";
-  return /* @__PURE__ */ jsx45(
+  return /* @__PURE__ */ jsx55(
     "div",
     {
       ref: containerRef,
@@ -4260,21 +4911,28 @@ function WaveAnimation({
 import Link6 from "next/link";
 import dynamic from "next/dynamic";
 import { ChevronUp } from "lucide-react";
-import { jsx as jsx46, jsxs as jsxs28 } from "react/jsx-runtime";
+import { jsx as jsx56, jsxs as jsxs34 } from "react/jsx-runtime";
 var DottedSurface2 = dynamic(
   () => import("./dotted-surface-OKVVT7AA.js").then((m) => m.DottedSurface),
   { ssr: false, loading: () => null }
 );
-var COMPANY_LINKS = [
+var DEFAULT_COMPANY_LINKS = [
   { href: "/about", label: "\u041E Rocketmind" },
   { href: "/cases", label: "\u041A\u0435\u0439\u0441\u044B" },
-  { href: "/media", label: "\u041C\u0435\u0434\u0438\u0430" },
-  ...LEGAL_LINKS.map((l) => ({ href: l.href, label: l.label }))
+  { href: "/media", label: "\u041C\u0435\u0434\u0438\u0430" }
 ];
+var CONSULTING_HREF = "/products?filter=consulting";
+var ACADEMY_HREF = "/products?filter=academy";
+var AI_PRODUCTS_HREF = "/products?filter=ai-products";
+function pickItems(nav, hrefMatch) {
+  if (!nav) return null;
+  const section = nav.find((s) => s.href === hrefMatch || s.href.endsWith(hrefMatch));
+  return section?.items ?? null;
+}
 function FooterColumn({ title, links }) {
-  return /* @__PURE__ */ jsxs28("div", { children: [
-    /* @__PURE__ */ jsx46("p", { className: "font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50", children: title }),
-    /* @__PURE__ */ jsx46("ul", { className: "mt-4 flex flex-col gap-2.5", children: links.map((link) => /* @__PURE__ */ jsx46("li", { children: /* @__PURE__ */ jsx46(
+  return /* @__PURE__ */ jsxs34("div", { children: [
+    /* @__PURE__ */ jsx56("p", { className: "font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50", children: title }),
+    /* @__PURE__ */ jsx56("ul", { className: "mt-4 flex flex-col gap-2.5", children: links.map((link) => /* @__PURE__ */ jsx56("li", { children: /* @__PURE__ */ jsx56(
       Link6,
       {
         href: link.href,
@@ -4284,23 +4942,29 @@ function FooterColumn({ title, links }) {
     ) }, link.href)) })
   ] });
 }
-function SiteFooter({ basePath = "", className, children }) {
-  const consultingLinks = CONSULTING_SERVICES.map((s) => ({
-    href: s.href,
-    label: s.title
-  }));
-  const academyLinks = ACADEMY_COURSES.map((s) => ({
-    href: s.href,
-    label: s.title
-  }));
-  const aiProductLinks = AI_PRODUCTS.map((s) => ({
-    href: s.href,
-    label: s.title
-  }));
-  return /* @__PURE__ */ jsxs28("footer", { className: className ?? "relative overflow-hidden border-t border-border bg-background", children: [
-    /* @__PURE__ */ jsxs28("div", { className: "relative z-10 mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14", children: [
-      /* @__PURE__ */ jsxs28("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsx46(Link6, { href: "/", className: "inline-flex items-center", children: /* @__PURE__ */ jsx46(
+function SiteFooter({
+  basePath = "",
+  className,
+  children,
+  nav,
+  companyLinks,
+  legalLinks
+}) {
+  const consultingItems = pickItems(nav, CONSULTING_HREF) ?? CONSULTING_SERVICES;
+  const academyItems = pickItems(nav, ACADEMY_HREF) ?? ACADEMY_COURSES;
+  const aiProductItems = pickItems(nav, AI_PRODUCTS_HREF) ?? AI_PRODUCTS;
+  const consultingLinks = consultingItems.map((s) => ({ href: s.href, label: s.title }));
+  const academyLinks = academyItems.map((s) => ({ href: s.href, label: s.title }));
+  const aiProductLinks = aiProductItems.map((s) => ({ href: s.href, label: s.title }));
+  const resolvedLegalLinks = legalLinks ?? LEGAL_LINKS.map((l) => ({ href: l.href, label: l.label }));
+  const resolvedCompanyLinks = [
+    ...companyLinks ?? DEFAULT_COMPANY_LINKS,
+    ...resolvedLegalLinks
+  ];
+  return /* @__PURE__ */ jsxs34("footer", { className: className ?? "relative overflow-hidden border-t border-border bg-background", children: [
+    /* @__PURE__ */ jsxs34("div", { className: "relative z-10 mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14", children: [
+      /* @__PURE__ */ jsxs34("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx56(Link6, { href: "/", className: "inline-flex items-center", children: /* @__PURE__ */ jsx56(
           "img",
           {
             src: `${basePath}/with_descriptor_dark_background_en.svg`,
@@ -4308,56 +4972,56 @@ function SiteFooter({ basePath = "", className, children }) {
             className: "h-[42px] w-auto"
           }
         ) }),
-        /* @__PURE__ */ jsx46(
+        /* @__PURE__ */ jsx56(
           "button",
           {
             type: "button",
             onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }),
             "aria-label": "\u041D\u0430\u0432\u0435\u0440\u0445",
             className: "inline-flex items-center justify-center w-10 h-10 rounded-sm bg-secondary text-secondary-foreground transition-opacity duration-150 hover:opacity-[0.88] cursor-pointer",
-            children: /* @__PURE__ */ jsx46(ChevronUp, { size: 20, strokeWidth: 2 })
+            children: /* @__PURE__ */ jsx56(ChevronUp, { size: 20, strokeWidth: 2 })
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs28("div", { className: "mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12", children: [
-        /* @__PURE__ */ jsxs28("div", { className: "flex flex-col justify-between", children: [
-          /* @__PURE__ */ jsx46(FooterColumn, { title: "\u041A\u043E\u043D\u0441\u0430\u043B\u0442\u0438\u043D\u0433", links: consultingLinks.slice(0, 4) }),
-          /* @__PURE__ */ jsxs28("p", { className: "mt-8 text-[13px] text-muted-foreground/50 hidden md:block", children: [
+      /* @__PURE__ */ jsxs34("div", { className: "mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12", children: [
+        /* @__PURE__ */ jsxs34("div", { className: "flex flex-col justify-between", children: [
+          /* @__PURE__ */ jsx56(FooterColumn, { title: "\u041A\u043E\u043D\u0441\u0430\u043B\u0442\u0438\u043D\u0433", links: consultingLinks.slice(0, 4) }),
+          /* @__PURE__ */ jsxs34("p", { className: "mt-8 text-[13px] text-muted-foreground/50 hidden md:block", children: [
             "\xA9 ",
             (/* @__PURE__ */ new Date()).getFullYear(),
             " Rocketmind"
           ] })
         ] }),
-        /* @__PURE__ */ jsx46(FooterColumn, { title: "\xA0", links: consultingLinks.slice(4) }),
-        /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-10", children: [
-          /* @__PURE__ */ jsx46(FooterColumn, { title: "\u041E\u043D\u043B\u0430\u0439\u043D-\u0448\u043A\u043E\u043B\u0430", links: academyLinks }),
-          /* @__PURE__ */ jsx46(FooterColumn, { title: "AI-\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B", links: aiProductLinks })
+        /* @__PURE__ */ jsx56(FooterColumn, { title: "\xA0", links: consultingLinks.slice(4) }),
+        /* @__PURE__ */ jsxs34("div", { className: "flex flex-col gap-10", children: [
+          /* @__PURE__ */ jsx56(FooterColumn, { title: "\u041E\u043D\u043B\u0430\u0439\u043D-\u0448\u043A\u043E\u043B\u0430", links: academyLinks }),
+          /* @__PURE__ */ jsx56(FooterColumn, { title: "AI-\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B", links: aiProductLinks })
         ] }),
-        /* @__PURE__ */ jsx46(FooterColumn, { title: "\u041A\u043E\u043C\u043F\u0430\u043D\u0438\u044F", links: COMPANY_LINKS })
+        /* @__PURE__ */ jsx56(FooterColumn, { title: "\u041A\u043E\u043C\u043F\u0430\u043D\u0438\u044F", links: resolvedCompanyLinks })
       ] }),
-      /* @__PURE__ */ jsxs28("p", { className: "mt-10 text-[13px] text-muted-foreground/50 md:hidden", children: [
+      /* @__PURE__ */ jsxs34("p", { className: "mt-10 text-[13px] text-muted-foreground/50 md:hidden", children: [
         "\xA9 ",
         (/* @__PURE__ */ new Date()).getFullYear(),
         " Rocketmind"
       ] })
     ] }),
-    /* @__PURE__ */ jsxs28("div", { className: "relative h-[440px] md:h-[460px]", children: [
-      /* @__PURE__ */ jsx46(DottedSurface2, {}),
-      children && /* @__PURE__ */ jsx46("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
+    /* @__PURE__ */ jsxs34("div", { className: "relative h-[440px] md:h-[460px]", children: [
+      /* @__PURE__ */ jsx56(DottedSurface2, {}),
+      children && /* @__PURE__ */ jsx56("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
     ] })
   ] });
 }
 
 // src/components/ui/site-header.tsx
-import { useEffect as useEffect10, useState as useState6 } from "react";
+import { useEffect as useEffect11, useState as useState6 } from "react";
 import Link7 from "next/link";
 import { usePathname } from "next/navigation";
-import { jsx as jsx47, jsxs as jsxs29 } from "react/jsx-runtime";
-function SiteHeader({ basePath = "", className }) {
+import { jsx as jsx57, jsxs as jsxs35 } from "react/jsx-runtime";
+function SiteHeader({ basePath = "", className, nav }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [isVisible, setIsVisible] = useState6(!isHome);
-  useEffect10(() => {
+  useEffect11(() => {
     if (!isHome) {
       setIsVisible(true);
       return;
@@ -4370,7 +5034,7 @@ function SiteHeader({ basePath = "", className }) {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
-  return /* @__PURE__ */ jsx47(
+  return /* @__PURE__ */ jsx57(
     "header",
     {
       className: cn(
@@ -4378,8 +5042,8 @@ function SiteHeader({ basePath = "", className }) {
         isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none",
         className
       ),
-      children: /* @__PURE__ */ jsxs29("div", { className: "mx-auto flex w-full max-w-[1512px] items-center justify-between gap-6 px-5 md:px-8 xl:px-14", children: [
-        /* @__PURE__ */ jsx47(Link7, { href: "/", className: "flex items-center", children: /* @__PURE__ */ jsx47(
+      children: /* @__PURE__ */ jsxs35("div", { className: "mx-auto flex w-full max-w-[1512px] items-center justify-between gap-6 px-5 md:px-8 xl:px-14", children: [
+        /* @__PURE__ */ jsx57(Link7, { href: "/", className: "flex items-center", children: /* @__PURE__ */ jsx57(
           "img",
           {
             src: `${basePath}/text_logo_dark_background_en.svg`,
@@ -4387,25 +5051,30 @@ function SiteHeader({ basePath = "", className }) {
             className: "h-auto w-[120px] md:w-[144px]"
           }
         ) }),
-        /* @__PURE__ */ jsx47(
+        /* @__PURE__ */ jsx57(
           RocketmindMenu,
           {
             className: "hero-menu-desktop ml-auto flex-1 items-center justify-end gap-5 lg:gap-7",
             itemClassName: "!text-[18px]",
-            showDropdowns: true
+            showDropdowns: true,
+            nav
           }
         ),
-        /* @__PURE__ */ jsx47(MobileNav, { className: "ml-auto" })
+        /* @__PURE__ */ jsx57(MobileNav, { className: "ml-auto", nav })
       ] })
     }
   );
 }
 export {
   AccordionFAQ,
+  ArticleCard,
+  ArticleNav,
+  Author,
   Avatar,
   AvatarFallback,
   AvatarImage,
   Badge,
+  Breadcrumbs,
   Button,
   CTASectionDark,
   CTASectionYellow,
@@ -4417,6 +5086,7 @@ export {
   CardHeader,
   CardTitle,
   Checkbox,
+  ContactsSection,
   DOT_GRID_LENS_DEFAULTS,
   Dialog,
   DialogClose,
@@ -4445,6 +5115,7 @@ export {
   InfiniteLogoMarquee,
   Input,
   InputOTP,
+  KeyThoughts,
   MobileNav,
   NavigationMenu,
   NavigationMenuContent,
@@ -4476,6 +5147,7 @@ export {
   SiteHeader,
   Skeleton,
   Slider,
+  StyledParagraphs,
   Switch,
   Table,
   TableBody,
@@ -4489,6 +5161,8 @@ export {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Tag,
+  TelegramIcon,
   Textarea,
   ThemeProvider,
   Toaster,
@@ -4497,6 +5171,7 @@ export {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  VkIcon,
   WaveAnimation,
   avatarVariants,
   badgeVariants,
@@ -4507,7 +5182,10 @@ export {
   noteVariants,
   radioBaseClassName,
   repackBento,
+  resolveStyledParagraphs,
   HEADER_NAV as rocketmindMenuItems,
+  styledParagraphClassName,
   tabsListVariants,
+  tagVariants,
   textareaVariants
 };

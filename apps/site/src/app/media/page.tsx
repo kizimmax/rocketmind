@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
+import { getAllArticles, getAllTags, getTagUsage } from "@/lib/articles";
+import { getExpertBySlug } from "@/lib/experts";
+import { MediaListClient } from "@/components/media/media-list-client";
 
 export const metadata: Metadata = {
   title: "Медиа | Rocketmind",
   description:
-    "Блог Rocketmind — статьи о стратегии, бизнес-дизайне и AI.",
+    "Блог Rocketmind — статьи о стратегии, бизнес-дизайне, AI-продуктах и экспертных сетях.",
 };
 
 export default function MediaPage() {
-  return (
-    <div className="px-5 py-24 md:px-8 xl:px-14">
-      <div className="mx-auto max-w-[1512px]">
-        <h1 className="font-heading text-4xl font-bold md:text-6xl">
-          Медиа
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-          Каталог статей блога — структура страницы будет добавлена позже.
-        </p>
-      </div>
-    </div>
-  );
+  const articles = getAllArticles();
+  const tags = getAllTags();
+  const usage = getTagUsage();
+
+  const enriched = articles.map((a) => {
+    const expert = a.expertSlug ? getExpertBySlug(a.expertSlug) : null;
+    return {
+      ...a,
+      expertName: expert?.name ?? null,
+      expertAvatarUrl: expert?.image ?? null,
+    };
+  });
+
+  const visibleTags = tags.filter((t) => (usage[t.id] ?? 0) > 0);
+
+  return <MediaListClient articles={enriched} tags={visibleTags} />;
 }

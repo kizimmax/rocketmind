@@ -1,10 +1,14 @@
 import fs from "fs";
 import path from "path";
+import type { StyledParagraph } from "./products";
 
 export type PartnershipsData = {
   caption: string;
   title: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   logos: Array<{ src: string; alt: string }>;
   photos: Array<{ src: string; alt?: string }>;
 };
@@ -23,6 +27,7 @@ export function getPartnershipsData(): PartnershipsData | null {
       caption: raw.caption || "",
       title: raw.title || "",
       description: raw.description || "",
+      paragraphs: Array.isArray(raw.paragraphs) ? (raw.paragraphs as StyledParagraph[]) : undefined,
       logos: (raw.logos || []).map((l: { src: string; alt: string }) => ({
         src: l.src.startsWith("/") ? `${BASE_PATH}${l.src}` : l.src,
         alt: l.alt || "",

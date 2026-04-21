@@ -1,0 +1,11 @@
+{
+  "tags": [
+    { "id": "strategy",    "label": "Стратегии" },
+    { "id": "biz-design",  "label": "Бизнес-дизайн" },
+    { "id": "expert",      "label": "Экспертная статья" },
+    { "id": "ai-products", "label": "AI-продукты" },
+    { "id": "consulting",  "label": "Консалтинг и стратегия" },
+    { "id": "academy",     "label": "Академия" },
+    { "id": "team",        "label": "Команда" }
+  ]
+}

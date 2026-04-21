@@ -6,6 +6,12 @@ import { Plus, GripVertical } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
 import { MdText } from "@/components/md-text";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 import { LogoGridEditor, type LogoCell } from "./logo-grid-editor";
 
@@ -19,11 +25,10 @@ export function ProjectsEditor({ data, onUpdate }: ProjectsEditorProps) {
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
 
-  type RawParagraph = string | { text?: string };
-  const rawParagraphs = data.paragraphs as RawParagraph[] | undefined;
-  const paragraphs: Array<{ text: string }> = Array.isArray(rawParagraphs)
-    ? rawParagraphs.map((p) => ({ text: typeof p === "string" ? p : p.text ?? "" }))
-    : [];
+  const paragraphs = resolveParagraphs(data.paragraphs, undefined, {
+    uppercase: false,
+    color: "secondary",
+  });
 
   const rawAccordion = (data.accordion as Array<{ title?: string; paragraphs?: string[] }>) || [];
   const accordion: Array<{ title: string; paragraphs: string[] }> = rawAccordion.map((i) => ({
@@ -36,21 +41,10 @@ export function ProjectsEditor({ data, onUpdate }: ProjectsEditorProps) {
 
   const [loadingLogos, setLoadingLogos] = useState(false);
 
-  const paragraphsDnd = useItemDnd(paragraphs, (reordered) => onUpdate({ paragraphs: reordered }));
   const accordionDnd = useItemDnd(accordion, (reordered) => onUpdate({ accordion: reordered }));
 
-  // ── Paragraphs ────────────────────────────────────────────────────────────────
-
-  function updateParagraph(i: number, text: string) {
-    onUpdate({ paragraphs: paragraphs.map((p, idx) => (idx === i ? { text } : p)) });
-  }
-
-  function addParagraph() {
-    onUpdate({ paragraphs: [...paragraphs, { text: "" }] });
-  }
-
-  function removeParagraph(i: number) {
-    onUpdate({ paragraphs: paragraphs.filter((_, idx) => idx !== i) });
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next });
   }
 
   // ── Accordion ─────────────────────────────────────────────────────────────────
@@ -163,57 +157,13 @@ export function ProjectsEditor({ data, onUpdate }: ProjectsEditorProps) {
             </div>
 
             {/* Paragraphs */}
-            <div className="flex flex-col gap-3">
-              {paragraphs.map((p, i) => {
-                const { draggable, onDragStart, onDragOver, onDrop, onDragEnd, isDragging } =
-                  paragraphsDnd.itemProps(i);
-                return (
-                  <div
-                    key={i}
-                    draggable={draggable}
-                    onDragStart={onDragStart}
-                    onDragOver={onDragOver}
-                    onDrop={onDrop}
-                    onDragEnd={onDragEnd}
-                    className={`group/para relative transition-all ${isDragging ? "opacity-60" : ""}`}
-                  >
-                    <div className="absolute -right-1 -top-1 z-10 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/para:opacity-100">
-                      <div
-                        className="flex h-5 w-5 cursor-grab items-center justify-center rounded-sm bg-[#F0F0F0] text-[#0A0A0A] select-none active:cursor-grabbing"
-                        onMouseDown={() => paragraphsDnd.onGripDown(i)}
-                        onMouseUp={paragraphsDnd.onGripUp}
-                      >
-                        <GripVertical className="h-2.5 w-2.5" />
-                      </div>
-                      <InlineConfirmDelete
-                        onConfirm={() => removeParagraph(i)}
-                        className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"
-                      />
-                    </div>
-                    <InlineEdit
-                      value={p.text}
-                      onSave={(v) => updateParagraph(i, v)}
-                      multiline
-                      copy
-                      placeholder="Текст параграфа"
-                    >
-                      <MdText
-                        value={p.text}
-                        placeholder="Текст параграфа"
-                        className="text-[length:var(--text-18)] leading-[1.2] text-[#939393]"
-                      />
-                    </InlineEdit>
-                  </div>
-                );
-              })}
-              <button
-                onClick={addParagraph}
-                className="flex items-center justify-center gap-1 border border-dashed border-[#404040] py-3 text-[length:var(--text-14)] text-[#939393] transition-colors hover:border-[#FFCC00] hover:text-[#FFCC00]"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Добавить абзац
-              </button>
-            </div>
+            <ParagraphsEditor
+              paragraphs={paragraphs}
+              onChange={setParagraphs}
+              theme="dark"
+              defaults={{ uppercase: false, color: "secondary" }}
+              placeholder="Текст параграфа"
+            />
           </div>
 
           {/* Bottom: accordion — pushed down with justify-between */}
@@ -240,6 +190,7 @@ export function ProjectsEditor({ data, onUpdate }: ProjectsEditorProps) {
                     >
                       <GripVertical className="h-2.5 w-2.5" />
                     </div>
+                    <ItemMoveButtons index={i} count={accordion.length} onMove={accordionDnd.move} />
                     <InlineConfirmDelete
                       onConfirm={() => removeAccordionItem(i)}
                       className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"
@@ -341,6 +292,7 @@ function AccordionParagraphs({
               >
                 <GripVertical className="h-2.5 w-2.5" />
               </div>
+              <ItemMoveButtons index={pIndex} count={paragraphs.length} onMove={dnd.move} />
               <InlineConfirmDelete
                 onConfirm={() => onRemove(accIndex, pIndex)}
                 className="bg-[#F0F0F0] text-[#0A0A0A] hover:bg-[#ED4843] hover:text-[#F0F0F0]"

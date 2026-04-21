@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 
 import { cn } from "../../lib/utils";
-import { HEADER_NAV } from "../../content/site-nav";
+import { HEADER_NAV, type NavSection } from "../../content/site-nav";
 
 type AccordionState = Record<string, boolean>;
 
@@ -37,7 +37,15 @@ function BurgerIcon({
   );
 }
 
-export function MobileNav({ className }: { className?: string }) {
+export function MobileNav({
+  className,
+  nav,
+}: {
+  className?: string;
+  /** Navigation tree. Falls back to the hardcoded HEADER_NAV when omitted. */
+  nav?: NavSection[];
+}) {
+  const navItems = nav ?? HEADER_NAV;
   const [isOpen, setIsOpen] = useState(false);
   const [accordions, setAccordions] = useState<AccordionState>({});
   const [mounted, setMounted] = useState(false);
@@ -124,7 +132,7 @@ export function MobileNav({ className }: { className?: string }) {
                   Navigation
                 </p>
 
-                {HEADER_NAV.map((item, index) => {
+                {navItems.map((item, index) => {
                   const hasDropdown = item.items && item.items.length > 0;
                   const isExpanded = accordions[item.label] ?? false;
 

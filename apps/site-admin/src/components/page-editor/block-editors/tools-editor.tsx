@@ -1,12 +1,18 @@
 "use client";
 
 import { useRef } from "react";
-import { GripVertical, Upload, Columns2, Square } from "lucide-react";
+import { GripVertical, Upload, Columns2, Square, Palette } from "lucide-react";
 import { Switch } from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
 import { MdText } from "@/components/md-text";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
 import { InsertButton } from "@/components/insert-button";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 interface ToolsEditorProps {
@@ -20,11 +26,26 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
   const tag = (data.tag as string) || "";
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
-  const description = (data.description as string) || "";
+  const paragraphs = resolveParagraphs(
+    data.paragraphs,
+    (data.description as string) || "",
+    { uppercase: false, color: "secondary" },
+  );
   const useIcons = (data.useIcons as boolean) || false;
+  const descriptionBelow = (data.descriptionBelow as boolean) || false;
   const tools = (data.tools as Tool[]) || [];
 
-  const dnd = useItemDnd(tools, (reordered) => onUpdate({ tools: reordered }));
+  const dnd = useItemDnd(tools, (reordered) => {
+    const renumbered = reordered.map((t, i) => ({
+      ...t,
+      number: String(i + 1).padStart(2, "0"),
+    }));
+    onUpdate({ tools: renumbered });
+  });
+
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next, description: undefined });
+  }
 
   function updateTool(index: number, field: string, value: string) {
     const updated = tools.map((t, i) =>
@@ -105,30 +126,34 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
               </InlineEdit>
             </div>
 
-            <InlineEdit
-              value={description}
-              onSave={(v) => onUpdate({ description: v })}
-              multiline
-              copy
-              placeholder="Описание"
-            >
-              <MdText
-                value={description}
-                placeholder="Описание"
-                className="text-[length:var(--text-18)] leading-[1.2] text-[#939393]"
-              />
-            </InlineEdit>
+            <ParagraphsEditor
+              paragraphs={paragraphs}
+              onChange={setParagraphs}
+              theme="dark"
+              defaults={{ uppercase: false, color: "secondary" }}
+            />
           </div>
 
-          {/* Icons toggle */}
-          <div className="flex items-center gap-2">
-            <span className="text-[length:var(--text-12)] text-[#939393]">
-              Иконки
-            </span>
-            <Switch
-              checked={useIcons}
-              onCheckedChange={(v) => onUpdate({ useIcons: v })}
-            />
+          {/* Toggles */}
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[length:var(--text-12)] text-[#939393]">
+                Иконки
+              </span>
+              <Switch
+                checked={useIcons}
+                onCheckedChange={(v) => onUpdate({ useIcons: v })}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[length:var(--text-12)] text-[#939393]">
+                Описание снизу
+              </span>
+              <Switch
+                checked={descriptionBelow}
+                onCheckedChange={(v) => onUpdate({ descriptionBelow: v })}
+              />
+            </div>
           </div>
         </div>
 
@@ -170,6 +195,7 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
                     >
                       <GripVertical className="h-2.5 w-2.5" />
                     </div>
+                    <ItemMoveButtons index={index} count={tools.length} onMove={dnd.move} />
                     <InlineConfirmDelete
                       onConfirm={() => removeTool(index)}
                       className="bg-[#0A0A0A] text-[#F0F0F0] hover:bg-[#ED4843]"

@@ -230,6 +230,9 @@ export function PagesView({ title, sections, defaultSection }: Props) {
                   onToggleFeatured={section.id === "cases" ? handleToggleFeatured : undefined}
                   onGripDown={() => dnd.onGripDown(index)}
                   onGripUp={dnd.onGripUp}
+                  index={index}
+                  count={activePages.length}
+                  onMove={dnd.move}
                 />
               </div>
             );
@@ -265,6 +268,9 @@ export function PagesView({ title, sections, defaultSection }: Props) {
                     onToggleFeatured={section.id === "cases" ? handleToggleFeatured : undefined}
                     onGripDown={() => dnd.onGripDown(index)}
                     onGripUp={dnd.onGripUp}
+                    index={index}
+                    count={activePages.length}
+                    onMove={dnd.move}
                     dragProps={props}
                   />
                 );

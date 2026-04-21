@@ -16,11 +16,21 @@ export type HeroTag = {
   icon?: string;
 };
 
+// Unified styled paragraph with caps + color toggles, used across all blocks.
+export type StyledParagraph = {
+  text: string;
+  uppercase?: boolean;
+  color?: "primary" | "secondary";
+};
+
 export type ProductHeroData = {
   caption: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description: string;
+  /** Structured paragraphs under the title. Supersedes `description` when non-empty. */
+  paragraphs?: StyledParagraph[];
   ctaText: string;
   factoids: Factoid[];
   /** Optional tags shown next to caption (e.g. "при поддержке PIK") */
@@ -38,17 +48,13 @@ export type AccordionItem = {
   paragraphs: string[];
 };
 
-export type AboutParagraph = {
-  text: string;
-  /** If true, this paragraph uses the uppercase label-18 style. */
-  uppercase: boolean;
-};
+export type AboutParagraph = StyledParagraph;
 
 export type AboutProductData = {
   caption: string;
   title: string;
   titleSecondary?: string;
-  paragraphs: AboutParagraph[];
+  paragraphs: StyledParagraph[];
   accordion: AccordionItem[];
   /** If false, items are always expanded (no click-to-collapse). Default: true. */
   accordionCollapsible: boolean;
@@ -69,7 +75,10 @@ export type ForWhomData = {
   tag: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string subtitle. Prefer `paragraphs`. */
   subtitle?: string;
+  /** Structured paragraphs under the title. On this block default = primary + caps (light bg). */
+  paragraphs?: StyledParagraph[];
   facts: ForWhomFact[];
   wideColumn?: "left" | "right";
 };
@@ -86,12 +95,22 @@ export type ProcessParticipant = {
   text: string;
 };
 
+/** @deprecated Use StyledParagraph. */
+export type ProcessDescriptionParagraph = StyledParagraph;
+
 export type ProcessData = {
   tag: string;
   title: string;
   titleSecondary?: string;
   subtitle: string;
+  /** If true (default), subtitle renders in uppercase label-18 mono. */
+  subtitleUppercase?: boolean;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description?: string;
+  /** @deprecated Legacy alias for `paragraphs`. */
+  descriptionParagraphs?: StyledParagraph[];
+  /** Structured paragraphs under the title with per-paragraph caps + color toggles. */
+  paragraphs?: StyledParagraph[];
   steps: ProcessStep[];
   participantsTag?: string;
   participants?: ProcessParticipant[];
@@ -118,7 +137,10 @@ export type ServicesData = {
   tag?: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description?: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   cards: ServiceCardData[];
 };
 
@@ -126,7 +148,10 @@ export type ResultsData = {
   tag: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description?: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   cards: ResultCardData[];
 };
 
@@ -143,8 +168,12 @@ export type ToolsData = {
   tag: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description?: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   useIcons?: boolean;
+  descriptionBelow?: boolean;
   tools: ToolCardData[];
 };
 
@@ -156,8 +185,9 @@ export type AboutRocketmindData = {
   canvasTitle?: string;
   canvasText?: string;
   features: Array<{ title: string; text: string }>;
-  variant?: "dark" | "light";
   leftVariant?: "alex" | "canvas";
+  alexPhoto?: string;
+  canvasPhoto?: string;
 };
 
 export type CustomSectionData = {

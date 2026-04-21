@@ -9,7 +9,7 @@ import { Badge } from "@rocketmind/ui"
 import {
   ChevronRight, Menu, X, PanelLeftOpen, PanelLeftClose,
   Layers, Palette, Type, LayoutGrid, Square, Package,
-  MessageSquare, Sparkles, Zap, LayoutDashboard, LayoutTemplate,
+  MessageSquare, Sparkles, Zap, LayoutDashboard, LayoutTemplate, FileText,
 } from "lucide-react"
 
 const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
@@ -103,6 +103,14 @@ const sections: NavSection[] = [
     { id: "marketing-blocks-cta-yellow",  label: "CTA — Жёлтый" },
     { id: "marketing-blocks-cases",       label: "Кейсы + Отзывы" },
     { id: "marketing-blocks-page-bottom", label: "Состав PageBottom" },
+  ]},
+  { id: "article", label: "Статья", Icon: FileText, subsections: [
+    { id: "article-breadcrumbs",  label: "Хлебные крошки" },
+    { id: "article-tag",          label: "Tag / Тег" },
+    { id: "article-author",       label: "Author / Автор" },
+    { id: "article-key-thoughts", label: "Key Thoughts / Ключевые мысли" },
+    { id: "article-nav",          label: "ArticleNav / Левая ToC" },
+    { id: "article-card",         label: "ArticleCard / Карточка" },
   ]},
 ]
 

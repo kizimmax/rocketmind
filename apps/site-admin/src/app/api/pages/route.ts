@@ -113,7 +113,7 @@ export async function GET() {
               ? ["homeHero", "methodology", "homeSections"]
               : data.slug === "cases-index"
               ? ["hero", "about"]
-              : ["hero", "about", "tools", "projects", "process", "experts", "audience", "pageBottom"])
+              : ["hero", "about", "tools", "projects", "process", "experts", "aboutRocketmind", "contacts", "pageBottom"])
           : sectionId === "cases"
           ? (data.caseType === "mini"
               ? ["caseCard"]
@@ -153,6 +153,7 @@ export async function GET() {
               break;
             }
             case "audience": if (data.audience) blockData = data.audience; else enabled = false; break;
+            case "contacts": if (data.contacts) blockData = data.contacts; else enabled = false; break;
             case "tools": if (data.tools) blockData = data.tools; else enabled = false; break;
             case "results": if (data.results) blockData = data.results; else enabled = false; break;
             case "process": if (data.process) blockData = data.process; else enabled = false; break;
@@ -198,14 +199,26 @@ export async function GET() {
               enabled = sectionId === "academy";
               break;
             }
-            case "aboutRocketmind":
+            case "aboutRocketmind": {
               // Enabled-by-default block (rendered with defaults if no custom data).
               // Frontmatter stores `false` only to explicitly hide on site.
               enabled = data.aboutRocketmind !== false;
               blockData = data.aboutRocketmind && typeof data.aboutRocketmind === "object"
                 ? data.aboutRocketmind
                 : {};
+              // Inject current shared photos (from _about-rocketmind.json) as data URLs for preview
+              try {
+                const jsonPath = path.join(path.resolve(process.cwd(), "..", "site", "content"), "_about-rocketmind.json");
+                const shared = fs.existsSync(jsonPath)
+                  ? JSON.parse(fs.readFileSync(jsonPath, "utf-8"))
+                  : { alexPhoto: "/images/about/alexey-eremin.png", canvasPhoto: "/images/about/canvas-image.png" };
+                const alexData = readFileAsDataUrl(fs, path, sitePublicDir, shared.alexPhoto || "");
+                const canvasData = readFileAsDataUrl(fs, path, sitePublicDir, shared.canvasPhoto || "");
+                if (alexData) blockData = { ...blockData, alexPhotoData: alexData };
+                if (canvasData) blockData = { ...blockData, canvasPhotoData: canvasData };
+              } catch { /* ignore */ }
               break;
+            }
             case "logoMarquee":
               // Auto-block: enabled by default; only disabled if frontmatter explicitly stores false
               enabled = data.logoMarquee !== false;

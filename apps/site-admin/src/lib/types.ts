@@ -23,7 +23,8 @@ export type BlockType =
   | "pageBottom"
   | "customSection"
   | "caseCard"
-  | "casesList";
+  | "casesList"
+  | "contacts";
 
 // ── Case-specific types ─────────────────────────────────────────────────────
 
@@ -56,11 +57,23 @@ export interface Testimonial {
 
 // ── Block data shapes (mirror apps/site/src/lib/products.ts) ────────────────
 
+// Unified styled paragraph with caps + color toggles, used across all blocks.
+export interface StyledParagraph {
+  text: string;
+  /** If true, paragraph renders in the uppercase label-18 mono style. */
+  uppercase?: boolean;
+  /** "primary" — high-contrast color (light on dark / dark on light). "secondary" — muted. Default secondary. */
+  color?: "primary" | "secondary";
+}
+
 export interface HeroBlockData {
   caption: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description: string;
+  /** Structured paragraphs under the title. Supersedes `description` when non-empty. */
+  paragraphs?: StyledParagraph[];
   ctaText: string;
   factoids: Array<{ number: string; label: string; text: string }>;
   tags?: Array<{ text: string }>;
@@ -81,17 +94,14 @@ export interface HeroBlockData {
   experts?: string[];
 }
 
-export interface AboutParagraph {
-  text: string;
-  /** If true, this paragraph uses the uppercase label-18 style (mono, uppercase, tracked). */
-  uppercase?: boolean;
-}
+/** @deprecated Use StyledParagraph. Kept as alias for backward compatibility. */
+export type AboutParagraph = StyledParagraph;
 
 export interface AboutBlockData {
   caption: string;
   title: string;
   titleSecondary?: string;
-  paragraphs: AboutParagraph[];
+  paragraphs: StyledParagraph[];
   accordion: Array<{ title: string; paragraphs: string[] }>;
   /** Layout of image (when hasImage is true). Default: false (image on right). */
   imageLeft?: boolean;
@@ -125,7 +135,10 @@ export interface AudienceBlockData {
   tag: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string subtitle (uppercase primary on light). Prefer `paragraphs`. */
   subtitle?: string;
+  /** Structured paragraphs under the title. On this block default = primary + caps (on light bg). */
+  paragraphs?: StyledParagraph[];
   wideColumn?: "left" | "right";
   facts: Array<{ title: string; text: string }>;
 }
@@ -134,8 +147,12 @@ export interface ToolsBlockData {
   tag: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description?: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   useIcons?: boolean;
+  descriptionBelow?: boolean;
   tools: Array<{ number: string; title: string; text: string; icon?: string | null; wide?: boolean }>;
 }
 
@@ -143,7 +160,10 @@ export interface ResultsBlockData {
   tag: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description?: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   cards: Array<{ title: string; text: string }>;
 }
 
@@ -167,7 +187,10 @@ export interface ServicesBlockData {
   tag?: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description?: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   cards: ServiceCard[];
 }
 
@@ -178,10 +201,61 @@ export interface LogoMarqueeBlockData {
   __placeholder?: never;
 }
 
+// ── Contacts block ──────────────────────────────────────────────────────────
+
+export type ContactSocialKind = "vk" | "telegram" | "custom";
+
+export interface ContactSocial {
+  id: string;
+  kind: ContactSocialKind;
+  /** For custom kind — data URL (while editing) or /images/... path (after save). */
+  iconSrc?: string;
+  username: string;
+  url: string;
+}
+
+export interface ContactCardPerson {
+  /** If set — avatar/name/role are pulled from the expert by the site renderer. */
+  expertSlug?: string;
+  /** Overrides (used when expertSlug is empty, or to store a custom avatar). */
+  avatarSrc?: string;
+  name?: string;
+  role?: string;
+  phone?: string;
+  social?: {
+    kind: ContactSocialKind;
+    iconSrc?: string;
+    username: string;
+    url: string;
+  };
+}
+
+export type ContactCardItem =
+  | { id: string; kind: "paragraph"; paragraph: StyledParagraph }
+  | { id: string; kind: "socials"; socials: ContactSocial[] }
+  | { id: string; kind: "person"; person: ContactCardPerson };
+
+export interface ContactCard {
+  id: string;
+  title: string;
+  items: ContactCardItem[];
+}
+
+export interface ContactsBlockData {
+  tag: string;
+  title: string;
+  titleSecondary?: string;
+  paragraphs?: StyledParagraph[];
+  cards: ContactCard[];
+}
+
 export interface PartnershipsBlockData {
   caption: string;
   title: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   logos: Array<{ src: string; alt: string }>;
   photos: Array<{ src: string; alt?: string }>;
 }
@@ -194,8 +268,11 @@ export interface AboutRocketmindBlockData {
   canvasTitle: string;
   canvasText: string;
   features: Array<{ title: string; text: string }>;
-  variant: "dark" | "light";
   leftVariant: "alex" | "canvas";
+  /** Transient base64 data URL for founder photo — attached by API on GET, stripped on PUT. */
+  alexPhotoData?: string;
+  /** Transient base64 data URL for canvas photo — attached by API on GET, stripped on PUT. */
+  canvasPhotoData?: string;
 }
 
 // ── Home page (unique) blocks ───────────────────────────────────────────────
@@ -239,7 +316,10 @@ export interface HomeSectionItem {
   headerHighlight: string;
   /** Заголовок для мобильной версии (\n — перевод строки). */
   mobileTitle: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description: string;
+  /** Structured paragraphs under the title. */
+  paragraphs?: StyledParagraph[];
   catalogLabel: string;
   /** Слаги карточек, которые нужно СКРЫТЬ из соответствующего /products фильтра. */
   hiddenCardSlugs: string[];
@@ -249,12 +329,22 @@ export interface HomeSectionsBlockData {
   sections: HomeSectionItem[];
 }
 
+/** @deprecated Use StyledParagraph. Kept as alias for backward compatibility. */
+export type ProcessDescriptionParagraph = StyledParagraph;
+
 export interface ProcessBlockData {
   tag: string;
   title: string;
   titleSecondary?: string;
   subtitle: string;
+  /** If true (default), subtitle renders in uppercase label-18 mono. */
+  subtitleUppercase?: boolean;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description?: string;
+  /** @deprecated Legacy alias for `paragraphs`. */
+  descriptionParagraphs?: StyledParagraph[];
+  /** Structured paragraphs under the title with per-paragraph caps + color toggles. */
+  paragraphs?: StyledParagraph[];
   steps: Array<{ number: string; title: string; text: string; duration: string }>;
   participantsTag?: string;
   participants?: Array<{ role: string; text: string }>;
@@ -308,5 +398,80 @@ export interface AdminSection {
 export interface AdminStore {
   version: number;
   pages: SitePage[];
+  articles: Article[];
+  mediaTags: MediaTag[];
   lastSaved: string;
+}
+
+// ── Media: tags ─────────────────────────────────────────────────────────────
+
+/**
+ * Тег медиа-раздела. Справочник тегов редактируется в админке (менеджер тегов),
+ * используется при создании/редактировании статей и для фильтрации списка /media.
+ */
+export interface MediaTag {
+  /** Slug, уникальный ключ. Обычно транслит/kebab от label. */
+  id: string;
+  /** Отображаемое название. */
+  label: string;
+  createdAt: string;
+}
+
+// ── Media: article body blocks (inline, stub for next iteration) ────────────
+
+/**
+ * Inline-блоки тела статьи. В текущей итерации тело не редактируется — массив
+ * остаётся пустым. Контракт заложен заранее, чтобы сущность Article была
+ * стабильной между итерациями.
+ */
+export type ArticleBodyBlockType =
+  | "paragraph"
+  | "h2"
+  | "h3"
+  | "quote"
+  | "image"
+  | "list"
+  | "callout";
+
+export interface ArticleBodyBlock {
+  id: string;
+  type: ArticleBodyBlockType;
+  /** Block-specific payload; shape defined per type in next iteration. */
+  data: Record<string, unknown>;
+}
+
+// ── Media: article ──────────────────────────────────────────────────────────
+
+export interface Article {
+  /** Uniform с SitePage: `media/{slug}`. */
+  id: string;
+  slug: string;
+  status: PageStatus;
+  order: number;
+
+  // Hero
+  title: string;
+  description: string;
+  /** Base64 data URL (demo) или относительный путь (persisted). */
+  coverImageData?: string;
+  /** ISO date (YYYY-MM-DD). */
+  publishedAt: string;
+  /** Slug эксперта (соответствует файлу в apps/site/content/experts/). */
+  expertSlug?: string;
+
+  // Taxonomy
+  tagIds: string[];
+
+  // Editor-pinned key thoughts, шапка
+  keyThoughts: string[];
+
+  // Body — deferred, пустой массив в текущей итерации
+  body: ArticleBodyBlock[];
+
+  // Meta
+  metaTitle: string;
+  metaDescription: string;
+
+  createdAt: string;
+  updatedAt: string;
 }

@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { GripVertical, Search, Plus, X, UserCircle } from "lucide-react";
 import { MdText } from "@/components/md-text";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -248,6 +249,7 @@ function ExpertCardPreview({
         >
           <GripVertical className="h-2.5 w-2.5" />
         </div>
+        <ItemMoveButtons index={index} count={dnd.count} onMove={dnd.move} />
         <InlineConfirmDelete
           onConfirm={onRemove}
           className="bg-[#0A0A0A] text-[#F0F0F0] hover:bg-[#ED4843]"

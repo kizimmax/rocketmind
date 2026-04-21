@@ -20,17 +20,21 @@ type RocketmindMenuProps = {
   className?: string;
   itemClassName?: string;
   showDropdowns?: boolean;
+  /** Navigation tree. Falls back to the hardcoded HEADER_NAV when omitted. */
+  nav?: NavSection[];
 };
 
 export function RocketmindMenu({
   className,
   itemClassName,
   showDropdowns = true,
+  nav,
 }: RocketmindMenuProps) {
+  const source = nav ?? HEADER_NAV;
   const dropdownItems = showDropdowns
-    ? HEADER_NAV.filter((item) => item.items && item.items.length > 0)
+    ? source.filter((item) => item.items && item.items.length > 0)
     : [];
-  const plainItems = HEADER_NAV.filter(
+  const plainItems = source.filter(
     (item) => !showDropdowns || !item.items || item.items.length === 0,
   );
 

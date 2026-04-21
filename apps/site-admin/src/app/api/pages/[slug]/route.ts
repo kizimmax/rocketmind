@@ -193,6 +193,62 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     aboutBlock.data = cleanAbout;
   }
 
+  // ── About Rocketmind shared photos (global across all pages) ────────────────
+  const aboutRmBlock = block("aboutRocketmind");
+  if (aboutRmBlock?.data) {
+    const d = aboutRmBlock.data as Record<string, unknown>;
+    const alexData = typeof d.alexPhotoData === "string" ? d.alexPhotoData : null;
+    const canvasData = typeof d.canvasPhotoData === "string" ? d.canvasPhotoData : null;
+
+    const aboutDir = path.join(sitePublicDir, "images", "about");
+    const jsonPath = path.join(path.resolve(process.cwd(), "..", "site", "content"), "_about-rocketmind.json");
+    let shared: { alexPhoto?: string; canvasPhoto?: string } = {};
+    if (fs.existsSync(jsonPath)) {
+      try { shared = JSON.parse(fs.readFileSync(jsonPath, "utf-8")); } catch { /* ignore */ }
+    }
+
+    function saveAboutPhoto(role: string, dataUrl: string): string | null {
+      const parsed = parseDataUrl(dataUrl);
+      if (!parsed) return null;
+      fs.mkdirSync(aboutDir, { recursive: true });
+      // Delete any previous `role.<ext>` files
+      for (const ext of IMAGE_EXTS) {
+        const fp = path.join(aboutDir, role + ext);
+        if (fs.existsSync(fp)) fs.unlinkSync(fp);
+      }
+      fs.writeFileSync(path.join(aboutDir, role + parsed.ext), parsed.buffer);
+      return `/images/about/${role}${parsed.ext}`;
+    }
+
+    if (alexData && alexData.startsWith("data:")) {
+      const url = saveAboutPhoto("alexey-eremin", alexData);
+      if (url) shared.alexPhoto = url;
+    }
+    if (canvasData && canvasData.startsWith("data:")) {
+      const url = saveAboutPhoto("canvas-image", canvasData);
+      if (url) shared.canvasPhoto = url;
+    }
+    if (alexData || canvasData) {
+      fs.writeFileSync(
+        jsonPath,
+        JSON.stringify(
+          {
+            alexPhoto: shared.alexPhoto || "/images/about/alexey-eremin.png",
+            canvasPhoto: shared.canvasPhoto || "/images/about/canvas-image.png",
+          },
+          null,
+          2,
+        ),
+        "utf-8",
+      );
+    }
+
+    // Strip transient data-URL fields from block data before persisting to frontmatter
+    const { alexPhotoData: _a, canvasPhotoData: _c, ...cleanAboutRm } = d;
+    void _a; void _c;
+    aboutRmBlock.data = cleanAboutRm;
+  }
+
   // ── Projects block (about-clone with logoGrid; used on unique /about page) ──
   const projectsBlock = block("projects");
   if (projectsBlock?.enabled && projectsBlock.data) {
@@ -297,6 +353,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     logoMarquee: block("logoMarquee")?.enabled === false ? false : null,
     about: enabled(aboutBlock),
     audience: enabled(block("audience")),
+    contacts: enabled(block("contacts")),
     tools: enabled(block("tools")),
     results: enabled(block("results")),
     services: enabled(block("services")),

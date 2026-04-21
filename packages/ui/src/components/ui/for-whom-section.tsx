@@ -3,6 +3,11 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
 import { RichText } from "./rich-text";
+import {
+  StyledParagraphs,
+  resolveStyledParagraphs,
+  type StyledParagraph,
+} from "./styled-paragraphs";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -18,8 +23,10 @@ export type ForWhomSectionProps = {
   title: string;
   /** Secondary (gray) part of heading — rendered in same h2 for SEO */
   titleSecondary?: string;
-  /** Subtitle / lead text (optional) */
+  /** Subtitle / lead text (optional) — legacy single string (uppercase primary). */
   subtitle?: string;
+  /** Structured paragraphs with per-paragraph caps + color. Supersedes `subtitle` when provided. */
+  paragraphs?: StyledParagraph[];
   /** 2–4 fact cards */
   facts: ForWhomFact[];
   /**
@@ -58,10 +65,16 @@ export function ForWhomSection({
   title,
   titleSecondary,
   subtitle,
+  paragraphs,
   facts,
   wideColumn = "right",
   className,
 }: ForWhomSectionProps) {
+  const resolvedParagraphsDesktop = resolveStyledParagraphs(paragraphs, subtitle, {
+    uppercase: true,
+    color: "primary",
+  });
+  const hasParagraphs = resolvedParagraphsDesktop.length > 0;
   return (
     <section className={cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className)}>
       {/* ── Desktop ── */}
@@ -75,12 +88,11 @@ export function ForWhomSection({
             <div className="w-1/2 shrink-0 pr-8">
               <h2 className="h2"><span className="text-[#0A0A0A]">{title}</span>{titleSecondary ? <><span className="text-[#0A0A0A]"> </span><span className="text-[#666666]">{titleSecondary}</span></> : null}</h2>
             </div>
-            {subtitle && (
+            {hasParagraphs && (
               <div className="w-1/2">
-                <RichText
-                  text={subtitle}
-                  className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] max-w-[480px]"
-                />
+                <div className="max-w-[480px]">
+                  <StyledParagraphs paragraphs={resolvedParagraphsDesktop} theme="light" size="18" />
+                </div>
               </div>
             )}
           </div>
@@ -149,11 +161,10 @@ export function ForWhomSection({
             {tag}
           </span>
           <h2 className="h3"><span className="text-[#0A0A0A]">{title}</span>{titleSecondary ? <><span className="text-[#0A0A0A]"> </span><span className="text-[#666666]">{titleSecondary}</span></> : null}</h2>
-          {subtitle && (
-            <RichText
-              text={subtitle}
-              className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A] mt-1"
-            />
+          {hasParagraphs && (
+            <div className="mt-1">
+              <StyledParagraphs paragraphs={resolvedParagraphsDesktop} theme="light" size="16" />
+            </div>
           )}
         </div>
 

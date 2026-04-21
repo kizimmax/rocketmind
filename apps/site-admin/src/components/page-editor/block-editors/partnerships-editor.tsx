@@ -3,6 +3,11 @@
 import { useRef } from "react";
 import { Upload, ImagePlus } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 
 interface PartnershipsEditorProps {
   data: Record<string, unknown>;
@@ -17,9 +22,17 @@ export function PartnershipsEditor({ data, onUpdate }: PartnershipsEditorProps) 
 
   const caption = (data.caption as string) || "Партнёрства";
   const title = (data.title as string) || "Программы с ведущими бизнес-школами";
-  const description = (data.description as string) || "Помогают собрать карту участников, связей и ценностных потоков";
+  const paragraphs = resolveParagraphs(
+    data.paragraphs,
+    (data.description as string) || "Помогают собрать карту участников, связей и ценностных потоков",
+    { uppercase: false, color: "secondary" },
+  );
   const logos = (data.logos as Logo[]) || [];
   const photos = (data.photos as Photo[]) || [];
+
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next, description: undefined });
+  }
 
   // Ensure 4 photo slots
   const photoSlots: (Photo | null)[] = [
@@ -83,17 +96,13 @@ export function PartnershipsEditor({ data, onUpdate }: PartnershipsEditorProps) 
                 </h3>
               </InlineEdit>
 
-              <InlineEdit
-                value={description}
-                onSave={(v) => onUpdate({ description: v })}
-                multiline
-                copy
-                placeholder="Описание"
-              >
-                <p className="text-[14px] leading-[1.32] tracking-[0.01em] text-[#939393]">
-                  {description}
-                </p>
-              </InlineEdit>
+              <ParagraphsEditor
+                paragraphs={paragraphs}
+                onChange={setParagraphs}
+                theme="dark"
+                defaults={{ uppercase: false, color: "secondary" }}
+                size="16"
+              />
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Switch } from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
 
@@ -30,12 +31,16 @@ export function AboutRocketmindEditor({ data, onUpdate }: AboutRocketmindEditorP
   const canvasTitle = (data.canvasTitle as string) || DEFAULTS.canvasTitle;
   const canvasText = (data.canvasText as string) || DEFAULTS.canvasText;
   const features = (data.features as Array<{ title: string; text: string }>) || DEFAULTS.features;
-  const variant = (data.variant as string) || "dark";
-  const isDark = variant === "dark";
   const leftVariant = (data.leftVariant as string) || "alex";
   const isCanvas = leftVariant === "canvas";
+  const alexPhotoData = (data.alexPhotoData as string) || "";
+  const canvasPhotoData = (data.canvasPhotoData as string) || "";
 
-  const photoSrc = isCanvas ? "/images/about/canvas-image.png" : "/images/about/alexey-eremin.png";
+  const photoSrc = isCanvas
+    ? (canvasPhotoData || "/images/about/canvas-image.png")
+    : (alexPhotoData || "/images/about/alexey-eremin.png");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   function updateFeature(index: number, field: string, value: string) {
     const updated = features.map((f, i) =>
@@ -44,12 +49,24 @@ export function AboutRocketmindEditor({ data, onUpdate }: AboutRocketmindEditorP
     onUpdate({ features: updated });
   }
 
+  function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      onUpdate(isCanvas ? { canvasPhotoData: result } : { alexPhotoData: result });
+    };
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   return (
     <div className="flex flex-col gap-4">
       {/* Controls bar */}
       <div className="flex items-center gap-6">
         <div className="rounded border border-[#FFCC00]/30 bg-[#FFCC00]/5 px-3 py-2 text-[12px] leading-snug text-foreground/80 flex-1">
-          <strong className="text-[#FFCC00]">⚠</strong> Текст применяется <strong>ко всем страницам</strong>. Переключатели — только к текущей.
+          <strong className="text-[#FFCC00]">⚠</strong> Редактирование этого блока применяется <strong>ко всем страницам сайта</strong>, где он отображается.
         </div>
         <div className="flex items-center gap-4 shrink-0">
           {/* Left variant switch */}
@@ -63,17 +80,6 @@ export function AboutRocketmindEditor({ data, onUpdate }: AboutRocketmindEditorP
               {isCanvas ? "Канвас" : "Алекс"}
             </span>
           </div>
-          {/* Dark/light switch */}
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={isDark}
-              onCheckedChange={(v) => onUpdate({ variant: v ? "dark" : "light" })}
-              size="sm"
-            />
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {isDark ? "Тёмный" : "Светлый"}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -84,13 +90,27 @@ export function AboutRocketmindEditor({ data, onUpdate }: AboutRocketmindEditorP
           <div className="w-1/2 shrink-0 border-r border-[#404040] p-8">
             <div className="flex gap-8 h-full">
               {/* Photo */}
-              <div className="w-1/2 shrink-0 self-stretch rounded overflow-hidden bg-[#1a1a1a]">
+              <div className="group/photo relative w-1/2 shrink-0 self-stretch rounded overflow-hidden bg-[#1a1a1a]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photoSrc}
                   alt=""
                   className="w-full h-full object-cover object-top"
                 />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/photo:opacity-100 transition-opacity text-[12px] uppercase tracking-wide text-[#F0F0F0]"
+                >
+                  Загрузить {isCanvas ? "канвас" : "фото"}
+                </button>
               </div>
 
               {/* Text column */}

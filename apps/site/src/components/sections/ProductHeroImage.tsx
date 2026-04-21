@@ -2,7 +2,11 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { RichText } from "@rocketmind/ui";
+import {
+  StyledParagraphs,
+  resolveStyledParagraphs,
+  type StyledParagraph,
+} from "@rocketmind/ui";
 import type { Factoid, HeroTag } from "@/lib/products";
 
 /** Renders next/image for file paths, plain <img> for data URLs */
@@ -20,7 +24,10 @@ type ProductHeroImageProps = {
   caption: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description: string;
+  /** Structured paragraphs with per-paragraph caps + color. */
+  paragraphs?: StyledParagraph[];
   ctaText: string;
   factoids: Factoid[];
   coverImage: string | null;
@@ -198,6 +205,7 @@ export function ProductHeroImage({
   title,
   titleSecondary,
   description,
+  paragraphs,
   ctaText,
   factoids,
   coverImage,
@@ -205,6 +213,18 @@ export function ProductHeroImage({
   secondaryCta,
   audioSrc,
 }: ProductHeroImageProps) {
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: false,
+    color: "primary",
+  });
+  const descriptionEl18 =
+    resolvedParagraphs.length > 0 ? (
+      <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="18" />
+    ) : null;
+  const descriptionEl16 =
+    resolvedParagraphs.length > 0 ? (
+      <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
+    ) : null;
   const visibleFactoids = factoids.filter(
     (f) => f.number?.trim() || f.label?.trim() || f.text?.trim(),
   );
@@ -252,12 +272,9 @@ export function ProductHeroImage({
             </div>
 
             {/* Description */}
-            {description && (
+            {descriptionEl18 && (
               <div className="max-w-[696px]" style={fadeIn(2)}>
-                <RichText
-                  text={description}
-                  className="text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]"
-                />
+                {descriptionEl18}
               </div>
             )}
 
@@ -351,13 +368,8 @@ export function ProductHeroImage({
               <h1 className="h1 whitespace-pre-line" style={fadeIn(1)}><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h1>
             </div>
 
-            {description && (
-              <div style={fadeIn(2)}>
-                <RichText
-                  text={description}
-                  className="text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]"
-                />
-              </div>
+            {descriptionEl18 && (
+              <div style={fadeIn(2)}>{descriptionEl18}</div>
             )}
 
             {secondaryCta && audioSrc && <div style={fadeIn(3)}><AudioButton text={secondaryCta} src={audioSrc} /></div>}
@@ -433,13 +445,8 @@ export function ProductHeroImage({
 
         {/* Text content below image */}
         <div className="flex flex-col gap-6 px-5 pt-4">
-          {description && (
-            <div style={fadeIn(2)}>
-              <RichText
-                text={description}
-                className="text-[length:var(--text-16)] leading-[1.28] text-[#F0F0F0]"
-              />
-            </div>
+          {descriptionEl16 && (
+            <div style={fadeIn(2)}>{descriptionEl16}</div>
           )}
 
           {secondaryCta && audioSrc && <div style={fadeIn(3)}><AudioButton text={secondaryCta} src={audioSrc} /></div>}

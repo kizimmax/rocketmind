@@ -36,8 +36,19 @@ export * from './components/ui/partnership-block';
 export * from './components/ui/product-card';
 export * from './components/ui/product-image-card';
 
+// Article primitives
+export * from './components/ui/breadcrumbs';
+export * from './components/ui/tag';
+export * from './components/ui/author';
+export * from './components/ui/key-thoughts';
+export * from './components/ui/article-nav';
+export * from './components/ui/article-card';
+
 export * from './components/ui/rich-text';
+export * from './components/ui/styled-paragraphs';
 export * from './components/ui/for-whom-section';
+export * from './components/ui/contacts-section';
+export * from './components/icons/socials';
 export * from './components/ui/process-section';
 export * from './components/ui/results-section';
 export * from './components/ui/services-section';

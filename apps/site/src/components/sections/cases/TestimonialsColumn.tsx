@@ -136,19 +136,13 @@ export function TestimonialsColumn({
         <div ref={trackRef} className="will-change-transform">
           {[...testimonials, ...testimonials].map((t, i) => (
             <div key={`${t.id}-${i}`}>
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="flex-none w-8 h-8 rounded-full bg-[#2a2a2a] bg-cover bg-center"
-                  style={{ backgroundImage: t.avatar ? `url(${t.avatar})` : undefined }}
-                />
-                <div className="flex flex-col">
-                  <span className="text-[13px] font-medium text-[#F0F0F0] leading-[1.2]">
-                    {t.name}
-                  </span>
-                  <span className="text-[12px] text-[#6B6B6B] leading-[1.2]">
-                    {t.position}
-                  </span>
-                </div>
+              <div className="flex flex-col mb-3">
+                <span className="text-[13px] font-medium text-[#F0F0F0] leading-[1.2]">
+                  {t.name}
+                </span>
+                <span className="text-[12px] text-[#6B6B6B] leading-[1.2]">
+                  {t.position}
+                </span>
               </div>
               <div className="text-[14px] leading-[1.4] tracking-[0.01em] text-[#939393]">
                 {t.paragraphs.map((para, pi) => (

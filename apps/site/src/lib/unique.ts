@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { resolveExperts, type ExpertData } from "./experts";
+import { resolveExperts, getExpertBySlug, type ExpertData } from "./experts";
 import type {
   Factoid,
   AboutParagraph,
@@ -9,6 +9,7 @@ import type {
   ProcessData,
   ToolsData,
   ForWhomData,
+  AboutRocketmindData,
 } from "./products";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -17,15 +18,21 @@ export type AboutHeroData = {
   caption: string;
   title: string;
   description: string;
+  /** Structured paragraphs — supersede `description` when non-empty. */
+  paragraphs?: AboutParagraph[];
   ctaText: string;
   factoids: Factoid[];
   experts: ExpertData[];
-  /** Custom logo image (base64 data URL). Falls back to default SVG if absent. */
-  heroLogoData?: string;
-  /** When present, renders as large uppercase heading instead of the brand logo. */
+  /** Large uppercase h1 (white). */
   heading?: string;
+  /** Optional secondary gray subtitle rendered under the heading. */
+  headingSecondary?: string;
+  /** When true, description renders full-width below the heading instead of to its right on desktop. */
+  descriptionBelow?: boolean;
   /** Max number of expert avatars to show. Shows all if absent. */
   maxExperts?: number;
+  /** Toggle for the experts strip. Default true. */
+  showExperts?: boolean;
 };
 
 export type AboutMainData = {
@@ -58,6 +65,48 @@ export type ProjectsBlockData = {
   logoGrid: LogoGridCell[];
 };
 
+export type ContactSocialKind = "vk" | "telegram" | "custom";
+
+export type ContactSocial = {
+  id: string;
+  kind: ContactSocialKind;
+  iconSrc?: string;
+  username: string;
+  url: string;
+};
+
+export type ContactPerson = {
+  avatar: string | null;
+  name: string;
+  role: string;
+  phone?: string;
+  social?: {
+    kind: ContactSocialKind;
+    iconSrc?: string;
+    username: string;
+    url: string;
+  };
+};
+
+export type ContactCardItem =
+  | { id: string; kind: "paragraph"; paragraph: AboutParagraph }
+  | { id: string; kind: "socials"; socials: ContactSocial[] }
+  | { id: string; kind: "person"; person: ContactPerson };
+
+export type ContactCard = {
+  id: string;
+  title: string;
+  items: ContactCardItem[];
+};
+
+export type ContactsData = {
+  tag: string;
+  title: string;
+  titleSecondary?: string;
+  paragraphs?: AboutParagraph[];
+  cards: ContactCard[];
+};
+
 export type AboutPageData = {
   slug: string;
   metaTitle: string;
@@ -69,6 +118,9 @@ export type AboutPageData = {
   process: ProcessData | null;
   experts: ExpertData[];
   audience: ForWhomData | null;
+  contacts: ContactsData | null;
+  aboutRocketmind: AboutRocketmindData | null;
+  aboutRocketmindEnabled: boolean;
   aboutImage: string | null;
 };
 
@@ -96,8 +148,11 @@ function normaliseParagraphs(raw: unknown): AboutParagraph[] {
     .map((p): AboutParagraph | null => {
       if (typeof p === "string") return { text: p, uppercase: false };
       if (p && typeof p === "object") {
-        const o = p as { text?: unknown; uppercase?: unknown };
-        if (typeof o.text === "string") return { text: o.text, uppercase: o.uppercase === true };
+        const o = p as { text?: unknown; uppercase?: unknown; color?: unknown };
+        if (typeof o.text === "string") {
+          const color = o.color === "primary" || o.color === "secondary" ? o.color : undefined;
+          return { text: o.text, uppercase: o.uppercase === true, ...(color ? { color } : {}) };
+        }
       }
       return null;
     })
@@ -113,6 +168,87 @@ function normaliseAccordion(raw: unknown): AccordionItem[] {
       : [];
     return { title: i.title ?? "", paragraphs };
   });
+}
+
+function rid() { return Math.random().toString(36).slice(2, 10); }
+
+function normaliseSocial(raw: unknown): ContactSocial | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const kind = o.kind === "vk" || o.kind === "telegram" || o.kind === "custom" ? o.kind : null;
+  if (!kind) return null;
+  return {
+    id: typeof o.id === "string" ? o.id : rid(),
+    kind,
+    iconSrc: typeof o.iconSrc === "string" ? o.iconSrc : undefined,
+    username: typeof o.username === "string" ? o.username : "",
+    url: typeof o.url === "string" ? o.url : "",
+  };
+}
+
+function normalisePersonSocial(raw: unknown): ContactPerson["social"] | undefined {
+  const s = normaliseSocial(raw);
+  if (!s) return undefined;
+  const { id: _id, ...rest } = s;
+  return rest;
+}
+
+function normaliseContactItem(raw: unknown): ContactCardItem | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const id = typeof o.id === "string" ? o.id : rid();
+  if (o.kind === "paragraph") {
+    const p = normaliseParagraphs([o.paragraph])[0] ?? { text: "", uppercase: false };
+    return { id, kind: "paragraph", paragraph: p };
+  }
+  if (o.kind === "socials") {
+    const socials = Array.isArray(o.socials)
+      ? (o.socials as unknown[]).map(normaliseSocial).filter((s): s is ContactSocial => s !== null)
+      : [];
+    return { id, kind: "socials", socials };
+  }
+  if (o.kind === "person") {
+    const p = (o.person && typeof o.person === "object" ? o.person : {}) as Record<string, unknown>;
+    const expertSlug = typeof p.expertSlug === "string" ? p.expertSlug : "";
+    const resolved = expertSlug ? getExpertBySlug(expertSlug) : null;
+    const person: ContactPerson = {
+      avatar: resolved?.image ?? (typeof p.avatarSrc === "string" ? p.avatarSrc : null),
+      name: resolved?.name ?? (typeof p.name === "string" ? p.name : ""),
+      role: resolved?.shortBio ?? resolved?.tag ?? (typeof p.role === "string" ? p.role : ""),
+      phone: typeof p.phone === "string" && p.phone ? p.phone : undefined,
+      social: normalisePersonSocial(p.social),
+    };
+    return { id, kind: "person", person };
+  }
+  return null;
+}
+
+function normaliseContacts(raw: unknown): ContactsData | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const cards = Array.isArray(o.cards)
+    ? (o.cards as unknown[])
+        .map((c): ContactCard | null => {
+          if (!c || typeof c !== "object") return null;
+          const co = c as Record<string, unknown>;
+          const items = Array.isArray(co.items)
+            ? (co.items as unknown[]).map(normaliseContactItem).filter((i): i is ContactCardItem => i !== null)
+            : [];
+          return {
+            id: typeof co.id === "string" ? co.id : rid(),
+            title: typeof co.title === "string" ? co.title : "",
+            items,
+          };
+        })
+        .filter((c): c is ContactCard => c !== null)
+    : [];
+  return {
+    tag: typeof o.tag === "string" ? o.tag : "",
+    title: typeof o.title === "string" ? o.title : "",
+    titleSecondary: typeof o.titleSecondary === "string" ? o.titleSecondary : undefined,
+    paragraphs: normaliseParagraphs(o.paragraphs),
+    cards,
+  };
 }
 
 // ── API ────────────────────────────────────────────────────────────────────────
@@ -132,12 +268,15 @@ function loadUniquePage(uniqueSlug: string, defaultSlug: string): AboutPageData 
     caption: (heroRaw.caption as string) ?? "",
     title: ((heroRaw.title as string) ?? "").trimEnd(),
     description: (heroRaw.description as string) ?? "",
+    paragraphs: normaliseParagraphs(heroRaw.paragraphs),
     ctaText: (heroRaw.ctaText as string) ?? "связаться с нами",
     factoids: Array.isArray(heroRaw.factoids) ? (heroRaw.factoids as Factoid[]) : [],
     experts: resolveExperts(heroExpertSlugs),
-    heroLogoData: typeof heroRaw.heroLogoData === "string" ? heroRaw.heroLogoData : undefined,
     heading: typeof heroRaw.heading === "string" ? heroRaw.heading : undefined,
+    headingSecondary: typeof heroRaw.headingSecondary === "string" ? heroRaw.headingSecondary : undefined,
+    descriptionBelow: heroRaw.descriptionBelow === true,
     maxExperts: typeof heroRaw.maxExperts === "number" ? heroRaw.maxExperts : undefined,
+    showExperts: heroRaw.showExperts !== false,
   };
 
   // ── About main ──────────────────────────────────────────────────────────────
@@ -203,6 +342,12 @@ function loadUniquePage(uniqueSlug: string, defaultSlug: string): AboutPageData 
     process: (data.process as ProcessData | undefined) ?? null,
     experts: pageExperts,
     audience: (data.audience as ForWhomData | undefined) ?? null,
+    contacts: normaliseContacts(data.contacts),
+    aboutRocketmind:
+      data.aboutRocketmind && typeof data.aboutRocketmind === "object"
+        ? (data.aboutRocketmind as AboutRocketmindData)
+        : null,
+    aboutRocketmindEnabled: data.aboutRocketmind !== false,
     aboutImage,
   };
 }

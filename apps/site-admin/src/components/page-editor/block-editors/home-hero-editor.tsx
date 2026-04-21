@@ -2,6 +2,7 @@
 
 import { GripVertical, Plus, Trash2, ArrowRight } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 type RotatingLine = { text: string; ctaLabel: string; ctaHref: string };
@@ -152,6 +153,7 @@ export function HomeHeroEditor({ data, onUpdate }: HomeHeroEditorProps) {
                     >
                       <GripVertical className="h-2.5 w-2.5" />
                     </div>
+                    <ItemMoveButtons index={index} count={rotatingLines.length} onMove={dnd.move} />
                     <button
                       type="button"
                       onClick={() => deleteLine(index)}

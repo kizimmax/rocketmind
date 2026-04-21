@@ -9,6 +9,7 @@ import { LogoMarqueeSection } from "@/components/sections/LogoMarqueeSection";
 import { getAllCases } from "@/lib/cases";
 import { getTestimonials } from "@/lib/testimonials";
 import { getCasesIndexPage } from "@/lib/unique";
+import { getAboutRocketmindPhotos } from "@/lib/about-rocketmind";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = getCasesIndexPage();
@@ -32,11 +33,14 @@ export default function CasesPage() {
         caption={page.hero.caption}
         title={page.hero.title}
         description={page.hero.description}
+        paragraphs={page.hero.paragraphs}
         ctaText={page.hero.ctaText}
         factoids={page.hero.factoids}
-        heroLogoData={page.hero.heroLogoData}
         heading={page.hero.heading || "Кейсы"}
-        showShader
+        headingSecondary={page.hero.headingSecondary}
+        descriptionBelow={page.hero.descriptionBelow}
+        showExperts={page.hero.showExperts}
+        maxExperts={page.hero.maxExperts}
         experts={page.experts.map((e) => ({
           name: e.name,
           tag: e.shortBio || e.tag,
@@ -51,7 +55,7 @@ export default function CasesPage() {
       <CasesPageBlock cases={cases} testimonials={testimonials} />
 
       {/* 3. О Rocketmind — стандартный блок из шаблонной продуктовой страницы */}
-      <AboutRocketmindSection {...ABOUT_RM_DEFAULTS} />
+      <AboutRocketmindSection {...ABOUT_RM_DEFAULTS} {...getAboutRocketmindPhotos()} />
 
 
       {/* 4. CTA */}

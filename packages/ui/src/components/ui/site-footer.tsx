@@ -9,6 +9,8 @@ import {
   ACADEMY_COURSES,
   AI_PRODUCTS,
   LEGAL_LINKS,
+  type NavItem,
+  type NavSection,
 } from "../../content/site-nav";
 
 const DottedSurface = dynamic(
@@ -16,12 +18,21 @@ const DottedSurface = dynamic(
   { ssr: false, loading: () => null },
 );
 
-const COMPANY_LINKS = [
+const DEFAULT_COMPANY_LINKS = [
   { href: "/about", label: "О Rocketmind" },
   { href: "/cases", label: "Кейсы" },
   { href: "/media", label: "Медиа" },
-  ...LEGAL_LINKS.map((l) => ({ href: l.href, label: l.label })),
 ];
+
+const CONSULTING_HREF = "/products?filter=consulting";
+const ACADEMY_HREF = "/products?filter=academy";
+const AI_PRODUCTS_HREF = "/products?filter=ai-products";
+
+function pickItems(nav: NavSection[] | undefined, hrefMatch: string): NavItem[] | null {
+  if (!nav) return null;
+  const section = nav.find((s) => s.href === hrefMatch || s.href.endsWith(hrefMatch));
+  return section?.items ?? null;
+}
 
 type FooterColumnProps = {
   title: string;
@@ -56,21 +67,35 @@ export type SiteFooterProps = {
   className?: string;
   /** Content rendered on top of the DottedSurface area (e.g. chat widget) */
   children?: React.ReactNode;
+  /** Navigation tree (header sections). When omitted, falls back to hardcoded constants. */
+  nav?: NavSection[];
+  /** Company column links. When omitted, falls back to hardcoded defaults + LEGAL_LINKS. */
+  companyLinks?: { href: string; label: string }[];
+  /** Legal column links. When omitted, falls back to LEGAL_LINKS. */
+  legalLinks?: { href: string; label: string }[];
 };
 
-export function SiteFooter({ basePath = "", className, children }: SiteFooterProps) {
-  const consultingLinks = CONSULTING_SERVICES.map((s) => ({
-    href: s.href,
-    label: s.title,
-  }));
-  const academyLinks = ACADEMY_COURSES.map((s) => ({
-    href: s.href,
-    label: s.title,
-  }));
-  const aiProductLinks = AI_PRODUCTS.map((s) => ({
-    href: s.href,
-    label: s.title,
-  }));
+export function SiteFooter({
+  basePath = "",
+  className,
+  children,
+  nav,
+  companyLinks,
+  legalLinks,
+}: SiteFooterProps) {
+  const consultingItems = pickItems(nav, CONSULTING_HREF) ?? CONSULTING_SERVICES;
+  const academyItems = pickItems(nav, ACADEMY_HREF) ?? ACADEMY_COURSES;
+  const aiProductItems = pickItems(nav, AI_PRODUCTS_HREF) ?? AI_PRODUCTS;
+
+  const consultingLinks = consultingItems.map((s) => ({ href: s.href, label: s.title }));
+  const academyLinks = academyItems.map((s) => ({ href: s.href, label: s.title }));
+  const aiProductLinks = aiProductItems.map((s) => ({ href: s.href, label: s.title }));
+
+  const resolvedLegalLinks = legalLinks ?? LEGAL_LINKS.map((l) => ({ href: l.href, label: l.label }));
+  const resolvedCompanyLinks = [
+    ...(companyLinks ?? DEFAULT_COMPANY_LINKS),
+    ...resolvedLegalLinks,
+  ];
 
   return (
     <footer className={className ?? "relative overflow-hidden border-t border-border bg-background"}>
@@ -107,7 +132,7 @@ export function SiteFooter({ basePath = "", className, children }: SiteFooterPro
             <FooterColumn title="Онлайн-школа" links={academyLinks} />
             <FooterColumn title="AI-продукты" links={aiProductLinks} />
           </div>
-          <FooterColumn title="Компания" links={COMPANY_LINKS} />
+          <FooterColumn title="Компания" links={resolvedCompanyLinks} />
         </div>
 
         {/* Mobile copyright */}

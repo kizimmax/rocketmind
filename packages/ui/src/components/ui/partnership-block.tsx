@@ -1,5 +1,10 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
+import {
+  StyledParagraphs,
+  resolveStyledParagraphs,
+  type StyledParagraph,
+} from "./styled-paragraphs";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -18,8 +23,10 @@ export interface PartnershipBlockProps {
   caption: string;
   /** Main heading */
   title: string;
-  /** Description text */
-  description: string;
+  /** Legacy single-string description (plain secondary text). */
+  description?: string;
+  /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+  paragraphs?: StyledParagraph[];
   /** Partner logos (max ~4, displayed inline) */
   logos: PartnershipLogo[];
   /** Photos for 2×2 grid (exactly 4) */
@@ -33,10 +40,16 @@ export function PartnershipBlock({
   caption,
   title,
   description,
+  paragraphs,
   logos,
   photos,
   className,
 }: PartnershipBlockProps) {
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: false,
+    color: "secondary",
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
   return (
     <div
       className={cn(
@@ -55,9 +68,9 @@ export function PartnershipBlock({
             <h3 className="font-[family-name:var(--font-heading-family)] text-[28px] md:text-[36px] lg:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em]">
               {title}
             </h3>
-            <p className="text-[14px] leading-[1.32] tracking-[0.01em] text-[color:var(--color-muted-foreground)]">
-              {description}
-            </p>
+            {hasParagraphs && (
+              <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
+            )}
           </div>
         </div>
 

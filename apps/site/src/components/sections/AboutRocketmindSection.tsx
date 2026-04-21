@@ -10,14 +10,15 @@ const MascotCarousel = dynamic(
 );
 import {
   ABOUT_RM_DEFAULTS,
+  DEFAULT_ALEX_PHOTO,
+  DEFAULT_CANVAS_PHOTO,
   type AboutRocketmindSectionProps,
-  type AboutRocketmindVariant,
   type AboutRocketmindLeftVariant,
   type AboutRmFeature,
 } from "./about-rocketmind-defaults";
 
 export { ABOUT_RM_DEFAULTS };
-export type { AboutRocketmindSectionProps, AboutRocketmindVariant, AboutRocketmindLeftVariant, AboutRmFeature };
+export type { AboutRocketmindSectionProps, AboutRocketmindLeftVariant, AboutRmFeature };
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -39,15 +40,30 @@ function DotPattern() {
 
 // ── Left image helper ─────────────────────────────────────────────────────────
 
-function LeftImage({ leftVariant, alt }: { leftVariant: AboutRocketmindLeftVariant; alt: string }) {
-  const src = leftVariant === "canvas"
-    ? `${BASE_PATH}/images/about/canvas-image.png`
-    : `${BASE_PATH}/images/about/alexey-eremin.png`;
+function resolvePhoto(src: string | undefined, fallback: string): string {
+  if (!src) return `${BASE_PATH}${fallback}`;
+  if (src.startsWith("data:") || src.startsWith("http")) return src;
+  return src.startsWith("/") && !src.startsWith(BASE_PATH) ? `${BASE_PATH}${src}` : src;
+}
+
+function LeftImage({
+  leftVariant,
+  alt,
+  alexSrc,
+  canvasSrc,
+}: {
+  leftVariant: AboutRocketmindLeftVariant;
+  alt: string;
+  alexSrc: string;
+  canvasSrc: string;
+}) {
+  const src = leftVariant === "canvas" ? canvasSrc : alexSrc;
   return (
     <Image
       src={src}
       alt={alt}
       fill
+      unoptimized={src.startsWith("data:")}
       className="object-cover object-top"
       sizes="(min-width: 1512px) 302px, 25vw"
     />
@@ -118,10 +134,13 @@ export function AboutRocketmindSection({
   canvasTitle = ABOUT_RM_DEFAULTS.canvasTitle,
   canvasText = ABOUT_RM_DEFAULTS.canvasText,
   features = ABOUT_RM_DEFAULTS.features,
-  variant = "dark",
   leftVariant = "alex",
+  alexPhoto,
+  canvasPhoto,
 }: AboutRocketmindSectionProps) {
   const imageAlt = leftVariant === "canvas" ? canvasTitle : founderName;
+  const alexSrc = resolvePhoto(alexPhoto, DEFAULT_ALEX_PHOTO);
+  const canvasSrc = resolvePhoto(canvasPhoto, DEFAULT_CANVAS_PHOTO);
 
   return (
     <section className="w-full bg-[#0A0A0A] border-t border-border py-10 lg:py-20">
@@ -134,7 +153,7 @@ export function AboutRocketmindSection({
             <div className="flex gap-8 h-full">
               {/* Photo — fixed width calc(50% - 16px) */}
               <div className="relative shrink-0" style={{ width: "calc(50% - 16px)" }}>
-                <LeftImage leftVariant={leftVariant} alt={imageAlt} />
+                <LeftImage leftVariant={leftVariant} alt={imageAlt} alexSrc={alexSrc} canvasSrc={canvasSrc} />
               </div>
               {/* Text — Figma: 302×463, vertical, justify-between */}
               <div className="flex flex-col justify-between" style={{ width: "calc(50% - 16px)" }}>
@@ -217,7 +236,7 @@ export function AboutRocketmindSection({
               </h2>
             </div>
             <div className="relative flex-1 min-h-[300px] mx-8">
-              <LeftImage leftVariant={leftVariant} alt={imageAlt} />
+              <LeftImage leftVariant={leftVariant} alt={imageAlt} alexSrc={alexSrc} canvasSrc={canvasSrc} />
             </div>
             <div className="p-8">
               <LeftBottomText
@@ -269,10 +288,11 @@ export function AboutRocketmindSection({
           {/* Photo */}
           <div className="mx-5 overflow-hidden bg-[#0A0A0A]">
             <Image
-              src={leftVariant === "canvas" ? `${BASE_PATH}/images/about/canvas-image.png` : `${BASE_PATH}/images/about/alexey-eremin.png`}
+              src={leftVariant === "canvas" ? canvasSrc : alexSrc}
               alt={imageAlt}
               width={leftVariant === "canvas" ? 850 : 604}
               height={leftVariant === "canvas" ? 1138 : 914}
+              unoptimized={(leftVariant === "canvas" ? canvasSrc : alexSrc).startsWith("data:")}
               className="w-full h-auto block"
               sizes="(max-width: 768px) calc(100vw - 80px)"
             />

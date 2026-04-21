@@ -297,6 +297,41 @@ declare function Tooltip({ ...props }: Tooltip$1.Root.Props): react_jsx_runtime.
 declare function TooltipTrigger({ ...props }: Tooltip$1.Trigger.Props): react_jsx_runtime.JSX.Element;
 declare function TooltipContent({ className, side, sideOffset, align, alignOffset, children, ...props }: Tooltip$1.Popup.Props & Pick<Tooltip$1.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">): react_jsx_runtime.JSX.Element;
 
+type StyledParagraphColor = "primary" | "secondary";
+type StyledParagraph = {
+    text: string;
+    uppercase?: boolean;
+    color?: StyledParagraphColor;
+};
+type StyledParagraphsTheme = "dark" | "light";
+type StyledParagraphsSize = "18" | "16";
+type StyledParagraphsProps = {
+    paragraphs: StyledParagraph[];
+    theme?: StyledParagraphsTheme;
+    size?: StyledParagraphsSize;
+    className?: string;
+};
+/**
+ * Canonicalize a possibly-legacy paragraphs list + legacy description string.
+ *
+ * - If `paragraphs` is non-empty → use it (applying defaults).
+ * - Else if `legacy` is a non-empty string → wrap it with `legacyDefaults`.
+ * - Else return [].
+ */
+declare function resolveStyledParagraphs(paragraphs: StyledParagraph[] | undefined, legacy: string | undefined, legacyDefaults?: {
+    uppercase?: boolean;
+    color?: StyledParagraphColor;
+}): StyledParagraph[];
+declare function styledParagraphClassName(p: StyledParagraph, opts?: {
+    theme?: StyledParagraphsTheme;
+    size?: StyledParagraphsSize;
+}): string;
+/**
+ * Renders a list of styled paragraphs with per-paragraph caps + color.
+ * Returns null when paragraphs list is empty.
+ */
+declare function StyledParagraphs({ paragraphs, theme, size, className, }: StyledParagraphsProps): react_jsx_runtime.JSX.Element | null;
+
 interface PartnershipLogo {
     src: string;
     alt: string;
@@ -310,15 +345,17 @@ interface PartnershipBlockProps {
     caption: string;
     /** Main heading */
     title: string;
-    /** Description text */
-    description: string;
+    /** Legacy single-string description (plain secondary text). */
+    description?: string;
+    /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+    paragraphs?: StyledParagraph[];
     /** Partner logos (max ~4, displayed inline) */
     logos: PartnershipLogo[];
     /** Photos for 2×2 grid (exactly 4) */
     photos: PartnershipPhoto[];
     className?: string;
 }
-declare function PartnershipBlock({ caption, title, description, logos, photos, className, }: PartnershipBlockProps): react_jsx_runtime.JSX.Element;
+declare function PartnershipBlock({ caption, title, description, paragraphs, logos, photos, className, }: PartnershipBlockProps): react_jsx_runtime.JSX.Element;
 
 interface ProductCardExpert {
     name: string;
@@ -366,6 +403,109 @@ interface ProductImageCardProps {
 }
 declare function ProductImageCard({ title, description, image, tag, href, variant, factoids, compact, className, }: ProductImageCardProps): react_jsx_runtime.JSX.Element;
 
+interface BreadcrumbItem {
+    label: string;
+    href?: string;
+}
+interface BreadcrumbsProps extends React$1.HTMLAttributes<HTMLElement> {
+    items: BreadcrumbItem[];
+    /** Mobile: horizontal scroll anchored to the end (last item visible) */
+    mobileScroll?: boolean;
+}
+/**
+ * Breadcrumbs — путь навигации.
+ *
+ * Desktop: row gap-3, item gap-2, text Copy 14.
+ * Mobile (`mobileScroll`): горизонтальный скролл, прижатый к концу — видна текущая позиция.
+ */
+declare const Breadcrumbs: React$1.ForwardRefExoticComponent<BreadcrumbsProps & React$1.RefAttributes<HTMLElement>>;
+
+declare const tagVariants: (props?: ({
+    size?: "s" | "l" | "m" | null | undefined;
+    state?: "default" | "disabled" | "active" | "interactive" | null | undefined;
+} & class_variance_authority_types.ClassProp) | undefined) => string;
+type TagSize = NonNullable<VariantProps<typeof tagVariants>["size"]>;
+type TagState = NonNullable<VariantProps<typeof tagVariants>["state"]>;
+type TagOwnProps = VariantProps<typeof tagVariants> & {
+    asChild?: boolean;
+};
+type TagAsButton = TagOwnProps & Omit<React$1.ButtonHTMLAttributes<HTMLButtonElement>, "size"> & {
+    as: "button";
+};
+type TagAsAnchor = TagOwnProps & Omit<React$1.AnchorHTMLAttributes<HTMLAnchorElement>, "size"> & {
+    as: "a";
+};
+type TagAsSpan = TagOwnProps & Omit<React$1.HTMLAttributes<HTMLSpanElement>, "size"> & {
+    as?: "span";
+};
+type TagProps = TagAsButton | TagAsAnchor | TagAsSpan;
+/**
+ * Tag — тег для статьи / медиа-раздела.
+ * Размеры: L (article hero), M (mobile hero), S (article card).
+ * Состояния: default, interactive, active (yellow), disabled.
+ */
+declare function Tag(props: TagProps): react_jsx_runtime.JSX.Element;
+
+interface AuthorProps extends React$1.HTMLAttributes<HTMLDivElement> {
+    name: string;
+    avatarUrl?: string | null;
+    /** ISO date string */
+    date?: string;
+    /** Full — 2-line (name, date on separate row with calendar). Short — single row (name + date). */
+    variant?: "full" | "short";
+}
+/**
+ * Author — блок «автор + дата» для hero статьи (Full) и карточки (Short).
+ */
+declare function Author({ name, avatarUrl, date, variant, className, ...props }: AuthorProps): react_jsx_runtime.JSX.Element;
+
+interface KeyThoughtsProps extends React$1.HTMLAttributes<HTMLUListElement> {
+    thoughts: string[];
+}
+/**
+ * KeyThoughts — закреплённые «ключевые мысли» редактора.
+ * Вертикальная полоса слева + Label 16 UPPER.
+ */
+declare function KeyThoughts({ thoughts, className, ...props }: KeyThoughtsProps): react_jsx_runtime.JSX.Element | null;
+
+interface ArticleNavItem {
+    id: string;
+    label: string;
+}
+interface ArticleNavProps extends React$1.HTMLAttributes<HTMLElement> {
+    items: ArticleNavItem[];
+    activeId?: string | null;
+    /** Called when user clicks a nav item. If omitted, uses href="#id". */
+    onNavigate?: (id: string) => void;
+}
+/**
+ * ArticleNav — левая ToC-навигация статьи, автосборка из H2-заголовков тела.
+ * Width 268 (fixed), items Label 18 UPPER, activeId подсвечивается жёлтым.
+ * Возвращает null если items пусты — компонент не рендерится.
+ */
+declare function ArticleNav({ items, activeId, onNavigate, className, ...props }: ArticleNavProps): react_jsx_runtime.JSX.Element | null;
+
+interface ArticleCardProps extends React$1.HTMLAttributes<HTMLElement> {
+    /** If omitted — карточка рендерится как статичное превью без ссылки и без стрелки-выноски. */
+    href?: string;
+    title: string;
+    description?: string;
+    coverUrl?: string | null;
+    tags?: string[];
+    authorName?: string;
+    authorAvatarUrl?: string | null;
+    date?: string;
+    /** Max tags to show (excess are clipped). Default 3. */
+    maxTags?: number;
+}
+/**
+ * ArticleCard — floating glass-панель.
+ * 350px fixed width, bg rgba(10,10,10,0.8) + backdrop-blur 10, pad 32.
+ * Image 224h с линейным затемнением снизу → контент над ней (overlap).
+ * Если передан `href` — карточка кликабельна и показывает стрелку-выноску.
+ */
+declare function ArticleCard({ href, title, description, coverUrl, tags, authorName, authorAvatarUrl, date, maxTags, className, ...props }: ArticleCardProps): react_jsx_runtime.JSX.Element;
+
 type RichTextProps = {
     text: string;
     className?: string;
@@ -393,8 +533,10 @@ type ForWhomSectionProps = {
     title: string;
     /** Secondary (gray) part of heading — rendered in same h2 for SEO */
     titleSecondary?: string;
-    /** Subtitle / lead text (optional) */
+    /** Subtitle / lead text (optional) — legacy single string (uppercase primary). */
     subtitle?: string;
+    /** Structured paragraphs with per-paragraph caps + color. Supersedes `subtitle` when provided. */
+    paragraphs?: StyledParagraph[];
     /** 2–4 fact cards */
     facts: ForWhomFact[];
     /**
@@ -406,7 +548,62 @@ type ForWhomSectionProps = {
     wideColumn?: "left" | "right";
     className?: string;
 };
-declare function ForWhomSection({ tag, title, titleSecondary, subtitle, facts, wideColumn, className, }: ForWhomSectionProps): react_jsx_runtime.JSX.Element;
+declare function ForWhomSection({ tag, title, titleSecondary, subtitle, paragraphs, facts, wideColumn, className, }: ForWhomSectionProps): react_jsx_runtime.JSX.Element;
+
+type SocialKind = "vk" | "telegram" | "custom";
+type ContactSocial = {
+    id: string;
+    kind: SocialKind;
+    /** For custom kind — URL/data-URL to SVG or PNG icon. */
+    iconSrc?: string;
+    username: string;
+    url: string;
+};
+type ContactPersonData = {
+    /** Rendered avatar URL (resolved by the host app from an expert slug or custom upload). */
+    avatar: string | null;
+    name: string;
+    role: string;
+    phone?: string;
+    social?: {
+        kind: SocialKind;
+        iconSrc?: string;
+        username: string;
+        url: string;
+    };
+};
+type ContactCardItem = {
+    id: string;
+    kind: "paragraph";
+    paragraph: StyledParagraph;
+} | {
+    id: string;
+    kind: "socials";
+    socials: ContactSocial[];
+} | {
+    id: string;
+    kind: "person";
+    person: ContactPersonData;
+};
+type ContactCard = {
+    id: string;
+    title: string;
+    items: ContactCardItem[];
+};
+type ContactsSectionProps = {
+    tag: string;
+    title: string;
+    titleSecondary?: string;
+    subtitle?: string;
+    paragraphs?: StyledParagraph[];
+    cards: ContactCard[];
+    className?: string;
+};
+declare function ContactsSection({ tag, title, titleSecondary, subtitle, paragraphs, cards, className, }: ContactsSectionProps): react_jsx_runtime.JSX.Element;
+
+declare function VkIcon({ className, ...props }: React$1.SVGProps<SVGSVGElement>): react_jsx_runtime.JSX.Element;
+
+declare function TelegramIcon({ className, ...props }: React$1.SVGProps<SVGSVGElement>): react_jsx_runtime.JSX.Element;
 
 type ProcessStep = {
     number: string;
@@ -418,12 +615,25 @@ type ProcessParticipant = {
     role: string;
     text: string;
 };
+/** @deprecated Use `StyledParagraph` from `@rocketmind/ui` instead. */
+type ProcessDescriptionParagraph = {
+    text: string;
+    /** If true, paragraph renders in the uppercase label-18 mono style. */
+    uppercase?: boolean;
+};
 type ProcessSectionProps = {
     tag: string;
     title: string;
     titleSecondary?: string;
     subtitle: string;
+    /** If true (default), subtitle renders in uppercase label-18 mono. */
+    subtitleUppercase?: boolean;
+    /** Legacy single-string description (uppercase mono). */
     description?: string;
+    /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+    paragraphs?: StyledParagraph[];
+    /** @deprecated Use `paragraphs` instead. */
+    descriptionParagraphs?: ProcessDescriptionParagraph[];
     steps: ProcessStep[];
     participantsTag?: string;
     participants?: ProcessParticipant[];
@@ -431,7 +641,7 @@ type ProcessSectionProps = {
     variant?: "product" | "academy";
     className?: string;
 };
-declare function ProcessSection({ tag, title, titleSecondary, subtitle, description, steps, participantsTag, participants, variant, className, }: ProcessSectionProps): react_jsx_runtime.JSX.Element;
+declare function ProcessSection({ tag, title, titleSecondary, subtitle, subtitleUppercase, description, paragraphs, descriptionParagraphs, steps, participantsTag, participants, variant, className, }: ProcessSectionProps): react_jsx_runtime.JSX.Element;
 
 type ResultCard = {
     title: string;
@@ -441,11 +651,14 @@ type ResultsSectionProps = {
     tag: string;
     title: string;
     titleSecondary?: string;
+    /** Legacy single-string description (plain secondary text). */
     description?: string;
+    /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+    paragraphs?: StyledParagraph[];
     cards: ResultCard[];
     className?: string;
 };
-declare function ResultsSection({ tag, title, titleSecondary, description, cards, className, }: ResultsSectionProps): react_jsx_runtime.JSX.Element;
+declare function ResultsSection({ tag, title, titleSecondary, description, paragraphs, cards, className, }: ResultsSectionProps): react_jsx_runtime.JSX.Element;
 
 interface ServiceCardData {
     /** Card heading (uppercase) */
@@ -468,11 +681,14 @@ interface ServicesSectionProps {
     tag?: string;
     title: string;
     titleSecondary?: string;
+    /** Legacy single-string description (plain secondary text). */
     description?: string;
+    /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+    paragraphs?: StyledParagraph[];
     cards: ServiceCardData[];
     className?: string;
 }
-declare function ServicesSection({ tag, title, titleSecondary, description, cards, className, }: ServicesSectionProps): react_jsx_runtime.JSX.Element | null;
+declare function ServicesSection({ tag, title, titleSecondary, description, paragraphs, cards, className, }: ServicesSectionProps): react_jsx_runtime.JSX.Element | null;
 /**
  * Assign bento-style sizing to cards based on content volume, then sort so
  * larger cards tend to come first for dense packing on a 4-column grid.
@@ -518,13 +734,18 @@ type ToolsSectionProps = {
     tag: string;
     title: string;
     titleSecondary?: string;
+    /** Legacy single-string description (uppercase mono secondary). */
     description?: string;
+    /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+    paragraphs?: StyledParagraph[];
     tools: ToolCard[];
     /** Show icons instead of numbers */
     useIcons?: boolean;
+    /** Render description under the heading (full width) instead of to the right. Desktop only. */
+    descriptionBelow?: boolean;
     className?: string;
 };
-declare function ToolsSection({ tag, title, titleSecondary, description, tools, useIcons, className, }: ToolsSectionProps): react_jsx_runtime.JSX.Element;
+declare function ToolsSection({ tag, title, titleSecondary, description, paragraphs, tools, useIcons, descriptionBelow, className, }: ToolsSectionProps): react_jsx_runtime.JSX.Element;
 
 type AccordionFAQItem = {
     id: string;
@@ -603,10 +824,6 @@ type InfiniteLogoMarqueeProps = {
 };
 declare function InfiniteLogoMarquee({ className, logos, speedSeconds, gap, maxLogoHeight, fadeWidth, reverse, }: InfiniteLogoMarqueeProps): react_jsx_runtime.JSX.Element | null;
 
-declare function MobileNav({ className }: {
-    className?: string;
-}): react_jsx_runtime.JSX.Element;
-
 /**
  * Единый источник данных навигации сайта.
  * Используется в Header (RocketmindMenu), MobileNav и Footer.
@@ -623,12 +840,20 @@ type NavSection = {
 };
 declare const HEADER_NAV: NavSection[];
 
+declare function MobileNav({ className, nav, }: {
+    className?: string;
+    /** Navigation tree. Falls back to the hardcoded HEADER_NAV when omitted. */
+    nav?: NavSection[];
+}): react_jsx_runtime.JSX.Element;
+
 type RocketmindMenuProps = {
     className?: string;
     itemClassName?: string;
     showDropdowns?: boolean;
+    /** Navigation tree. Falls back to the hardcoded HEADER_NAV when omitted. */
+    nav?: NavSection[];
 };
-declare function RocketmindMenu({ className, itemClassName, showDropdowns, }: RocketmindMenuProps): react_jsx_runtime.JSX.Element;
+declare function RocketmindMenu({ className, itemClassName, showDropdowns, nav, }: RocketmindMenuProps): react_jsx_runtime.JSX.Element;
 
 interface WaveAnimationProps {
     /** Fixed width in px. If omitted, the component fills the parent container. */
@@ -657,14 +882,28 @@ type SiteFooterProps = {
     className?: string;
     /** Content rendered on top of the DottedSurface area (e.g. chat widget) */
     children?: React.ReactNode;
+    /** Navigation tree (header sections). When omitted, falls back to hardcoded constants. */
+    nav?: NavSection[];
+    /** Company column links. When omitted, falls back to hardcoded defaults + LEGAL_LINKS. */
+    companyLinks?: {
+        href: string;
+        label: string;
+    }[];
+    /** Legal column links. When omitted, falls back to LEGAL_LINKS. */
+    legalLinks?: {
+        href: string;
+        label: string;
+    }[];
 };
-declare function SiteFooter({ basePath, className, children }: SiteFooterProps): react_jsx_runtime.JSX.Element;
+declare function SiteFooter({ basePath, className, children, nav, companyLinks, legalLinks, }: SiteFooterProps): react_jsx_runtime.JSX.Element;
 
 type SiteHeaderProps = {
     /** Base path for static assets (logo). Default: "" */
     basePath?: string;
     className?: string;
+    /** Navigation tree. Falls back to the hardcoded HEADER_NAV when omitted. */
+    nav?: NavSection[];
 };
-declare function SiteHeader({ basePath, className }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
+declare function SiteHeader({ basePath, className, nav }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
 
-export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, Button, CTASectionDark, type CTASectionDarkProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, type Expert, ExpertsSection, type ExpertsSectionProps, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, type LogoMarqueeItem, MobileNav, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderProps, Skeleton, Slider, type SliderProps, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, repackBento, HEADER_NAV as rocketmindMenuItems, tabsListVariants, textareaVariants };
+export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleCard, type ArticleCardProps, ArticleNav, type ArticleNavItem, type ArticleNavProps, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, type Expert, ExpertsSection, type ExpertsSectionProps, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type LogoMarqueeItem, MobileNav, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VkIcon, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants };

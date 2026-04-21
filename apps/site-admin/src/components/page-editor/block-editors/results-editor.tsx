@@ -4,7 +4,13 @@ import { GripVertical } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
 import { MdText } from "@/components/md-text";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
 import { InsertButton } from "@/components/insert-button";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 interface ResultsEditorProps {
@@ -16,10 +22,18 @@ export function ResultsEditor({ data, onUpdate }: ResultsEditorProps) {
   const tag = (data.tag as string) || "";
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
-  const description = (data.description as string) || "";
+  const paragraphs = resolveParagraphs(
+    data.paragraphs,
+    (data.description as string) || "",
+    { uppercase: false, color: "secondary" },
+  );
   const cards = (data.cards as Array<{ title: string; text: string }>) || [];
 
   const dnd = useItemDnd(cards, (reordered) => onUpdate({ cards: reordered }));
+
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next, description: undefined });
+  }
 
   function updateCard(index: number, field: string, value: string) {
     const updated = cards.map((c, i) =>
@@ -75,19 +89,12 @@ export function ResultsEditor({ data, onUpdate }: ResultsEditorProps) {
               </InlineEdit>
             </div>
 
-            <InlineEdit
-              value={description}
-              onSave={(v) => onUpdate({ description: v })}
-              multiline
-              copy
-              placeholder="Описание"
-            >
-              <MdText
-                value={description}
-                placeholder="Описание"
-                className="text-[length:var(--text-18)] leading-[1.2] text-[#939393]"
-              />
-            </InlineEdit>
+            <ParagraphsEditor
+              paragraphs={paragraphs}
+              onChange={setParagraphs}
+              theme="dark"
+              defaults={{ uppercase: false, color: "secondary" }}
+            />
           </div>
         </div>
 
@@ -122,6 +129,7 @@ export function ResultsEditor({ data, onUpdate }: ResultsEditorProps) {
                     >
                       <GripVertical className="h-2.5 w-2.5" />
                     </div>
+                    <ItemMoveButtons index={index} count={cards.length} onMove={dnd.move} />
                     <InlineConfirmDelete
                       onConfirm={() => removeCard(index)}
                       className="bg-[#0A0A0A] text-[#F0F0F0] hover:bg-[#ED4843]"

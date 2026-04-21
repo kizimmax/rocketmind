@@ -4499,9 +4499,241 @@ Accordion.Root
 
 ---
 
-## Changelog
+## 11. Статья
 
-### v1.5.6 · 2026-03-18
+Паттерны страницы статьи (`/media/[slug]`) и её карточки в списке `/media`. Шесть примитивов, которые вместе собирают шапку статьи, тело с левой ToC, блок «ключевые мысли» и карточку для списка/админки.
+
+Все примитивы экспортируются из `@rocketmind/ui` и покрываются live-preview в DS Web (раздел «Статья»).
+
+---
+
+### 11.1 Breadcrumbs (Хлебные крошки)
+
+Навигационный путь над hero статьи и других внутренних страниц.
+
+#### Анатомия
+
+```
+<nav aria-label="Хлебные крошки">
+└── <ol> (flex, items-center, gap-3)
+    └── <li> (flex, items-center, gap-2)
+        ├── <a|span> label         (Copy 14, цвет по состоянию)
+        └── <span>/</span>         (Copy 14, --rm-gray-3)
+```
+
+#### Токены
+
+| Свойство | Токен / значение | Описание |
+|----------|-----------------|----------|
+| Типографика | `Copy/Copy 14` | Roboto 400, 14 / 1.32, tracking 0.01em |
+| Цвет (parent link) | `--rm-gray-4` (#5C5C5C dark) | Неактивные ссылки-родители |
+| Цвет (parent hover) | `--rm-gray-fg-sub` (#939393) | На hover |
+| Цвет (текущая) | `--rm-gray-fg-sub` (#939393) | Последний элемент (aria-current) |
+| Цвет (разделитель /) | `--rm-gray-3` (#404040) | Косая черта между элементами |
+| Gap между элементами | `12px` | gap-3 |
+| Gap внутри элемента | `8px` | label ↔ разделитель |
+
+#### Поведение
+
+| Контекст | Поведение |
+|----------|-----------|
+| Desktop | `flex` row, без переноса |
+| Mobile (`mobileScroll`) | `overflow-x-auto`, scrollbar скрыт, контент инициализируется с `scrollLeft = scrollWidth` — видна **текущая страница** в конце пути |
+| Клик по ссылке | Переход по `href` |
+| Клик по текущему | Нет (`<span>`, не ссылка) |
+
+#### Использование
+
+```tsx
+import { Breadcrumbs } from "@rocketmind/ui";
+
+<Breadcrumbs
+  items={[
+    { label: "Главная", href: "/" },
+    { label: "Медиа", href: "/media" },
+    { label: "Блог", href: "/media?tag=blog" },
+    { label: "Название статьи" },
+  ]}
+/>
+```
+
+---
+
+### 11.2 Tag (Тег)
+
+Тег для рубрикации статей и фильтра в списке `/media`. Размеры L/M/S, состояния default/interactive/active/disabled.
+
+#### Токены
+
+| Размер | Высота | Padding | Типографика | Применение |
+|--------|--------|---------|-------------|-----------|
+| **L** | 28 | 4×10 | Label 14 UPPER | Article hero (desktop) |
+| **M** | 28 | 4×10 | Label 12 UPPER | Mobile hero, filter strip |
+| **S** | auto | 4×8 | Label 12 UPPER | ArticleCard (плотная раскладка) |
+
+| Свойство | Токен |
+|----------|-------|
+| Font | `--font-mono-family` (Loos Condensed) 500 |
+| Background | `--rm-gray-1` |
+| Border | `1px` `--rm-gray-3` |
+| Radius | `rounded-sm` |
+| Color (default) | `--rm-gray-fg-sub` |
+| Tracking | `0.02em` |
+
+#### Состояния
+
+| State | Изменение | Применение |
+|-------|-----------|------------|
+| `default` | — | Отображение без взаимодействия |
+| `interactive` | hover: border `--rm-gray-4`, text `--rm-gray-fg-main` | Кликабельные теги на hero / карточке |
+| `active` | bg `--rm-yellow-100`, text `--rm-yellow-fg`, border = bg | Выбранный фильтр; тег «ВСЕ СТАТЬИ» при сбросе |
+| `disabled` | opacity 60%, text `--rm-gray-3`, cursor not-allowed | Когда фильтр невозможен (пустая комбинация) |
+
+#### Использование
+
+```tsx
+import { Tag } from "@rocketmind/ui";
+
+<Tag size="l">Стратегии</Tag>
+<Tag size="m" state="active" as="button" onClick={...}>Все статьи</Tag>
+<Tag size="s" state="interactive" as="a" href="/media?tag=design">Дизайн</Tag>
+```
+
+---
+
+### 11.3 Author (Автор + дата)
+
+Блок «аватар + имя + дата» для hero статьи (`full`) и карточки (`short`).
+
+#### Варианты
+
+| Вариант | Аватар | Раскладка | Применение |
+|---------|--------|-----------|-----------|
+| `full` | 40×40 round | column: имя (Label 14 UPPER `--rm-gray-fg-main`) / дата в строку с calendar-min (Copy 14 `--rm-gray-fg-sub`) | Article hero |
+| `short` | 24×24 round | row: имя UPPER → разделитель → calendar+date | ArticleCard |
+
+#### Токены
+
+| Свойство | Значение |
+|----------|---------|
+| Calendar icon | Lucide `Calendar`, 16×16, stroke 1.5 |
+| Gap avatar ↔ content | `12px` (full), `8px` (short) |
+| Дата формат | `Intl.DateTimeFormat('ru-RU')` + «г.» — «16 мая 2025 г.» |
+
+#### Использование
+
+```tsx
+import { Author } from "@rocketmind/ui";
+
+<Author
+  variant="full"
+  name="Алексей Ерёмин"
+  avatarUrl="/experts/alexey-eremin.png"
+  date="2025-05-16"
+/>
+```
+
+---
+
+### 11.4 KeyThoughts (Ключевые мысли)
+
+Закреплённый блок тезисов, которые редактор выносит из тела статьи. Отображается в правой колонке hero на desktop.
+
+#### Анатомия
+
+```
+<ul> (flex-col, gap-5, border-l --rm-gray-3, pl-[26px])
+└── <li> Label 16 UPPER --rm-gray-fg-sub
+```
+
+#### Токены
+
+| Свойство | Значение |
+|----------|---------|
+| Типографика | Label 16 UPPER (Loos Condensed 500, 16/1.12, tracking 0.02em) |
+| Цвет текста | `--rm-gray-fg-sub` |
+| Gap между пунктами | `20px` |
+| Левая полоса | `border-l 1px --rm-gray-3`, отступ `26px` |
+
+#### Поведение
+
+- Если `thoughts` пуст — **компонент не рендерится** (возвращает `null`)
+- На mobile блок опускается вниз под hero (через grid-layout родителя)
+
+---
+
+### 11.5 ArticleNav (Левая ToC)
+
+Левая навигация по разделам статьи на desktop. Пункты автогенерируются из блоков-заголовков `Heading 2` в теле статьи. Активный пункт определяется IntersectionObserver-ом (scrollspy) на стороне страницы.
+
+#### Анатомия
+
+```
+<nav aria-label="Содержание статьи">
+└── <ul> (flex-col, gap-5, width 268)
+    └── <li>
+        └── <a href="#{id}"> Label 18 UPPER
+```
+
+#### Токены
+
+| Свойство | Значение |
+|----------|---------|
+| Ширина | `268px` fixed |
+| Типографика | Label 18 UPPER (Loos Condensed 500, 18/1.12, tracking 0.02em) |
+| Цвет (default) | `--rm-gray-fg-sub` |
+| Цвет (hover) | `--rm-gray-fg-main` |
+| Цвет (active) | `--rm-yellow-100` |
+| Gap между пунктами | `20px` |
+
+#### Поведение
+
+- Если `items` пуст — **компонент не рендерится**
+- `onNavigate(id)` — опциональный колбек для smooth-scroll; иначе используется нативный `href="#{id}"`
+- На mobile компонент скрыт родительским layout-ом (`hidden lg:block`)
+
+---
+
+### 11.6 ArticleCard (Карточка статьи)
+
+Floating glass-панель со стрелкой-выноской для списка статей на `/media` и для админского превью.
+
+#### Анатомия
+
+```
+<article> (w-[350px], rounded-sm, border --rm-gray-3, bg rgba(10,10,10,0.8), backdrop-blur-10, p-8)
+├── <a> overlay (absolute inset-0, для клика по всей карточке)
+├── <arrow> (absolute right-2 top-2, 40×40, hover: --rm-yellow-100)
+├── <image> (h-224, gradient-overlay 0→72%→100%, mb-[-53px] overlap)
+├── <tags> (mt-[-24px], flex-wrap, gap 4×8, Tag size=s)
+└── <content> (mt-7, gap-5)
+    ├── <title> H4 24 UPPER --rm-gray-fg-main
+    ├── <description> Copy 14 --rm-gray-fg-sub
+    └── <Author variant="short">
+```
+
+#### Токены
+
+| Свойство | Значение |
+|----------|---------|
+| Ширина | `350px` fixed |
+| Фон | `rgba(10,10,10,0.8)` + `backdrop-filter: blur(10px)` |
+| Border | `1px --rm-gray-3` |
+| Padding | `32px` |
+| Image height | `224px` |
+| Image overlap | `margin-bottom: -53px` (контент заходит на картинку) |
+| Gradient | `linear-gradient(0deg, #0A0A0A 0%, rgba(10,10,10,0.72) 22%, transparent 100%)` |
+| Stroke arrow | `ArrowUpRight` 20×20, stroke 1.5 |
+
+#### Поведение
+
+- Клик по всей карточке → переход на `href`
+- Hover на карточке → стрелка становится жёлтой
+- Число тегов ограничено `maxTags` (default 3), лишние отсекаются
+
+---
+
+
 
 **Компонент Switch / Тумблер**
 
@@ -4617,6 +4849,43 @@ Accordion.Root
 - Удалён бейдж версии в шапке веб-страницы дизайн-системы.
 - Удалены бейджи версии у каждого раздела дизайн-системы.
 - Бейдж версии в боковом меню приведён к общему стилю всех badge-компонентов.
+
+---
+
+### 9.3 Контакты (карточки с абзацами, соцсетями и персонами)
+
+Блок для страницы «О нас». Компонент `ContactsSection` из `@rocketmind/ui`. Визуально наследует стиль «Для кого»: белый фон (`#F0F0F0`), 2-колоночная сетка карточек, заголовок h4 + разделитель.
+
+#### Анатомия карточки
+
+Карточка содержит заголовок и вертикальный стек элементов произвольного порядка (свободный reorder в админке):
+
+- **`paragraph`** — стилизованный абзац (`StyledParagraph` с `uppercase` + `color: primary | secondary`).
+- **`socials`** — строка иконок соцсетей (ВК, Telegram, custom). На hover — тултип с никнеймом. Для ВК — `vk.com/<username>`, для Telegram — `@<username>`, для custom — никнейм как задан.
+- **`person`** — контакт-персона: аватар + имя + краткое описание (из `ExpertData` по `expertSlug`) + телефон + опциональная соцсеть. Поля `phone` и `social` независимы от эксперта — picker тянет только визуал (avatar/name/role).
+
+#### Иконки соцсетей
+
+- **Размер**: 40×40 px, контейнер `rounded-sm` (4 px).
+- **Стиль**: линейный outline, `stroke="currentColor"`, `strokeWidth="1.5"`, `fill="none"`.
+- **Пак**: `@rocketmind/ui` → `VkIcon`, `TelegramIcon` (каталог `packages/ui/src/components/icons/socials/`).
+- **Custom**: SVG или PNG, грузится в `data:` URL; отображается внутри того же `rounded-sm` контейнера с бордером `currentColor`.
+
+#### Источники данных
+
+- **CMS (admin)**: блок типа `contacts` в [apps/site-admin](../apps/site-admin/) (редактор `contacts-editor.tsx`). Структура хранится во frontmatter страницы как поле `contacts`.
+- **Site (рендер)**: нормализация в [apps/site/src/lib/unique.ts](../apps/site/src/lib/unique.ts) — `normaliseContacts`, `normaliseContactItem`. Разрезолвливает `expertSlug` → avatar/name/role через `getExpertBySlug`.
+
+#### Токены
+
+| Свойство | Токен / значение | Описание |
+|----------|-----------------|----------|
+| Фон секции | `#F0F0F0` | Светлый фон, как у «Для кого» |
+| Заголовок карточки | `h4`, `text-[#0A0A0A]` | Единый стиль с audience-блоком |
+| Разделитель | `border-t border-[#404040]` | 1 px |
+| Иконка соцсети | 40×40, `rounded-sm` (4 px), border `currentColor`, `stroke-width 1.5` | Линейный outline |
+| Tooltip | Из ДС (`Tooltip` @base-ui) | Стандартный стиль |
+| Аватар персоны | 56×56, `rounded-sm` | Из `ExpertData.image` |
 
 ---
 

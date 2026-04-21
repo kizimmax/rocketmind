@@ -1,14 +1,13 @@
 "use client";
 
 import { apiFetch } from "@/lib/api-client";
-import { useEffect, useRef, useState, useCallback } from "react";
-import { Plus, Upload, Trash2, GripVertical, X, UserCircle, Sparkles, Loader2 } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Plus, Trash2, GripVertical } from "lucide-react";
 import { Button, Input, Textarea } from "@rocketmind/ui";
 import { toast } from "sonner";
 import { useItemDnd } from "@/lib/use-item-dnd";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-
-type Gender = "m" | "f";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
 
 type Testimonial = {
   id: string;
@@ -16,8 +15,6 @@ type Testimonial = {
   paragraphs: string[];
   name: string;
   position: string;
-  avatar: string | null;
-  gender: Gender;
 };
 
 export default function TestimonialsPage() {
@@ -25,7 +22,6 @@ export default function TestimonialsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     apiFetch("/api/testimonials")
@@ -71,40 +67,6 @@ export default function TestimonialsPage() {
     }
   }
 
-  async function uploadAvatar(id: string, file: File) {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      await patch(id, { avatar: reader.result as string });
-      toast.success("Аватар загружен");
-    };
-    reader.readAsDataURL(file);
-  }
-
-  async function removeAvatar(id: string) {
-    await patch(id, { avatar: null });
-    toast.success("Аватар удалён");
-  }
-
-  async function generateAvatar(id: string) {
-    if (generatingId) return;
-    setGeneratingId(id);
-    try {
-      const res = await apiFetch(`/api/testimonials/${encodeURIComponent(id)}/generate-avatar`, {
-        method: "POST",
-      });
-      if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: "" }));
-        toast.error(error ? `Ошибка генерации: ${error}` : "Ошибка генерации");
-        return;
-      }
-      const updated = (await res.json()) as Testimonial;
-      setItems((prev) => prev.map((t) => (t.id === id ? { ...t, avatar: updated.avatar } : t)));
-      toast.success("Аватар сгенерирован");
-    } finally {
-      setGeneratingId(null);
-    }
-  }
-
   async function handleDelete() {
     if (!deleteTarget) return;
     const res = await apiFetch(`/api/testimonials/${encodeURIComponent(deleteTarget)}`, {
@@ -123,7 +85,6 @@ export default function TestimonialsPage() {
     async (reordered: Testimonial[]) => {
       const next = reordered.map((t, i) => ({ ...t, order: i }));
       setItems(next);
-      // Persist new order — fire-and-forget
       await Promise.all(
         next.map((t) =>
           apiFetch(`/api/testimonials/${encodeURIComponent(t.id)}`, {
@@ -203,12 +164,10 @@ export default function TestimonialsPage() {
             >
               <TestimonialCard
                 t={t}
-                generating={generatingId === t.id}
-                anyGenerating={!!generatingId}
+                index={i}
+                count={items.length}
+                onMove={dnd.move}
                 onPatch={(p) => patch(t.id, p)}
-                onUploadAvatar={(f) => uploadAvatar(t.id, f)}
-                onRemoveAvatar={() => removeAvatar(t.id)}
-                onGenerateAvatar={() => generateAvatar(t.id)}
                 onDelete={() => setDeleteTarget(t.id)}
                 onGripDown={() => dnd.onGripDown(i)}
                 onGripUp={dnd.onGripUp}
@@ -241,35 +200,29 @@ export default function TestimonialsPage() {
 
 function TestimonialCard({
   t,
-  generating,
-  anyGenerating,
+  index,
+  count,
+  onMove,
   onPatch,
-  onUploadAvatar,
-  onRemoveAvatar,
-  onGenerateAvatar,
   onDelete,
   onGripDown,
   onGripUp,
 }: {
   t: Testimonial;
-  generating: boolean;
-  anyGenerating: boolean;
+  index: number;
+  count: number;
+  onMove: (from: number, dir: "up" | "down") => void;
   onPatch: (p: Partial<Testimonial>) => void;
-  onUploadAvatar: (f: File) => void;
-  onRemoveAvatar: () => void;
-  onGenerateAvatar: () => Promise<void>;
   onDelete: () => void;
   onGripDown: () => void;
   onGripUp: () => void;
 }) {
-  const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(t.name);
   const [position, setPosition] = useState(t.position);
   const [paragraphs, setParagraphs] = useState<string[]>(
     t.paragraphs.length > 0 ? t.paragraphs : [""],
   );
 
-  // Re-sync local state if upstream changes (e.g. after reorder reload)
   useEffect(() => setName(t.name), [t.name]);
   useEffect(() => setPosition(t.position), [t.position]);
   useEffect(() => {
@@ -283,7 +236,6 @@ function TestimonialCard({
 
   return (
     <div className="relative flex gap-6 rounded bg-[#121212] p-6">
-      {/* Drag handle */}
       <div
         className="absolute left-1.5 top-1.5 cursor-grab rounded-sm bg-background/50 p-0.5 text-muted-foreground opacity-0 transition-opacity select-none active:cursor-grabbing group-hover:opacity-100"
         onMouseDown={(e) => {
@@ -298,7 +250,10 @@ function TestimonialCard({
         <GripVertical className="h-3.5 w-3.5" />
       </div>
 
-      {/* Delete button */}
+      <div className="absolute left-8 top-1.5 flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+        <ItemMoveButtons index={index} count={count} onMove={onMove} size={18} />
+      </div>
+
       <button
         type="button"
         onClick={onDelete}
@@ -308,90 +263,6 @@ function TestimonialCard({
         <Trash2 className="h-3.5 w-3.5" />
       </button>
 
-      {/* Avatar column */}
-      <div className="flex w-24 shrink-0 flex-col items-stretch gap-2">
-        <div className="relative h-24 w-24 group/photo">
-          {t.avatar ? (
-            <div
-              className="h-full w-full rounded-full bg-[#2a2a2a] bg-cover bg-center"
-              style={{ backgroundImage: `url(${t.avatar})` }}
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-[#2a2a2a]">
-              <UserCircle className="h-10 w-10 text-[#404040]" />
-            </div>
-          )}
-          {generating && (
-            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/60">
-              <Loader2 className="h-6 w-6 animate-spin text-white" />
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover/photo:opacity-100 cursor-pointer"
-            aria-label="Загрузить аватар"
-          >
-            <Upload className="h-5 w-5 text-white" />
-          </button>
-          {t.avatar && !generating && (
-            <button
-              type="button"
-              onClick={onRemoveAvatar}
-              className="absolute -right-1 -top-1 rounded-full bg-background p-0.5 text-muted-foreground opacity-0 transition hover:text-[var(--rm-red-500)] group-hover/photo:opacity-100"
-              aria-label="Удалить аватар"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) onUploadAvatar(file);
-              e.target.value = "";
-            }}
-          />
-        </div>
-
-        {/* Gender segmented control */}
-        <div className="flex overflow-hidden rounded-sm border border-border">
-          {(["m", "f"] as const).map((g) => (
-            <button
-              key={g}
-              type="button"
-              onClick={() => g !== t.gender && onPatch({ gender: g })}
-              className={`flex-1 py-1 text-[length:var(--text-12)] transition ${
-                t.gender === g
-                  ? "bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)]"
-                  : "text-muted-foreground hover:bg-foreground/5"
-              }`}
-            >
-              {g === "m" ? "М" : "Ж"}
-            </button>
-          ))}
-        </div>
-
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onGenerateAvatar}
-          disabled={anyGenerating}
-          className="w-full"
-        >
-          {generating ? (
-            <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Sparkles className="mr-1 h-3.5 w-3.5" />
-          )}
-          {generating ? "Генерация…" : "Сгенерировать"}
-        </Button>
-      </div>
-
-      {/* Body */}
       <div className="flex flex-1 flex-col gap-3 min-w-0">
         <div className="flex flex-col gap-1.5 sm:flex-row">
           <Input

@@ -2,6 +2,11 @@
 
 import { cn } from "../../lib/utils";
 import { RichText } from "./rich-text";
+import {
+  StyledParagraphs,
+  resolveStyledParagraphs,
+  type StyledParagraph,
+} from "./styled-paragraphs";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -17,10 +22,15 @@ export type ToolsSectionProps = {
   tag: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description (uppercase mono secondary). */
   description?: string;
+  /** Structured paragraphs with per-paragraph caps + color. Supersedes `description` when provided. */
+  paragraphs?: StyledParagraph[];
   tools: ToolCard[];
   /** Show icons instead of numbers */
   useIcons?: boolean;
+  /** Render description under the heading (full width) instead of to the right. Desktop only. */
+  descriptionBelow?: boolean;
   className?: string;
 };
 
@@ -70,10 +80,17 @@ export function ToolsSection({
   title,
   titleSecondary,
   description,
+  paragraphs,
   tools,
   useIcons,
+  descriptionBelow,
   className,
 }: ToolsSectionProps) {
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: true,
+    color: "secondary",
+  });
+  const hasParagraphs = resolvedParagraphs.length > 0;
   return (
     <section
       className={cn(
@@ -83,23 +100,38 @@ export function ToolsSection({
     >
       {/* ── Desktop ── */}
       <div className="hidden lg:flex flex-col gap-[88px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
-        {/* Header — tag + title left, description right */}
-        <div className="flex">
-          <div className="w-1/2 shrink-0 pr-8 flex flex-col gap-2">
-            <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
-              {tag}
-            </span>
-            <h2 className="h2"><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h2>
-          </div>
-          {description && (
-            <div className="w-1/2 flex items-end">
-              <RichText
-                text={description}
-                className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393] max-w-[668px]"
-              />
+        {/* Header — tag + title left, description right (default) or below (when descriptionBelow) */}
+        {descriptionBelow ? (
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
+                {tag}
+              </span>
+              <h2 className="h2"><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h2>
             </div>
-          )}
-        </div>
+            {hasParagraphs && (
+              <div className="max-w-[668px]">
+                <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="18" />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex">
+            <div className="w-1/2 shrink-0 pr-8 flex flex-col gap-2">
+              <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
+                {tag}
+              </span>
+              <h2 className="h2"><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h2>
+            </div>
+            {hasParagraphs && (
+              <div className="w-1/2 flex items-end">
+                <div className="max-w-[668px]">
+                  <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="18" />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Cards — grid with wide support */}
         {(() => {
@@ -140,11 +172,10 @@ export function ToolsSection({
             <span className="text-[#F0F0F0]">{title}</span>
             {titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}
           </h2>
-          {description && (
-            <RichText
-              text={description}
-              className="text-[length:var(--text-16)] leading-[1.28] text-[#939393] mt-2"
-            />
+          {hasParagraphs && (
+            <div className="mt-2">
+              <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
+            </div>
           )}
         </div>
 
@@ -166,11 +197,8 @@ export function ToolsSection({
             {tag}
           </span>
           <h2 className="h3"><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h2>
-          {description && (
-            <RichText
-              text={description}
-              className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
-            />
+          {hasParagraphs && (
+            <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="16" />
           )}
         </div>
 

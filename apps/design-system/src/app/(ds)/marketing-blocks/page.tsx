@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Separator, CTASectionDark, CTASectionYellow, AccordionFAQ, ForWhomSection, ProcessSection, ResultsSection, ExpertsSection, PartnershipBlock } from "@rocketmind/ui"
+import { Separator, CTASectionDark, CTASectionYellow, AccordionFAQ, ForWhomSection, ContactsSection, ProcessSection, ResultsSection, ExpertsSection, PartnershipBlock } from "@rocketmind/ui"
 import { Section, SubSection, SpecBlock } from "@/components/ds/shared"
 import { TokenChip } from "@/components/ds/color-helpers"
 import { CasesSectionShowcase } from "@/components/ds/cases-section-showcase"
@@ -194,6 +194,53 @@ export default function MarketingBlocksPage() {
               { title: "Крупные корпорации", text: "Выстроят единую и прозрачную стратегию для всего портфеля продуктов" },
               { title: "Платформы", text: "Создадут интегрированный клиентский опыт и масштабировать влияние" },
               { title: "Растущие компании", text: "Поймут устройство своей рыночной ниши и найдут новые источники монетизации" },
+            ]}
+          />
+        </div>
+
+        {/* ── Contacts — Контакты ── */}
+        <SubSection id="marketing-blocks-contacts" title="Контакты (карточки с абзацами, соцсетями и персонами)" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+          Блок для страницы «О нас». В карточке свободный порядок элементов: абзацы, строка соцсетей (ВК/Telegram/кастом) и контакт-персона (аватар/имя/роль + телефон + соцсеть). Иконки соцсетей — линейные 40×40 с <code className="text-[length:var(--text-12)] bg-rm-gray-2 px-1 py-0.5 rounded font-[family-name:var(--font-caption-family)]">rounded-sm (4px)</code>, на hover — тултип с никнеймом.
+        </p>
+        <div className="-mx-5 md:-mx-10 border-y border-border mb-8">
+          <ContactsSection
+            tag="контакты"
+            title="СВЯЗАТЬСЯ С НАМИ"
+            paragraphs={[{ text: "Выберите тип задачи — мы подберём формат сотрудничества.", uppercase: true, color: "primary" }]}
+            cards={[
+              {
+                id: "c1",
+                title: "Соцсети",
+                items: [
+                  { id: "c1-p", kind: "paragraph", paragraph: { text: "Пишите в удобный канал.", color: "secondary" } },
+                  {
+                    id: "c1-s",
+                    kind: "socials",
+                    socials: [
+                      { id: "s1", kind: "telegram", username: "rocketmind", url: "https://t.me/rocketmind" },
+                      { id: "s2", kind: "vk", username: "rocketmind", url: "https://vk.com/rocketmind" },
+                    ],
+                  },
+                ],
+              },
+              {
+                id: "c2",
+                title: "Прямой контакт",
+                items: [
+                  {
+                    id: "c2-person",
+                    kind: "person",
+                    person: {
+                      avatar: null,
+                      name: "Алексей Ерёмин",
+                      role: "Основатель, стратег",
+                      phone: "+7 999 000-00-00",
+                      social: { kind: "telegram", username: "alexey", url: "https://t.me/alexey" },
+                    },
+                  },
+                ],
+              },
             ]}
           />
         </div>

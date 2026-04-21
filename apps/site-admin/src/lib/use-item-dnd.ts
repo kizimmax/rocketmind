@@ -54,6 +54,18 @@ export function useItemDnd<T>(items: T[], onReorder: (items: T[]) => void) {
     setDraggableIdx(null);
   }, []);
 
+  const move = useCallback(
+    (idx: number, dir: "up" | "down") => {
+      const targetIdx = dir === "up" ? idx - 1 : idx + 1;
+      if (targetIdx < 0 || targetIdx >= items.length) return;
+      const next = [...items];
+      const [moved] = next.splice(idx, 1);
+      next.splice(targetIdx, 0, moved);
+      onReorder(next);
+    },
+    [items, onReorder]
+  );
+
   function itemProps(idx: number) {
     return {
       draggable: draggableIdx === idx,
@@ -66,5 +78,5 @@ export function useItemDnd<T>(items: T[], onReorder: (items: T[]) => void) {
     };
   }
 
-  return { itemProps, onGripDown, onGripUp };
+  return { itemProps, onGripDown, onGripUp, move, count: items.length };
 }

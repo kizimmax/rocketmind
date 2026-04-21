@@ -9,15 +9,34 @@ import {
   type ReactNode,
 } from "react";
 import React from "react";
-import type { SitePage, PageStatus, CaseType } from "./types";
+import type { SitePage, PageStatus, CaseType, Article, MediaTag } from "./types";
 import { createSeedPages } from "./seed-data";
+import { createSeedArticles, createSeedMediaTags } from "./seed-media";
 import { MAX_FEATURED_CASES } from "./constants";
 import { apiFetch, IS_STATIC } from "./api-client";
 
 const LS_KEY = "cms:demo:v1:pages";
+const LS_ARTICLES_KEY = "cms:demo:v1:articles";
+const LS_TAGS_KEY = "cms:demo:v1:mediaTags";
 /** One-shot migration: prior demo builds used this key; drop it if present. */
 const LEGACY_LS_KEY = "rm_site_admin_pages";
 const isStaticExport = IS_STATIC;
+
+// ── slug util ───────────────────────────────────────────────────────────────
+const RU_MAP: Record<string, string> = {
+  а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"i",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"c",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya",
+};
+export function slugify(input: string): string {
+  const lower = input.toLowerCase().trim();
+  let out = "";
+  for (const ch of lower) out += RU_MAP[ch] ?? ch;
+  return out
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .substring(0, 60);
+}
 
 // ── localStorage helpers ────────────────────────────────────────────────────
 
@@ -35,10 +54,34 @@ function saveToLS(pages: SitePage[]) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(pages)); } catch { /* ignore */ }
 }
 
+function readLSArticles(): Article[] | null {
+  try {
+    const raw = localStorage.getItem(LS_ARTICLES_KEY);
+    if (raw) return JSON.parse(raw) as Article[];
+  } catch { /* ignore */ }
+  return null;
+}
+function saveArticlesToLS(articles: Article[]) {
+  try { localStorage.setItem(LS_ARTICLES_KEY, JSON.stringify(articles)); } catch { /* ignore */ }
+}
+
+function readLSTags(): MediaTag[] | null {
+  try {
+    const raw = localStorage.getItem(LS_TAGS_KEY);
+    if (raw) return JSON.parse(raw) as MediaTag[];
+  } catch { /* ignore */ }
+  return null;
+}
+function saveTagsToLS(tags: MediaTag[]) {
+  try { localStorage.setItem(LS_TAGS_KEY, JSON.stringify(tags)); } catch { /* ignore */ }
+}
+
 // ── Context ─────────────────────────────────────────────────────────────────
 
 interface StoreContext {
   pages: SitePage[];
+  articles: Article[];
+  mediaTags: MediaTag[];
   loading: boolean;
   getPagesBySection(sectionId: string): SitePage[];
   getPage(pageId: string): SitePage | undefined;
@@ -51,6 +94,21 @@ interface StoreContext {
   setCaseFeatured(pageId: string, value: boolean): Promise<boolean>;
   /** Count of cases currently marked featured (across all sections). */
   featuredCasesCount(): number;
+
+  // ── Articles ──
+  getArticle(id: string): Article | undefined;
+  createArticle(title: string): Article;
+  saveArticle(article: Article): void;
+  deleteArticle(id: string): void;
+  setArticleStatus(id: string, status: PageStatus): void;
+  reorderArticles(orderedIds: string[]): void;
+
+  // ── Media tags ──
+  /** Create or return existing tag (by label). */
+  upsertMediaTag(label: string): MediaTag;
+  renameMediaTag(id: string, label: string): void;
+  deleteMediaTag(id: string): void;
+
   reload(): Promise<void>;
 }
 
@@ -58,7 +116,19 @@ const AdminStoreContext = createContext<StoreContext | null>(null);
 
 export function AdminStoreProvider({ children }: { children: ReactNode }) {
   const [pages, setPages] = useState<SitePage[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [mediaTags, setMediaTags] = useState<MediaTag[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Load articles + tags from localStorage (with seed fallback)
+  useEffect(() => {
+    const tags = readLSTags() ?? createSeedMediaTags();
+    const arts = readLSArticles() ?? createSeedArticles(tags);
+    setMediaTags(tags);
+    setArticles(arts);
+    if (!readLSTags()) saveTagsToLS(tags);
+    if (!readLSArticles()) saveArticlesToLS(arts);
+  }, []);
 
   const fetchPages = useCallback(async () => {
     // In static mode, prefer user's local edits (if any) over the snapshot.
@@ -271,6 +341,131 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
     [pages],
   );
 
+  // ── Articles ────────────────────────────────────────────────────────────
+  const getArticle = useCallback(
+    (id: string) => articles.find((a) => a.id === id),
+    [articles],
+  );
+
+  const createArticle = useCallback((title: string): Article => {
+    const base = slugify(title) || `article-${Date.now()}`;
+    const taken = new Set(articles.map((a) => a.slug));
+    let slug = base;
+    let n = 2;
+    while (taken.has(slug)) slug = `${base}-${n++}`;
+    const now = new Date().toISOString();
+    const article: Article = {
+      id: `media/${slug}`,
+      slug,
+      status: "hidden",
+      order: articles.length,
+      title,
+      description: "",
+      publishedAt: now.slice(0, 10),
+      expertSlug: undefined,
+      tagIds: [],
+      keyThoughts: [],
+      body: [],
+      metaTitle: `${title} — Rocketmind`,
+      metaDescription: "",
+      createdAt: now,
+      updatedAt: now,
+    };
+    const next = [...articles, article];
+    setArticles(next);
+    saveArticlesToLS(next);
+    return article;
+  }, [articles]);
+
+  const saveArticle = useCallback((article: Article) => {
+    setArticles((prev) => {
+      const next = prev.map((a) =>
+        a.id === article.id
+          ? { ...article, updatedAt: new Date().toISOString() }
+          : a
+      );
+      saveArticlesToLS(next);
+      return next;
+    });
+  }, []);
+
+  const deleteArticle = useCallback((id: string) => {
+    setArticles((prev) => {
+      const next = prev.filter((a) => a.id !== id);
+      saveArticlesToLS(next);
+      return next;
+    });
+  }, []);
+
+  const setArticleStatus = useCallback((id: string, status: PageStatus) => {
+    setArticles((prev) => {
+      const next = prev.map((a) =>
+        a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a
+      );
+      saveArticlesToLS(next);
+      return next;
+    });
+  }, []);
+
+  const reorderArticles = useCallback((orderedIds: string[]) => {
+    setArticles((prev) => {
+      const next = prev.map((a) => {
+        const idx = orderedIds.indexOf(a.id);
+        return idx >= 0 ? { ...a, order: idx } : a;
+      });
+      saveArticlesToLS(next);
+      return next;
+    });
+  }, []);
+
+  // ── Media tags ───────────────────────────────────────────────────────────
+  const upsertMediaTag = useCallback((label: string): MediaTag => {
+    const trimmed = label.trim();
+    const match = mediaTags.find(
+      (t) => t.label.toLowerCase() === trimmed.toLowerCase()
+    );
+    if (match) return match;
+    const base = slugify(trimmed) || `tag-${Date.now()}`;
+    const taken = new Set(mediaTags.map((t) => t.id));
+    let id = base;
+    let n = 2;
+    while (taken.has(id)) id = `${base}-${n++}`;
+    const tag: MediaTag = {
+      id,
+      label: trimmed,
+      createdAt: new Date().toISOString(),
+    };
+    const next = [...mediaTags, tag];
+    setMediaTags(next);
+    saveTagsToLS(next);
+    return tag;
+  }, [mediaTags]);
+
+  const renameMediaTag = useCallback((id: string, label: string) => {
+    setMediaTags((prev) => {
+      const next = prev.map((t) => (t.id === id ? { ...t, label } : t));
+      saveTagsToLS(next);
+      return next;
+    });
+  }, []);
+
+  const deleteMediaTag = useCallback((id: string) => {
+    setMediaTags((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      saveTagsToLS(next);
+      return next;
+    });
+    // also strip the tag from all articles
+    setArticles((prev) => {
+      const next = prev.map((a) => ({
+        ...a,
+        tagIds: a.tagIds.filter((x) => x !== id),
+      }));
+      saveArticlesToLS(next);
+      return next;
+    });
+  }, []);
+
   if (loading) {
     return React.createElement(
       "div",
@@ -287,6 +482,8 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
     {
       value: {
         pages,
+        articles,
+        mediaTags,
         loading,
         getPagesBySection,
         getPage,
@@ -297,6 +494,15 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         reorderPages,
         setCaseFeatured,
         featuredCasesCount,
+        getArticle,
+        createArticle,
+        saveArticle,
+        deleteArticle,
+        setArticleStatus,
+        reorderArticles,
+        upsertMediaTag,
+        renameMediaTag,
+        deleteMediaTag,
         reload: fetchPages,
       },
     },

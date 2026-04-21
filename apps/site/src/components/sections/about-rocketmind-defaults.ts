@@ -1,7 +1,6 @@
 // Shared types & defaults for AboutRocketmind section
 // Separate file (no "use client") so Server Components can import safely
 
-export type AboutRocketmindVariant = "dark" | "light";
 export type AboutRocketmindLeftVariant = "alex" | "canvas";
 
 export interface AboutRmFeature {
@@ -18,10 +17,16 @@ export type AboutRocketmindSectionProps = {
   canvasTitle: string;
   canvasText: string;
   features: AboutRmFeature[];
-  variant?: AboutRocketmindVariant;
   /** Left part variant: "alex" = founder photo, "canvas" = methodology image */
   leftVariant?: AboutRocketmindLeftVariant;
+  /** Override for the founder photo URL (relative to site root). */
+  alexPhoto?: string;
+  /** Override for the canvas (methodology) image URL (relative to site root). */
+  canvasPhoto?: string;
 };
+
+export const DEFAULT_ALEX_PHOTO = "/images/about/alexey-eremin.png";
+export const DEFAULT_CANVAS_PHOTO = "/images/about/canvas-image.png";
 
 export const ABOUT_RM_DEFAULTS: AboutRocketmindSectionProps = {
   heading: "От идеи\nдо бизнес-модели",
@@ -44,6 +49,5 @@ export const ABOUT_RM_DEFAULTS: AboutRocketmindSectionProps = {
       text: "Над исследованиями работают аналитики и маркетологи, команда редакторов делает материалы простыми для восприятия.",
     },
   ],
-  variant: "dark",
   leftVariant: "alex",
 };

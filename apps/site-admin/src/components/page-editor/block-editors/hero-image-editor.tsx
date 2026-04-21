@@ -13,7 +13,12 @@ import {
   X,
 } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
-import { MdText } from "@/components/md-text";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 interface HeroImageEditorProps {
@@ -270,16 +275,20 @@ function TagBadge({
 function FactoidCardEditor({
   factoid,
   index,
+  count,
   dndProps,
   onGripDown,
   onGripUp,
+  onMove,
   onUpdate,
 }: {
   factoid: { number: string; label: string; text: string };
   index: number;
+  count: number;
   dndProps: ReturnType<ReturnType<typeof useItemDnd>["itemProps"]>;
   onGripDown: () => void;
   onGripUp: () => void;
+  onMove: (from: number, dir: "up" | "down") => void;
   onUpdate: (field: string, value: string) => void;
 }) {
   return (
@@ -302,6 +311,7 @@ function FactoidCardEditor({
         >
           <GripVertical className="h-2.5 w-2.5" />
         </div>
+        <ItemMoveButtons index={index} count={count} onMove={onMove} />
       </div>
 
       {/* Number + label */}
@@ -348,7 +358,11 @@ export function HeroImageEditor({ data, hasExperts, onUpdate }: HeroImageEditorP
   const caption = (data.caption as string) || "";
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
-  const description = (data.description as string) || "";
+  const paragraphs = resolveParagraphs(
+    data.paragraphs,
+    (data.description as string) || "",
+    { uppercase: false, color: "secondary" },
+  );
   const ctaText = (data.ctaText as string) || "";
   const secondaryCta = (data.secondaryCta as string) || "";
   const heroImageData = (data.heroImageData as string) || "";
@@ -368,6 +382,10 @@ export function HeroImageEditor({ data, hasExperts, onUpdate }: HeroImageEditorP
   const dnd = useItemDnd(displayFactoids, (reordered) =>
     onUpdate({ factoids: reordered })
   );
+
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next, description: undefined });
+  }
 
   function updateFactoid(index: number, field: string, value: string) {
     const updated = displayFactoids.map((f, i) =>
@@ -466,19 +484,12 @@ export function HeroImageEditor({ data, hasExperts, onUpdate }: HeroImageEditorP
           </div>
 
           {/* Description */}
-          <InlineEdit
-            value={description}
-            onSave={(v) => onUpdate({ description: v })}
-            multiline
-            copy
-            placeholder="Описание продукта..."
-          >
-            <MdText
-              value={description}
-              placeholder="Описание продукта"
-              className="max-w-[696px] text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]"
-            />
-          </InlineEdit>
+          <ParagraphsEditor
+            paragraphs={paragraphs}
+            onChange={setParagraphs}
+            theme="dark"
+            defaults={{ uppercase: false, color: "secondary" }}
+          />
 
           {/* Secondary CTA (audio button) */}
           <div className="flex flex-col gap-3">
@@ -515,9 +526,11 @@ export function HeroImageEditor({ data, hasExperts, onUpdate }: HeroImageEditorP
             key={index}
             factoid={factoid}
             index={index}
+            count={displayFactoids.length}
             dndProps={dnd.itemProps(index)}
             onGripDown={() => dnd.onGripDown(index)}
             onGripUp={dnd.onGripUp}
+            onMove={dnd.move}
             onUpdate={(field, value) => updateFactoid(index, field, value)}
           />
         ))}

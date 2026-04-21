@@ -58,14 +58,19 @@ export function AdminHeader() {
   const linkIdle = "text-muted-foreground hover:text-foreground";
   const linkActive = "bg-foreground/10 text-foreground";
 
-  // Breadcrumb root for the editor: Страницы, Кейсы, or Медиа.
-  const breadcrumbRoot = editingPage
-    ? standaloneRoute === "/cases"
-      ? { href: "/cases", label: "Кейсы", Icon: Briefcase }
-      : standaloneRoute === "/media"
-        ? { href: "/media", label: "Медиа", Icon: Newspaper }
-        : { href: "/pages", label: "Страницы", Icon: FileText }
-    : null;
+  const tabs = [
+    { href: "/pages", label: "Страницы", Icon: FileText, isActive: isOnPages },
+    { href: "/media", label: "Медиа", Icon: Newspaper, isActive: isOnMedia },
+    { href: "/experts", label: "Эксперты", Icon: Users, isActive: isOnExperts },
+    { href: "/cases", label: "Кейсы", Icon: Briefcase, isActive: isOnCases },
+    { href: "/testimonials", label: "Отзывы", Icon: MessageSquareQuote, isActive: isOnTestimonials },
+  ];
+
+  const separator = (
+    <span className="px-0.5 text-[length:var(--text-12)] text-muted-foreground/40 select-none">
+      /
+    </span>
+  );
 
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-6">
@@ -81,93 +86,52 @@ export function AdminHeader() {
         </div>
 
         <nav className="flex items-center gap-1">
-          {/* ── Editor breadcrumb ──────────────────────────────── */}
-          {editingPage && breadcrumbRoot ? (
-            <div className="flex items-center">
-              <Link
-                href={breadcrumbRoot.href}
-                onClick={(e) => guardedClick(e, breadcrumbRoot.href)}
-                className={`flex items-center gap-1.5 ${linkBase} ${linkIdle}`}
-              >
-                <breadcrumbRoot.Icon className="h-3.5 w-3.5" />
-                {breadcrumbRoot.label}
-              </Link>
-              {editingSection && !standaloneRoute && (
-                <>
-                  <span className="text-[length:var(--text-12)] text-muted-foreground/40 select-none">
-                    /
-                  </span>
+          {tabs.map((tab) => {
+            const showBreadcrumb = editingPage && tab.isActive;
+            if (showBreadcrumb) {
+              return (
+                <div key={tab.href} className="mr-2 flex items-center">
                   <Link
-                    href={`/pages?section=${editingSection.id}`}
-                    onClick={(e) =>
-                      guardedClick(e, `/pages?section=${editingSection.id}`)
-                    }
-                    className={`${linkBase} ${linkIdle}`}
+                    href={tab.href}
+                    onClick={(e) => guardedClick(e, tab.href)}
+                    className={`flex items-center gap-1.5 ${linkBase} ${linkIdle}`}
                   >
-                    {editingSection.label}
+                    <tab.Icon className="h-3.5 w-3.5" />
+                    {tab.label}
                   </Link>
-                </>
-              )}
-              <span className="text-[length:var(--text-12)] text-muted-foreground/40 select-none">
-                /
-              </span>
-              <span className={`${linkBase} ${linkActive}`}>
-                {editingPage.menuTitle}
-              </span>
-            </div>
-          ) : (
-            <>
-              {/* ── Страницы ─────────────────────────────────────── */}
+                  {editingSection && !standaloneRoute && (
+                    <>
+                      {separator}
+                      <Link
+                        href={`/pages?section=${editingSection.id}`}
+                        onClick={(e) =>
+                          guardedClick(e, `/pages?section=${editingSection.id}`)
+                        }
+                        className={`${linkBase} ${linkIdle}`}
+                      >
+                        {editingSection.label}
+                      </Link>
+                    </>
+                  )}
+                  {separator}
+                  <span className={`${linkBase} ${linkActive}`}>
+                    {editingPage.menuTitle}
+                  </span>
+                </div>
+              );
+            }
+            return (
               <Link
-                href="/pages"
-                onClick={(e) => guardedClick(e, "/pages")}
-                className={`flex items-center gap-1.5 ${linkBase} ${isOnPages ? linkActive : linkIdle}`}
+                key={tab.href}
+                href={tab.href}
+                onClick={(e) => guardedClick(e, tab.href)}
+                className={`flex items-center gap-1.5 ${linkBase} ${tab.isActive ? linkActive : linkIdle}`}
               >
-                <FileText className="h-3.5 w-3.5" />
-                Страницы
+                <tab.Icon className="h-3.5 w-3.5" />
+                {tab.label}
               </Link>
-
-              {/* ── Медиа ────────────────────────────────────────── */}
-              <Link
-                href="/media"
-                onClick={(e) => guardedClick(e, "/media")}
-                className={`flex items-center gap-1.5 ${linkBase} ${isOnMedia ? linkActive : linkIdle}`}
-              >
-                <Newspaper className="h-3.5 w-3.5" />
-                Медиа
-              </Link>
-
-              {/* ── Эксперты ─────────────────────────────────────── */}
-              <Link
-                href="/experts"
-                onClick={(e) => guardedClick(e, "/experts")}
-                className={`flex items-center gap-1.5 ${linkBase} ${isOnExperts ? linkActive : linkIdle}`}
-              >
-                <Users className="h-3.5 w-3.5" />
-                Эксперты
-              </Link>
-
-              {/* ── Кейсы ────────────────────────────────────────── */}
-              <Link
-                href="/cases"
-                onClick={(e) => guardedClick(e, "/cases")}
-                className={`flex items-center gap-1.5 ${linkBase} ${isOnCases ? linkActive : linkIdle}`}
-              >
-                <Briefcase className="h-3.5 w-3.5" />
-                Кейсы
-              </Link>
-
-              {/* ── Отзывы ───────────────────────────────────────── */}
-              <Link
-                href="/testimonials"
-                onClick={(e) => guardedClick(e, "/testimonials")}
-                className={`flex items-center gap-1.5 ${linkBase} ${isOnTestimonials ? linkActive : linkIdle}`}
-              >
-                <MessageSquareQuote className="h-3.5 w-3.5" />
-                Отзывы
-              </Link>
-            </>
-          )}
+            );
+          })}
         </nav>
       </div>
 

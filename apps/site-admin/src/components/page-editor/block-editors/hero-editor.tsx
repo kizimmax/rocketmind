@@ -4,7 +4,12 @@ import { useRef } from "react";
 import { GripVertical, ImagePlus, ArrowUpRight, Upload, Trash2, Plus, X } from "lucide-react";
 import { HeroExperts } from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
-import { MdText } from "@/components/md-text";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 // ── Tag badge (inline-editable, deletable) ────────────────────────────────
@@ -48,7 +53,11 @@ export function HeroEditor({ data, hasExperts, experts = [], onUpdate }: HeroEdi
   const caption = (data.caption as string) || "";
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
-  const description = (data.description as string) || "";
+  const paragraphs = resolveParagraphs(
+    data.paragraphs,
+    (data.description as string) || "",
+    { uppercase: false, color: "secondary" },
+  );
   const ctaText = (data.ctaText as string) || "";
   const heroImageData = (data.heroImageData as string) || "";
   const tags = (data.tags as Array<{ text: string }>) || [];
@@ -69,6 +78,10 @@ export function HeroEditor({ data, hasExperts, experts = [], onUpdate }: HeroEdi
   const dnd = useItemDnd(displayFactoids, (reordered) =>
     onUpdate({ factoids: reordered })
   );
+
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next, description: undefined });
+  }
 
   function updateFactoid(index: number, field: string, value: string) {
     const updated = displayFactoids.map((f, i) =>
@@ -93,19 +106,12 @@ export function HeroEditor({ data, hasExperts, experts = [], onUpdate }: HeroEdi
   const showExpertsBlock = hasExperts && experts.length > 0;
 
   const descriptionEl = (
-    <InlineEdit
-      value={description}
-      onSave={(v) => onUpdate({ description: v })}
-      multiline
-      copy
-      placeholder="Описание продукта..."
-    >
-      <MdText
-        value={description}
-        placeholder="Описание продукта"
-        className="max-w-[696px] text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]"
-      />
-    </InlineEdit>
+    <ParagraphsEditor
+      paragraphs={paragraphs}
+      onChange={setParagraphs}
+      theme="dark"
+      defaults={{ uppercase: false, color: "secondary" }}
+    />
   );
 
   return (
@@ -301,6 +307,7 @@ export function HeroEditor({ data, hasExperts, experts = [], onUpdate }: HeroEdi
                   >
                     <GripVertical className="h-2.5 w-2.5" />
                   </div>
+                  <ItemMoveButtons index={index} count={displayFactoids.length} onMove={dnd.move} />
                 </div>
 
                 {/* Top row: number + label side by side */}

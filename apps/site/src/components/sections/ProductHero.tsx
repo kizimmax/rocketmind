@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { DotGridLens, RichText, HeroExperts, type HeroExpert } from "@rocketmind/ui";
+import {
+  DotGridLens,
+  HeroExperts,
+  StyledParagraphs,
+  resolveStyledParagraphs,
+  type HeroExpert,
+  type StyledParagraph,
+} from "@rocketmind/ui";
 import type { Factoid, HeroTag } from "@/lib/products";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -10,7 +17,10 @@ type ProductHeroProps = {
   caption: string;
   title: string;
   titleSecondary?: string;
+  /** Legacy single-string description. Prefer `paragraphs`. */
   description: string;
+  /** Structured paragraphs with per-paragraph caps + color. */
+  paragraphs?: StyledParagraph[];
   ctaText: string;
   factoids: Factoid[];
   coverImage: string;
@@ -149,6 +159,7 @@ export function ProductHero({
   title,
   titleSecondary,
   description,
+  paragraphs,
   ctaText,
   factoids,
   coverImage,
@@ -158,6 +169,10 @@ export function ProductHero({
   quote,
 }: ProductHeroProps) {
   const showExpertsBlock = !!expertProduct && !!experts && experts.length > 0;
+  const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
+    uppercase: false,
+    color: "primary",
+  });
 
   const titleBlock = (
     <h1 className="h1 whitespace-pre-line" style={fadeIn(1)}>
@@ -171,12 +186,10 @@ export function ProductHero({
     </h1>
   );
 
-  const descriptionEl = description ? (
-    <RichText
-      text={description}
-      className="text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]"
-    />
-  ) : null;
+  const descriptionEl =
+    resolvedParagraphs.length > 0 ? (
+      <StyledParagraphs paragraphs={resolvedParagraphs} theme="dark" size="18" />
+    ) : null;
 
   return (
     <section className="relative w-full bg-[#0A0A0A] pt-16">

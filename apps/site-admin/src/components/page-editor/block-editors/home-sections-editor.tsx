@@ -4,6 +4,12 @@ import { apiFetch } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 import { GripVertical, Plus, Trash2, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 import { PRODUCTS_FILTER_KEYS } from "@/lib/constants";
 
@@ -12,7 +18,8 @@ type HomeSection = {
   trackName: string;
   headerHighlight: string;
   mobileTitle: string;
-  description: string;
+  description?: string;
+  paragraphs?: StyledParagraph[];
   catalogLabel: string;
   hiddenCardSlugs: string[];
 };
@@ -183,6 +190,7 @@ export function HomeSectionsEditor({ data, onUpdate }: HomeSectionsEditorProps) 
                   >
                     <GripVertical className="h-3 w-3" />
                   </div>
+                  <ItemMoveButtons index={index} count={sections.length} onMove={dnd.move} size={24} />
                   <button
                     type="button"
                     onClick={() => deleteSection(index)}
@@ -251,16 +259,22 @@ export function HomeSectionsEditor({ data, onUpdate }: HomeSectionsEditorProps) 
                   <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-10)] uppercase tracking-[0.06em] text-[#5C5C5C]">
                     Описание
                   </span>
-                  <InlineEdit
-                    value={section.description}
-                    onSave={(v) => updateSection(index, { description: v })}
-                    multiline
-                    placeholder="Описание раздела…"
-                  >
-                    <p className="text-[length:var(--text-14)] leading-[1.3] text-[#F0F0F0]">
-                      {section.description || "—"}
-                    </p>
-                  </InlineEdit>
+                  <ParagraphsEditor
+                    paragraphs={resolveParagraphs(
+                      section.paragraphs,
+                      section.description || "",
+                      { uppercase: false, color: "secondary" },
+                    )}
+                    onChange={(next) =>
+                      updateSection(index, {
+                        paragraphs: next,
+                        description: undefined,
+                      })
+                    }
+                    theme="dark"
+                    defaults={{ uppercase: false, color: "secondary" }}
+                    size="16"
+                  />
                 </div>
 
                 {/* Catalog label */}

@@ -1,11 +1,13 @@
 import { getPartnerLogos } from "@/lib/partner-logos";
 import { getHomePage } from "@/lib/unique";
+import { getSiteNav } from "@/lib/site-nav";
 
 import { HeroSectionClient } from "./HeroSectionClient";
 
 export async function HeroSection() {
     const logos = await getPartnerLogos();
     const home = getHomePage();
+    const { nav } = getSiteNav();
 
     return (
       <HeroSectionClient
@@ -13,6 +15,7 @@ export async function HeroSection() {
         title={home.hero?.title ?? ""}
         pikCaption={home.hero?.pikCaption ?? ""}
         rotatingLines={home.hero?.rotatingLines ?? []}
+        nav={nav}
       />
     );
 }

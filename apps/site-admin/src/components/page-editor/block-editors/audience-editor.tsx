@@ -4,7 +4,13 @@ import { GripVertical, Columns2, Square } from "lucide-react";
 import { RichText } from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
+import { ItemMoveButtons } from "@/components/item-move-buttons";
 import { InsertButton } from "@/components/insert-button";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 
 interface AudienceEditorProps {
@@ -18,8 +24,16 @@ export function AudienceEditor({ data, onUpdate }: AudienceEditorProps) {
   const tag = (data.tag as string) || "";
   const title = (data.title as string) || "";
   const titleSecondary = (data.titleSecondary as string) || "";
-  const subtitle = (data.subtitle as string) || "";
+  const paragraphs = resolveParagraphs(
+    data.paragraphs,
+    (data.subtitle as string) || "",
+    { uppercase: true, color: "primary" },
+  );
   const facts = (data.facts as Fact[]) || [];
+
+  function setParagraphs(next: StyledParagraph[]) {
+    onUpdate({ paragraphs: next, subtitle: undefined });
+  }
 
   const dnd = useItemDnd(facts, (reordered) => onUpdate({ facts: reordered }));
 
@@ -83,23 +97,12 @@ export function AudienceEditor({ data, onUpdate }: AudienceEditorProps) {
           </div>
 
           <div className="lg:w-1/2">
-            <InlineEdit
-              value={subtitle}
-              onSave={(v) => onUpdate({ subtitle: v })}
-              multiline
-              placeholder="Подзаголовок"
-            >
-              {subtitle ? (
-                <RichText
-                  text={subtitle}
-                  className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]"
-                />
-              ) : (
-                <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]">
-                  Подзаголовок
-                </p>
-              )}
-            </InlineEdit>
+            <ParagraphsEditor
+              paragraphs={paragraphs}
+              onChange={setParagraphs}
+              theme="light"
+              defaults={{ uppercase: true, color: "primary" }}
+            />
           </div>
         </div>
 
@@ -146,6 +149,7 @@ export function AudienceEditor({ data, onUpdate }: AudienceEditorProps) {
                     >
                       <GripVertical className="h-2.5 w-2.5" />
                     </div>
+                    <ItemMoveButtons index={index} count={facts.length} onMove={dnd.move} />
                     <InlineConfirmDelete
                       onConfirm={() => removeFact(index)}
                       className="bg-[#0A0A0A] text-[#F0F0F0] hover:bg-[#ED4843]"

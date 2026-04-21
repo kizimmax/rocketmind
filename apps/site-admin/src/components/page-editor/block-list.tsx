@@ -248,7 +248,6 @@ export function BlockList({
                   <BlockEditor
                     block={block}
                     sectionId={sectionId}
-                    pageSlug={pageSlug}
                     hasExperts={hasExperts}
                     experts={experts}
                     onUpdate={(data) => onUpdateBlock(block.id, data)}

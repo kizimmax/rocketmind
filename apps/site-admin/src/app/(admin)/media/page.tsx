@@ -1,11 +1,9 @@
 "use client";
 
 import { Suspense } from "react";
-import { ADMIN_SECTIONS } from "@/lib/constants";
-import { PagesView } from "@/components/pages-view";
+import { MediaView } from "@/components/media/media-view";
 
 export default function MediaPage() {
-  const sections = ADMIN_SECTIONS.filter((s) => s.id === "media");
   return (
     <Suspense
       fallback={
@@ -14,7 +12,7 @@ export default function MediaPage() {
         </div>
       }
     >
-      <PagesView title="Медиа" sections={sections} defaultSection="media" />
+      <MediaView />
     </Suspense>
   );
 }
