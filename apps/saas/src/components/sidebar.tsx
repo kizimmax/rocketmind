@@ -523,7 +523,7 @@ function ProjectItemWithExperts({
       <Collapsible open={isExpanded}>
         <ExpertsNested
           projectId={project.id}
-          activeExpertCodename={activeExpertCodename}
+          activeExpertCodename={isActive ? activeExpertCodename : null}
           currentExpertCodename={project.current_expert_codename}
           onExpertSelect={onExpertSelect}
         />
