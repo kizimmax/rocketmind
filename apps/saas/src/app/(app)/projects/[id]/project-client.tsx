@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
-  Badge,
   Button,
   Dialog,
   DialogContent,
@@ -200,23 +199,19 @@ export default function ProjectClient({ id }: { id: string }) {
       {/* ── RIGHT: artifacts panel (collapsible) ───────────────────────────── */}
       {artifactsOpen && (
         <aside className="hidden w-80 shrink-0 flex-col border-l border-border bg-background lg:flex">
-          <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
-            <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+          {/* Шапка-прогресс: фон заполняется бледно-жёлтым по мере score */}
+          <div className="relative flex h-12 shrink-0 items-center justify-between overflow-hidden border-b border-border">
+            <div
+              aria-hidden
+              className="absolute inset-y-0 left-0 bg-[var(--rm-yellow-900)] transition-[width] duration-500 ease-out"
+              style={{ width: `${project.score ?? 0}%` }}
+            />
+            <p className="relative z-10 px-4 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
               Артефакты · {artifacts.length}
             </p>
-            {project.score !== null && (
-              <Badge
-                variant={
-                  project.score >= 70
-                    ? "yellow-solid"
-                    : project.score >= 40
-                      ? "yellow-subtle"
-                      : "neutral"
-                }
-              >
-                Score {project.score}
-              </Badge>
-            )}
+            <p className="relative z-10 px-4 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+              {project.score ?? 0}%
+            </p>
           </div>
           <div className="flex-1 overflow-y-auto p-3">
             {artifacts.length === 0 ? (
@@ -281,6 +276,7 @@ function MobileArtifactsSheet({
   onDownload: (a: Artifact) => void;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const drag = useRef({ startY: 0, dy: 0, active: false, pointerId: 0 });
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
@@ -292,14 +288,21 @@ function MobileArtifactsSheet({
     };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     if (contentRef.current) contentRef.current.style.transition = "none";
+    if (overlayRef.current) overlayRef.current.style.transition = "none";
   }
 
   function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!drag.current.active) return;
     const dy = Math.max(0, e.clientY - drag.current.startY);
     drag.current.dy = dy;
-    if (contentRef.current) {
-      contentRef.current.style.transform = `translateY(${dy}px)`;
+    const el = contentRef.current;
+    if (el) {
+      el.style.transform = `translateY(${dy}px)`;
+      // Затухание подложки пропорционально прогрессу свайпа
+      const progress = Math.min(1, dy / Math.max(1, el.offsetHeight));
+      if (overlayRef.current) {
+        overlayRef.current.style.opacity = String(1 - progress);
+      }
     }
   }
 
@@ -314,11 +317,17 @@ function MobileArtifactsSheet({
     if (!el) return;
 
     if (dy > 120) {
-      // Отключаем встроенный data-state=closed keyframe — слайд-закрытие
-      // полностью ведём через transform, иначе Radix проиграет вторую анимацию.
+      // Отключаем встроенные data-state=closed keyframes — слайд и fade
+      // ведём через transform/opacity, иначе Radix проиграет вторую анимацию.
       el.classList.add("rm-sheet-manual-close");
       el.style.transition = "transform 220ms cubic-bezier(0.32, 0.72, 0, 1)";
       el.style.transform = "translateY(100%)";
+      if (overlayRef.current) {
+        overlayRef.current.classList.add("rm-sheet-manual-close");
+        overlayRef.current.style.transition =
+          "opacity 220ms cubic-bezier(0.32, 0.72, 0, 1)";
+        overlayRef.current.style.opacity = "0";
+      }
       const done = () => {
         el.removeEventListener("transitionend", done);
         onOpenChange(false);
@@ -327,6 +336,10 @@ function MobileArtifactsSheet({
     } else {
       el.style.transition = "transform 200ms ease-out";
       el.style.transform = "";
+      if (overlayRef.current) {
+        overlayRef.current.style.transition = "opacity 200ms ease-out";
+        overlayRef.current.style.opacity = "";
+      }
     }
   }
 
@@ -335,16 +348,26 @@ function MobileArtifactsSheet({
   useEffect(() => {
     if (!open) return;
     const el = contentRef.current;
-    if (!el) return;
-    el.classList.remove("rm-sheet-manual-close");
-    el.style.transition = "";
-    el.style.transform = "";
+    if (el) {
+      el.classList.remove("rm-sheet-manual-close");
+      el.style.transition = "";
+      el.style.transform = "";
+    }
+    const ov = overlayRef.current;
+    if (ov) {
+      ov.classList.remove("rm-sheet-manual-close");
+      ov.style.transition = "";
+      ov.style.opacity = "";
+    }
   }, [open]);
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[var(--rm-gray-alpha-600)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 lg:hidden" />
+        <DialogPrimitive.Overlay
+          ref={overlayRef}
+          className="rm-sheet-overlay fixed inset-0 z-50 bg-[var(--rm-gray-alpha-600)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 lg:hidden"
+        />
         <DialogPrimitive.Content
           ref={contentRef}
           className="rm-sheet fixed inset-x-0 bottom-0 z-50 flex h-[85vh] flex-col rounded-t-lg border-t border-border bg-card lg:hidden"
