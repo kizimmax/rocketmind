@@ -764,7 +764,7 @@ var DialogOverlay = React3.forwardRef(({ className, ...props }, ref) => /* @__PU
     ref,
     "data-slot": "dialog-overlay",
     className: cn(
-      "fixed inset-0 z-50 bg-[var(--rm-gray-alpha-600)]",
+      "fixed inset-0 z-50 bg-border/80 backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=open]:fade-in-0",
       "data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
       className
@@ -3125,9 +3125,9 @@ function VkIcon({ className, ...props }) {
         /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
           "path",
           {
-            d: "M10 14 L14.5 26 L17 26 L21.5 14",
+            d: "M9.5 13 L14.5 27 L19.5 13",
             stroke: "currentColor",
-            strokeWidth: "1.5",
+            strokeWidth: "2",
             strokeLinecap: "round",
             strokeLinejoin: "round"
           }
@@ -3135,9 +3135,9 @@ function VkIcon({ className, ...props }) {
         /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(
           "path",
           {
-            d: "M24 14 L24 26 M24 20.5 L30 14 M24 20.5 L30 26",
+            d: "M22.5 13 L22.5 27 M22.5 20 L30 13 M22.5 20 L30 27",
             stroke: "currentColor",
-            strokeWidth: "1.5",
+            strokeWidth: "2",
             strokeLinecap: "round",
             strokeLinejoin: "round"
           }
@@ -4321,6 +4321,7 @@ function ToolCardItem({
   tool,
   useIcons
 }) {
+  const accent = tool.accent;
   return /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "flex flex-col gap-4 h-full", children: [
     /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "flex items-end", children: useIcons && tool.icon ? /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
       "div",
@@ -4328,13 +4329,34 @@ function ToolCardItem({
         className: "h-[86px] w-[86px] bg-contain bg-center bg-no-repeat",
         style: { backgroundImage: `url(${tool.icon})` }
       }
-    ) : /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("span", { className: "font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent [-webkit-text-stroke:1px_#404040]", children: tool.number }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("h4", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]", children: tool.title }),
+    ) : /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+      "span",
+      {
+        className: cn(
+          "font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent",
+          accent ? "[-webkit-text-stroke:1px_#0A0A0A]" : "[-webkit-text-stroke:1px_#404040]"
+        ),
+        children: tool.number
+      }
+    ) }),
+    /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+      "h4",
+      {
+        className: cn(
+          "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em]",
+          accent ? "text-[#0A0A0A]" : "text-[#F0F0F0]"
+        ),
+        children: tool.title
+      }
+    ),
     /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
       RichText,
       {
         text: tool.text,
-        className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
+        className: cn(
+          "text-[length:var(--text-16)] leading-[1.28]",
+          accent ? "text-[#0A0A0A]" : "text-[#939393]"
+        )
       }
     )
   ] });
@@ -4404,7 +4426,10 @@ function ToolsSection({
                   return /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
                     "div",
                     {
-                      className: "border border-[#404040] p-8",
+                      className: cn(
+                        "p-8",
+                        tool.accent ? "bg-[#FFCC00]" : "border border-[#404040]"
+                      ),
                       style: { gridColumn: `${start} / span ${span}` },
                       children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(ToolCardItem, { tool, useIcons })
                     },
@@ -4427,7 +4452,7 @@ function ToolsSection({
             ] }),
             hasParagraphs && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "mt-2", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "grid grid-cols-2 gap-px bg-[#404040]", children: tools.map((tool, i) => /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "bg-[#0A0A0A] p-8", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(ToolCardItem, { tool, useIcons }) }, i)) })
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "grid grid-cols-2 gap-px bg-[#404040]", children: tools.map((tool, i) => /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: cn("p-8", tool.accent ? "bg-[#FFCC00]" : "bg-[#0A0A0A]"), children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(ToolCardItem, { tool, useIcons }) }, i)) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "flex md:hidden flex-col gap-8 px-5", children: [
           /* @__PURE__ */ (0, import_jsx_runtime48.jsxs)("div", { className: "flex flex-col gap-2", children: [
@@ -4441,7 +4466,17 @@ function ToolsSection({
             ] }),
             hasParagraphs && /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "flex flex-col", children: tools.map((tool, i) => /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "border border-[#404040] p-6", children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(ToolCardItem, { tool, useIcons }) }, i)) })
+          /* @__PURE__ */ (0, import_jsx_runtime48.jsx)("div", { className: "flex flex-col", children: tools.map((tool, i) => /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(
+            "div",
+            {
+              className: cn(
+                "p-6",
+                tool.accent ? "bg-[#FFCC00]" : "border border-[#404040]"
+              ),
+              children: /* @__PURE__ */ (0, import_jsx_runtime48.jsx)(ToolCardItem, { tool, useIcons })
+            },
+            i
+          )) })
         ] })
       ]
     }

@@ -729,6 +729,8 @@ type ToolCard = {
     text: string;
     icon?: string | null;
     wide?: boolean;
+    /** Yellow accent card: filled #FFCC00 background, dark text. */
+    accent?: boolean;
 };
 type ToolsSectionProps = {
     tag: string;

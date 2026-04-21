@@ -510,7 +510,7 @@ function MobileArtifactsSheet({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           ref={overlayRef}
-          className="rm-sheet-overlay fixed inset-0 z-50 bg-[var(--rm-gray-alpha-600)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 lg:hidden"
+          className="rm-sheet-overlay fixed inset-0 z-50 bg-border/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 lg:hidden"
         />
         <DialogPrimitive.Content
           ref={contentRef}
