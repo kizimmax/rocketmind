@@ -48,6 +48,7 @@ import type {
   ExpertSessionStatus,
   Project,
 } from "@/lib/types";
+import { pickExpertForProject } from "@/lib/utils";
 import { toast } from "sonner";
 
 const PIPELINE_ORDER: ExpertCodename[] = ["R1", "R2", "R+", "R3", "R4", "R5"];
@@ -106,7 +107,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
     // Помечаем как прочитанный при первом клике
     if (newProjects.has(p.id)) markProjectAsSeen(p.id);
     // Открываем чат с текущим экспертом, чтобы он подсветился в sidebar
-    const expert = p.current_expert_codename ?? "R1";
+    const expert = pickExpertForProject(p);
     router.push(`/projects/${p.id}?expert=${encodeURIComponent(expert)}`);
     // В drawer-режиме также раскрываем, но не закрываем меню — пусть пользователь видит pipeline
     const toggleExpand = (prev: Set<string>) => {

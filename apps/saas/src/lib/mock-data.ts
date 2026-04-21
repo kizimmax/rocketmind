@@ -321,7 +321,7 @@ export function getMockMessages(conversationId: string): Message[] {
 export const mockManager: Manager = {
   id: "m_main",
   name: "Алекс",
-  role: "R-менеджер",
+  role: "Оркестратор команды",
   avatar_url: `${BASE_PATH}/ai-mascots/alex/alex_confident.png`,
   greeting_no_projects:
     "Привет! Я Алекс — ваш R-менеджер. Помогаю оркестрировать команду R-экспертов под ваш проект. Начнём?",

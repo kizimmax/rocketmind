@@ -31,6 +31,7 @@ import {
 } from "@/lib/hooks";
 import { ExpertChat } from "@/components/expert-chat";
 import type { Artifact, ExpertCodename } from "@/lib/types";
+import { pickExpertForProject } from "@/lib/utils";
 
 export default function ProjectClient({ id }: { id: string }) {
   const router = useRouter();
@@ -46,10 +47,10 @@ export default function ProjectClient({ id }: { id: string }) {
     markProjectAsSeen(id);
   }, [id]);
 
-  // Активный эксперт: из URL ?expert=R1, иначе текущий pipeline-эксперт, иначе R1
+  // Активный эксперт: из URL ?expert=…, иначе pickExpertForProject (current/R5/R1)
   const expertParam = searchParams?.get("expert") as ExpertCodename | null;
-  const activeExpertCodename =
-    expertParam ?? project?.current_expert_codename ?? "R1";
+  const activeExpertCodename: ExpertCodename =
+    expertParam ?? (project ? pickExpertForProject(project) : "R1");
 
   // Синхронизируем URL, чтобы sidebar корректно подсвечивал эксперта
   useEffect(() => {

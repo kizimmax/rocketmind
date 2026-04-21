@@ -13,7 +13,7 @@ import Image from "next/image";
 import { ManagerChat, type PrefillData } from "@/components/manager-chat";
 import { useManager, useNewProjects, useProjects } from "@/lib/hooks";
 import type { Project, ProjectStage } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, pickExpertForProject } from "@/lib/utils";
 
 const STAGE_LABEL: Record<ProjectStage, string> = {
   idea: "Идея",
@@ -55,10 +55,7 @@ export default function ManagerClient() {
       {/* Центр: чат с R-менеджером */}
       <div className="relative flex min-w-0 flex-1 flex-col">
         {/* Header: одинаковой высоты с шапкой проектов */}
-        <div className="flex h-12 shrink-0 items-center gap-4 border-b border-border px-4">
-          <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
-            R-менеджер
-          </p>
+        <div className="flex h-12 shrink-0 items-center justify-end gap-4 border-b border-border px-4">
           <div className="flex min-w-0 items-center gap-2">
             <p className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
               {manager.role}
@@ -132,7 +129,7 @@ function ProjectMiniCard({ project }: { project: Project }) {
 
   return (
     <Link
-      href={`/projects/${project.id}?expert=${encodeURIComponent(project.current_expert_codename ?? "R1")}`}
+      href={`/projects/${project.id}?expert=${encodeURIComponent(pickExpertForProject(project))}`}
       data-new={isNew || undefined}
       className="group flex flex-col gap-2 rounded-sm border border-border bg-background p-3 transition-colors hover:border-foreground data-[new=true]:bg-[var(--rm-yellow-10)] data-[new=true]:rm-new-pulse"
     >

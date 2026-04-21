@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Badge } from "@rocketmind/ui";
 import type { Project, ProjectStage } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, pickExpertForProject } from "@/lib/utils";
 
 // Маппинг стадии на DS-badge variant (используем существующую палитру badge 6.1.1)
 const STAGE_VARIANT: Record<
@@ -39,7 +39,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <Link
-      href={`/projects/${project.id}?expert=${encodeURIComponent(project.current_expert_codename ?? "R1")}`}
+      href={`/projects/${project.id}?expert=${encodeURIComponent(pickExpertForProject(project))}`}
       className="group flex flex-col gap-4 rounded-sm border border-border bg-background p-5 transition-colors hover:border-foreground"
     >
       {/* Header: title + stage badge */}
