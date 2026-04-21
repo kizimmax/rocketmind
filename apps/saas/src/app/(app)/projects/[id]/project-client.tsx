@@ -8,6 +8,8 @@ import {
   FileText,
   PanelRightClose,
   PanelRightOpen,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
@@ -31,6 +33,50 @@ import {
 import { ExpertChat } from "@/components/expert-chat";
 import type { Artifact, ExpertCodename } from "@/lib/types";
 import { pickExpertForProject } from "@/lib/utils";
+
+// Pipeline + предзаданные названия артефактов для скелетонов панели
+const PIPELINE_ORDER: ExpertCodename[] = ["R1", "R2", "R+", "R3", "R4", "R5"];
+const EXPERT_ARTIFACT_TITLES: Record<ExpertCodename, string> = {
+  R1: "Маркет-бриф",
+  R2: "Сегменты ЦА",
+  "R+": "Проверенные гипотезы",
+  R3: "Бизнес-модель",
+  R4: "MVP-план",
+  R5: "Питч",
+};
+
+// Heuristic: определяет codename по имени файла. Если не совпало — null (вспомогательный).
+function detectCodenameForFile(file: File): ExpertCodename | null {
+  const n = file.name.toLowerCase();
+  if (/маркет|market|industry|рынок/.test(n)) return "R1";
+  if (/сегмент|segment|icp|target|аудитор/.test(n)) return "R2";
+  if (/гипотез|hypothes|synth|valid|тест/.test(n)) return "R+";
+  if (/бизнес|biz|business|model|модел|unit|юнит/.test(n)) return "R3";
+  if (/mvp|план|plan|roadmap|дорож/.test(n)) return "R4";
+  if (/pitch|питч|deck|презент|memo|инвест/.test(n)) return "R5";
+  return null;
+}
+
+type ArtifactSlot =
+  | { kind: "artifact"; artifact: Artifact }
+  | { kind: "skeleton"; codename: ExpertCodename; title: string };
+
+function buildArtifactSlots(artifacts: Artifact[]): ArtifactSlot[] {
+  const slots: ArtifactSlot[] = [];
+  for (const codename of PIPELINE_ORDER) {
+    const forCode = artifacts.filter((a) => a.expert_codename === codename);
+    if (forCode.length > 0) {
+      for (const artifact of forCode) slots.push({ kind: "artifact", artifact });
+    } else {
+      slots.push({
+        kind: "skeleton",
+        codename,
+        title: EXPERT_ARTIFACT_TITLES[codename],
+      });
+    }
+  }
+  return slots;
+}
 
 export default function ProjectClient({ id }: { id: string }) {
   const router = useRouter();
@@ -93,6 +139,48 @@ export default function ProjectClient({ id }: { id: string }) {
     setActiveArtifactId(id);
   }, []);
 
+  // Локальный стейт пользовательских аплоадов: ключевые артефакты (fills) + supplementary.
+  const [userArtifacts, setUserArtifacts] = useState<Artifact[]>([]);
+  const [supplementaryArtifacts, setSupplementaryArtifacts] = useState<Artifact[]>([]);
+
+  const handleUploadForSkeleton = useCallback(
+    (fallbackCodename: ExpertCodename, file: File) => {
+      const detected = detectCodenameForFile(file);
+      const artifact: Artifact = {
+        id: `user_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        project_id: id,
+        session_id: `user_session_${id}`,
+        expert_codename: detected ?? fallbackCodename,
+        type: "one_pager",
+        title: file.name,
+        preview: "Загружено пользователем",
+        status: "validated",
+        source: "user-provided",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      if (detected) {
+        setUserArtifacts((prev) => [...prev, artifact]);
+        toast.success(`Файл «${file.name}» распознан как ${detected}`);
+      } else {
+        setSupplementaryArtifacts((prev) => [...prev, artifact]);
+        toast.success(`Файл «${file.name}» добавлен как дополнительный`);
+      }
+    },
+    [id]
+  );
+
+  const handleDeleteArtifact = useCallback((artifactId: string) => {
+    setUserArtifacts((prev) => prev.filter((a) => a.id !== artifactId));
+    setSupplementaryArtifacts((prev) => prev.filter((a) => a.id !== artifactId));
+    toast.success("Файл удалён");
+  }, []);
+
+  const artifactSlots = useMemo(
+    () => buildArtifactSlots([...artifacts, ...userArtifacts]),
+    [artifacts, userArtifacts]
+  );
+
   if (!project) {
     return (
       <div className="flex h-full items-center justify-center p-6">
@@ -121,21 +209,20 @@ export default function ProjectClient({ id }: { id: string }) {
             {project.score ?? 0}%
           </p>
 
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
+            type="button"
             onClick={() => setArtifactsOpen((v) => !v)}
             aria-label={
               artifactsOpen ? "Свернуть панель артефактов" : "Раскрыть панель артефактов"
             }
-            className="hidden lg:flex"
+            className="hidden items-center justify-center border-0 bg-transparent text-muted-foreground transition-colors hover:text-foreground lg:flex"
           >
             {artifactsOpen ? (
               <PanelRightClose className="h-4 w-4" />
             ) : (
               <PanelRightOpen className="h-4 w-4" />
             )}
-          </Button>
+          </button>
 
           <div
             aria-hidden
@@ -166,43 +253,85 @@ export default function ProjectClient({ id }: { id: string }) {
       </div>
 
       {/* ── RIGHT: artifacts panel (collapsible) ───────────────────────────── */}
-      {artifactsOpen && (
-        <aside className="hidden w-80 shrink-0 flex-col border-l border-border bg-background lg:flex">
+      <aside
+        aria-hidden={!artifactsOpen}
+        className={`hidden shrink-0 overflow-hidden border-l bg-background transition-[width,border-color,opacity] duration-300 ease-out lg:flex lg:flex-col ${
+          artifactsOpen
+            ? "w-80 border-border opacity-100"
+            : "w-0 border-transparent opacity-0"
+        }`}
+      >
+        <div className="flex w-80 shrink-0 flex-col">
           <div className="flex h-12 shrink-0 items-center border-b border-border px-4">
             <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-foreground">
               Артефакты · {artifacts.length}
             </p>
           </div>
           <div className="flex-1 overflow-y-auto p-3">
-            {artifacts.length === 0 ? (
-              <EmptyArtifacts />
-            ) : (
-              <div className="space-y-2">
-                {artifacts.map((a) => (
+            <div className="space-y-2">
+              {artifactSlots.map((slot) =>
+                slot.kind === "artifact" ? (
                   <ArtifactCard
-                    key={a.id}
-                    artifact={a}
-                    isActive={activeArtifactId === a.id}
+                    key={slot.artifact.id}
+                    artifact={slot.artifact}
+                    isActive={activeArtifactId === slot.artifact.id}
                     onHover={handleHoverArtifact}
-                    onPreview={() => setPreviewArtifact(a)}
-                    onDownload={() => handleDownload(a)}
+                    onPreview={() => setPreviewArtifact(slot.artifact)}
+                    onDownload={() => handleDownload(slot.artifact)}
+                    onDelete={
+                      slot.artifact.source === "user-provided"
+                        ? () => handleDeleteArtifact(slot.artifact.id)
+                        : undefined
+                    }
                   />
-                ))}
-              </div>
-            )}
+                ) : (
+                  <ArtifactSkeletonCard
+                    key={`skel-${slot.codename}`}
+                    codename={slot.codename}
+                    title={slot.title}
+                    onUpload={(file) =>
+                      handleUploadForSkeleton(slot.codename, file)
+                    }
+                  />
+                )
+              )}
+              {supplementaryArtifacts.length > 0 && (
+                <>
+                  <p className="pt-3 pb-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+                    Дополнительные
+                  </p>
+                  {supplementaryArtifacts.map((a) => (
+                    <ArtifactCard
+                      key={a.id}
+                      artifact={a}
+                      isActive={activeArtifactId === a.id}
+                      onHover={handleHoverArtifact}
+                      onPreview={() => setPreviewArtifact(a)}
+                      onDownload={() => handleDownload(a)}
+                      onDelete={() => handleDeleteArtifact(a.id)}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
           </div>
-        </aside>
-      )}
+        </div>
+      </aside>
 
       {/* Mobile bottom-sheet — выезжает снизу, закрывается свайпом за handle */}
       <MobileArtifactsSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        artifacts={artifacts}
+        slots={artifactSlots}
+        supplementary={supplementaryArtifacts}
+        artifactsCount={artifacts.length + userArtifacts.length + supplementaryArtifacts.length}
         activeArtifactId={activeArtifactId}
+        score={project.score}
         onHover={handleHoverArtifact}
         onPreview={setPreviewArtifact}
         onDownload={handleDownload}
+        onUploadForSkeleton={handleUploadForSkeleton}
+        onDelete={handleDeleteArtifact}
       />
 
       <ArtifactPreviewDialog
@@ -221,19 +350,29 @@ export default function ProjectClient({ id }: { id: string }) {
 function MobileArtifactsSheet({
   open,
   onOpenChange,
-  artifacts,
+  slots,
+  supplementary,
+  artifactsCount,
   activeArtifactId,
+  score,
   onHover,
   onPreview,
   onDownload,
+  onUploadForSkeleton,
+  onDelete,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  artifacts: Artifact[];
+  slots: ArtifactSlot[];
+  supplementary: Artifact[];
+  artifactsCount: number;
   activeArtifactId: string | null;
+  score: number | null;
   onHover: (id: string | null) => void;
   onPreview: (a: Artifact) => void;
   onDownload: (a: Artifact) => void;
+  onUploadForSkeleton: (codename: ExpertCodename, file: File) => void;
+  onDelete: (artifactId: string) => void;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -342,28 +481,64 @@ function MobileArtifactsSheet({
           >
             <span className="h-1 w-10 rounded-full bg-foreground/50" />
           </div>
-          <div className="flex h-11 shrink-0 items-center border-b border-border px-4">
+          <div className="relative flex h-11 shrink-0 items-center justify-between border-b border-border px-4">
             <DialogPrimitive.Title className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-normal uppercase tracking-[0.08em] text-muted-foreground">
-              Артефакты · {artifacts.length}
+              Артефакты · {artifactsCount}
             </DialogPrimitive.Title>
+            <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-100)]">
+              {score ?? 0}%
+            </p>
+            <div
+              aria-hidden
+              className="absolute bottom-0 left-0 h-0.5 bg-[var(--rm-yellow-100)] transition-[width] duration-500 ease-out"
+              style={{ width: `${score ?? 0}%` }}
+            />
           </div>
           <div className="flex-1 overflow-y-auto p-3">
-            {artifacts.length === 0 ? (
-              <EmptyArtifacts />
-            ) : (
-              <div className="space-y-2">
-                {artifacts.map((a) => (
+            <div className="space-y-2">
+              {slots.map((slot) =>
+                slot.kind === "artifact" ? (
                   <ArtifactCard
-                    key={a.id}
-                    artifact={a}
-                    isActive={activeArtifactId === a.id}
+                    key={slot.artifact.id}
+                    artifact={slot.artifact}
+                    isActive={activeArtifactId === slot.artifact.id}
                     onHover={onHover}
-                    onPreview={() => onPreview(a)}
-                    onDownload={() => onDownload(a)}
+                    onPreview={() => onPreview(slot.artifact)}
+                    onDownload={() => onDownload(slot.artifact)}
+                    onDelete={
+                      slot.artifact.source === "user-provided"
+                        ? () => onDelete(slot.artifact.id)
+                        : undefined
+                    }
                   />
-                ))}
-              </div>
-            )}
+                ) : (
+                  <ArtifactSkeletonCard
+                    key={`skel-${slot.codename}`}
+                    codename={slot.codename}
+                    title={slot.title}
+                    onUpload={(file) => onUploadForSkeleton(slot.codename, file)}
+                  />
+                )
+              )}
+              {supplementary.length > 0 && (
+                <>
+                  <p className="pt-3 pb-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+                    Дополнительные
+                  </p>
+                  {supplementary.map((a) => (
+                    <ArtifactCard
+                      key={a.id}
+                      artifact={a}
+                      isActive={activeArtifactId === a.id}
+                      onHover={onHover}
+                      onPreview={() => onPreview(a)}
+                      onDownload={() => onDownload(a)}
+                      onDelete={() => onDelete(a.id)}
+                    />
+                  ))}
+                </>
+              )}
+            </div>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
@@ -381,12 +556,14 @@ function ArtifactCard({
   onHover,
   onPreview,
   onDownload,
+  onDelete,
 }: {
   artifact: Artifact;
   isActive: boolean;
   onHover: (id: string | null) => void;
   onPreview: () => void;
   onDownload: () => void;
+  onDelete?: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -408,14 +585,30 @@ function ArtifactCard({
           : "border-border hover:border-[var(--rm-yellow-100)]"
       }`}
     >
-      {/* Hover-подсказка «Посмотреть» в правом верхнем углу */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2 py-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-fg)] opacity-0 transition-opacity group-hover:opacity-100"
-      >
-        <Eye className="h-3.5 w-3.5" />
-        Посмотреть
-      </span>
+      {/* Hover-подсказки: «Посмотреть» всегда, «Удалить» если артефакт пользовательский */}
+      <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
+        <span
+          aria-hidden
+          className="inline-flex items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2 py-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-fg)]"
+        >
+          <Eye className="h-3.5 w-3.5" />
+          Посмотреть
+        </span>
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            title="Удалить"
+            aria-label="Удалить артефакт"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-sm bg-rm-gray-1 text-muted-foreground transition-colors hover:bg-[var(--rm-red-500)] hover:text-white"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
       {/* Header: иконка + название + кодовое имя эксперта */}
       <div className="flex items-center gap-2 px-3 pt-3">
         <FileText className="h-5 w-5 shrink-0 text-foreground" />
@@ -446,6 +639,66 @@ function ArtifactCard({
           <Download className="h-5 w-5" />
         </button>
       </div>
+    </div>
+  );
+}
+
+function ArtifactSkeletonCard({
+  codename,
+  title,
+  onUpload,
+}: {
+  codename: ExpertCodename;
+  title: string;
+  onUpload: (file: File) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleClick() {
+    fileInputRef.current?.click();
+  }
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    for (const file of files) onUpload(file);
+    // Сбрасываем value, чтобы можно было повторно выбрать тот же файл
+    e.target.value = "";
+  }
+
+  return (
+    <div
+      onClick={handleClick}
+      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-sm border border-transparent bg-rm-gray-1 transition-colors hover:border-[var(--rm-yellow-100)]"
+    >
+      {/* Hover-подсказка «Добавить файл» */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2 py-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-fg)] opacity-0 transition-opacity group-hover:opacity-100"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Добавить файл
+      </span>
+      {/* Header: иконка + название + кодовое имя эксперта, все приглушены */}
+      <div className="flex items-center gap-2 px-3 pt-3">
+        <FileText className="h-5 w-5 shrink-0 text-muted-foreground/40" />
+        <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-muted-foreground/60">
+          {title}
+        </p>
+        <span className="shrink-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-muted-foreground/40">
+          {codename}
+        </span>
+      </div>
+      {/* Skeleton-полосы вместо превью */}
+      <div className="flex flex-col gap-[9px] px-3 pb-4 pt-3">
+        <span className="h-px w-[85%] bg-muted-foreground/20" />
+        <span className="h-px w-[70%] bg-muted-foreground/20" />
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        onChange={handleChange}
+      />
     </div>
   );
 }
