@@ -261,7 +261,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
             </div>
             {isOnManager && (
               <span
-                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--rm-yellow-500)]"
+                className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--rm-yellow-100)]"
                 aria-hidden
               />
             )}
@@ -491,7 +491,14 @@ function ProjectItemWithExperts({
               className={`h-2 w-2 transition-transform ${isExpanded ? "rotate-90" : ""}`}
             />
           </button>
-          <span className="flex-1 truncate text-[length:var(--text-14)]">
+          <span
+            className="flex-1 truncate text-[length:var(--text-14)]"
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              onStartRename();
+            }}
+            title="Двойной клик — переименовать"
+          >
             {project.name}
           </span>
           {/* Прогресс N/M — рядом с именем */}
@@ -610,22 +617,20 @@ function ExpertsNested({
                   {expert.name}
                 </span>
               </div>
-              <div
-                className="flex items-center gap-1 text-[length:var(--text-12)] text-muted-foreground"
-                title={STATUS_LABEL[status]}
-              >
-                <StatusIcon
-                  className={`h-3 w-3 shrink-0 ${
-                    status === "completed"
-                      ? "text-[var(--rm-yellow-500)]"
-                      : status === "in_progress"
-                        ? "text-foreground"
-                        : ""
-                  }`}
-                />
-                <span className="truncate">{STATUS_LABEL[status]}</span>
-              </div>
+              <p className="truncate text-[length:var(--text-12)] text-muted-foreground">
+                {expert.role}
+              </p>
             </div>
+            <StatusIcon
+              aria-label={STATUS_LABEL[status]}
+              className={`h-5 w-5 shrink-0 ${
+                status === "completed"
+                  ? "text-[var(--rm-yellow-100)]"
+                  : status === "in_progress"
+                    ? "text-foreground"
+                    : "text-muted-foreground"
+              }`}
+            />
           </div>
         );
       })}
