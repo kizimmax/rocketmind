@@ -10,6 +10,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
 } from "lucide-react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Badge,
   Button,
@@ -280,39 +281,39 @@ function MobileArtifactsSheet({
   onDownload: (a: Artifact) => void;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
-  const drag = useRef({ startY: 0, dy: 0, active: false });
+  const drag = useRef({ startY: 0, dy: 0, active: false, pointerId: 0 });
 
-  const resetTransform = () => {
-    const el = contentRef.current;
-    if (!el) return;
-    el.style.transition = "transform 200ms ease-out";
-    el.style.transform = "";
-  };
-
-  function onTouchStart(e: React.TouchEvent) {
-    const t = e.touches[0];
-    drag.current = { startY: t.clientY, dy: 0, active: true };
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    drag.current = {
+      startY: e.clientY,
+      dy: 0,
+      active: true,
+      pointerId: e.pointerId,
+    };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     if (contentRef.current) contentRef.current.style.transition = "none";
   }
 
-  function onTouchMove(e: React.TouchEvent) {
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
     if (!drag.current.active) return;
-    const t = e.touches[0];
-    const dy = Math.max(0, t.clientY - drag.current.startY);
+    const dy = Math.max(0, e.clientY - drag.current.startY);
     drag.current.dy = dy;
     if (contentRef.current) {
       contentRef.current.style.transform = `translateY(${dy}px)`;
     }
   }
 
-  function onTouchEnd() {
+  function onPointerEnd(e: React.PointerEvent<HTMLDivElement>) {
     if (!drag.current.active) return;
     drag.current.active = false;
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(drag.current.pointerId);
+    } catch {}
     const { dy } = drag.current;
     const el = contentRef.current;
     if (!el) return;
+    el.style.transition = "transform 200ms ease-out";
     if (dy > 120) {
-      el.style.transition = "transform 200ms ease-out";
       el.style.transform = "translateY(100%)";
       window.setTimeout(() => {
         onOpenChange(false);
@@ -320,50 +321,54 @@ function MobileArtifactsSheet({
         el.style.transition = "";
       }, 180);
     } else {
-      resetTransform();
+      el.style.transform = "";
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        ref={contentRef}
-        className="fixed left-0 right-0 top-auto bottom-0 flex h-[85vh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-t-lg rounded-b-none border-0 border-t border-border p-0 lg:hidden data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full"
-      >
-        {/* Drag handle — потянуть вниз чтобы закрыть */}
-        <div
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-          className="flex h-7 shrink-0 cursor-grab items-center justify-center touch-none"
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[var(--rm-gray-alpha-600)] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 lg:hidden" />
+        <DialogPrimitive.Content
+          ref={contentRef}
+          className="rm-sheet fixed inset-x-0 bottom-0 z-50 flex h-[85vh] flex-col rounded-t-lg border-t border-border bg-card lg:hidden"
         >
-          <span className="h-1 w-10 rounded-full bg-foreground/40" />
-        </div>
-        <div className="flex h-11 shrink-0 items-center border-b border-border px-4">
-          <DialogTitle className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-normal uppercase tracking-[0.08em] text-muted-foreground">
-            Артефакты · {artifacts.length}
-          </DialogTitle>
-        </div>
-        <div className="flex-1 overflow-y-auto p-3">
-          {artifacts.length === 0 ? (
-            <EmptyArtifacts />
-          ) : (
-            <div className="space-y-2">
-              {artifacts.map((a) => (
-                <ArtifactCard
-                  key={a.id}
-                  artifact={a}
-                  isActive={activeArtifactId === a.id}
-                  onSelect={() => onSelect(a.id)}
-                  onPreview={() => onPreview(a)}
-                  onDownload={() => onDownload(a)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+          {/* Drag handle — потянуть вниз чтобы закрыть */}
+          <div
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerEnd}
+            onPointerCancel={onPointerEnd}
+            className="flex h-7 shrink-0 cursor-grab items-center justify-center touch-none"
+          >
+            <span className="h-1 w-10 rounded-full bg-foreground/50" />
+          </div>
+          <div className="flex h-11 shrink-0 items-center border-b border-border px-4">
+            <DialogPrimitive.Title className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-normal uppercase tracking-[0.08em] text-muted-foreground">
+              Артефакты · {artifacts.length}
+            </DialogPrimitive.Title>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3">
+            {artifacts.length === 0 ? (
+              <EmptyArtifacts />
+            ) : (
+              <div className="space-y-2">
+                {artifacts.map((a) => (
+                  <ArtifactCard
+                    key={a.id}
+                    artifact={a}
+                    isActive={activeArtifactId === a.id}
+                    onSelect={() => onSelect(a.id)}
+                    onPreview={() => onPreview(a)}
+                    onDownload={() => onDownload(a)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
 
