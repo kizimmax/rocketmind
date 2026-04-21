@@ -105,14 +105,17 @@ export default function ProjectClient({ id }: { id: string }) {
     <div className="flex h-full flex-1 overflow-hidden">
       {/* ── CENTER: expert chat ────────────────────────────────────────────── */}
       <div className="relative flex min-w-0 flex-1 flex-col">
-        {/* Header: название проекта слева, роль эксперта + toggle справа */}
-        <div className="flex items-center gap-4 border-b border-border px-4 py-3">
+        {/* Header: название проекта слева, роль эксперта + аватарка + toggle справа */}
+        <div className="flex h-12 shrink-0 items-center gap-4 border-b border-border px-4">
           <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
             {project.name}
           </p>
 
           {activeExpert && (
             <div className="flex min-w-0 items-center gap-2">
+              <p className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+                {activeExpert.role}
+              </p>
               <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full">
                 {activeExpert.avatar_url && (
                   <Image
@@ -124,9 +127,6 @@ export default function ProjectClient({ id }: { id: string }) {
                   />
                 )}
               </div>
-              <p className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
-                {activeExpert.role}
-              </p>
             </div>
           )}
 
@@ -169,7 +169,7 @@ export default function ProjectClient({ id }: { id: string }) {
       {/* ── RIGHT: artifacts panel (collapsible) ───────────────────────────── */}
       {artifactsOpen && (
         <aside className="hidden w-80 shrink-0 flex-col border-l border-border bg-background lg:flex">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
             <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
               Артефакты · {artifacts.length}
             </p>
