@@ -10,16 +10,20 @@ import {
   PanelRightOpen,
   Plus,
   Trash2,
+  X,
 } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Button,
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  Input,
   Note,
+  Textarea,
 } from "@rocketmind/ui";
 import { toast } from "sonner";
 import {
@@ -31,6 +35,7 @@ import {
   useProject,
 } from "@/lib/hooks";
 import { ExpertChat } from "@/components/expert-chat";
+import { FilePreviewDialog } from "@/components/file-preview-dialog";
 import type { Artifact, ExpertCodename } from "@/lib/types";
 import { pickExpertForProject } from "@/lib/utils";
 
@@ -44,18 +49,6 @@ const EXPERT_ARTIFACT_TITLES: Record<ExpertCodename, string> = {
   R4: "MVP-план",
   R5: "Питч",
 };
-
-// Heuristic: определяет codename по имени файла. Если не совпало — null (вспомогательный).
-function detectCodenameForFile(file: File): ExpertCodename | null {
-  const n = file.name.toLowerCase();
-  if (/маркет|market|industry|рынок/.test(n)) return "R1";
-  if (/сегмент|segment|icp|target|аудитор/.test(n)) return "R2";
-  if (/гипотез|hypothes|synth|valid|тест/.test(n)) return "R+";
-  if (/бизнес|biz|business|model|модел|unit|юнит/.test(n)) return "R3";
-  if (/mvp|план|plan|roadmap|дорож/.test(n)) return "R4";
-  if (/pitch|питч|deck|презент|memo|инвест/.test(n)) return "R5";
-  return null;
-}
 
 type ArtifactSlot =
   | { kind: "artifact"; artifact: Artifact }
@@ -77,6 +70,19 @@ function buildArtifactSlots(artifacts: Artifact[]): ArtifactSlot[] {
   }
   return slots;
 }
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  created_at: string;
+  /** Blob-URL для предпросмотра (если файл загружен через drag-drop). */
+  url?: string;
+  /** MIME-тип. */
+  type?: string;
+}
+
+type PanelTab = "artifacts" | "files";
 
 export default function ProjectClient({ id }: { id: string }) {
   const router = useRouter();
@@ -139,47 +145,71 @@ export default function ProjectClient({ id }: { id: string }) {
     setActiveArtifactId(id);
   }, []);
 
-  // Локальный стейт пользовательских аплоадов: ключевые артефакты (fills) + supplementary.
-  const [userArtifacts, setUserArtifacts] = useState<Artifact[]>([]);
-  const [supplementaryArtifacts, setSupplementaryArtifacts] = useState<Artifact[]>([]);
+  // Пользовательские файлы — отдельная вкладка, ожидают валидации экспертом.
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [panelTab, setPanelTab] = useState<PanelTab>("artifacts");
+  const [previewFile, setPreviewFile] = useState<UploadedFile | null>(null);
 
-  const handleUploadForSkeleton = useCallback(
-    (fallbackCodename: ExpertCodename, file: File) => {
-      const detected = detectCodenameForFile(file);
-      const artifact: Artifact = {
-        id: `user_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-        project_id: id,
-        session_id: `user_session_${id}`,
-        expert_codename: detected ?? fallbackCodename,
-        type: "one_pager",
-        title: file.name,
-        preview: "Загружено пользователем",
-        status: "validated",
-        source: "user-provided",
+  const handleAddFiles = useCallback(
+    (
+      files: Array<{ name: string; size: number; url?: string; type?: string }>
+    ) => {
+      if (files.length === 0) return;
+      const added: UploadedFile[] = files.map((f) => ({
+        id: `uf_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        name: f.name,
+        size: f.size,
+        url: f.url,
+        type: f.type,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      if (detected) {
-        setUserArtifacts((prev) => [...prev, artifact]);
-        toast.success(`Файл «${file.name}» распознан как ${detected}`);
-      } else {
-        setSupplementaryArtifacts((prev) => [...prev, artifact]);
-        toast.success(`Файл «${file.name}» добавлен как дополнительный`);
-      }
+      }));
+      setUploadedFiles((prev) => [...prev, ...added]);
+      toast.success(
+        added.length === 1
+          ? `Файл «${added[0].name}» добавлен`
+          : `Добавлено ${added.length} файлов`
+      );
     },
-    [id]
+    []
   );
 
-  const handleDeleteArtifact = useCallback((artifactId: string) => {
-    setUserArtifacts((prev) => prev.filter((a) => a.id !== artifactId));
-    setSupplementaryArtifacts((prev) => prev.filter((a) => a.id !== artifactId));
-    toast.success("Файл удалён");
+  const handleRemoveFile = useCallback((fileId: string) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
   }, []);
 
-  const artifactSlots = useMemo(
-    () => buildArtifactSlots([...artifacts, ...userArtifacts]),
-    [artifacts, userArtifacts]
-  );
+  // Drag-drop в правую панель: файл сразу попадает в «Файлы» + активирует вкладку.
+  const [isPanelDragOver, setIsPanelDragOver] = useState(false);
+  const panelDragCounter = useRef(0);
+
+  function handlePanelDragEnter(e: React.DragEvent) {
+    if (!Array.from(e.dataTransfer?.types ?? []).includes("Files")) return;
+    e.preventDefault();
+    panelDragCounter.current += 1;
+    setIsPanelDragOver(true);
+  }
+  function handlePanelDragOver(e: React.DragEvent) {
+    if (!Array.from(e.dataTransfer?.types ?? []).includes("Files")) return;
+    e.preventDefault();
+  }
+  function handlePanelDragLeave(e: React.DragEvent) {
+    if (!Array.from(e.dataTransfer?.types ?? []).includes("Files")) return;
+    e.preventDefault();
+    panelDragCounter.current = Math.max(0, panelDragCounter.current - 1);
+    if (panelDragCounter.current === 0) setIsPanelDragOver(false);
+  }
+  function handlePanelDrop(e: React.DragEvent) {
+    if (!Array.from(e.dataTransfer?.types ?? []).includes("Files")) return;
+    e.preventDefault();
+    panelDragCounter.current = 0;
+    setIsPanelDragOver(false);
+    const dropped = Array.from(e.dataTransfer.files);
+    if (dropped.length > 0) {
+      handleAddFiles(nativeToUpload(dropped));
+      setPanelTab("files");
+    }
+  }
+
+  const artifactSlots = useMemo(() => buildArtifactSlots(artifacts), [artifacts]);
 
   if (!project) {
     return (
@@ -244,6 +274,7 @@ export default function ProjectClient({ id }: { id: string }) {
             onArtifactDownload={handleDownload}
             onArtifactsOpenRequest={() => setSheetOpen(true)}
             artifactsScore={project.score}
+            onFilesUpload={handleAddFiles}
           />
         ) : (
           <div className="flex flex-1 items-center justify-center text-muted-foreground">
@@ -255,65 +286,63 @@ export default function ProjectClient({ id }: { id: string }) {
       {/* ── RIGHT: artifacts panel (collapsible) ───────────────────────────── */}
       <aside
         aria-hidden={!artifactsOpen}
-        className={`hidden shrink-0 overflow-hidden border-l bg-background transition-[width,border-color,opacity] duration-300 ease-out lg:flex lg:flex-col ${
+        onDragEnter={handlePanelDragEnter}
+        onDragOver={handlePanelDragOver}
+        onDragLeave={handlePanelDragLeave}
+        onDrop={handlePanelDrop}
+        className={`relative hidden shrink-0 overflow-hidden border-l bg-background transition-[width,border-color,opacity] duration-300 ease-out lg:flex lg:flex-col ${
           artifactsOpen
             ? "w-80 border-border opacity-100"
             : "w-0 border-transparent opacity-0"
         }`}
       >
-        <div className="flex w-80 shrink-0 flex-col">
-          <div className="flex h-12 shrink-0 items-center border-b border-border px-4">
-            <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-foreground">
-              Артефакты · {artifacts.length}
-            </p>
-          </div>
-          <div className="flex-1 overflow-y-auto p-3">
-            <div className="space-y-2">
-              {artifactSlots.map((slot) =>
-                slot.kind === "artifact" ? (
-                  <ArtifactCard
-                    key={slot.artifact.id}
-                    artifact={slot.artifact}
-                    isActive={activeArtifactId === slot.artifact.id}
-                    onHover={handleHoverArtifact}
-                    onPreview={() => setPreviewArtifact(slot.artifact)}
-                    onDownload={() => handleDownload(slot.artifact)}
-                    onDelete={
-                      slot.artifact.source === "user-provided"
-                        ? () => handleDeleteArtifact(slot.artifact.id)
-                        : undefined
-                    }
-                  />
-                ) : (
-                  <ArtifactSkeletonCard
-                    key={`skel-${slot.codename}`}
-                    codename={slot.codename}
-                    title={slot.title}
-                    onUpload={(file) =>
-                      handleUploadForSkeleton(slot.codename, file)
-                    }
-                  />
-                )
-              )}
-              {supplementaryArtifacts.length > 0 && (
-                <>
-                  <p className="pt-3 pb-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
-                    Дополнительные
-                  </p>
-                  {supplementaryArtifacts.map((a) => (
-                    <ArtifactCard
-                      key={a.id}
-                      artifact={a}
-                      isActive={activeArtifactId === a.id}
-                      onHover={handleHoverArtifact}
-                      onPreview={() => setPreviewArtifact(a)}
-                      onDownload={() => handleDownload(a)}
-                      onDelete={() => handleDeleteArtifact(a.id)}
-                    />
-                  ))}
-                </>
-              )}
+        {isPanelDragOver && (
+          <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center border-2 border-dashed border-[var(--rm-yellow-100)] bg-background/80 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-2 text-foreground">
+              <Plus className="h-8 w-8 text-[var(--rm-yellow-100)]" />
+              <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.08em]">
+                Отпустите, чтобы загрузить
+              </p>
             </div>
+          </div>
+        )}
+        <div className="flex w-80 shrink-0 flex-col">
+          <PanelTabs
+            tab={panelTab}
+            onChange={setPanelTab}
+            artifactsCount={artifacts.length}
+            filesCount={uploadedFiles.length}
+          />
+          <div className="flex-1 overflow-y-auto p-3">
+            {panelTab === "artifacts" ? (
+              <div className="space-y-2">
+                {artifactSlots.map((slot) =>
+                  slot.kind === "artifact" ? (
+                    <ArtifactCard
+                      key={slot.artifact.id}
+                      artifact={slot.artifact}
+                      isActive={activeArtifactId === slot.artifact.id}
+                      onHover={handleHoverArtifact}
+                      onPreview={() => setPreviewArtifact(slot.artifact)}
+                      onDownload={() => handleDownload(slot.artifact)}
+                    />
+                  ) : (
+                    <ArtifactSkeletonCard
+                      key={`skel-${slot.codename}`}
+                      codename={slot.codename}
+                      title={slot.title}
+                    />
+                  )
+                )}
+              </div>
+            ) : (
+              <FilesTab
+                files={uploadedFiles}
+                onAdd={handleAddFiles}
+                onRemove={handleRemoveFile}
+                onPreview={setPreviewFile}
+              />
+            )}
           </div>
         </div>
       </aside>
@@ -323,21 +352,29 @@ export default function ProjectClient({ id }: { id: string }) {
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         slots={artifactSlots}
-        supplementary={supplementaryArtifacts}
-        artifactsCount={artifacts.length + userArtifacts.length + supplementaryArtifacts.length}
+        artifactsCount={artifacts.length}
+        uploadedFiles={uploadedFiles}
+        tab={panelTab}
+        onTabChange={setPanelTab}
+        onAddFiles={handleAddFiles}
+        onRemoveFile={handleRemoveFile}
+        onFilePreview={setPreviewFile}
         activeArtifactId={activeArtifactId}
         score={project.score}
         onHover={handleHoverArtifact}
         onPreview={setPreviewArtifact}
         onDownload={handleDownload}
-        onUploadForSkeleton={handleUploadForSkeleton}
-        onDelete={handleDeleteArtifact}
       />
 
       <ArtifactPreviewDialog
         artifact={previewArtifact}
         onOpenChange={(open) => !open && setPreviewArtifact(null)}
         onDownload={handleDownload}
+      />
+
+      <FilePreviewDialog
+        file={previewFile}
+        onOpenChange={(open) => !open && setPreviewFile(null)}
       />
     </div>
   );
@@ -351,28 +388,36 @@ function MobileArtifactsSheet({
   open,
   onOpenChange,
   slots,
-  supplementary,
   artifactsCount,
+  uploadedFiles,
+  tab,
+  onTabChange,
+  onAddFiles,
+  onRemoveFile,
+  onFilePreview,
   activeArtifactId,
   score,
   onHover,
   onPreview,
   onDownload,
-  onUploadForSkeleton,
-  onDelete,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   slots: ArtifactSlot[];
-  supplementary: Artifact[];
   artifactsCount: number;
+  uploadedFiles: UploadedFile[];
+  tab: PanelTab;
+  onTabChange: (t: PanelTab) => void;
+  onAddFiles: (
+    files: Array<{ name: string; size: number; url?: string; type?: string }>
+  ) => void;
+  onRemoveFile: (id: string) => void;
+  onFilePreview: (file: UploadedFile) => void;
   activeArtifactId: string | null;
   score: number | null;
   onHover: (id: string | null) => void;
   onPreview: (a: Artifact) => void;
   onDownload: (a: Artifact) => void;
-  onUploadForSkeleton: (codename: ExpertCodename, file: File) => void;
-  onDelete: (artifactId: string) => void;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -481,64 +526,46 @@ function MobileArtifactsSheet({
           >
             <span className="h-1 w-10 rounded-full bg-foreground/50" />
           </div>
-          <div className="relative flex h-11 shrink-0 items-center justify-between border-b border-border px-4">
-            <DialogPrimitive.Title className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-normal uppercase tracking-[0.08em] text-muted-foreground">
-              Артефакты · {artifactsCount}
-            </DialogPrimitive.Title>
-            <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-100)]">
-              {score ?? 0}%
-            </p>
-            <div
-              aria-hidden
-              className="absolute bottom-0 left-0 h-0.5 bg-[var(--rm-yellow-100)] transition-[width] duration-500 ease-out"
-              style={{ width: `${score ?? 0}%` }}
-            />
-          </div>
+          <DialogPrimitive.Title className="sr-only">
+            Артефакты · {artifactsCount}
+          </DialogPrimitive.Title>
+          <PanelTabs
+            tab={tab}
+            onChange={onTabChange}
+            artifactsCount={artifactsCount}
+            filesCount={uploadedFiles.length}
+            score={score}
+          />
           <div className="flex-1 overflow-y-auto p-3">
-            <div className="space-y-2">
-              {slots.map((slot) =>
-                slot.kind === "artifact" ? (
-                  <ArtifactCard
-                    key={slot.artifact.id}
-                    artifact={slot.artifact}
-                    isActive={activeArtifactId === slot.artifact.id}
-                    onHover={onHover}
-                    onPreview={() => onPreview(slot.artifact)}
-                    onDownload={() => onDownload(slot.artifact)}
-                    onDelete={
-                      slot.artifact.source === "user-provided"
-                        ? () => onDelete(slot.artifact.id)
-                        : undefined
-                    }
-                  />
-                ) : (
-                  <ArtifactSkeletonCard
-                    key={`skel-${slot.codename}`}
-                    codename={slot.codename}
-                    title={slot.title}
-                    onUpload={(file) => onUploadForSkeleton(slot.codename, file)}
-                  />
-                )
-              )}
-              {supplementary.length > 0 && (
-                <>
-                  <p className="pt-3 pb-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
-                    Дополнительные
-                  </p>
-                  {supplementary.map((a) => (
+            {tab === "artifacts" ? (
+              <div className="space-y-2">
+                {slots.map((slot) =>
+                  slot.kind === "artifact" ? (
                     <ArtifactCard
-                      key={a.id}
-                      artifact={a}
-                      isActive={activeArtifactId === a.id}
+                      key={slot.artifact.id}
+                      artifact={slot.artifact}
+                      isActive={activeArtifactId === slot.artifact.id}
                       onHover={onHover}
-                      onPreview={() => onPreview(a)}
-                      onDownload={() => onDownload(a)}
-                      onDelete={() => onDelete(a.id)}
+                      onPreview={() => onPreview(slot.artifact)}
+                      onDownload={() => onDownload(slot.artifact)}
                     />
-                  ))}
-                </>
-              )}
-            </div>
+                  ) : (
+                    <ArtifactSkeletonCard
+                      key={`skel-${slot.codename}`}
+                      codename={slot.codename}
+                      title={slot.title}
+                    />
+                  )
+                )}
+              </div>
+            ) : (
+              <FilesTab
+                files={uploadedFiles}
+                onAdd={onAddFiles}
+                onRemove={onRemoveFile}
+                onPreview={onFilePreview}
+              />
+            )}
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
@@ -589,7 +616,7 @@ function ArtifactCard({
       <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
         <span
           aria-hidden
-          className="inline-flex items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2 py-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-fg)]"
+          className="inline-flex items-center gap-1 rounded-sm bg-foreground px-2 py-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-background"
         >
           <Eye className="h-3.5 w-3.5" />
           Посмотреть
@@ -646,38 +673,12 @@ function ArtifactCard({
 function ArtifactSkeletonCard({
   codename,
   title,
-  onUpload,
 }: {
   codename: ExpertCodename;
   title: string;
-  onUpload: (file: File) => void;
 }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  function handleClick() {
-    fileInputRef.current?.click();
-  }
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    for (const file of files) onUpload(file);
-    // Сбрасываем value, чтобы можно было повторно выбрать тот же файл
-    e.target.value = "";
-  }
-
   return (
-    <div
-      onClick={handleClick}
-      className="group relative flex cursor-pointer flex-col overflow-hidden rounded-sm border border-transparent bg-rm-gray-1 transition-colors hover:border-[var(--rm-yellow-100)]"
-    >
-      {/* Hover-подсказка «Добавить файл» */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2 py-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-fg)] opacity-0 transition-opacity group-hover:opacity-100"
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Добавить файл
-      </span>
+    <div className="flex flex-col overflow-hidden rounded-sm border border-transparent bg-rm-gray-1">
       {/* Header: иконка + название + кодовое имя эксперта, все приглушены */}
       <div className="flex items-center gap-2 px-3 pt-3">
         <FileText className="h-5 w-5 shrink-0 text-muted-foreground/40" />
@@ -693,14 +694,298 @@ function ArtifactSkeletonCard({
         <span className="h-px w-[85%] bg-muted-foreground/20" />
         <span className="h-px w-[70%] bg-muted-foreground/20" />
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Табы панели и вкладка «Файлы»
+// ─────────────────────────────────────────────────────────────────────────────
+
+function PanelTabs({
+  tab,
+  onChange,
+  artifactsCount,
+  filesCount,
+  score,
+}: {
+  tab: PanelTab;
+  onChange: (t: PanelTab) => void;
+  artifactsCount: number;
+  filesCount: number;
+  score?: number | null;
+}) {
+  return (
+    <div className="relative flex h-12 shrink-0 items-center border-b border-border px-2">
+      <div className="flex flex-1 items-center gap-1">
+        <TabButton
+          active={tab === "artifacts"}
+          onClick={() => onChange("artifacts")}
+          label={`Артефакты · ${artifactsCount}`}
+        />
+        <TabButton
+          active={tab === "files"}
+          onClick={() => onChange("files")}
+          label={`Файлы · ${filesCount}`}
+        />
+      </div>
+      {score != null && (
+        <p className="pr-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-100)]">
+          {score}%
+        </p>
+      )}
+      {score != null && (
+        <div
+          aria-hidden
+          className="absolute bottom-0 left-0 h-0.5 bg-[var(--rm-yellow-100)] transition-[width] duration-500 ease-out"
+          style={{ width: `${score}%` }}
+        />
+      )}
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`relative px-2 pt-3 pb-3 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] transition-colors ${
+        active
+          ? "text-foreground"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {label}
+      {active && (
+        <span
+          aria-hidden
+          className="absolute inset-x-2 bottom-0 h-0.5 bg-foreground"
+        />
+      )}
+    </button>
+  );
+}
+
+function FilesTab({
+  files,
+  onAdd,
+  onRemove,
+  onPreview,
+}: {
+  files: UploadedFile[];
+  onAdd: (
+    files: Array<{ name: string; size: number; url?: string; type?: string }>
+  ) => void;
+  onRemove: (id: string) => void;
+  onPreview: (file: UploadedFile) => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isTextDialogOpen, setIsTextDialogOpen] = useState(false);
+
+  function handleSaveText(title: string, content: string) {
+    const safeTitle = title.trim() || "Заметка";
+    const filename = safeTitle.toLowerCase().endsWith(".md")
+      ? safeTitle
+      : `${safeTitle}.md`;
+    const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    onAdd([{ name: filename, size: blob.size, url, type: "text/markdown" }]);
+    setIsTextDialogOpen(false);
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="px-1 pb-2 text-[length:var(--text-12)] leading-[1.36] text-muted-foreground">
+        Добавьте справочные документы, данные или файлы, которые эксперты будет
+        использовать в качестве контекста. Вы можете попросить экспертов загрузить
+        или отредактировать файлы в этом проекте.
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="flex flex-1 items-center justify-start gap-1.5 rounded-sm border-0 bg-transparent px-3 py-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:bg-rm-gray-1 hover:text-foreground"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Добавить файлы
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsTextDialogOpen(true)}
+          title="Добавить текст"
+          aria-label="Добавить текст"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-rm-gray-1 hover:text-foreground"
+        >
+          <FileText className="h-4 w-4" />
+        </button>
+      </div>
       <input
         ref={fileInputRef}
         type="file"
+        multiple
         className="hidden"
-        onChange={handleChange}
+        onChange={(e) => {
+          const picked = Array.from(e.target.files ?? []);
+          if (picked.length > 0) onAdd(nativeToUpload(picked));
+          e.target.value = "";
+        }}
       />
+      <AddTextDialog
+        open={isTextDialogOpen}
+        onOpenChange={setIsTextDialogOpen}
+        onSave={handleSaveText}
+      />
+      {files.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 py-10 px-4 text-center">
+          <FileText className="h-6 w-6 text-muted-foreground" />
+          <p className="text-[length:var(--text-12)] text-muted-foreground">
+            Файлы появятся здесь. Их нужно провалидировать с экспертом, прежде чем они станут артефактами.
+          </p>
+        </div>
+      ) : (
+        files.map((f) => (
+          <FileRow
+            key={f.id}
+            file={f}
+            onPreview={() => onPreview(f)}
+            onRemove={() => onRemove(f.id)}
+          />
+        ))
+      )}
     </div>
   );
+}
+
+function FileRow({
+  file,
+  onPreview,
+  onRemove,
+}: {
+  file: UploadedFile;
+  onPreview: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div
+      onClick={onPreview}
+      className="group flex cursor-pointer items-center gap-2 rounded-sm border border-border bg-background px-3 py-2 transition-colors hover:border-[var(--rm-yellow-100)]"
+    >
+      <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <p className="min-w-0 flex-1 truncate text-[length:var(--text-14)] text-foreground">
+        {file.name}
+      </p>
+      <span className="shrink-0 text-[length:var(--text-12)] text-muted-foreground group-hover:hidden">
+        {formatFileSize(file.size)}
+      </span>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+        aria-label={`Удалить ${file.name}`}
+        title="Удалить"
+        className="hidden h-6 w-6 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-rm-gray-1 hover:text-foreground group-hover:flex"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
+function AddTextDialog({
+  open,
+  onOpenChange,
+  onSave,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (title: string, content: string) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setTitle("");
+      setContent("");
+    }
+  }, [open]);
+
+  function handleSave() {
+    if (!content.trim()) return;
+    onSave(title, content);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg gap-4">
+        <DialogHeader className="pr-8">
+          <DialogTitle className="font-[family-name:var(--font-heading-family)] uppercase">
+            Добавьте текст
+          </DialogTitle>
+          <DialogDescription>
+            Вставьте или введите текст ниже. Он будет сохранён как файл, на который эксперты смогут ссылаться.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogClose
+          aria-label="Закрыть"
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-rm-gray-1 hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </DialogClose>
+        <div className="flex flex-col gap-2">
+          <Input
+            placeholder="Название (без расширения)"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+          <Textarea
+            placeholder="Markdown-текст…"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={10}
+            className="min-h-[200px] font-[family-name:var(--font-caption-family)] text-[length:var(--text-14)]"
+          />
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Отмена
+          </Button>
+          <Button onClick={handleSave} disabled={!content.trim()}>
+            Сохранить
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} Б`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} КБ`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
+}
+
+function nativeToUpload(
+  files: File[]
+): Array<{ name: string; size: number; url: string; type: string }> {
+  return files.map((f) => ({
+    name: f.name,
+    size: f.size,
+    url: URL.createObjectURL(f),
+    type: f.type,
+  }));
 }
 
 function ArtifactPreviewDialog({
