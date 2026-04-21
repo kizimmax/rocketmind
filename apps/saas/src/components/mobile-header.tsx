@@ -6,7 +6,14 @@ import { useParams, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import { Plus, Search, X } from "lucide-react";
 import { useTheme } from "next-themes";
-import { getMockCase, getMockCaseAgents } from "@/lib/mock-data";
+import {
+  getMockCase,
+  getMockCaseAgents,
+  getMockExpert,
+  getMockManager,
+  getMockProject,
+} from "@/lib/mock-data";
+import type { ExpertCodename } from "@/lib/types";
 import { Sidebar } from "./sidebar";
 import { cn } from "@rocketmind/ui";
 import { useRouter } from "next/navigation";
@@ -23,39 +30,97 @@ function BurgerIcon({ open }: { open: boolean }) {
   );
 }
 
-/** Case name / Agent name breadcrumb */
-function Breadcrumb({
-  caseId,
+/** Заголовок мобильной шапки: проект + эксперт / менеджер / кейс. */
+function MobileBreadcrumb({
+  pathname,
+  routeId,
+  expertCodename,
   agentId,
 }: {
-  caseId?: string;
+  pathname: string;
+  routeId?: string;
+  expertCodename?: string;
   agentId?: string;
 }) {
-  if (!caseId) return null;
+  // /projects/[id] — проект + эксперт
+  if (routeId && pathname.startsWith("/projects/")) {
+    const project = getMockProject(routeId);
+    const expert = expertCodename
+      ? getMockExpert(expertCodename as ExpertCodename)
+      : undefined;
+    return (
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <span className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+          {project?.name ?? "Проект"}
+        </span>
+        {expert && (
+          <>
+            <span className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+              {expert.role}
+            </span>
+            {expert.avatar_url && (
+              <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full">
+                <Image
+                  src={expert.avatar_url}
+                  alt={expert.role}
+                  width={24}
+                  height={24}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
 
-  const caseItem = getMockCase(caseId);
-  const agents = getMockCaseAgents(caseId);
-  const agent = agentId ? agents.find((a) => a.id === agentId) : null;
+  // /manager — роль + аватар менеджера
+  if (pathname === "/manager") {
+    const manager = getMockManager();
+    return (
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+        <span className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+          {manager.role}
+        </span>
+        <div className="h-6 w-6 shrink-0 overflow-hidden rounded-full">
+          <Image
+            src={manager.avatar_url}
+            alt={manager.role}
+            width={24}
+            height={24}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <div className="flex min-w-0 items-baseline gap-1.5">
-      {/* Case name — truncates */}
-      <span className="min-w-0 shrink truncate text-[length:var(--text-14)] text-muted-foreground">
-        {caseItem?.name ?? "Кейс"}
-      </span>
-      {agent && (
-        <>
-          <span className="shrink-0 text-[length:var(--text-14)] text-muted-foreground/40">
-            /
-          </span>
-          {/* Agent name — never truncates */}
-          <span className="shrink-0 text-[length:var(--text-14)] font-medium text-foreground">
-            {agent.name}
-          </span>
-        </>
-      )}
-    </div>
-  );
+  // Legacy /cases/[id]
+  if (routeId && pathname.startsWith("/cases/")) {
+    const caseItem = getMockCase(routeId);
+    const agents = getMockCaseAgents(routeId);
+    const agent = agentId ? agents.find((a) => a.id === agentId) : null;
+    return (
+      <div className="flex min-w-0 items-baseline gap-1.5">
+        <span className="min-w-0 shrink truncate text-[length:var(--text-14)] text-muted-foreground">
+          {caseItem?.name ?? "Кейс"}
+        </span>
+        {agent && (
+          <>
+            <span className="shrink-0 text-[length:var(--text-14)] text-muted-foreground/40">
+              /
+            </span>
+            <span className="shrink-0 text-[length:var(--text-14)] font-medium text-foreground">
+              {agent.name}
+            </span>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export function MobileHeader() {
@@ -68,9 +133,11 @@ export function MobileHeader() {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
 
-  const caseId = params?.id as string | undefined;
+  const routeId = params?.id as string | undefined;
   const agentId = searchParams?.get("agent") ?? undefined;
+  const expertCodename = searchParams?.get("expert") ?? undefined;
   const isAgentsPage = pathname === "/agents";
+  const isCasePage = !!routeId && pathname?.startsWith("/cases/");
 
   useEffect(() => setMounted(true), []);
 
@@ -269,14 +336,19 @@ export function MobileHeader() {
           <>
             {/* Breadcrumb — flex-1, min-w-0 for truncation */}
             <div className="ml-3 flex flex-1 items-center overflow-hidden">
-              <Breadcrumb caseId={caseId} agentId={agentId} />
+              <MobileBreadcrumb
+                pathname={pathname ?? ""}
+                routeId={routeId}
+                expertCodename={expertCodename}
+                agentId={agentId}
+              />
             </div>
 
-            {/* + new agent — only when on case page WITHOUT agent selected */}
-            {caseId && !agentId && (
+            {/* + new agent — только на legacy странице кейса без агента */}
+            {isCasePage && !agentId && (
               <button
                 type="button"
-                onClick={() => router.push(`/agents?caseId=${caseId}`)}
+                onClick={() => router.push(`/agents?caseId=${routeId}`)}
                 className="ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground transition-colors"
                 aria-label="Добавить агента"
               >

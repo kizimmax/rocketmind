@@ -54,8 +54,8 @@ export default function ManagerClient() {
     <div className="flex h-full flex-1 overflow-hidden">
       {/* Центр: чат с R-менеджером */}
       <div className="relative flex min-w-0 flex-1 flex-col">
-        {/* Header: одинаковой высоты с шапкой проектов */}
-        <div className="flex h-12 shrink-0 items-center justify-end gap-4 border-b border-border px-4">
+        {/* Header: одинаковой высоты с шапкой проектов. На мобильных — в MobileHeader. */}
+        <div className="hidden h-12 shrink-0 items-center justify-end gap-4 border-b border-border px-4 lg:flex">
           <div className="flex min-w-0 items-center gap-2">
             <p className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
               {manager.role}

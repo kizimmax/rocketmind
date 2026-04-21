@@ -114,8 +114,9 @@ export default function ProjectClient({ id }: { id: string }) {
     <div className="flex h-full flex-1 overflow-hidden">
       {/* ── CENTER: expert chat ────────────────────────────────────────────── */}
       <div className="relative flex min-w-0 flex-1 flex-col">
-        {/* Header: название проекта слева, роль эксперта + аватарка + toggle справа */}
-        <div className="flex h-12 shrink-0 items-center gap-4 border-b border-border px-4">
+        {/* Header: название проекта слева, роль эксперта + аватарка + toggle справа
+            На мобильных данные отображаются в MobileHeader — тут скрываем. */}
+        <div className="hidden h-12 shrink-0 items-center gap-4 border-b border-border px-4 lg:flex">
           <p className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
             {project.name}
           </p>
