@@ -74,7 +74,6 @@ export default function ProjectClient({ id }: { id: string }) {
 
   const [activeArtifactId, setActiveArtifactId] = useState<string | null>(null);
   const [previewArtifact, setPreviewArtifact] = useState<Artifact | null>(null);
-  const [inputZoneHeight, setInputZoneHeight] = useState(0);
 
   const handleDownload = useCallback((artifact: Artifact) => {
     const body = `${artifact.title}\n\nЭксперт: ${artifact.expert_codename}\nТип: ${artifact.type}\n\n${artifact.preview}\n`;
@@ -156,33 +155,13 @@ export default function ProjectClient({ id }: { id: string }) {
             onArtifactHover={handleHoverArtifact}
             onArtifactPreview={setPreviewArtifact}
             onArtifactDownload={handleDownload}
-            onInputZoneHeight={setInputZoneHeight}
+            onArtifactsOpenRequest={() => setSheetOpen(true)}
+            artifactsScore={project.score}
           />
         ) : (
           <div className="flex flex-1 items-center justify-center text-muted-foreground">
             Выберите эксперта в левом меню
           </div>
-        )}
-
-        {/* Mobile FAB → bottom-sheet с артефактами. Поднимается над input-зоной. */}
-        {artifacts.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setSheetOpen(true)}
-            aria-label={`Артефакты: ${artifacts.length}`}
-            style={{ bottom: `${inputZoneHeight + 12}px` }}
-            className="absolute right-3 z-20 flex items-center gap-1.5 overflow-hidden rounded-sm border border-border bg-background/90 px-3 py-2 text-muted-foreground backdrop-blur-sm transition-[bottom] duration-200 hover:bg-rm-gray-1 hover:text-foreground lg:hidden"
-          >
-            <FileText className="h-4 w-4" />
-            <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">
-              Артефакты · {artifacts.length}
-            </span>
-            <span
-              aria-hidden
-              className="absolute bottom-0 left-0 h-0.5 bg-[var(--rm-yellow-100)] transition-[width] duration-500 ease-out"
-              style={{ width: `${project.score ?? 0}%` }}
-            />
-          </button>
         )}
       </div>
 
