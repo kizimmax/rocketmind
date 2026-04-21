@@ -929,7 +929,7 @@ function AddTextDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg gap-4">
+      <DialogContent className="max-w-lg gap-6">
         <DialogHeader className="pr-8">
           <DialogTitle className="font-[family-name:var(--font-heading-family)] uppercase">
             Добавьте текст
@@ -944,7 +944,7 @@ function AddTextDialog({
         >
           <X className="h-4 w-4" />
         </DialogClose>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <Input
             placeholder="Название (без расширения)"
             value={title}
@@ -962,7 +962,11 @@ function AddTextDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Отмена
           </Button>
-          <Button onClick={handleSave} disabled={!content.trim()}>
+          <Button
+            variant="secondary"
+            onClick={handleSave}
+            disabled={!content.trim()}
+          >
             Сохранить
           </Button>
         </div>
