@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Download,
+  Eye,
   FileText,
   PanelRightClose,
   PanelRightOpen,
@@ -436,12 +437,20 @@ function ArtifactCard({
       onClick={onPreview}
       onMouseEnter={() => onHover(artifact.id)}
       onMouseLeave={() => onHover(null)}
-      className={`group flex cursor-pointer flex-col overflow-hidden rounded-sm border bg-background transition-colors ${
+      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-sm border bg-background transition-colors ${
         isActive
           ? "border-[var(--rm-yellow-100)]"
           : "border-border hover:border-[var(--rm-yellow-100)]"
       }`}
     >
+      {/* Hover-подсказка «Посмотреть» в правом верхнем углу */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2 py-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-[var(--rm-yellow-fg)] opacity-0 transition-opacity group-hover:opacity-100"
+      >
+        <Eye className="h-3.5 w-3.5" />
+        Посмотреть
+      </span>
       {/* Header: иконка + название + кодовое имя эксперта */}
       <div className="flex items-center gap-2 px-3 pt-3">
         <FileText className="h-5 w-5 shrink-0 text-foreground" />
