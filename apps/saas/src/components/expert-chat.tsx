@@ -27,6 +27,8 @@ interface ExpertChatProps {
   onArtifactSelect?: (id: string) => void;
   onArtifactPreview?: (artifact: Artifact) => void;
   onArtifactDownload?: (artifact: Artifact) => void;
+  /** Сообщает родителю высоту нижней зоны (input + пикеры) в px. */
+  onInputZoneHeight?: (height: number) => void;
 }
 
 // Agent-адаптер для MessageBubble (исторический API)
@@ -52,6 +54,7 @@ export function ExpertChat({
   onArtifactSelect,
   onArtifactPreview,
   onArtifactDownload,
+  onInputZoneHeight,
 }: ExpertChatProps) {
   const agentLike = expertToAgent(expert);
   const [messages, setMessages] = useState<Message[]>(initialMessages ?? []);
@@ -59,6 +62,18 @@ export function ExpertChat({
   /** Set id-шников сообщений, добавленных в реалтайме. Только они анимируются rise/typing. */
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputZoneRef = useRef<HTMLDivElement>(null);
+
+  // Сообщаем родителю высоту нижней зоны — FAB-кнопка «Артефакты» её учитывает.
+  useEffect(() => {
+    if (!onInputZoneHeight || !inputZoneRef.current) return;
+    const el = inputZoneRef.current;
+    const report = () => onInputZoneHeight(el.getBoundingClientRect().height);
+    report();
+    const ro = new ResizeObserver(report);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [onInputZoneHeight]);
 
   // Синхронизируем при смене эксперта / загруженной истории
   useEffect(() => {
@@ -215,7 +230,7 @@ export function ExpertChat({
       </div>
 
       {/* Input zone */}
-      <div className="relative z-10">
+      <div ref={inputZoneRef} className="relative z-10">
         {scenariosToShow && scenariosToShow.length > 0 ? (
           <ScenarioPicker scenarios={scenariosToShow} onPick={pickScenario} />
         ) : showModePicker ? (
