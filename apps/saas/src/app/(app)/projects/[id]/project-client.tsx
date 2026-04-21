@@ -9,11 +9,13 @@ import {
   FileText,
   PanelRightClose,
   PanelRightOpen,
+  X,
 } from "lucide-react";
 import {
   Badge,
   Button,
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -41,6 +43,7 @@ export default function ProjectClient({ id }: { id: string }) {
   const { artifacts } = useArtifacts(id);
   const { sessions } = useExpertSessions(id);
   const [artifactsOpen, setArtifactsOpen] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // При первом открытии проекта — снимаем pulse-флаг в sidebar
   useEffect(() => {
@@ -93,6 +96,7 @@ export default function ProjectClient({ id }: { id: string }) {
     (id: string) => {
       setActiveArtifactId(id);
       if (!artifactsOpen) setArtifactsOpen(true);
+      setSheetOpen(true);
     },
     [artifactsOpen]
   );
@@ -174,6 +178,21 @@ export default function ProjectClient({ id }: { id: string }) {
             Выберите эксперта в левом меню
           </div>
         )}
+
+        {/* Mobile FAB → bottom-sheet с артефактами */}
+        {artifacts.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setSheetOpen(true)}
+            aria-label={`Артефакты: ${artifacts.length}`}
+            className="absolute bottom-24 right-3 z-20 flex items-center gap-1.5 rounded-sm border border-border bg-background/90 px-3 py-2 text-muted-foreground backdrop-blur-sm transition-colors hover:bg-rm-gray-1 hover:text-foreground lg:hidden"
+          >
+            <FileText className="h-4 w-4" />
+            <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em]">
+              Артефакты · {artifacts.length}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* ── RIGHT: artifacts panel (collapsible) ───────────────────────────── */}
@@ -217,6 +236,41 @@ export default function ProjectClient({ id }: { id: string }) {
           </div>
         </aside>
       )}
+
+      {/* Mobile bottom-sheet — симметрично с десктопной панелью */}
+      <Dialog open={sheetOpen} onOpenChange={setSheetOpen}>
+        <DialogContent className="fixed left-0 right-0 top-auto bottom-0 flex h-[85vh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-t-lg rounded-b-none border-0 border-t border-border p-0 lg:hidden data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full">
+          <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
+            <DialogTitle className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-normal uppercase tracking-[0.08em] text-muted-foreground">
+              Артефакты · {artifacts.length}
+            </DialogTitle>
+            <DialogClose
+              aria-label="Закрыть"
+              className="flex h-8 w-8 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-rm-gray-1 hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </DialogClose>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3">
+            {artifacts.length === 0 ? (
+              <EmptyArtifacts />
+            ) : (
+              <div className="space-y-2">
+                {artifacts.map((a) => (
+                  <ArtifactCard
+                    key={a.id}
+                    artifact={a}
+                    isActive={activeArtifactId === a.id}
+                    onSelect={() => setActiveArtifactId(a.id)}
+                    onPreview={() => setPreviewArtifact(a)}
+                    onDownload={() => handleDownload(a)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <ArtifactPreviewDialog
         artifact={previewArtifact}
