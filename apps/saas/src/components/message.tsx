@@ -162,17 +162,17 @@ function AssistantMessage({
       <div className="w-full lg:max-w-[75%] min-w-0 space-y-1">
         {agent && (
           <div className="flex items-center gap-1.5 mb-1">
-            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-background">
+            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-background">
               {avatarSrc ? (
                 <Image
                   src={avatarSrc}
                   alt={agent.name}
-                  width={32}
-                  height={32}
+                  width={64}
+                  height={64}
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-[10px] font-bold">
+                <span className="flex h-full w-full items-center justify-center text-[length:var(--text-14)] font-bold">
                   {getInitials(agent.name)}
                 </span>
               )}
@@ -443,9 +443,11 @@ function ChatArtifactCard({
       </div>
       {/* Body: превью (copy 12) + кнопка скачивания справа */}
       <div className="flex items-stretch pt-3">
-        <p className="rm-clamp-3 min-w-0 flex-1 px-3 pb-4 font-[family-name:var(--font-caption-family)] text-[length:var(--text-12)] font-normal leading-[1.36] tracking-[0.02em] text-secondary-foreground/70">
-          {artifact.preview}
-        </p>
+        <div className="min-w-0 flex-1 px-3 pb-4">
+          <p className="rm-clamp-3 font-[family-name:var(--font-caption-family)] text-[length:var(--text-12)] font-normal leading-[1.36] tracking-[0.02em] text-secondary-foreground/70">
+            {artifact.preview}
+          </p>
+        </div>
         {onDownload && (
           <button
             type="button"
