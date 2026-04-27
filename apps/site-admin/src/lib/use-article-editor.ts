@@ -128,6 +128,7 @@ const FIELD_LABELS: Partial<Record<keyof Article, string>> = {
   expertSlug: "Автор",
   tagIds: "Теги",
   keyThoughts: "Ключевые мысли",
+  body: "Тело статьи",
   metaTitle: "Meta Title",
   metaDescription: "Meta Description",
 };

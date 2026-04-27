@@ -954,6 +954,36 @@ code {
   }
 }
 
+/* ── Article body gallery — crossfade+slide on tab switch ──
+   Направление задаётся тем, куда кликнули: если в таб правее текущего — обе
+   картинки уезжают справа налево (вход: +40px → 0; выход: 0 → −40px).
+   Если в таб левее — обе едут слева направо. Duration + easing из DS. */
+@keyframes rm-gallery-enter-right {
+  from { transform: translateX(40px);  opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes rm-gallery-enter-left {
+  from { transform: translateX(-40px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes rm-gallery-exit-left {
+  from { transform: translateX(0);     opacity: 1; }
+  to   { transform: translateX(-40px); opacity: 0; }
+}
+@keyframes rm-gallery-exit-right {
+  from { transform: translateX(0);     opacity: 1; }
+  to   { transform: translateX(40px);  opacity: 0; }
+}
+/* Подпись появляется синхронно со входящим медиа — с той же задержкой. */
+@keyframes rm-gallery-caption-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-gallery-enter,
+  .rm-gallery-exit { animation: none !important; }
+}
+
 /* ── Message rise — real-time only (DS §8.15) ──
    Применяется к вновь добавленным сообщениям в чате (user-ответ,
    assistant-ответ). НЕ применяется к исторически загруженным сообщениям. */

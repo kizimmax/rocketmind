@@ -1,4 +1,4 @@
-import type { Article, MediaTag } from "./types";
+import type { Article, GlossaryTerm, MediaTag } from "./types";
 
 /**
  * Стартовый набор тегов для раздела МЕДИА.
@@ -33,6 +33,9 @@ export function createSeedArticles(_tags: MediaTag[]): Article[] {
     coverImageData: undefined,
     publishedAt: new Date(2025, 4 - offset, 16).toISOString().slice(0, 10),
     body: [],
+    cardVariant: "default",
+    pinned: false,
+    pinnedOrder: 0,
     metaTitle: "",
     metaDescription: "",
     createdAt: new Date().toISOString(),
@@ -74,4 +77,57 @@ export function createSeedArticles(_tags: MediaTag[]): Article[] {
       keyThoughts: [],
     },
   ];
+}
+
+/**
+ * Стартовые термины для глоссария — минимальный набор, чтобы виджет и страница
+ * /media/glossary не были пустыми в демо.
+ */
+export function createSeedGlossaryTerms(): GlossaryTerm[] {
+  const now = new Date().toISOString();
+  const term = (title: string, tagIds: string[] = []): GlossaryTerm => ({
+    id: `glossary/${slugifyTerm(title)}`,
+    slug: slugifyTerm(title),
+    status: "published",
+    order: 0,
+    title,
+    tagIds,
+    metaTitle: `${title} | Глоссарий Rocketmind`,
+    metaDescription: "",
+    createdAt: now,
+    updatedAt: now,
+  });
+  return [
+    term("A/B тест", ["ai-products"]),
+    term("Аватар", ["biz-design"]),
+    term("Авитолог"),
+    term("Автообзвон клиентов роботом", ["ai-products"]),
+    term("Авторизация и аутентификация", ["ai-products"]),
+    term("Адаптивная вёрстка", ["biz-design"]),
+    term("Алиас"),
+    term("Альтернативная стоимость", ["strategy"]),
+    term("Амбассадор бренда", ["strategy"]),
+    term("Анализ рынка", ["strategy"]),
+    term("Апдейт"),
+    term("Арбитраж трафика", ["strategy"]),
+    term("База данных (БД)", ["ai-products"]),
+    term("Бан"),
+    term("Баннер"),
+    term("Бенчмаркинг", ["strategy"]),
+  ];
+}
+
+const RU_MAP: Record<string, string> = {
+  а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"i",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"c",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya",
+};
+function slugifyTerm(input: string): string {
+  const lower = input.toLowerCase().trim();
+  let out = "";
+  for (const ch of lower) out += RU_MAP[ch] ?? ch;
+  return out
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .substring(0, 60);
 }

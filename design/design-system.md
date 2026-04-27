@@ -4701,24 +4701,24 @@ Floating glass-панель со стрелкой-выноской для спи
 #### Анатомия
 
 ```
-<article> (w-[350px], rounded-sm, border --rm-gray-3, bg rgba(10,10,10,0.8), backdrop-blur-10, p-8)
+<article> (w-full, rounded-sm, border --rm-gray-3, p-8)
 ├── <a> overlay (absolute inset-0, для клика по всей карточке)
 ├── <arrow> (absolute right-2 top-2, 40×40, hover: --rm-yellow-100)
-├── <image> (h-224, gradient-overlay 0→72%→100%, mb-[-53px] overlap)
-├── <tags> (mt-[-24px], flex-wrap, gap 4×8, Tag size=s)
-└── <content> (mt-7, gap-5)
-    ├── <title> H4 24 UPPER --rm-gray-fg-main
-    ├── <description> Copy 14 --rm-gray-fg-sub
-    └── <Author variant="short">
+├── <image> (h-224, rounded-sm, gradient-overlay 0→72%→100%)
+├── <tags> (-mt-10, flex-row-reverse flex-wrap-reverse, gap 4×8, Tag size=s)
+│    └── растут ВВЕРХ на обложку при переполнении строки
+└── <content> (mt-7, flex-1, flex-col gap-5)
+    ├── <title> H4 24 UPPER --rm-gray-fg-main (clamp до 3 строк, растёт вниз)
+    ├── <description> Copy 14 --rm-gray-fg-sub (адаптивный clamp — §11.6.1)
+    └── <Author variant="short"> (mt-auto — прибит к нижнему краю)
 ```
 
 #### Токены
 
 | Свойство | Значение |
 |----------|---------|
-| Ширина | `350px` fixed |
-| Фон | `rgba(10,10,10,0.8)` + `backdrop-filter: blur(10px)` |
-| Border | `1px --rm-gray-3` |
+| Ширина | `100%` (определяется сеткой родителя) |
+| Фон | transparent — только бордер 1px `--rm-gray-3` (без fill, без blur) |
 | Padding | `32px` |
 | Image height | `224px` |
 | Image overlap | `margin-bottom: -53px` (контент заходит на картинку) |
@@ -4730,6 +4730,318 @@ Floating glass-панель со стрелкой-выноской для спи
 - Клик по всей карточке → переход на `href`
 - Hover на карточке → стрелка становится жёлтой
 - Число тегов ограничено `maxTags` (default 3), лишние отсекаются
+
+---
+
+### 11.7 ArticleBody (Тело статьи)
+
+Структура тела статьи на `/media/[slug]`: сквозной поток типизированных блоков (`h2` / `h3` / `h4` / `paragraph` / `quote` / `image` / `gallery` / `video`) с единой логикой вертикального ритма. Семантика `<h2>` / `<h3>` / `<h4>` сохраняется (ToC, SEO), визуальный размер смещён на один шаг вниз относительно токенов шапки: `h2` блок использует стиль DS `H3`, `h3` блок — DS `H4`, `h4` блок — DS `H5`. Медиа-блоки (`image`, `gallery`, `video`) отделяются фиксированным отступом 40px от соседних блоков в обе стороны. Компонент экспортируется из `@rocketmind/ui` как `ArticleBody`.
+
+#### Сетка страницы (desktop)
+
+Тело вписано в 3-колоночный grid, охватывающий 4 визуальные колонки макета:
+
+| Колонка | Ширина | Содержимое |
+|---------|--------|------------|
+| 1 (sticky) | `268px` | `ArticleNav` — дублирует блоки `h2` как ToC |
+| 2–3 (читабельная зона) | `minmax(0, 800px)` | `ArticleBody` |
+| 4 (зарезервирована) | `344px` | Пустой слот под заметки/ссылки (следующая итерация) |
+
+На `< lg` grid схлопывается в одну колонку (ToC и правый слот скрыты), тело занимает всю ширину.
+
+#### Типографика блоков
+
+| Блок (admin) | Семантика | Desktop | Mobile | Токен DS |
+|--------------|-----------|---------|--------|----------|
+| H2 (заголовок секции) | `<h2 id="...">` | Heading/H3 — Roboto Condensed 700, 32/1.12, UPPER, tracking −1% | Mobile/H3 — 28/1.16, UPPER, tracking −1.5% | `.h3` |
+| H3 (подзаголовок) | `<h3>` | Heading/H4 — Roboto Condensed 700, 24/1.16, UPPER, tracking −1% | Mobile/H4 — 20/1.20, UPPER, tracking −1% | `.h4` |
+| H4 (под-подзаголовок) | `<h4>` | Heading/H5 — Roboto Condensed 700, 18/1.16, UPPER, tracking −1% | Mobile/H5 — 16/1.20, UPPER, tracking −1% | `.h5` |
+| Paragraph | `<p>` | Copy 18 — Roboto 400, 18/1.20 | Copy 18 | Copy 18 |
+| Quote | `<blockquote>` | Label 24 — Loos Condensed 500, 24/1.16, UPPER, tracking +2%, border-left 2px `#FFCC00`, padding-left 16, padding-Y 8 | Label 18 — 18/1.12, UPPER, tracking +2%, border-left 1px, padding-left 16, padding-Y 4 | Label 24 / Label 18 |
+
+Цвет текста всех блоков — `--rm-gray-fg-main` (#F0F0F0). Внутри `paragraph` поддерживаются markdown-ссылки (`[текст](url)`) — underline `--rm-gray-fg-main`, hover → `--rm-yellow-100`.
+
+#### Вертикальный ритм (отступы)
+
+Отступ рассчитывается **между соседними блоками** по правилу «тип-предыдущего → тип-текущего». Реализуется как `margin-top` текущего блока (первый блок в `ArticleBody` имеет `0`). Других отступов между блоками нет.
+
+**Desktop:**
+
+| prev → this | h2 | h3 | h4 | paragraph | quote |
+|-------------|-----|-----|-----|-----------|-------|
+| (первый блок) | 0 | 0 | 0 | 0 | 0 |
+| h2 | — | 32 | 32 | 32 | 32 |
+| h3 | 56 | — | 16 | 16 | 32 |
+| h4 | 56 | 32 | 16 | 16 | 32 |
+| paragraph | 56 | 32 | 32 | 16 | 32 |
+| quote | 56 | 32 | 32 | 32 | — |
+
+**Mobile:**
+
+| prev → this | h2 | h3 | h4 | paragraph | quote |
+|-------------|-----|-----|-----|-----------|-------|
+| (первый блок) | 0 | 0 | 0 | 0 | 0 |
+| h2 | — | 32 | 32 | 32 | 32 |
+| h3 | 44 | — | 16 | 16 | 32 |
+| h4 | 44 | 32 | 16 | 16 | 32 |
+| paragraph | 44 | 32 | 32 | 16 | 32 |
+| quote | 44 | 32 | 32 | 32 | — |
+
+Ключевые правила словами:
+- Перед `h2` всегда `56px` desktop / `44px` mobile (начало новой секции).
+- После `h2` всегда `32px` до любого следующего блока.
+- `h3` → `h4` и `h4` → `h4` = `16px` (тесная сборка под-подзаголовков внутри одного sub-блока, по Figma).
+- `h4` → `paragraph` = `16px` (параграф под под-подзаголовком).
+- `paragraph` → `h3` / `h4` = `32px` (начало нового sub-блока после параграфа предыдущего).
+- `paragraph` → `paragraph` = `16px` (плотная читаемость).
+- `quote` всегда с воздухом `32px` с обеих сторон (кроме случая «первый блок»).
+
+#### Использование
+
+```tsx
+import { ArticleBody, type ArticleBodyBlock } from "@rocketmind/ui";
+
+const blocks: ArticleBodyBlock[] = [
+  { id: "1", type: "h2", data: { text: "Начало работы" } },
+  { id: "2", type: "paragraph", data: { text: "Летом 2015 года..." } },
+  { id: "3", type: "quote", data: { text: "Портал — единая точка контакта" } },
+  { id: "4", type: "h3", data: { text: "Подзаголовок второго уровня" } },
+  { id: "5", type: "h4", data: { text: "Подзаголовок третьего уровня" } },
+  { id: "6", type: "paragraph", data: { text: "Описание..." } },
+];
+
+<ArticleBody blocks={blocks} />
+```
+
+Блоки `h2` автоматически получают `id` (`slugify(text)`) — его использует `ArticleNav` для scrollspy и якорных ссылок.
+
+#### Video-блок
+
+Блок `video` — `{ type: "video", data: { src, caption?, poster? } }`. Рендерится через компонент `VideoPlayer` (см. §11.8) во всю ширину колонки с аспектом 16/9. Загрузка в админке — тот же `POST /api/articles/[slug]/uploads` с `kind: "video"`, принимает `mp4 / webm / mov / ogv`, максимум 50MB; публичный URL — `/media/uploads/<slug>/<hash>.<ext>`. `caption` опциональна: если пустая — не рендерится.
+
+#### Gallery-блок (смешанные табы)
+
+Блок `gallery` — `{ type: "gallery", data: { items: [{ id, title, src, kind? }] } }`. Табы могут содержать изображения **и/или** видео в одном компоненте — поле `kind` у элемента: `"image"` (default для обратной совместимости) или `"video"`. Для image-табов работает slide-анимация между кадрами + лёгкий overlay `bg-black/20`. Для video-табов — встроенный `VideoPlayer` вместо `<img>`, без slide-анимации и без overlay (dimming мешал бы видео-превью). Загрузка в админке авто-детектит тип по MIME: изображения → `kind: "preview"` (до 4MB), видео → `kind: "video"` (до 50MB).
+
+---
+
+### 11.8 VideoPlayer (Плеер видео)
+
+Плеер для `type: "video"` в теле статьи и самостоятельного использования. Построен поверх нативного `<video>` (HTML5 Media API — декодирование, буферизация, Fullscreen API, keyboard-a11y), контролы — кастомные на Tailwind + токенах DS. Экспортируется из `@rocketmind/ui` как `VideoPlayer`.
+
+#### Структура
+
+| Элемент | Поведение |
+|---------|-----------|
+| Контейнер | `aspect-ratio: 16/9` по умолчанию (проп `aspectRatio`). `bg-black`, `rounded-[4px]`. Fullscreen → `rounded-none`. |
+| Video | `absolute inset-0`, `object-contain`. Клик — toggle play/pause. |
+| Центральная кнопка Play | 64×64, круглая, `bg-[--rm-yellow-100]` + чёрная стрелка. Видна на паузе и до старта. Hover `scale 1.06`, active `scale 0.98`. |
+| Bottom overlay | Градиент `from-black/75 via-black/40 to-transparent`, `pt-6 pb-3 px-3` (md: `px-4 pb-4`). Автоскрытие через 2000ms при воспроизведении, показ на hover/mousemove/focus/scrub. |
+| Scrubber | Track 3px (5px на hover/scrub), `bg-white/20`. Buffered — `bg-white/35`. Played — `bg-[--rm-yellow-100]`. Thumb 12px, жёлтый, появляется на hover. |
+| Кнопки контролов | 32×32 (md: 36×36), `text-[#F0F0F0]`. Hover → `bg-white/10` + `text-[--rm-yellow-100]`. Иконки lucide — `Play` / `Pause` / `Volume2` / `VolumeX` / `Maximize` / `Minimize`, 16px (md: 20px). |
+| Таймер | `font-mono`, 11px (md: 12px), uppercase. Формат `mm:ss` или `h:mm:ss`. |
+| Volume slider | 72px, только desktop (`md:flex`). Белая заливка (играющий уровень), thumb 10px. |
+| Loader | `Loader2` 40px, `text-[#F0F0F0]/90`, анимированный spin, по центру во время буферизации. |
+
+#### Клавиатура
+
+| Клавиша | Действие |
+|---------|----------|
+| `Space` / `K` | Play/Pause |
+| `←` / `→` | Перемотка ±5s |
+| `↑` / `↓` | Громкость ±5% |
+| `M` | Mute toggle |
+| `F` | Fullscreen toggle |
+| `Home` / `End` | Перемотка в начало/конец |
+
+Фокус ловится контейнером (`tabIndex={0}`), шорткаты игнорируются когда фокус в `input/textarea/select`. Focus-ring — `ring-2 ring-[--rm-yellow-100]`.
+
+#### Токены
+
+| Назначение | Токен |
+|------------|-------|
+| Акцент (play trigger, прогресс, thumb) | `--rm-yellow-100` (#FFCC00) |
+| Иконки, таймер | `#F0F0F0` |
+| Hover-фон | `rgb(255 255 255 / 0.1)` |
+| Track неиграющая часть | `rgb(255 255 255 / 0.2)` |
+| Buffered | `rgb(255 255 255 / 0.35)` |
+| Градиент оверлея | `from-black/75 via-black/40 to-transparent` |
+| Radius | `4px` (0 в fullscreen) |
+| Easing | `var(--ease-standard)` |
+| Duration | `var(--duration-fast)` (hover/thumb), `var(--duration-standard)` (скрытие контролов) |
+
+#### Использование
+
+```tsx
+import { VideoPlayer } from "@rocketmind/ui";
+
+<VideoPlayer
+  src="/media/uploads/my-article/abc123.mp4"
+  poster="/media/uploads/my-article/poster.jpg"
+/>
+```
+
+#### API
+
+| Проп | Тип | Дефолт | Описание |
+|------|-----|--------|----------|
+| `src` | `string` | — | URL видео. Обязательный. |
+| `poster` | `string` | — | Постер до первого play. |
+| `aspectRatio` | `number` | `16/9` | Аспект контейнера. |
+| `className` | `string` | — | Классы контейнера. |
+| `videoClassName` | `string` | — | Классы `<video>` (по умолчанию `object-contain`). |
+| `preload` | `"none" \| "metadata" \| "auto"` | `"metadata"` | Проброс в `<video>`. |
+| остальные | `VideoHTMLAttributes<HTMLVideoElement>` | — | Пробрасываются (кроме `controls` / `onError`). |
+
+#### Правила
+
+- Плеер всегда тёмный (чёрный фон, светлые контролы) независимо от цветовой схемы страницы — как и `Gallery`.
+- Не использовать `controls` атрибут нативного `<video>` — он перехватывается внутри и подменяется кастомным UI.
+- Для видео в теле статьи использовать блок `{ type: "video", data: { src, caption? } }` в `ArticleBody` — он сам оборачивает в `<figure>` с `<figcaption>` для подписи.
+
+---
+
+### 11.9 Aside: Logos (Правая колонка — логотипы)
+
+Виджет правой колонки секции статьи, который выводит вертикальный список монохромных логотипов клиентов/партнёров. Рендерится на сайте в `apps/site/src/components/media/article-page-client.tsx` — ветка `aside.kind === "logos"`. Редактируется в админке через `AsideLogosEditor`.
+
+#### Визуал
+
+| Параметр | Значение |
+|----------|----------|
+| Цвет | `--rm-gray-fg-sub` (#666666 light / #939393 dark) — один токен на все лого |
+| Высота каждого лого | 32px (фиксированная) |
+| Ширина каждого лого | настраивается индивидуально, 80–320px (шаг 16px), default 160 |
+| Вертикальный gap | 32px desktop (`md:gap-8`) / 24px mobile (`gap-6`) |
+| Выравнивание | по левому краю колонки (`mask-position: left center`) |
+| Источник цвета | `backgroundColor`, лого работает как `mask-image` поверх — полная совместимость с любым SVG/PNG, не требует currentColor в исходнике |
+
+#### Библиотека логотипов
+
+Общая, shared между всеми статьями. Admin `GET /api/logos` возвращает элементы с полем `group: "rocketmind" | "partners"` в двух секциях:
+
+- **Rocketmind** — наши лого (`ROCKETMIND_LOGOS` в `/api/logos/route.ts`): 4 варианта `text_logo_*` (light/dark × ru/en) + `/images/about/rocketmind-logo-dark.svg`. Фиксированный список, чтобы случайные ассеты из `public/` не попадали в библиотеку.
+- **Партнёры** — мерж `apps/site/public/media/logos/` (загрузки админа) и `apps/site/public/clip-logos/` (существующий набор для `LogoMarquee`). Дедуп по имени, приоритет у `media/logos/`.
+
+Загрузка нового SVG — `POST /api/logos` с `{ dataUrl, fileName }`, принимает только `image/svg+xml`, до 512KB; файл сохраняется в `/media/logos/<stem>-<hash>.svg` и попадает в группу «Партнёры». В пикере админки две секции с моно-заголовками «Rocketmind» и «Партнёры», каждая — сетка 3 колонки; поиск фильтрует обе группы одновременно.
+
+#### Админский UI
+
+Блок «Логотипы» в правой колонке секции (кнопка «+ Добавить» → пункт «Логотипы» в дропдауне). Внутри:
+- Список добавленных лого. Каждая строка: монохромное превью, пара иконок-луп `ZoomOut` / `ZoomIn` (lucide) для управления шириной, численное значение ширины (font-mono, `tabular-nums`), крестик удаления.
+- Кнопка «+ Добавить логотип» → открывает `LogoPickerDialog` с:
+  - загрузкой SVG (до 512KB)
+  - поиском по имени
+  - сеткой 3 колонки с превью из библиотеки
+  - hover-эффект плитки: заливка меняется на `--rm-violet-100` (визуальная подсветка выбора)
+
+Шаг зума — 16px (константа `LOGO_ZOOM_STEP`), границы — `LOGO_MIN_WIDTH` / `LOGO_MAX_WIDTH`, значение по умолчанию — `LOGO_DEFAULT_WIDTH` (экспортируются из `aside-item-editors.tsx`).
+
+#### Схема данных
+
+```ts
+{
+  id: string,
+  kind: "logos",
+  logos: Array<{ id: string; src: string; widthPx: number }>
+}
+```
+
+Figma: node 1556-26041 (Website Rocketmind) — исходный макет колонки.
+
+---
+
+### 11.10 ExpertQuote (Цитата эксперта)
+
+Блок цитаты эксперта, привязанный к **концу секции** статьи. Редактируется в админке внутри секции (под body-editor'ом), в одной секции может быть несколько цитат — они «склеиваются» в единый монолитный блок с общей рамкой и горизонтальными разделителями между цитатами. Рендерится из `@rocketmind/ui` компонентом `ExpertQuoteStack`.
+
+#### Варианты раскладки
+
+| Вариант | Когда применяется | Внутренняя структура |
+|---------|-------------------|----------------------|
+| `mobile` | Ширина < `lg` (1024px) | Column-стэк. Верх — text-group (label+text) padding 20, gap 16. Горизонтальный разделитель 1px #404040. Низ — author-group (row avatar 64 + name, под ним role) padding 20. Label 16 uppercase. |
+| `narrow` | Desktop, body-блоки секции **короче** aside-кластера | Одна column-рамка. Padding 32, gap 24. Сверху label 18 (uppercase) + text. Ниже автор (row avatar 72 + column[name, role]). |
+| `wide` | Desktop, body-блоки **длиннее или равны** aside-кластеру | Row-split: слева текст (2fr, padding 32), справа автор (1fr, padding 32), вертикальный разделитель между. Автор выравнивается `justify-between`: сверху row[avatar 72 + name], снизу role. |
+
+Режим `wide` vs `narrow` выбирается на клиенте в `useLayoutEffect` в `apps/site/src/components/media/article-page-client.tsx`:
+
+```ts
+const bbH = bodyBlocks.getBoundingClientRect().height   // высота body БЕЗ цитат
+const aiH = asideInner.getBoundingClientRect().height    // высота aside-inner
+layout = bbH >= aiH ? "wide" : "narrow"
+```
+
+Измеряем body ровно по `[data-section-body-blocks]` (без цитаты) — так высота самой цитаты не влияет на решение, циклов нет. Оба варианта всегда в DOM, JS переключает `display: none` через `[data-quote-variant]` селекторы.
+
+**Известное ограничение:** в текущей реализации оба варианта (wide и narrow) рендерятся ВНУТРИ body-колонки (`lg:col-span-2` из 4-колоночной сетки). Wide-вариант использует внутреннюю 2-колоночную раскладку, но сам блок не выходит за пределы body-колонки в aside-колонку. Обусловлено тем, что текущая раскладка статьи имеет независимые sticky-потоки body и aside, и true-full-width перекрывал бы sticky-aside при скролле. Если потребуется расширить до реальной ширины `body + aside`, нужен per-section grid-refactor с `grid-column: 2 / -1` для quote-row.
+
+#### Склейка нескольких цитат
+
+Всегда в одной обёртке с `border border-[#404040] rounded-[4px] overflow-hidden`. Между цитатами — горизонтальная линия 1px #404040. Нет gap'ов между цитатами — визуально одна сетка.
+
+- В `mobile` каждая цитата = 2 строки (text-group, divider, author-group). Стэк цитат = `(2N-1)` линий, N блоков.
+- В `narrow` каждая цитата = 1 блок (column). Стэк = N блоков с линиями между.
+- В `wide` каждая цитата = 1 строка из 2-х ячеек (text | author) с vertical divider. Стэк = N таких строк с горизонтальными линиями между.
+
+#### Токены
+
+| Назначение | Токен |
+|------------|-------|
+| Рамка + divider | `#404040` |
+| Фон | `#0A0A0A` |
+| Label | `#F0F0F0` (основной текст) |
+| Text (расширенный) | `#939393` (muted) |
+| Name | `#F0F0F0` |
+| Role | `#939393` |
+| Шрифты | Label — `--font-mono-family` (Label 18 desktop / Label 16 mobile), Text — системный Copy 16, Name — `--font-heading-family` H4, Role — Copy 14 |
+| Padding | 32 desktop / 20 mobile |
+| Gap внутри группы | 24 desktop / 16 mobile |
+| Avatar | 72×72 desktop / 64×64 mobile, круглый |
+| Radius рамки | 4px |
+
+#### Схема данных
+
+```ts
+interface ArticleSectionQuote {
+  id: string;
+  expertSlug?: string;  // опционально — источник name/role/avatar из content/experts/
+  name?: string;        // ручной override (и обязателен, если expertSlug не задан)
+  role?: string;
+  avatarUrl?: string;
+  label?: string;       // UPPERCASE тезис (Label)
+  text?: string;        // расширенная реплика (Copy)
+}
+```
+
+Валидация в парсере `apps/site/src/lib/articles.ts`:
+- минимум одно из `label` / `text` должно быть заполнено;
+- должен быть источник автора — либо `expertSlug`, либо ручное `name`.
+
+Пустые/неполные цитаты отфильтровываются без ошибки.
+
+Резолвинг на уровне страницы: `collectResolvedQuoteExperts(article)` строит map `slug → { name, role, avatarUrl }` из content/experts/. Ручные поля в цитате имеют приоритет над данными эксперта.
+
+#### Использование
+
+```tsx
+import { ExpertQuoteStack } from "@rocketmind/ui";
+
+<ExpertQuoteStack
+  quotes={[
+    {
+      id: "q1",
+      name: "Юрий Солодовников",
+      role: "Продюсер",
+      avatarUrl: "/images/experts/yuriy.jpg",
+      label: "Короткий тезис",
+      text: "Расширенный текст цитаты…",
+    },
+  ]}
+  variant="wide"  // mobile | narrow | wide
+/>
+```
+
+Figma: desktop wide — node 1372-11547, desktop narrow — node 1565-26977, mobile — node 1441-33742.
 
 ---
 
@@ -5006,3 +5318,162 @@ const anchorRef = useRef<HTMLImageElement>(null);
 - Требует `html2canvas` (динамический импорт, не влияет на бандл).
 - Автоматически переключается в статичный режим при `prefers-reduced-motion: reduce`.
 - Параллакс активируется только на устройствах с `pointer: fine`.
+
+---
+
+### 11.6.1 ArticleCard — wide вариант и адаптивная типографика
+
+К §11.6 добавляется второй вариант карточки — `wide` — используемый в
+сетке `/media` для визуально акцентных материалов (занимает 2 колонки из 3).
+
+#### Анатомия `wide`
+
+```
+<article> (w-full, min-h-[492px], rounded-sm, border --rm-gray-3, p-8)
+├── <a> overlay (клик по всей карточке)
+├── <top-row> (flex, gap-24)
+│   ├── <cover> (flex-[3], aspect 4/3, rounded-sm, без gradient-overlay)
+│   └── <right-col> (flex-[2], flex-col, justify-between)
+│       ├── <tags> (stacked вертикально справа, Tag size=s)
+│       └── <Author variant="short">
+└── <content> (mt-7)
+    ├── <title> H4 24 UPPER — clamp до 2 строк
+    └── <description> Copy 14 sub — clamp адаптивно (см. ниже)
+```
+
+Обложка в `wide` варианте **без gradient-overlay** и **без overlap** (в отличие
+от `default`), поскольку контент не заходит на картинку — он занимает нижний
+блок карточки целиком.
+
+#### Адаптивная типографика (оба варианта)
+
+Высота карточки фиксирована: `default → 520px`, `wide → 492px`. Этот инвариант
+обязателен — ряды сетки `/media` должны быть визуально ровными. Чтобы удерживать
+одинаковую высоту при разной длине заголовков, компонент измеряет фактическое
+число строк заголовка (после `line-clamp: maxTitleLines`) и задаёт дополняющее
+число строк описанию.
+
+| Вариант | Title lines (измеренные) | Desc clamp | Условие |
+|---------|--------------------------|------------|---------|
+| default | 1                        | 5          | Короткий заголовок — даём максимум воздуха описанию |
+| default | 2                        | 3          | |
+| default | 3                        | 2          | Максимум 3 строки заголовка, описание 1–2 |
+| wide    | 1                        | 2          | |
+| wide    | 2                        | 1          | Максимум 2 строки заголовка, описание 1 строка |
+
+Измерение через `ResizeObserver` на `<h3>`: после отработки `-webkit-line-clamp`
+считается `offsetHeight / line-height`. Значение кэшируется в state, описанию
+присваивается через inline-style `-webkit-line-clamp`.
+
+---
+
+### 11.11 MediaLayout (4-колоночная сетка `/media`)
+
+Страница `/media` на десктопе — 4 колонки: 3 под сетку карточек + 1 правая
+колонка с `GlossaryWidget`.
+
+```
+<div class="grid grid-cols-1 gap-2 lg:grid-cols-[1fr_344px]">
+  <div> (cards area)
+    <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-2">
+      <ArticleCard ... />                    ← default (span 1)
+      <div class="xl:col-span-2"> <ArticleCard variant="wide" /> </div>
+      ... 
+    </div>
+    [Показать ещё] → +12 карточек
+  </div>
+  <div class="hidden lg:block">
+    <div class="sticky top-28"> <GlossaryWidget /> </div>
+  </div>
+</div>
+```
+
+Правила:
+- Сортировка карточек: `pinned` asc по `pinnedOrder` → остальные desc по `publishedAt`.
+- Широкая карточка на десктопе (`xl:col-span-2`) и на tablet (`sm:col-span-2`)
+  занимает две колонки. На mobile (`grid-cols-1`) — span теряется естественно.
+- Правая колонка (344px) скрыта на `< lg`; ссылка «ГЛОССАРИЙ →» появляется в hero.
+- Пагинация `/media`: +12 за раз.
+- Поиск: по `title`, `description`, телу (`blocks.data.text` + `blocks.data.caption`)
+  и тегам (по label после резолва). Case-insensitive, match = substring.
+
+---
+
+### 11.12 GlossaryWidget (правая колонка `/media`)
+
+Aside-панель `@rocketmind/ui` с превью глоссария.
+
+#### Анатомия
+
+```
+<aside> (rounded-sm, bg --rm-gray-1, p-6, gap-5)
+├── <a href="/media/glossary"> (header row)
+│   ├── H4 24 UPPER "ГЛОССАРИЙ"
+│   └── ArrowUpRight 20×20 (→ --rm-yellow-100 on hover)
+├── <Search input> (поиск по title терминов)
+└── <groups> (gap-5)
+    ├── <group>
+    │   ├── H5 18 UPPER (буква, color --rm-yellow-100)
+    │   └── <ul> (gap-1.5)
+    │       └── <a> Copy 14 sub → --rm-yellow-100 on hover
+    └── ...
+```
+
+Группировка: первая буква термина → uppercase. Ё схлопывается в Е.
+Сортировка терминов внутри группы — `localeCompare(ru)`. Поиск —
+case-insensitive substring по `title`.
+
+---
+
+### 11.13 Страница Глоссарий (`/media/glossary`)
+
+Полная страница терминов.
+
+#### Структура
+
+| Секция | Содержимое |
+|--------|------------|
+| Back link | `← НАЗАД` (mono caption-12) → `/media` |
+| H1 | «ГЛОССАРИЙ» — тот же стиль, что H1 `/media` |
+| Search | Input с иконкой (substring по `title`) |
+| Tag filter | Полоса чипсов (`Все термины` + теги) |
+| Script toggle | `А-Я` / `A-Z` (H3 32 UPPER), active = `--rm-gray-fg-main`, inactive = sub |
+| List | `columns-1 sm:columns-2 lg:columns-3 xl:columns-4` (CSS multi-column, `column-fill: balance`) |
+
+#### Script toggle — поведение
+
+Переключатель **фильтрует по скрипту первой буквы**:
+- `А-Я` — только термины, начинающиеся на кириллицу (default).
+- `A-Z` — только на латиницу (`A/B тест`, `LLM`, `AI`).
+
+Это не языковая метка термина, а чисто алфавитный фильтр. Поиск/tag-фильтр
+применяются ПОВЕРХ script-toggle (AND). Термины с начальным символом не из
+букв попадают в bucket `latin`.
+
+#### Letter-group (общий с виджетом)
+
+Буква-заголовок H5 18 UPPER `--rm-yellow-100`, под ней `<ul>` с терминами
+Copy 14 `--rm-gray-fg-sub`. Hover — `--rm-yellow-100`. Внутри `column-count`
+каждая группа обёрнута в `break-inside: avoid`, чтобы буква не разрывалась.
+
+---
+
+### 11.14 Article pinning & cardVariant (модель данных)
+
+Поля на `Article`, влияющие на списочную страницу `/media`:
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `pinned` | bool | Закреплена ли статья на `/media`. Закреплённые идут первыми. |
+| `pinnedOrder` | number | Ручной порядок среди закреплённых (asc). DnD в админке меняет это поле. |
+| `cardVariant` | `"default" \| "wide"` | Визуальный вариант карточки (§11.6 / §11.6.1). |
+
+Админ-контролы:
+- Редактор статьи (`apps/site-admin/src/components/media/article-editor.tsx`) —
+  секция «Отображение в списке /media» с двумя `Switch`-тогглами.
+- Карточка статьи (`article-admin-card.tsx`) — пункты «Закрепить/Открепить» и
+  «Сделать широкой/обычной» в dropdown-меню + бейджи `Закреп` / `2 кол` на
+  обложке.
+- Список статей (`media-view.tsx`) — закреплённые вынесены в отдельную ленту
+  сверху с кнопками up/down для ручной перестановки (упрощённая замена DnD до
+  следующей итерации).

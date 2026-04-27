@@ -9,42 +9,36 @@ const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 type SectionConfig = {
   label: string;
   href: string;
+  /** Папка внутри `apps/site/content/`. */
   dir: string;
+  /** Префикс ссылки страницы продукта (напр. `/consulting`). */
   urlPrefix: string;
-  /** Explicit slug order — also acts as the inclusion list for nav. */
-  order: string[];
 };
 
+/**
+ * Разделы-источники для шапки/футера. Порядок списка тут определяет
+ * порядок дропдаунов; порядок ПУНКТОВ внутри дропдауна тянется из frontmatter-
+ * поля `order` соответствующих .md-файлов (админка drag-and-drop -> PUT
+ * /api/pages/[slug] -> `order` в frontmatter -> здесь сортируем).
+ */
 const SECTIONS: SectionConfig[] = [
   {
     label: "Консалтинг и стратегии",
     href: "/products?filter=consulting",
     dir: "products",
     urlPrefix: "/consulting",
-    order: [
-      "ecosystem-strategy",
-      "digital-platform",
-      "smart-analytics",
-      "team-readiness",
-      "strategy-sessions",
-      "design-sprints",
-      "skolkovo",
-      "business-readiness",
-    ],
   },
   {
     label: "Онлайн-школа",
     href: "/products?filter=academy",
     dir: "academy",
     urlPrefix: "/academy",
-    order: ["business-design-teams", "business-design-quickstart"],
   },
   {
     label: "AI-продукты",
     href: "/products?filter=ai-products",
     dir: "ai-products",
     urlPrefix: "/ai-products",
-    order: ["hypothesis-testing", "business-modeling"],
   },
 ];
 
@@ -85,16 +79,57 @@ function readFrontmatter(filePath: string): Record<string, unknown> | null {
   }
 }
 
-function readNavItem(dir: string, slug: string, urlPrefix: string): NavItem | null {
-  const fm = readFrontmatter(path.join(CONTENT_DIR, dir, `${slug}.md`));
-  if (!fm) return null;
-  const title = typeof fm.menuTitle === "string" ? fm.menuTitle.trim() : "";
-  const description = typeof fm.menuDescription === "string" ? fm.menuDescription.trim() : "";
-  if (!title) return null;
+type RawNavEntry = {
+  slug: string;
+  title: string;
+  description: string;
+  order: number;
+  showInMenu: boolean;
+  showInFooter: boolean;
+};
+
+/**
+ * Скан всех .md-страниц раздела — возвращает сырые записи со всеми флагами
+ * и order. Дальше вызывающий отфильтрует по showInMenu/showInFooter и
+ * смапит в NavItem.
+ */
+function readSectionEntries(dir: string): RawNavEntry[] {
+  const fullDir = path.join(CONTENT_DIR, dir);
+  if (!fs.existsSync(fullDir)) return [];
+  const files = fs
+    .readdirSync(fullDir)
+    .filter((f) => f.endsWith(".md") && !f.startsWith("_"));
+  const entries: RawNavEntry[] = [];
+  for (const file of files) {
+    const slug = file.replace(/\.md$/, "");
+    const fm = readFrontmatter(path.join(fullDir, file));
+    if (!fm) continue;
+    const title = typeof fm.menuTitle === "string" ? fm.menuTitle.trim() : "";
+    if (!title) continue;
+    const description =
+      typeof fm.menuDescription === "string" ? fm.menuDescription.trim() : "";
+    entries.push({
+      slug,
+      title,
+      description,
+      order:
+        typeof fm.order === "number" ? fm.order : Number.MAX_SAFE_INTEGER,
+      showInMenu: fm.showInMenu !== false,
+      showInFooter: fm.showInFooter !== false,
+    });
+  }
+  entries.sort((a, b) => {
+    if (a.order !== b.order) return a.order - b.order;
+    return a.slug.localeCompare(b.slug);
+  });
+  return entries;
+}
+
+function toNavItem(urlPrefix: string, e: RawNavEntry): NavItem {
   return {
-    href: withBasePath(`${urlPrefix}/${slug}`),
-    title,
-    description,
+    href: withBasePath(`${urlPrefix}/${e.slug}`),
+    title: e.title,
+    description: e.description,
   };
 }
 
@@ -114,21 +149,42 @@ function resolvePlainLink({ href, uniqueSlug, fallbackLabel }: PlainLinkConfig):
 }
 
 export type SiteNavData = {
-  /** Full header navigation (dropdown sections + plain links). */
+  /** Навигация в шапке (dropdown-секции + plain-ссылки), отфильтрована по showInMenu. */
   nav: NavSection[];
-  /** Company column links in the footer. */
+  /**
+   * Навигация для футера. Те же dropdown-секции, но отфильтрованы по
+   * showInFooter. Plain-ссылки не включаются — они идут отдельной колонкой
+   * `companyLinks`.
+   */
+  footerNav: NavSection[];
+  /** Company-колонка в футере. */
   companyLinks: { href: string; label: string }[];
-  /** Legal column links in the footer (currently hardcoded). */
+  /** Legal-колонка в футере (хардкод). */
   legalLinks: { href: string; label: string }[];
 };
 
 export function getSiteNav(): SiteNavData {
-  const dropdownSections: NavSection[] = SECTIONS.map(({ label, href, dir, urlPrefix, order }) => ({
-    href: withBasePath(href),
-    label,
-    items: order
-      .map((slug) => readNavItem(dir, slug, urlPrefix))
-      .filter((i): i is NavItem => i !== null),
+  // Читаем все секции один раз — один и тот же набор фильтруется по-разному
+  // для header'а и footer'а.
+  const sectionsRaw = SECTIONS.map((cfg) => ({
+    cfg,
+    entries: readSectionEntries(cfg.dir),
+  }));
+
+  const dropdownSections: NavSection[] = sectionsRaw.map(({ cfg, entries }) => ({
+    href: withBasePath(cfg.href),
+    label: cfg.label,
+    items: entries
+      .filter((e) => e.showInMenu)
+      .map((e) => toNavItem(cfg.urlPrefix, e)),
+  }));
+
+  const footerSections: NavSection[] = sectionsRaw.map(({ cfg, entries }) => ({
+    href: withBasePath(cfg.href),
+    label: cfg.label,
+    items: entries
+      .filter((e) => e.showInFooter)
+      .map((e) => toNavItem(cfg.urlPrefix, e)),
   }));
 
   const plainSections: NavSection[] = HEADER_PLAIN_LINKS.map(resolvePlainLink).map(
@@ -137,6 +193,7 @@ export function getSiteNav(): SiteNavData {
 
   return {
     nav: [...dropdownSections, ...plainSections],
+    footerNav: footerSections,
     companyLinks: COMPANY_LINKS.map(resolvePlainLink),
     legalLinks: LEGAL_LINKS.map((l) => ({ href: withBasePath(l.href), label: l.label })),
   };

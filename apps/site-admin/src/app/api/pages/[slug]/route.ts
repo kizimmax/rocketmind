@@ -343,6 +343,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     expertProduct: typeof page.expertProduct === "boolean" ? page.expertProduct : null,
     caseType: page.caseType === "mini" || page.caseType === "big" ? page.caseType : null,
     featured: typeof page.featured === "boolean" ? page.featured : null,
+    showInMenu: typeof page.showInMenu === "boolean" ? page.showInMenu : null,
+    showInFooter: typeof page.showInFooter === "boolean" ? page.showInFooter : null,
     order: typeof page.order === "number" ? page.order : null,
     caseCard: enabled(block("caseCard")),
     homeHero: enabled(block("homeHero")),

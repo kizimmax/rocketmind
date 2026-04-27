@@ -9,3 +9,10 @@ package-lock.json
 !.env.example
 .archive
 .gstack/
+
+# Dev-only symlink: apps/site-admin/public/media → apps/site/public/media
+# (создаётся вручную: `ln -s ../../site/public/media apps/site-admin/public/media`).
+apps/site-admin/public/media
+
+# Загружаемые файлы статей (из админского uploads endpoint)
+apps/site/public/media/uploads/

@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAllArticles, getArticleBySlug, getAllTags } from "@/lib/articles";
+import {
+  collectResolvedProductAsides,
+  collectResolvedQuoteExperts,
+  getAllArticles,
+  getArticleBySlug,
+  getAllTags,
+} from "@/lib/articles";
 import { getExpertBySlug } from "@/lib/experts";
 import { ArticlePageClient } from "@/components/media/article-page-client";
 
@@ -38,12 +44,17 @@ export default async function ArticlePage({
   const tagLabelById: Record<string, string> = {};
   for (const t of tags) tagLabelById[t.id] = t.label;
 
+  const resolvedProducts = collectResolvedProductAsides(article);
+  const resolvedQuoteExperts = collectResolvedQuoteExperts(article);
+
   return (
     <ArticlePageClient
       article={article}
       expertName={expert?.name ?? null}
       expertAvatarUrl={expert?.image ?? null}
       tagLabels={article.tags.map((id) => tagLabelById[id] ?? id)}
+      resolvedProducts={resolvedProducts}
+      resolvedQuoteExperts={resolvedQuoteExperts}
     />
   );
 }

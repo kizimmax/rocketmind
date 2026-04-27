@@ -16,6 +16,8 @@ export type ToolCard = {
   text: string;
   icon?: string | null;
   wide?: boolean;
+  /** Yellow accent card: filled #FFCC00 background, dark text. */
+  accent?: boolean;
 };
 
 export type ToolsSectionProps = {
@@ -43,6 +45,7 @@ function ToolCardItem({
   tool: ToolCard;
   useIcons?: boolean;
 }) {
+  const accent = tool.accent;
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Number or icon */}
@@ -53,21 +56,34 @@ function ToolCardItem({
             style={{ backgroundImage: `url(${tool.icon})` }}
           />
         ) : (
-          <span className="font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent [-webkit-text-stroke:1px_#404040]">
+          <span
+            className={cn(
+              "font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent",
+              accent ? "[-webkit-text-stroke:1px_#0A0A0A]" : "[-webkit-text-stroke:1px_#404040]",
+            )}
+          >
             {tool.number}
           </span>
         )}
       </div>
 
       {/* Title */}
-      <h4 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
+      <h4
+        className={cn(
+          "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em]",
+          accent ? "text-[#0A0A0A]" : "text-[#F0F0F0]",
+        )}
+      >
         {tool.title}
       </h4>
 
       {/* Description */}
       <RichText
         text={tool.text}
-        className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
+        className={cn(
+          "text-[length:var(--text-16)] leading-[1.28]",
+          accent ? "text-[#0A0A0A]" : "text-[#939393]",
+        )}
       />
     </div>
   );
@@ -149,7 +165,10 @@ export function ToolsSection({
                 return (
                   <div
                     key={i}
-                    className="border border-[#404040] p-8"
+                    className={cn(
+                      "p-8",
+                      tool.accent ? "bg-[#FFCC00]" : "border border-[#404040]",
+                    )}
                     style={{ gridColumn: `${start} / span ${span}` }}
                   >
                     <ToolCardItem tool={tool} useIcons={useIcons} />
@@ -182,7 +201,7 @@ export function ToolsSection({
         {/* Cards — 2-col grid */}
         <div className="grid grid-cols-2 gap-px bg-[#404040]">
           {tools.map((tool, i) => (
-            <div key={i} className="bg-[#0A0A0A] p-8">
+            <div key={i} className={cn("p-8", tool.accent ? "bg-[#FFCC00]" : "bg-[#0A0A0A]")}>
               <ToolCardItem tool={tool} useIcons={useIcons} />
             </div>
           ))}
@@ -205,7 +224,13 @@ export function ToolsSection({
         {/* Cards — stacked */}
         <div className="flex flex-col">
           {tools.map((tool, i) => (
-            <div key={i} className="border border-[#404040] p-6">
+            <div
+              key={i}
+              className={cn(
+                "p-6",
+                tool.accent ? "bg-[#FFCC00]" : "border border-[#404040]",
+              )}
+            >
               <ToolCardItem tool={tool} useIcons={useIcons} />
             </div>
           ))}

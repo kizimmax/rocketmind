@@ -6,16 +6,17 @@ import { cn } from "../../lib/utils"
 
 const tagVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border transition-colors",
+    "inline-flex items-center justify-center gap-2 rounded-sm border transition-colors",
+    "max-w-full break-words text-left [overflow-wrap:anywhere]",
     "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] leading-[1.16]",
   ],
   {
     variants: {
       size: {
         // Large — hero article page
-        l: "h-7 px-2.5 text-[length:var(--text-14)]",
+        l: "min-h-7 px-2.5 py-[5px] text-[length:var(--text-14)]",
         // Medium — mobile hero
-        m: "h-7 px-2.5 text-[length:var(--text-12)]",
+        m: "min-h-7 px-2.5 py-[6px] text-[length:var(--text-12)]",
         // Small — card tile
         s: "py-1 px-2 text-[length:var(--text-12)]",
       },

@@ -12,17 +12,19 @@ export function VkIcon({ className, ...props }: React.SVGProps<SVGSVGElement>) {
       {...props}
     >
       <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="4" stroke="currentColor" strokeWidth="1.5" />
+      {/* V */}
       <path
-        d="M10 14 L14.5 26 L17 26 L21.5 14"
+        d="M9.5 13 L14.5 27 L19.5 13"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      {/* K: stem + arms meeting at mid-height */}
       <path
-        d="M24 14 L24 26 M24 20.5 L30 14 M24 20.5 L30 26"
+        d="M22.5 13 L22.5 27 M22.5 20 L30 13 M22.5 20 L30 27"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

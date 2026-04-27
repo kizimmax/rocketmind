@@ -20,7 +20,7 @@ interface ToolsEditorProps {
   onUpdate: (data: Record<string, unknown>) => void;
 }
 
-type Tool = { number: string; title: string; text: string; icon?: string | null; wide?: boolean };
+type Tool = { number: string; title: string; text: string; icon?: string | null; wide?: boolean; accent?: boolean };
 
 export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
   const tag = (data.tag as string) || "";
@@ -73,6 +73,13 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
     onUpdate({ tools: updated });
   }
 
+  function toggleAccent(index: number) {
+    const updated = tools.map((t, i) =>
+      i === index ? { ...t, accent: !t.accent } : t,
+    );
+    onUpdate({ tools: updated });
+  }
+
   function removeTool(index: number) {
     const next = tools.filter((_, i) => i !== index);
     const renumbered = next.map((t, i) => ({
@@ -97,45 +104,9 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
     <div className="rounded-sm border-t border-[#404040] bg-[#0A0A0A] pb-20">
       <div className="mx-auto max-w-[1512px] px-5 py-10 md:px-8 xl:px-14">
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
-          <div className="flex max-w-[560px] flex-col gap-2">
-            <InlineEdit
-              value={tag}
-              onSave={(v) => onUpdate({ tag: v })}
-              placeholder="инструменты"
-            >
-              <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
-                {tag || "инструменты"}
-              </span>
-            </InlineEdit>
-
-            <div className="flex flex-col gap-1">
-              <InlineEdit
-                value={title}
-                onSave={(v) => onUpdate({ title: v })}
-                placeholder="Заголовок"
-              >
-                <h2 className="h2 text-[#F0F0F0]">{title || "Заголовок"}</h2>
-              </InlineEdit>
-              <InlineEdit
-                value={titleSecondary}
-                onSave={(v) => onUpdate({ titleSecondary: v })}
-                placeholder="Дополнительная часть (серая)"
-              >
-                <span className="h2 text-[#939393] block">{titleSecondary || "доп. часть"}</span>
-              </InlineEdit>
-            </div>
-
-            <ParagraphsEditor
-              paragraphs={paragraphs}
-              onChange={setParagraphs}
-              theme="dark"
-              defaults={{ uppercase: false, color: "secondary" }}
-            />
-          </div>
-
-          {/* Toggles */}
-          <div className="flex flex-col items-end gap-2">
+        <div className="relative mb-8">
+          {/* Toggles — absolute top-right */}
+          <div className="absolute right-0 top-0 z-10 flex flex-col items-end gap-2">
             <div className="flex items-center gap-2">
               <span className="text-[length:var(--text-12)] text-[#939393]">
                 Иконки
@@ -155,6 +126,84 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
               />
             </div>
           </div>
+
+          {descriptionBelow ? (
+            <div className="flex max-w-[668px] flex-col gap-4 pr-[220px]">
+              <div className="flex flex-col gap-2">
+                <InlineEdit
+                  value={tag}
+                  onSave={(v) => onUpdate({ tag: v })}
+                  placeholder="инструменты"
+                >
+                  <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
+                    {tag || "инструменты"}
+                  </span>
+                </InlineEdit>
+                <div className="flex flex-col gap-1">
+                  <InlineEdit
+                    value={title}
+                    onSave={(v) => onUpdate({ title: v })}
+                    placeholder="Заголовок"
+                  >
+                    <h2 className="h2 text-[#F0F0F0]">{title || "Заголовок"}</h2>
+                  </InlineEdit>
+                  <InlineEdit
+                    value={titleSecondary}
+                    onSave={(v) => onUpdate({ titleSecondary: v })}
+                    placeholder="Дополнительная часть (серая)"
+                  >
+                    <span className="h2 text-[#939393] block">{titleSecondary || "доп. часть"}</span>
+                  </InlineEdit>
+                </div>
+              </div>
+              <ParagraphsEditor
+                paragraphs={paragraphs}
+                onChange={setParagraphs}
+                theme="dark"
+                defaults={{ uppercase: false, color: "secondary" }}
+              />
+            </div>
+          ) : (
+            <div className="flex gap-8 pr-[220px]">
+              <div className="flex w-1/2 flex-col gap-2">
+                <InlineEdit
+                  value={tag}
+                  onSave={(v) => onUpdate({ tag: v })}
+                  placeholder="инструменты"
+                >
+                  <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]">
+                    {tag || "инструменты"}
+                  </span>
+                </InlineEdit>
+                <div className="flex flex-col gap-1">
+                  <InlineEdit
+                    value={title}
+                    onSave={(v) => onUpdate({ title: v })}
+                    placeholder="Заголовок"
+                  >
+                    <h2 className="h2 text-[#F0F0F0]">{title || "Заголовок"}</h2>
+                  </InlineEdit>
+                  <InlineEdit
+                    value={titleSecondary}
+                    onSave={(v) => onUpdate({ titleSecondary: v })}
+                    placeholder="Дополнительная часть (серая)"
+                  >
+                    <span className="h2 text-[#939393] block">{titleSecondary || "доп. часть"}</span>
+                  </InlineEdit>
+                </div>
+              </div>
+              <div className="flex w-1/2 items-end">
+                <div className="max-w-[668px] w-full">
+                  <ParagraphsEditor
+                    paragraphs={paragraphs}
+                    onChange={setParagraphs}
+                    theme="dark"
+                    defaults={{ uppercase: false, color: "secondary" }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Cards */}
@@ -175,12 +224,19 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
                   onDragOver={onDragOver}
                   onDrop={onDrop}
                   onDragEnd={onDragEnd}
-                  className={`group/card relative flex min-w-0 flex-1 flex-col gap-4 border border-[#404040] p-8 transition-all ${
-                    isDragging ? "opacity-60" : ""
-                  }`}
+                  className={`group/card relative flex min-w-0 flex-1 flex-col gap-4 p-8 transition-all ${
+                    tool.accent ? "bg-[#FFCC00]" : "border border-[#404040]"
+                  } ${isDragging ? "opacity-60" : ""}`}
                 >
                   {/* Controls */}
                   <div className="absolute -right-1 -top-1 z-10 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/card:opacity-100">
+                    <button
+                      onClick={() => toggleAccent(index)}
+                      title={tool.accent ? "Обычный цвет" : "Акцентный жёлтый"}
+                      className="flex h-5 w-5 items-center justify-center rounded-sm bg-[#0A0A0A] text-[#F0F0F0] hover:bg-[#FFCC00] hover:text-[#0A0A0A] cursor-pointer"
+                    >
+                      <Palette className="h-2.5 w-2.5" />
+                    </button>
                     <button
                       onClick={() => toggleWide(index)}
                       title={tool.wide ? "Обычная ширина" : "Двойная ширина"}
@@ -209,7 +265,11 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
                       onUpload={(file) => handleIconUpload(index, file)}
                     />
                   ) : (
-                    <span className="font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent [-webkit-text-stroke:1px_#404040]">
+                    <span
+                      className={`font-[family-name:var(--font-mono-family)] text-[80px] font-medium leading-[1.08] tracking-[0.02em] text-transparent ${
+                        tool.accent ? "[-webkit-text-stroke:1px_#0A0A0A]" : "[-webkit-text-stroke:1px_#404040]"
+                      }`}
+                    >
                       {tool.number}
                     </span>
                   )}
@@ -220,7 +280,11 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
                     onSave={(v) => updateTool(index, "title", v)}
                     placeholder="Название"
                   >
-                    <h4 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#F0F0F0]">
+                    <h4
+                      className={`font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.2] tracking-[-0.01em] ${
+                        tool.accent ? "text-[#0A0A0A]" : "text-[#F0F0F0]"
+                      }`}
+                    >
                       {tool.title || "Название"}
                     </h4>
                   </InlineEdit>
@@ -236,7 +300,9 @@ export function ToolsEditor({ data, onUpdate }: ToolsEditorProps) {
                     <MdText
                       value={tool.text}
                       placeholder="Описание инструмента"
-                      className="text-[length:var(--text-16)] leading-[1.28] text-[#939393]"
+                      className={`text-[length:var(--text-16)] leading-[1.28] ${
+                        tool.accent ? "text-[#0A0A0A]" : "text-[#939393]"
+                      }`}
                     />
                   </InlineEdit>
                 </div>

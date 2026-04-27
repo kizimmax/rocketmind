@@ -11,6 +11,16 @@ metaTitle: Экосистемная стратегия | Rocketmind
 metaDescription: >-
   Спроектируем стратегию и портфель бизнес-моделей, чтобы масштабировать влияние
   вашей компании.
+expertProduct: null
+caseType: null
+featured: null
+showInMenu: null
+showInFooter: null
+order: 0
+caseCard: null
+homeHero: null
+methodology: null
+homeSections: null
 hero:
   caption: консалтинг и стратегии
   title: |
@@ -31,6 +41,7 @@ hero:
       label: лидеров рынка
       text: Уже выстраивают собственные партнерские сети (Deloitte)
   titleSecondary: "ОТ\_ПРОДУКТА К\_СЕТИ ПАРТНЕРОВ"
+logoMarquee: null
 about:
   caption: О продукте
   title: Экосистемная стратегия
@@ -74,6 +85,7 @@ audience:
         Поймут устройство своей рыночной ниши и найдут новые источники
         монетизации
       wide: true
+contacts: null
 tools:
   tag: инструменты
   title: С чем вы работаете
@@ -114,6 +126,7 @@ results:
       text: >-
         Доступ к базе знаний Rocketmind с методиками, канвасами и рабочими
         материалами для дальнейшей самостоятельной работы
+services: null
 process:
   tag: этапы
   title: Прозрачный процесс
@@ -148,6 +161,9 @@ process:
       text: Отвечают за интеграцию новых решений и рост ценности для клиентов
 experts: null
 aboutRocketmind: null
+projects: null
+pageBottom: null
+customSections: null
 socialProof: null
 duration: null
 whyRocketmind: null

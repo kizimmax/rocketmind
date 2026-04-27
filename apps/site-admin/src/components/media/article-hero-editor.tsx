@@ -295,9 +295,9 @@ function HeroTagsRow({
       {selectedTags.map((t) => (
         <span
           key={t.id}
-          className="group/tag relative inline-flex items-center gap-2.5 rounded-[4px] border border-[#404040] bg-[#121212] px-2.5 py-1 h-7"
+          className="group/tag relative inline-flex max-w-full items-center gap-2.5 rounded-[4px] border border-[#404040] bg-[#121212] px-2.5 py-1 min-h-7"
         >
-          <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-[#939393]">
+          <span className="break-words [overflow-wrap:anywhere] font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-[#939393]">
             {t.label}
           </span>
           <button

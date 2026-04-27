@@ -9,15 +9,27 @@ import {
   type ReactNode,
 } from "react";
 import React from "react";
-import type { SitePage, PageStatus, CaseType, Article, MediaTag } from "./types";
+import type {
+  SitePage,
+  PageStatus,
+  CaseType,
+  Article,
+  MediaTag,
+  GlossaryTerm,
+} from "./types";
 import { createSeedPages } from "./seed-data";
-import { createSeedArticles, createSeedMediaTags } from "./seed-media";
+import {
+  createSeedArticles,
+  createSeedGlossaryTerms,
+  createSeedMediaTags,
+} from "./seed-media";
 import { MAX_FEATURED_CASES } from "./constants";
 import { apiFetch, IS_STATIC } from "./api-client";
 
 const LS_KEY = "cms:demo:v1:pages";
 const LS_ARTICLES_KEY = "cms:demo:v1:articles";
 const LS_TAGS_KEY = "cms:demo:v1:mediaTags";
+const LS_GLOSSARY_KEY = "cms:demo:v1:glossaryTerms";
 /** One-shot migration: prior demo builds used this key; drop it if present. */
 const LEGACY_LS_KEY = "rm_site_admin_pages";
 const isStaticExport = IS_STATIC;
@@ -65,6 +77,17 @@ function saveArticlesToLS(articles: Article[]) {
   try { localStorage.setItem(LS_ARTICLES_KEY, JSON.stringify(articles)); } catch { /* ignore */ }
 }
 
+function readLSGlossary(): GlossaryTerm[] | null {
+  try {
+    const raw = localStorage.getItem(LS_GLOSSARY_KEY);
+    if (raw) return JSON.parse(raw) as GlossaryTerm[];
+  } catch { /* ignore */ }
+  return null;
+}
+function saveGlossaryToLS(terms: GlossaryTerm[]) {
+  try { localStorage.setItem(LS_GLOSSARY_KEY, JSON.stringify(terms)); } catch { /* ignore */ }
+}
+
 function readLSTags(): MediaTag[] | null {
   try {
     const raw = localStorage.getItem(LS_TAGS_KEY);
@@ -82,6 +105,7 @@ interface StoreContext {
   pages: SitePage[];
   articles: Article[];
   mediaTags: MediaTag[];
+  glossaryTerms: GlossaryTerm[];
   loading: boolean;
   getPagesBySection(sectionId: string): SitePage[];
   getPage(pageId: string): SitePage | undefined;
@@ -102,6 +126,17 @@ interface StoreContext {
   deleteArticle(id: string): void;
   setArticleStatus(id: string, status: PageStatus): void;
   reorderArticles(orderedIds: string[]): void;
+  /** Toggle pinned flag on an article. Returns ordered list of pinned after change. */
+  setArticlePinned(id: string, value: boolean): void;
+  /** Reorder pinned articles (orderedIds == pinned article IDs, desired order asc). */
+  reorderPinnedArticles(orderedIds: string[]): void;
+
+  // ── Glossary ──
+  getGlossaryTerm(id: string): GlossaryTerm | undefined;
+  createGlossaryTerm(title: string): GlossaryTerm;
+  saveGlossaryTerm(term: GlossaryTerm): void;
+  deleteGlossaryTerm(id: string): void;
+  setGlossaryTermStatus(id: string, status: PageStatus): void;
 
   // ── Media tags ──
   /** Create or return existing tag (by label). */
@@ -118,16 +153,81 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
   const [pages, setPages] = useState<SitePage[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [mediaTags, setMediaTags] = useState<MediaTag[]>([]);
+  const [glossaryTerms, setGlossaryTerms] = useState<GlossaryTerm[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load articles + tags from localStorage (with seed fallback)
+  // Load articles + tags
+  //  - static mode: localStorage + seed (no API available)
+  //  - dev / Amvera: fetch from /api/articles (файлы в apps/site/content/media/*.md)
+  //                  — localStorage игнорируем, он только для static-демо.
   useEffect(() => {
-    const tags = readLSTags() ?? createSeedMediaTags();
-    const arts = readLSArticles() ?? createSeedArticles(tags);
-    setMediaTags(tags);
-    setArticles(arts);
-    if (!readLSTags()) saveTagsToLS(tags);
-    if (!readLSArticles()) saveArticlesToLS(arts);
+    // Static mode: LS — источник истины, сервера нет.
+    if (isStaticExport) {
+      const tags = readLSTags() ?? createSeedMediaTags();
+      setMediaTags(tags);
+      if (!readLSTags()) saveTagsToLS(tags);
+      const arts = readLSArticles() ?? createSeedArticles(tags);
+      setArticles(arts);
+      if (!readLSArticles()) saveArticlesToLS(arts);
+      const terms = readLSGlossary() ?? createSeedGlossaryTerms();
+      setGlossaryTerms(terms);
+      if (!readLSGlossary()) saveGlossaryToLS(terms);
+      return;
+    }
+
+    // Dev/Amvera: теги грузим с /api/media-tags (apps/site/content/media/_tags.json),
+    // LS остаётся как оптимистичный pre-paint (чтобы UI не мигал пустыми тегами
+    // до того, как придёт ответ от API).
+    const cached = readLSTags();
+    if (cached) setMediaTags(cached);
+
+    (async () => {
+      try {
+        const res = await apiFetch("/api/media-tags");
+        if (res.ok) {
+          const data = (await res.json()) as { tags?: MediaTag[] };
+          const serverTags = Array.isArray(data.tags) ? data.tags : [];
+          setMediaTags(serverTags);
+          saveTagsToLS(serverTags);
+        }
+      } catch {
+        // fail-safe: остаёмся с LS-кэшем; если его не было — пустой массив.
+        if (!cached) setMediaTags([]);
+      }
+
+      try {
+        const res = await apiFetch("/api/articles");
+        if (!res.ok) throw new Error();
+        const data = (await res.json()) as Article[];
+        setArticles(Array.isArray(data) ? data : []);
+      } catch {
+        setArticles([]);
+      }
+
+      try {
+        const res = await apiFetch("/api/glossary");
+        if (!res.ok) throw new Error();
+        const data = (await res.json()) as GlossaryTerm[];
+        setGlossaryTerms(Array.isArray(data) ? data : []);
+      } catch {
+        setGlossaryTerms([]);
+      }
+    })();
+  }, []);
+
+  // Helper: персистим массив тегов на сервер (+ в LS как кэш). Вызывается
+  // из upsert/rename/delete после локального обновления state.
+  const persistTags = useCallback((next: MediaTag[]) => {
+    saveTagsToLS(next);
+    if (isStaticExport) return;
+    apiFetch("/api/media-tags", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tags: next }),
+    }).catch(() => {
+      // В admin работает один пользователь — при транзиент-ошибке сети
+      // следующий mutate попытается заново. Кэш в LS уже актуален.
+    });
   }, []);
 
   const fetchPages = useCallback(async () => {
@@ -303,7 +403,25 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
           const idx = orderedIds.indexOf(p.id);
           return idx >= 0 ? { ...p, order: idx } : p;
         });
-        if (isStaticExport) saveToLS(next);
+        if (isStaticExport) {
+          saveToLS(next);
+          return next;
+        }
+        // Non-static: пишем новое значение order каждой перемещённой страницы
+        // в frontmatter через PUT /api/pages/[slug]. API ожидает полный объект
+        // SitePage. State уже обновлён оптимистично; сетевые ошибки глотаем —
+        // следующий reload или savePage перезапишет. Single-admin юзкейс.
+        for (const page of next) {
+          const orig = prev.find((p) => p.id === page.id);
+          if (!orig || orig.order === page.order) continue;
+          apiFetch(`/api/pages/${encodeURIComponent(page.id)}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(page),
+          }).catch(() => {
+            /* ignore */
+          });
+        }
         return next;
       });
     },
@@ -366,56 +484,254 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       tagIds: [],
       keyThoughts: [],
       body: [],
+      cardVariant: "default",
+      pinned: false,
+      pinnedOrder: 0,
       metaTitle: `${title} — Rocketmind`,
       metaDescription: "",
       createdAt: now,
       updatedAt: now,
     };
+
+    // Optimistic local insert
     const next = [...articles, article];
     setArticles(next);
-    saveArticlesToLS(next);
+    if (isStaticExport) {
+      saveArticlesToLS(next);
+      return article;
+    }
+
+    // Dev/prod: create .md via API (fire-and-forget — на случай гонки пойдём без await)
+    void apiFetch("/api/articles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug, title }),
+    }).catch(() => {});
+
     return article;
   }, [articles]);
 
   const saveArticle = useCallback((article: Article) => {
+    const updated = { ...article, updatedAt: new Date().toISOString() };
+
     setArticles((prev) => {
-      const next = prev.map((a) =>
-        a.id === article.id
-          ? { ...article, updatedAt: new Date().toISOString() }
-          : a
-      );
-      saveArticlesToLS(next);
+      const next = prev.map((a) => (a.id === article.id ? updated : a));
+      if (isStaticExport) saveArticlesToLS(next);
       return next;
     });
+
+    if (isStaticExport) return;
+
+    void apiFetch(`/api/articles/${encodeURIComponent(article.slug)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    }).catch(() => {});
   }, []);
 
   const deleteArticle = useCallback((id: string) => {
+    const target = articles.find((a) => a.id === id);
     setArticles((prev) => {
       const next = prev.filter((a) => a.id !== id);
-      saveArticlesToLS(next);
+      if (isStaticExport) saveArticlesToLS(next);
       return next;
     });
-  }, []);
+    if (!isStaticExport && target) {
+      void apiFetch(`/api/articles/${encodeURIComponent(target.slug)}`, {
+        method: "DELETE",
+      }).catch(() => {});
+    }
+  }, [articles]);
 
   const setArticleStatus = useCallback((id: string, status: PageStatus) => {
+    let target: Article | undefined;
     setArticles((prev) => {
-      const next = prev.map((a) =>
-        a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a
-      );
-      saveArticlesToLS(next);
+      const next = prev.map((a) => {
+        if (a.id !== id) return a;
+        target = { ...a, status, updatedAt: new Date().toISOString() };
+        return target;
+      });
+      if (isStaticExport) saveArticlesToLS(next);
       return next;
     });
+    if (!isStaticExport && target) {
+      void apiFetch(`/api/articles/${encodeURIComponent(target.slug)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(target),
+      }).catch(() => {});
+    }
+  }, []);
+
+  const setArticlePinned = useCallback((id: string, value: boolean) => {
+    let target: Article | undefined;
+    setArticles((prev) => {
+      const maxOrder = prev
+        .filter((a) => a.pinned && a.id !== id)
+        .reduce((acc, a) => Math.max(acc, a.pinnedOrder), -1);
+      const next = prev.map((a) => {
+        if (a.id !== id) return a;
+        target = {
+          ...a,
+          pinned: value,
+          pinnedOrder: value ? maxOrder + 1 : 0,
+          updatedAt: new Date().toISOString(),
+        };
+        return target;
+      });
+      if (isStaticExport) saveArticlesToLS(next);
+      return next;
+    });
+    if (!isStaticExport && target) {
+      void apiFetch(`/api/articles/${encodeURIComponent(target.slug)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(target),
+      }).catch(() => {});
+    }
+  }, []);
+
+  const reorderPinnedArticles = useCallback((orderedIds: string[]) => {
+    let changed: Article[] = [];
+    setArticles((prev) => {
+      const next = prev.map((a) => {
+        if (!a.pinned) return a;
+        const idx = orderedIds.indexOf(a.id);
+        if (idx < 0 || idx === a.pinnedOrder) return a;
+        const updated = {
+          ...a,
+          pinnedOrder: idx,
+          updatedAt: new Date().toISOString(),
+        };
+        changed.push(updated);
+        return updated;
+      });
+      if (isStaticExport) saveArticlesToLS(next);
+      return next;
+    });
+    if (!isStaticExport && changed.length) {
+      for (const a of changed) {
+        void apiFetch(`/api/articles/${encodeURIComponent(a.slug)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(a),
+        }).catch(() => {});
+      }
+    }
+  }, []);
+
+  // ── Glossary ─────────────────────────────────────────────────────────────
+  const getGlossaryTerm = useCallback(
+    (id: string) => glossaryTerms.find((t) => t.id === id),
+    [glossaryTerms],
+  );
+
+  const createGlossaryTerm = useCallback((title: string): GlossaryTerm => {
+    const base = slugify(title) || `term-${Date.now()}`;
+    const taken = new Set(glossaryTerms.map((t) => t.slug));
+    let slug = base;
+    let n = 2;
+    while (taken.has(slug)) slug = `${base}-${n++}`;
+    const now = new Date().toISOString();
+    const term: GlossaryTerm = {
+      id: `glossary/${slug}`,
+      slug,
+      status: "hidden",
+      order: glossaryTerms.length,
+      title,
+      tagIds: [],
+      metaTitle: `${title} | Глоссарий Rocketmind`,
+      metaDescription: "",
+      createdAt: now,
+      updatedAt: now,
+    };
+    const next = [...glossaryTerms, term];
+    setGlossaryTerms(next);
+    if (isStaticExport) {
+      saveGlossaryToLS(next);
+      return term;
+    }
+    void apiFetch("/api/glossary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug, title }),
+    }).catch(() => {});
+    return term;
+  }, [glossaryTerms]);
+
+  const saveGlossaryTerm = useCallback((term: GlossaryTerm) => {
+    const updated = { ...term, updatedAt: new Date().toISOString() };
+    setGlossaryTerms((prev) => {
+      const next = prev.map((t) => (t.id === term.id ? updated : t));
+      if (isStaticExport) saveGlossaryToLS(next);
+      return next;
+    });
+    if (isStaticExport) return;
+    void apiFetch(`/api/glossary/${encodeURIComponent(term.slug)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    }).catch(() => {});
+  }, []);
+
+  const deleteGlossaryTerm = useCallback((id: string) => {
+    const target = glossaryTerms.find((t) => t.id === id);
+    setGlossaryTerms((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      if (isStaticExport) saveGlossaryToLS(next);
+      return next;
+    });
+    if (!isStaticExport && target) {
+      void apiFetch(`/api/glossary/${encodeURIComponent(target.slug)}`, {
+        method: "DELETE",
+      }).catch(() => {});
+    }
+  }, [glossaryTerms]);
+
+  const setGlossaryTermStatus = useCallback((id: string, status: PageStatus) => {
+    let target: GlossaryTerm | undefined;
+    setGlossaryTerms((prev) => {
+      const next = prev.map((t) => {
+        if (t.id !== id) return t;
+        target = { ...t, status, updatedAt: new Date().toISOString() };
+        return target;
+      });
+      if (isStaticExport) saveGlossaryToLS(next);
+      return next;
+    });
+    if (!isStaticExport && target) {
+      void apiFetch(`/api/glossary/${encodeURIComponent(target.slug)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(target),
+      }).catch(() => {});
+    }
   }, []);
 
   const reorderArticles = useCallback((orderedIds: string[]) => {
+    let changed: Article[] = [];
     setArticles((prev) => {
       const next = prev.map((a) => {
         const idx = orderedIds.indexOf(a.id);
-        return idx >= 0 ? { ...a, order: idx } : a;
+        if (idx >= 0 && idx !== a.order) {
+          const updated = { ...a, order: idx };
+          changed.push(updated);
+          return updated;
+        }
+        return a;
       });
-      saveArticlesToLS(next);
+      if (isStaticExport) saveArticlesToLS(next);
       return next;
     });
+    if (!isStaticExport && changed.length) {
+      for (const a of changed) {
+        void apiFetch(`/api/articles/${encodeURIComponent(a.slug)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(a),
+        }).catch(() => {});
+      }
+    }
   }, []);
 
   // ── Media tags ───────────────────────────────────────────────────────────
@@ -437,22 +753,22 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
     };
     const next = [...mediaTags, tag];
     setMediaTags(next);
-    saveTagsToLS(next);
+    persistTags(next);
     return tag;
-  }, [mediaTags]);
+  }, [mediaTags, persistTags]);
 
   const renameMediaTag = useCallback((id: string, label: string) => {
     setMediaTags((prev) => {
       const next = prev.map((t) => (t.id === id ? { ...t, label } : t));
-      saveTagsToLS(next);
+      persistTags(next);
       return next;
     });
-  }, []);
+  }, [persistTags]);
 
   const deleteMediaTag = useCallback((id: string) => {
     setMediaTags((prev) => {
       const next = prev.filter((t) => t.id !== id);
-      saveTagsToLS(next);
+      persistTags(next);
       return next;
     });
     // also strip the tag from all articles
@@ -464,7 +780,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       saveArticlesToLS(next);
       return next;
     });
-  }, []);
+  }, [persistTags]);
 
   if (loading) {
     return React.createElement(
@@ -484,6 +800,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         pages,
         articles,
         mediaTags,
+        glossaryTerms,
         loading,
         getPagesBySection,
         getPage,
@@ -500,6 +817,13 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         deleteArticle,
         setArticleStatus,
         reorderArticles,
+        setArticlePinned,
+        reorderPinnedArticles,
+        getGlossaryTerm,
+        createGlossaryTerm,
+        saveGlossaryTerm,
+        deleteGlossaryTerm,
+        setGlossaryTermStatus,
         upsertMediaTag,
         renameMediaTag,
         deleteMediaTag,

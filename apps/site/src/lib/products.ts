@@ -162,6 +162,8 @@ export type ToolCardData = {
   title: string;
   text: string;
   icon?: string | null;
+  wide?: boolean;
+  accent?: boolean;
 };
 
 export type ToolsData = {
@@ -234,6 +236,12 @@ export type ProductData = {
   logoMarqueeEnabled: boolean;
   /** Explicit flag — treats this as an "expert product" (shows tag, moves description up, renders experts block in hero). Defaults to `experts.length > 0` if unset. */
   expertProduct: boolean;
+  /** Порядок в списке (frontmatter `order`). MAX_SAFE если не задан. */
+  order: number;
+  /** Показывать в меню (шапка + /products). По умолчанию true. */
+  showInMenu: boolean;
+  /** Показывать в футере. По умолчанию true. */
+  showInFooter: boolean;
   // Image paths (auto-resolved)
   coverImage: string;
   /** Resolved cover image path (null if file doesn't exist) */
@@ -447,6 +455,10 @@ export function getProductBySlug(slug: string, category?: string): ProductData |
       typeof data.expertProduct === "boolean"
         ? data.expertProduct
         : Array.isArray(data.experts) && data.experts.length > 0,
+    order:
+      typeof data.order === "number" ? data.order : Number.MAX_SAFE_INTEGER,
+    showInMenu: data.showInMenu !== false,
+    showInFooter: data.showInFooter !== false,
     coverImage,
     heroImage,
     aboutImage,
@@ -454,14 +466,22 @@ export function getProductBySlug(slug: string, category?: string): ProductData |
   };
 }
 
+function sortProducts(items: ProductData[]): ProductData[] {
+  return [...items].sort((a, b) => {
+    if (a.order !== b.order) return a.order - b.order;
+    return a.slug.localeCompare(b.slug);
+  });
+}
+
 export function getAllProducts(): ProductData[] {
   if (!fs.existsSync(PRODUCTS_DIR)) return [];
 
-  return fs
+  const items = fs
     .readdirSync(PRODUCTS_DIR)
     .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
     .map((f) => getProductBySlug(f.replace(/\.md$/, "")))
     .filter(Boolean) as ProductData[];
+  return sortProducts(items);
 }
 
 export function getProductsByCategory(category: string): ProductData[] {
@@ -470,6 +490,9 @@ export function getProductsByCategory(category: string): ProductData[] {
 
 /**
  * Load all products from all content directories (consulting, academy, ai-products).
+ * Сортировка — сначала по frontmatter `order` в рамках каждой категории,
+ * затем категории идут в порядке consulting → academy → ai-products.
+ * Это и есть источник истины для шапки, футера, /products и главной.
  */
 export function getAllCatalogProducts(): ProductData[] {
   const results: ProductData[] = [];
@@ -483,11 +506,13 @@ export function getAllCatalogProducts(): ProductData[] {
       .readdirSync(dir)
       .filter((f) => f.endsWith(".md") && !f.startsWith("_"));
 
+    const catItems: ProductData[] = [];
     for (const f of files) {
       const slug = f.replace(/\.md$/, "");
       const product = getProductBySlug(slug, cat);
-      if (product) results.push(product);
+      if (product) catItems.push(product);
     }
+    results.push(...sortProducts(catItems));
   }
 
   return results;

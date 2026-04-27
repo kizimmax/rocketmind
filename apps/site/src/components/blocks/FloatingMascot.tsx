@@ -9,7 +9,19 @@ const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 const GREETING = "Я Алекс, могу быстро направить для решение вашей ситуации";
 const TYPING_SPEED = 30;
-const GREETING_DELAY = 30_000;
+const GREETING_DELAY = 20_000;
+const DISMISS_COOKIE = "rm_mascot_dismissed";
+const DISMISS_TTL_SECONDS = 60 * 60;
+
+function isDismissedRecently(): boolean {
+  if (typeof document === "undefined") return false;
+  return document.cookie.split("; ").some((c) => c.startsWith(`${DISMISS_COOKIE}=`));
+}
+
+function setDismissedCookie() {
+  if (typeof document === "undefined") return;
+  document.cookie = `${DISMISS_COOKIE}=1; path=/; max-age=${DISMISS_TTL_SECONDS}; SameSite=Lax`;
+}
 
 interface FloatingMascotProps {
   onScrollToChat: () => void;
@@ -36,6 +48,10 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
     setDismissed(false);
 
     if (timerRef.current) clearTimeout(timerRef.current);
+    if (isDismissedRecently()) {
+      setDismissed(true);
+      return;
+    }
     timerRef.current = setTimeout(() => {
       setBubbleVisible(true);
       setIsTyping(true);
@@ -75,6 +91,7 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
     e.stopPropagation();
     setBubbleVisible(false);
     setDismissed(true);
+    setDismissedCookie();
   }, []);
 
   const showBubble = !dismissed && (bubbleVisible || isHovered);
@@ -95,11 +112,11 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
         pointerEvents: hidden ? "none" : "auto",
       }}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { setIsHovered(false); setDismissed(false); }}
+      onMouseLeave={() => { setIsHovered(false); if (!isDismissedRecently()) setDismissed(false); }}
     >
       {/* Chat bubble — 265×56, top-left of frame, border-radius 4px */}
       <div
-        className="absolute left-0 top-0 flex h-14 w-[265px] cursor-pointer items-center rounded-sm border border-border px-3 pr-7 text-left text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-muted-foreground transition-opacity duration-300"
+        className="absolute -left-2 top-5 flex h-14 w-[265px] cursor-pointer items-center rounded-sm border border-border px-3 pr-7 text-left text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-muted-foreground transition-opacity duration-300"
         style={{
           background: "#121212",
           opacity: showBubble ? 1 : 0,
@@ -122,11 +139,15 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
         </span>
       </div>
 
-      {/* Mascot — 56×56 at bottom-right of frame */}
+      {/* Mascot — 56×56 at bottom-right of frame; scales 2x while bubble is visible */}
       <button
         type="button"
         onClick={handleClick}
-        className="absolute bottom-0 right-0 flex h-14 w-14 cursor-pointer items-center justify-center overflow-hidden"
+        className="absolute bottom-0 right-0 flex h-14 w-14 cursor-pointer items-center justify-center overflow-hidden transition-transform duration-500 ease-out will-change-transform"
+        style={{
+          transformOrigin: "bottom right",
+          transform: showBubble ? "scale(2)" : "scale(1)",
+        }}
         aria-label="Открыть чат с консультантом"
       >
         {/* White radial glow */}
@@ -138,7 +159,7 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
           }}
         />
         <Image
-          src={`${BASE_PATH}/ai-mascots/alex/alex_base.png`}
+          src={`${BASE_PATH}/ai-mascots/alex/${showBubble ? "alex_pointer_2" : "alex_base"}.png`}
           alt="Алекс"
           width={56}
           height={56}

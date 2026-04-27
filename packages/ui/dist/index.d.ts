@@ -453,11 +453,17 @@ interface AuthorProps extends React$1.HTMLAttributes<HTMLDivElement> {
     date?: string;
     /** Full — 2-line (name, date on separate row with calendar). Short — single row (name + date). */
     variant?: "full" | "short";
+    /**
+     * Если `false` и `avatarUrl` отсутствует/пустой — не рендерим круглый блок
+     * с инициалами (в карточках медиа дизайнер решает не показывать заглушку).
+     * По умолчанию `true` — прежнее поведение с fallback-инициалами.
+     */
+    showAvatarFallback?: boolean;
 }
 /**
  * Author — блок «автор + дата» для hero статьи (Full) и карточки (Short).
  */
-declare function Author({ name, avatarUrl, date, variant, className, ...props }: AuthorProps): react_jsx_runtime.JSX.Element;
+declare function Author({ name, avatarUrl, date, variant, showAvatarFallback, className, ...props }: AuthorProps): react_jsx_runtime.JSX.Element;
 
 interface KeyThoughtsProps extends React$1.HTMLAttributes<HTMLUListElement> {
     thoughts: string[];
@@ -485,6 +491,7 @@ interface ArticleNavProps extends React$1.HTMLAttributes<HTMLElement> {
  */
 declare function ArticleNav({ items, activeId, onNavigate, className, ...props }: ArticleNavProps): react_jsx_runtime.JSX.Element | null;
 
+type ArticleCardVariant = "default" | "wide";
 interface ArticleCardProps extends React$1.HTMLAttributes<HTMLElement> {
     /** If omitted — карточка рендерится как статичное превью без ссылки и без стрелки-выноски. */
     href?: string;
@@ -497,14 +504,243 @@ interface ArticleCardProps extends React$1.HTMLAttributes<HTMLElement> {
     date?: string;
     /** Max tags to show (excess are clipped). Default 3. */
     maxTags?: number;
+    /**
+     * "default" — обычная карточка (обложка сверху, контент ниже).
+     * "wide" — широкая: обложка слева, теги и автор справа, заголовок с описанием
+     *   во всю ширину под обложкой.
+     * Default "default".
+     */
+    variant?: ArticleCardVariant;
 }
 /**
- * ArticleCard — floating glass-панель.
- * 350px fixed width, bg rgba(10,10,10,0.8) + backdrop-blur 10, pad 32.
- * Image 224h с линейным затемнением снизу → контент над ней (overlap).
- * Если передан `href` — карточка кликабельна и показывает стрелку-выноску.
+ * ArticleCard — floating glass-панель для списка статей на /media.
+ *
+ * Варианты:
+ * - default: обложка сверху (overlap), теги снизу обложки, title+description+author.
+ * - wide: обложка слева (~60%), справа колонка с тегами сверху и автором снизу,
+ *   title+description во всю ширину ниже.
+ *
+ * Высота карточки фиксирована. Типографика заголовка и описания адаптивна:
+ * система клэмпит заголовок по `maxTitleLines` и, измерив сколько строк он
+ * фактически занял, выбирает количество строк описания так, чтобы карточка
+ * сохраняла одинаковую высоту в сетке.
+ *
+ * Адаптивные правила (lines of title → lines of description):
+ *   default: 1→5, 2→3, 3→2
+ *   wide:    1→2, 2→1
  */
-declare function ArticleCard({ href, title, description, coverUrl, tags, authorName, authorAvatarUrl, date, maxTags, className, ...props }: ArticleCardProps): react_jsx_runtime.JSX.Element;
+declare function ArticleCard({ href, title, description, coverUrl, tags, authorName, authorAvatarUrl, date, maxTags, variant, className, ...props }: ArticleCardProps): react_jsx_runtime.JSX.Element;
+
+type GlossaryTermItem = {
+    slug: string;
+    title: string;
+    /** Href куда ведёт ссылка на термин. Обычно `/media/glossary/{slug}`. */
+    href: string;
+    tagIds?: string[];
+};
+type GlossaryScript = "cyrillic" | "latin";
+/**
+ * Возвращает скрипт первой буквы (cyrillic/latin). Используется для разделения
+ * списка на две вкладки А-Я / A-Z. Термины не на буквах (#, цифры) попадают
+ * в latin bucket.
+ */
+declare function getGlossaryTermScript(title: string): GlossaryScript;
+/**
+ * Группирующая буква (uppercase). Ё схлопывается в Е. Для не-буквенных
+ * символов возвращает "#".
+ */
+declare function getGlossaryTermLetter(title: string): string;
+interface GlossaryWidgetProps extends React$1.HTMLAttributes<HTMLElement> {
+    /** Все термины. Компонент сам сортирует и группирует. */
+    items: GlossaryTermItem[];
+    /** Ссылка на full-страницу глоссария. Дефолт `/media/glossary`. */
+    fullPageHref?: string;
+    /** Заголовок виджета. Дефолт «ГЛОССАРИЙ». */
+    heading?: string;
+    /** Placeholder поиска. */
+    searchPlaceholder?: string;
+    /** Максимум терминов всего. По дефолту показываем все. */
+    maxItems?: number;
+    /**
+     * Если задано — шапка (название + ссылка + поиск) закрепляется `sticky`
+     * на указанном значении `top` (CSS value, напр. "7rem"). Список терминов
+     * прокручивается вместе со страницей и уходит в фейд под шапкой через
+     * gradient-хвост. Если не задано — классическая раскладка одной карточкой.
+     */
+    stickyTop?: string;
+}
+/**
+ * GlossaryWidget — aside-колонка на /media с превью глоссария.
+ * Показывает header со стрелкой (ссылка на полный глоссарий), поиск
+ * и сгруппированный по буквам список терминов.
+ */
+declare function GlossaryWidget({ items, fullPageHref, heading, searchPlaceholder, maxItems, stickyTop, className, ...props }: GlossaryWidgetProps): react_jsx_runtime.JSX.Element;
+interface GlossaryListProps extends React$1.HTMLAttributes<HTMLDivElement> {
+    /** Все термины. */
+    items: GlossaryTermItem[];
+    /** Активный скрипт. */
+    script: GlossaryScript;
+}
+/**
+ * GlossaryList — 4-колоночный (multi-column) список терминов для /media/glossary.
+ * Принимает уже отфильтрованные по script/tag/query термины и рендерит их
+ * сгруппированными по букве с letter-headings.
+ */
+declare function GlossaryList({ items, script, className, ...props }: GlossaryListProps): react_jsx_runtime.JSX.Element;
+/**
+ * ScriptToggle — переключатель А-Я / A-Z для страницы глоссария.
+ */
+interface GlossaryScriptToggleProps extends Omit<React$1.HTMLAttributes<HTMLDivElement>, "onChange"> {
+    value: GlossaryScript;
+    onChange: (script: GlossaryScript) => void;
+}
+declare function GlossaryScriptToggle({ value, onChange, className, ...props }: GlossaryScriptToggleProps): react_jsx_runtime.JSX.Element;
+
+type ArticleBodyBlockType = "h2" | "h3" | "h4" | "paragraph" | "quote" | "image" | "gallery" | "video";
+interface ArticleGalleryItem {
+    id: string;
+    title: string;
+    src: string;
+    /** Тип контента таба. Default — image (для обратной совместимости). */
+    kind?: "image" | "video";
+    /** Опциональная подпись под активным медиа. Пустая — не рендерится. */
+    caption?: string;
+}
+interface ArticleBodyBlock {
+    id: string;
+    type: ArticleBodyBlockType;
+    data: {
+        text?: string;
+    } & Record<string, unknown>;
+}
+interface ArticleBodyProps extends React$1.HTMLAttributes<HTMLDivElement> {
+    blocks: ArticleBodyBlock[];
+}
+declare function slugify(input: string): string;
+/**
+ * ArticleBody — тело статьи /media/[slug]. Рендерит типизированные блоки
+ * (h2/h3/paragraph/quote) с единой логикой вертикального ритма.
+ * См. DS MD §11.7 для таблицы отступов.
+ *
+ * H2 получают id = slugify(text) — используются ArticleNav scrollspy-ом и
+ * якорными ссылками.
+ */
+declare function ArticleBody({ blocks, className, ...props }: ArticleBodyProps): react_jsx_runtime.JSX.Element | null;
+
+interface VideoPlayerProps extends Omit<React$1.VideoHTMLAttributes<HTMLVideoElement>, "controls" | "onError"> {
+    /** URL исходного видеофайла. Обязательный. */
+    src: string;
+    /** Постер-картинка до старта воспроизведения. */
+    poster?: string;
+    /** Классы для внешнего контейнера. */
+    className?: string;
+    /** Расширение классов для самого `<video>`. По умолчанию object-contain. */
+    videoClassName?: string;
+    /** Aspect-ratio контейнера до загрузки метаданных. Default: 16/9. */
+    aspectRatio?: number;
+}
+/**
+ * VideoPlayer — кастомный плеер поверх HTML5 `<video>`.
+ * Контролы: play/pause, scrubber, time, volume slider, fullscreen.
+ * Клавиши: Space/K — play/pause, ←/→ — ±5s, ↑/↓ — громкость ±5%,
+ * M — mute, F — fullscreen, Home/End — в начало/конец.
+ * Контролы автоскрываются через 2s при воспроизведении, показываются
+ * на hover/mousemove/focus. При паузе/на постере — всегда видны.
+ */
+declare function VideoPlayer({ src, poster, className, videoClassName, aspectRatio, preload, playsInline, ...rest }: VideoPlayerProps): react_jsx_runtime.JSX.Element;
+
+interface ExpertQuoteItem {
+    id: string;
+    /** Label — UPPERCASE тезис (Label 18 desktop / Label 16 mobile). */
+    label?: string;
+    /** Параграфы основного текста цитаты (Copy 16). */
+    paragraphs?: string[];
+    /** Имя автора (обязательно — хотя бы fallback). */
+    name: string;
+    /** Должность / роль. */
+    role: string;
+    /** URL аватара, 72×72 desktop / 64×64 mobile. */
+    avatarUrl?: string | null;
+}
+interface ExpertQuoteStackProps {
+    quotes: ExpertQuoteItem[];
+    /**
+     * Вариант раскладки:
+     *  - `mobile` — column-стэк с горизонтальным разделителем между text и
+     *    author внутри каждой цитаты, маленькие padding'и (20px);
+     *  - `narrow` — column в одной рамке, автор плашкой внизу, padding 32;
+     *  - `wide` — row-split: слева текст, справа автор, внутренний vertical
+     *    divider. Все элементы сетки делят общую рамку.
+     */
+    variant: "mobile" | "narrow" | "wide";
+    className?: string;
+}
+/**
+ * ExpertQuoteStack — монолитный блок из одной или нескольких цитат экспертов.
+ * Все цитаты делят общую рамку #404040; между ними — горизонтальный
+ * разделитель в один пиксель. Тёмная палитра фиксирована, независимо от
+ * темы страницы (спец-виджет — как Gallery/VideoPlayer).
+ */
+declare function ExpertQuoteStack({ quotes, variant, className, }: ExpertQuoteStackProps): react_jsx_runtime.JSX.Element | null;
+
+type SectionAsideChipCropMode = "top" | "center";
+interface SectionAsideChipProps extends Omit<React$1.AnchorHTMLAttributes<HTMLAnchorElement>, "title"> {
+    /** Текст внутри chip — название файла или ссылки. */
+    title: string;
+    /** Переход: для файла — fileUrl, для внешней ссылки — url. */
+    href: string;
+    /** Открывать ли превью 3:2 сверху. */
+    showPreview?: boolean;
+    /** Ручной preview-image URL (только когда showPreview=true). */
+    previewImageUrl?: string;
+    /** Как позиционировать превью при кропе 3:2: от верха картинки или по центру. */
+    previewCropMode?: SectionAsideChipCropMode;
+    /** `true` → `target=_blank`; для скачивания файла можно передать `download`. */
+    external?: boolean;
+    /** Если нужно скачивание (для файла) — передайте name. Передаёт атрибут `download`. */
+    download?: string;
+}
+/**
+ * SectionAsideChip — единый виджет правой колонки для файла и внешней ссылки.
+ * С превью — крупная карточка 3:2 сверху + строка с названием и стрелкой ↗.
+ * Без превью — компактная строка с названием и стрелкой.
+ *
+ * Вся карточка — кликабельная область (anchor). Иконка ↗ видимо усиливает
+ * affordance перехода, но сам по себе не захватывает клик — весь блок ссылка.
+ */
+declare const SectionAsideChip: React$1.ForwardRefExoticComponent<SectionAsideChipProps & React$1.RefAttributes<HTMLAnchorElement>>;
+
+interface SectionAsideProductCardExpert {
+    name: string;
+    image: string | null;
+}
+interface SectionAsideProductCardProps extends Omit<React$1.AnchorHTMLAttributes<HTMLAnchorElement>, "title"> {
+    /** URL страницы продукта (например `/consulting/ecosystem-strategy`). */
+    href: string;
+    /** Заголовок продукта (uppercase, 1–2 строки). */
+    title: string;
+    /** Короткое описание. */
+    description?: string;
+    /** Cover-иллюстрация продукта (если есть — convention `/images/products/<cat>/<slug>/cover.*`). */
+    coverUrl?: string | null;
+    /** Эксперты — первые 2 показываются, остальные → «+N». */
+    experts?: SectionAsideProductCardExpert[];
+    /**
+     * Визуальный вариант:
+     * - `default` — 72×72 thumb + аватары экспертов (используется для consulting).
+     * - `image` — широкая картинка 286×191 с bottom-fade градиентом, без экспертов
+     *   (см. Figma 1562:26932 — используется для academy/ai-products).
+     */
+    variant?: "default" | "image";
+}
+/**
+ * Мини-карточка продукта для правой колонки секции статьи.
+ * Варианты:
+ *   - `default` — верхний ряд: 72×72 cover + аватары экспертов (2 + «+N»).
+ *   - `image` — широкая cover-картинка с bottom-fade градиентом, без экспертов.
+ * Ниже — заголовок uppercase bold + описание. Стрелка ↗ в правом верхнем углу.
+ */
+declare const SectionAsideProductCard: React$1.ForwardRefExoticComponent<SectionAsideProductCardProps & React$1.RefAttributes<HTMLAnchorElement>>;
 
 type RichTextProps = {
     text: string;
@@ -908,4 +1144,4 @@ type SiteHeaderProps = {
 };
 declare function SiteHeader({ basePath, className, nav }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
 
-export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleCard, type ArticleCardProps, ArticleNav, type ArticleNavItem, type ArticleNavProps, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, type Expert, ExpertsSection, type ExpertsSectionProps, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type LogoMarqueeItem, MobileNav, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VkIcon, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants };
+export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, GlossaryList, type GlossaryListProps, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type LogoMarqueeItem, MobileNav, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants };

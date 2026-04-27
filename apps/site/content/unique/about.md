@@ -15,6 +15,8 @@ metaDescription: >-
 expertProduct: true
 caseType: null
 featured: null
+showInMenu: null
+showInFooter: null
 order: 0
 caseCard: null
 homeHero: null
@@ -57,23 +59,9 @@ hero:
       uppercase: false
       color: secondary
   descriptionBelow: true
-  showExperts: false
+  showExperts: true
 logoMarquee: null
-about:
-  caption: О продукте
-  title: "МИССИЯ И\_УНИКАЛЬНОСТЬ"
-  paragraphs:
-    - text: >-
-        Rocketmind объединяет лучших практиков бизнес-дизайна, стратегов и
-        технологов — чтобы помогать компаниям проектировать устойчивые
-        бизнес-модели и новые продуктовые направления.
-    - text: >-
-        Мы работаем на стыке методологии, технологии и предпринимательского
-        опыта, создавая стратегические решения, которые выдерживают проверку
-        рынком.
-  accordion: []
-  imageMode: image
-  hasImage: true
+about: null
 audience: null
 contacts:
   tag: контакты
@@ -89,7 +77,9 @@ contacts:
         - id: corp-p1
           kind: paragraph
           paragraph:
-            text: 'Стратегические сессии, программы обучения, сопровождение трансформаций.'
+            text: >-
+              Стратегические сессии, программы обучения, сопровождение
+              трансформаций.
             color: secondary
     - id: card-platforms
       title: Платформы
@@ -126,11 +116,13 @@ tools:
     - number: '03'
       title: Генеративное бизнес-моделирование
       text: Подход к быстрому созданию десятков гипотез бизнес-моделей.
+      accent: true
     - number: '04'
       title: Доступ к ИИ-агентам
       text: >-
         AI-агенты Rocketmind для анализа рынков, проектирования продуктов и
         поиска гипотез.
+  descriptionBelow: false
 results: null
 services: null
 process:
@@ -205,6 +197,7 @@ projects:
         alt: 2gis
         src: /images/unique/about/logos/cell-clip-1744800000001.svg
         size: S
+        padding: 24
       - id: clip-1744800000002
         alt: alfa 1
         src: /images/unique/about/logos/cell-clip-1744800000002.svg
@@ -225,6 +218,7 @@ projects:
         alt: gdrive 1
         src: /images/unique/about/logos/cell-clip-1744800000006.svg
         size: S
+        padding: 22
       - id: clip-1744800000007
         alt: gosuslugy
         src: /images/unique/about/logos/cell-clip-1744800000007.png
@@ -233,6 +227,7 @@ projects:
         alt: mail 1
         src: /images/unique/about/logos/cell-clip-1744800000008.svg
         size: S
+        padding: 22
       - id: clip-1744800000009
         alt: megafon 1
         src: /images/unique/about/logos/cell-clip-1744800000009.svg
@@ -245,11 +240,12 @@ projects:
         alt: mtc
         src: /images/unique/about/logos/cell-clip-1744800000011.svg
         size: S
+        padding: 26
       - id: clip-1744800000012
         alt: pochta ross
         src: /images/unique/about/logos/cell-clip-1744800000012.svg
         size: S
-        padding: 18
+        padding: 20
       - id: clip-1744800000013
         alt: rambler
         src: /images/unique/about/logos/cell-clip-1744800000013.svg
@@ -259,7 +255,7 @@ projects:
         alt: rbk
         src: /images/unique/about/logos/cell-clip-1744800000014.svg
         size: S
-        padding: 20
+        padding: 24
       - id: clip-1744800000015
         alt: red kvadr
         src: /images/unique/about/logos/cell-clip-1744800000015.svg
@@ -304,14 +300,17 @@ projects:
         alt: vk
         src: /images/unique/about/logos/cell-clip-1744800000025.svg
         size: S
+        padding: 18
       - id: clip-1744800000026
         alt: vtb
         src: /images/unique/about/logos/cell-clip-1744800000026.svg
         size: S
+        padding: 24
       - id: clip-1744800000027
         alt: x5
         src: /images/unique/about/logos/cell-clip-1744800000027.svg
         size: S
+        padding: 22
 pageBottom: {}
 customSections: null
 socialProof: null

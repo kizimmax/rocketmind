@@ -104,7 +104,7 @@ export function AboutHero({ description = "", paragraphs, factoids, experts, hea
         {/* Golden-ratio illustration — respects header, container padding, factoids */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute right-5 md:right-8 xl:right-14 top-[102px] lg:top-[184px] bottom-[160px] md:bottom-[200px] lg:bottom-[260px] z-0"
+          className="pointer-events-none absolute right-5 md:right-8 xl:right-14 top-16 bottom-[384px] md:bottom-[224px] xl:bottom-[112px] z-0"
         >
           <img
             src="/about/golden-ratio.svg"

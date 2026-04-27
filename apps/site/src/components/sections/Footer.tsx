@@ -2,6 +2,6 @@ import { getSiteNav } from "@/lib/site-nav";
 import { FooterShell } from "./FooterShell";
 
 export function Footer() {
-  const { nav, companyLinks, legalLinks } = getSiteNav();
-  return <FooterShell nav={nav} companyLinks={companyLinks} legalLinks={legalLinks} />;
+  const { footerNav, companyLinks, legalLinks } = getSiteNav();
+  return <FooterShell nav={footerNav} companyLinks={companyLinks} legalLinks={legalLinks} />;
 }

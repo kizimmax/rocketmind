@@ -43,6 +43,12 @@ export * from './components/ui/author';
 export * from './components/ui/key-thoughts';
 export * from './components/ui/article-nav';
 export * from './components/ui/article-card';
+export * from './components/ui/glossary';
+export * from './components/ui/article-body';
+export * from './components/ui/video-player';
+export * from './components/ui/expert-quote';
+export * from './components/ui/section-aside-chip';
+export * from './components/ui/section-aside-product-card';
 
 export * from './components/ui/rich-text';
 export * from './components/ui/styled-paragraphs';

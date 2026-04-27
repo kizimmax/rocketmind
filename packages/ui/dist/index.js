@@ -2394,16 +2394,17 @@ import { cva as cva8 } from "class-variance-authority";
 import { jsx as jsx34 } from "react/jsx-runtime";
 var tagVariants = cva8(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border transition-colors",
+    "inline-flex items-center justify-center gap-2 rounded-sm border transition-colors",
+    "max-w-full break-words text-left [overflow-wrap:anywhere]",
     "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] leading-[1.16]"
   ],
   {
     variants: {
       size: {
         // Large — hero article page
-        l: "h-7 px-2.5 text-[length:var(--text-14)]",
+        l: "min-h-7 px-2.5 py-[5px] text-[length:var(--text-14)]",
         // Medium — mobile hero
-        m: "h-7 px-2.5 text-[length:var(--text-12)]",
+        m: "min-h-7 px-2.5 py-[6px] text-[length:var(--text-12)]",
         // Small — card tile
         s: "py-1 px-2 text-[length:var(--text-12)]"
       },
@@ -2451,18 +2452,20 @@ function formatDate(iso) {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return dateFormatter.format(d) + " \u0433.";
+  return dateFormatter.format(d);
 }
 function Author({
   name,
   avatarUrl,
   date,
   variant = "full",
+  showAvatarFallback = true,
   className,
   ...props
 }) {
   const formatted = formatDate(date);
   const initials = name.split(" ").map((p) => p[0]).filter(Boolean).slice(0, 2).join("");
+  const showAvatar = !!avatarUrl || showAvatarFallback;
   if (variant === "short") {
     return /* @__PURE__ */ jsxs16(
       "div",
@@ -2470,7 +2473,7 @@ function Author({
         className: cn("flex items-center gap-2 text-[length:var(--text-14)] min-w-0 flex-nowrap", className),
         ...props,
         children: [
-          /* @__PURE__ */ jsxs16(Avatar, { size: "xs", className: "shrink-0 border-0", children: [
+          showAvatar && /* @__PURE__ */ jsxs16(Avatar, { size: "xs", className: "shrink-0 border-0", children: [
             avatarUrl ? /* @__PURE__ */ jsx35(AvatarImage, { src: avatarUrl, alt: name }) : null,
             /* @__PURE__ */ jsx35(AvatarFallback, { className: "text-[10px]", children: initials })
           ] }),
@@ -2492,7 +2495,7 @@ function Author({
       className: cn("flex items-stretch gap-3", className),
       ...props,
       children: [
-        /* @__PURE__ */ jsxs16(Avatar, { size: "md", className: "shrink-0 border-0", children: [
+        showAvatar && /* @__PURE__ */ jsxs16(Avatar, { size: "md", className: "shrink-0 border-0", children: [
           avatarUrl ? /* @__PURE__ */ jsx35(AvatarImage, { src: avatarUrl, alt: name }) : null,
           /* @__PURE__ */ jsx35(AvatarFallback, { className: "text-[length:var(--text-12)]", children: initials })
         ] }),
@@ -2573,7 +2576,7 @@ function ArticleNav({
 }
 
 // src/components/ui/article-card.tsx
-import { ArrowUpRight } from "lucide-react";
+import * as React13 from "react";
 import { Fragment as Fragment5, jsx as jsx38, jsxs as jsxs17 } from "react/jsx-runtime";
 function ArticleCard({
   href,
@@ -2585,22 +2588,54 @@ function ArticleCard({
   authorAvatarUrl,
   date,
   maxTags = 3,
+  variant = "default",
   className,
   ...props
 }) {
   const visibleTags = (tags ?? []).slice(0, maxTags);
+  const titleRef = React13.useRef(null);
+  const [titleLines, setTitleLines] = React13.useState(1);
+  const maxTitleLines = variant === "wide" ? 2 : 3;
+  React13.useLayoutEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    const compute = () => {
+      const lh = parseFloat(getComputedStyle(el).lineHeight);
+      if (!lh || Number.isNaN(lh)) return;
+      const h = el.offsetHeight;
+      const lines = Math.min(maxTitleLines, Math.max(1, Math.round(h / lh)));
+      setTitleLines(lines);
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [title, maxTitleLines, variant]);
+  const descClamp = variant === "wide" ? titleLines <= 1 ? 2 : 1 : titleLines <= 1 ? 5 : titleLines === 2 ? 3 : 2;
   return /* @__PURE__ */ jsxs17(
     "article",
     {
       className: cn(
-        "group relative flex w-[350px] flex-col",
-        "rounded-sm border border-[color:var(--rm-gray-3)]",
-        "bg-[rgba(10,10,10,0.8)] backdrop-blur-[10px]",
+        "group relative flex w-full flex-col",
+        "rounded-sm border border-[color:var(--rm-gray-3)] transition-[border-color] duration-75",
+        "md:hover:z-10 md:active:[border-color:var(--rm-yellow-100)]",
         "p-8",
         className
       ),
       ...props,
       children: [
+        /* @__PURE__ */ jsx38("div", { className: "hidden md:block", children: /* @__PURE__ */ jsx38(
+          GlowingEffect,
+          {
+            spread: 40,
+            glow: false,
+            disabled: false,
+            proximity: 40,
+            inactiveZone: 0.01,
+            borderWidth: 1,
+            variant: "yellow"
+          }
+        ) }),
         href && /* @__PURE__ */ jsxs17(Fragment5, { children: [
           /* @__PURE__ */ jsx38(
             "a",
@@ -2611,51 +2646,78 @@ function ArticleCard({
             }
           ),
           /* @__PURE__ */ jsx38(
-            "span",
-            {
-              className: "absolute right-2 top-2 z-[2] inline-flex h-10 w-10 items-center justify-center rounded-sm text-[color:var(--rm-gray-fg-main)] transition-colors group-hover:text-[color:var(--rm-yellow-100)]",
-              "aria-hidden": true,
-              children: /* @__PURE__ */ jsx38(ArrowUpRight, { className: "h-5 w-5", strokeWidth: 1.5 })
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxs17("div", { className: "relative -mx-[0] mb-[-53px] h-56 overflow-hidden", children: [
-          coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            /* @__PURE__ */ jsx38(
-              "img",
-              {
-                src: coverUrl,
-                alt: "",
-                className: "h-full w-full object-cover",
-                "aria-hidden": true
-              }
-            )
-          ) : /* @__PURE__ */ jsx38("div", { className: "h-full w-full bg-[color:var(--rm-gray-1)]", "aria-hidden": true }),
-          /* @__PURE__ */ jsx38(
             "div",
             {
-              className: "pointer-events-none absolute inset-0",
-              style: {
-                background: "linear-gradient(0deg, rgba(10,10,10,1) 0%, rgba(10,10,10,0.72) 22%, rgba(10,10,10,0) 100%)"
-              },
-              "aria-hidden": true
+              className: "pointer-events-none absolute right-[2px] top-[2px] z-[2] flex h-10 w-10 items-center justify-center rounded-[4px] text-[#404040] transition-all duration-200 group-hover:-right-[2px] group-hover:-top-[2px] group-hover:text-[#F0F0F0]",
+              "aria-hidden": true,
+              children: /* @__PURE__ */ jsx38("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx38(
+                "path",
+                {
+                  d: "M1 10L10 1M10 1H3M10 1V8",
+                  stroke: "currentColor",
+                  strokeWidth: "2",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round"
+                }
+              ) })
             }
           )
         ] }),
-        visibleTags.length > 0 && /* @__PURE__ */ jsx38("div", { className: "relative z-[1] mt-[-24px] flex flex-wrap gap-x-2 gap-y-1", children: visibleTags.map((t) => /* @__PURE__ */ jsx38(Tag, { size: "s", children: t }, t)) }),
-        /* @__PURE__ */ jsxs17("div", { className: "relative z-[1] mt-7 flex flex-col gap-5", children: [
+        variant === "wide" ? /* @__PURE__ */ jsx38(
+          WideLayout,
+          {
+            coverUrl,
+            visibleTags,
+            authorName,
+            authorAvatarUrl,
+            date
+          }
+        ) : /* @__PURE__ */ jsx38(
+          DefaultLayout,
+          {
+            coverUrl,
+            visibleTags
+          }
+        ),
+        /* @__PURE__ */ jsxs17("div", { className: "relative z-[1] mt-7 flex flex-1 flex-col gap-5", children: [
           /* @__PURE__ */ jsxs17("div", { className: "flex flex-col gap-3", children: [
-            /* @__PURE__ */ jsx38("h3", { className: "font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] uppercase tracking-[-0.01em] leading-[1.2] text-[color:var(--rm-gray-fg-main)]", children: title }),
-            description && /* @__PURE__ */ jsx38("p", { className: "line-clamp-3 text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[color:var(--rm-gray-fg-sub)]", children: description })
+            /* @__PURE__ */ jsx38(
+              "h3",
+              {
+                ref: titleRef,
+                className: "font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-24)] uppercase tracking-[-0.01em] leading-[1.2] text-[color:var(--rm-gray-fg-main)]",
+                style: {
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: maxTitleLines,
+                  overflow: "hidden"
+                },
+                children: title
+              }
+            ),
+            description && /* @__PURE__ */ jsx38(
+              "p",
+              {
+                className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[color:var(--rm-gray-fg-sub)]",
+                style: {
+                  display: "-webkit-box",
+                  WebkitBoxOrient: "vertical",
+                  WebkitLineClamp: descClamp,
+                  overflow: "hidden"
+                },
+                children: description
+              }
+            )
           ] }),
-          authorName && /* @__PURE__ */ jsx38(
+          variant === "default" && authorName && /* @__PURE__ */ jsx38(
             Author,
             {
               variant: "short",
               name: authorName,
               avatarUrl: authorAvatarUrl,
-              date
+              date,
+              showAvatarFallback: false,
+              className: "mt-auto"
             }
           )
         ] })
@@ -2663,14 +2725,1599 @@ function ArticleCard({
     }
   );
 }
+function DefaultLayout({
+  coverUrl,
+  visibleTags
+}) {
+  return /* @__PURE__ */ jsx38(Fragment5, { children: /* @__PURE__ */ jsxs17("div", { className: "relative aspect-[3/2] w-full overflow-hidden rounded-sm", children: [
+    coverUrl ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      /* @__PURE__ */ jsx38(
+        "img",
+        {
+          src: coverUrl,
+          alt: "",
+          className: "h-full w-full object-cover",
+          "aria-hidden": true
+        }
+      )
+    ) : /* @__PURE__ */ jsx38("div", { className: "h-full w-full bg-[color:var(--rm-gray-1)]", "aria-hidden": true }),
+    /* @__PURE__ */ jsx38(
+      "div",
+      {
+        className: "pointer-events-none absolute inset-0",
+        style: {
+          background: "linear-gradient(0deg, rgba(10,10,10,1) 0%, rgba(10,10,10,0.72) 22%, rgba(10,10,10,0) 100%)"
+        },
+        "aria-hidden": true
+      }
+    ),
+    visibleTags.length > 0 && /* @__PURE__ */ jsx38("div", { className: "absolute inset-x-0 bottom-3 z-[1] flex flex-wrap-reverse gap-x-2 gap-y-1", children: visibleTags.map((t) => /* @__PURE__ */ jsx38(Tag, { size: "s", children: t }, t)) })
+  ] }) });
+}
+function WideLayout({
+  coverUrl,
+  visibleTags,
+  authorName,
+  authorAvatarUrl,
+  date
+}) {
+  return /* @__PURE__ */ jsxs17("div", { className: "relative z-[0] flex gap-6", children: [
+    /* @__PURE__ */ jsx38("div", { className: "relative aspect-[4/3] flex-[3] overflow-hidden rounded-sm", children: coverUrl ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      /* @__PURE__ */ jsx38(
+        "img",
+        {
+          src: coverUrl,
+          alt: "",
+          className: "h-full w-full object-cover",
+          "aria-hidden": true
+        }
+      )
+    ) : /* @__PURE__ */ jsx38("div", { className: "h-full w-full bg-[color:var(--rm-gray-1)]", "aria-hidden": true }) }),
+    /* @__PURE__ */ jsxs17("div", { className: "flex flex-[2] flex-col justify-between gap-4", children: [
+      visibleTags.length > 0 && /* @__PURE__ */ jsx38("div", { className: "flex flex-col items-start gap-1.5", children: visibleTags.map((t) => /* @__PURE__ */ jsx38(Tag, { size: "s", children: t }, t)) }),
+      authorName && /* @__PURE__ */ jsx38(
+        Author,
+        {
+          variant: "full",
+          name: authorName,
+          avatarUrl: authorAvatarUrl,
+          date,
+          showAvatarFallback: false
+        }
+      )
+    ] })
+  ] });
+}
+
+// src/components/ui/glossary.tsx
+import * as React14 from "react";
+import { Search as Search2 } from "lucide-react";
+import { Fragment as Fragment6, jsx as jsx39, jsxs as jsxs18 } from "react/jsx-runtime";
+function getGlossaryTermScript(title) {
+  const ch = title.trim().charAt(0);
+  return /[А-Яа-яЁё]/.test(ch) ? "cyrillic" : "latin";
+}
+function getGlossaryTermLetter(title) {
+  const ch = title.trim().charAt(0).toUpperCase();
+  if (/[А-ЯЁ]/.test(ch)) return ch === "\u0401" ? "\u0415" : ch;
+  if (/[A-Z]/.test(ch)) return ch;
+  return "#";
+}
+function groupByLetter(items) {
+  const map = /* @__PURE__ */ new Map();
+  for (const it of items) {
+    const letter = getGlossaryTermLetter(it.title);
+    const bucket = map.get(letter) ?? [];
+    bucket.push(it);
+    map.set(letter, bucket);
+  }
+  const letters = Array.from(map.keys()).sort(
+    (a, b) => a.localeCompare(b, "ru")
+  );
+  return letters.map((letter) => ({
+    letter,
+    items: (map.get(letter) ?? []).sort(
+      (a, b) => a.title.localeCompare(b.title, "ru")
+    )
+  }));
+}
+function GlossaryWidget({
+  items,
+  fullPageHref = "/media/glossary",
+  heading = "\u0413\u043B\u043E\u0441\u0441\u0430\u0440\u0438\u0439",
+  searchPlaceholder = "\u041D\u0430\u0439\u0442\u0438 \u0442\u0435\u0440\u043C\u0438\u043D",
+  maxItems,
+  stickyTop,
+  className,
+  ...props
+}) {
+  const [query, setQuery] = React14.useState("");
+  const filtered = React14.useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const src = q ? items.filter((i) => i.title.toLowerCase().includes(q)) : items;
+    return maxItems ? src.slice(0, maxItems) : src;
+  }, [items, query, maxItems]);
+  const groups = React14.useMemo(() => groupByLetter(filtered), [filtered]);
+  const headContent = /* @__PURE__ */ jsxs18(Fragment6, { children: [
+    /* @__PURE__ */ jsxs18(
+      "a",
+      {
+        href: fullPageHref,
+        className: "group/widget flex items-center justify-between gap-2",
+        children: [
+          /* @__PURE__ */ jsx39("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase tracking-[-0.01em] leading-[1.16] text-[color:var(--rm-gray-fg-main)]", children: heading }),
+          /* @__PURE__ */ jsx39("span", { className: "inline-flex h-8 w-8 items-center justify-center rounded-[4px] text-[#404040] transition-colors group-hover/widget:text-[#F0F0F0]", children: /* @__PURE__ */ jsx39("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx39(
+            "path",
+            {
+              d: "M1 10L10 1M10 1H3M10 1V8",
+              stroke: "currentColor",
+              strokeWidth: "2",
+              strokeLinecap: "round",
+              strokeLinejoin: "round"
+            }
+          ) }) })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxs18("label", { className: "flex items-center gap-2 rounded-sm border border-[color:var(--rm-gray-3)] bg-transparent px-3 py-2 focus-within:border-[color:var(--rm-yellow-100)]", children: [
+      /* @__PURE__ */ jsx39(
+        Search2,
+        {
+          className: "h-4 w-4 shrink-0 text-[color:var(--rm-gray-fg-sub)]",
+          strokeWidth: 1.5,
+          "aria-hidden": true
+        }
+      ),
+      /* @__PURE__ */ jsx39(
+        "input",
+        {
+          type: "text",
+          value: query,
+          onChange: (e) => setQuery(e.target.value),
+          placeholder: searchPlaceholder,
+          className: "min-w-0 flex-1 bg-transparent text-[length:var(--text-14)] leading-[1.32] text-[color:var(--rm-gray-fg-main)] placeholder:text-[color:var(--rm-gray-fg-sub)] focus:outline-none"
+        }
+      )
+    ] })
+  ] });
+  const groupsList = /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-5", children: [
+    groups.length === 0 && /* @__PURE__ */ jsx39("p", { className: "py-2 text-[length:var(--text-14)] text-[color:var(--rm-gray-fg-sub)]", children: "\u041D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0448\u043B\u043E\u0441\u044C." }),
+    groups.map((g) => /* @__PURE__ */ jsx39(LetterGroupBlock, { group: g }, g.letter))
+  ] });
+  if (stickyTop !== void 0) {
+    return /* @__PURE__ */ jsxs18("aside", { className: cn("isolate flex flex-col", className), ...props, children: [
+      /* @__PURE__ */ jsxs18("div", { className: "sticky z-20", style: { top: stickyTop }, children: [
+        /* @__PURE__ */ jsx39("div", { className: "flex flex-col gap-5 rounded-sm bg-[color:var(--rm-gray-1)] p-6", children: headContent }),
+        /* @__PURE__ */ jsx39(
+          "div",
+          {
+            "aria-hidden": true,
+            className: "pointer-events-none h-10 bg-gradient-to-b from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsx39("div", { className: "relative z-0 -mt-10 rounded-sm bg-[color:var(--rm-gray-1)] p-6", children: groupsList })
+    ] });
+  }
+  return /* @__PURE__ */ jsxs18(
+    "aside",
+    {
+      className: cn(
+        "flex flex-col gap-5",
+        "rounded-sm bg-[color:var(--rm-gray-1)]",
+        "p-6",
+        className
+      ),
+      ...props,
+      children: [
+        headContent,
+        groupsList
+      ]
+    }
+  );
+}
+function LetterGroupBlock({ group }) {
+  return /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-2", children: [
+    /* @__PURE__ */ jsx39("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold uppercase tracking-[-0.01em] leading-[1.2] text-[color:var(--rm-yellow-100)]", children: group.letter }),
+    /* @__PURE__ */ jsx39("ul", { className: "flex flex-col gap-1.5", children: group.items.map((item) => /* @__PURE__ */ jsx39("li", { children: /* @__PURE__ */ jsx39(
+      "a",
+      {
+        href: item.href,
+        className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[color:var(--rm-gray-fg-sub)] transition-colors hover:text-[color:var(--rm-yellow-100)]",
+        children: item.title
+      }
+    ) }, item.slug)) })
+  ] });
+}
+function GlossaryList({
+  items,
+  script,
+  className,
+  ...props
+}) {
+  const filtered = React14.useMemo(
+    () => items.filter((i) => getGlossaryTermScript(i.title) === script),
+    [items, script]
+  );
+  const groups = React14.useMemo(() => groupByLetter(filtered), [filtered]);
+  if (groups.length === 0) {
+    return /* @__PURE__ */ jsx39("p", { className: cn("py-16 text-center text-[length:var(--text-14)] text-[color:var(--rm-gray-fg-sub)]", className), children: "\u041F\u043E \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u044B\u043C \u0444\u0438\u043B\u044C\u0442\u0440\u0430\u043C \u0442\u0435\u0440\u043C\u0438\u043D\u043E\u0432 \u043D\u0435\u0442." });
+  }
+  return /* @__PURE__ */ jsx39(
+    "div",
+    {
+      className: cn(
+        "columns-1 gap-x-8 [column-fill:_balance] sm:columns-2 lg:columns-3 xl:columns-4",
+        className
+      ),
+      ...props,
+      children: groups.map((g) => /* @__PURE__ */ jsx39("div", { className: "mb-10 break-inside-avoid", children: /* @__PURE__ */ jsx39(LetterGroupBlock, { group: g }) }, g.letter))
+    }
+  );
+}
+function GlossaryScriptToggle({
+  value,
+  onChange,
+  className,
+  ...props
+}) {
+  return /* @__PURE__ */ jsxs18(
+    "div",
+    {
+      className: cn("inline-flex items-center gap-6", className),
+      role: "tablist",
+      ...props,
+      children: [
+        /* @__PURE__ */ jsx39(
+          "button",
+          {
+            type: "button",
+            role: "tab",
+            "aria-selected": value === "cyrillic",
+            onClick: () => onChange("cyrillic"),
+            className: cn(
+              "font-[family-name:var(--font-heading-family)] text-[length:var(--text-32)] font-bold uppercase tracking-[-0.02em] leading-[1.08] transition-colors",
+              value === "cyrillic" ? "text-[color:var(--rm-gray-fg-main)]" : "text-[color:var(--rm-gray-fg-sub)] hover:text-[color:var(--rm-gray-fg-main)]"
+            ),
+            children: "\u0410-\u042F"
+          }
+        ),
+        /* @__PURE__ */ jsx39(
+          "button",
+          {
+            type: "button",
+            role: "tab",
+            "aria-selected": value === "latin",
+            onClick: () => onChange("latin"),
+            className: cn(
+              "font-[family-name:var(--font-heading-family)] text-[length:var(--text-32)] font-bold uppercase tracking-[-0.02em] leading-[1.08] transition-colors",
+              value === "latin" ? "text-[color:var(--rm-gray-fg-main)]" : "text-[color:var(--rm-gray-fg-sub)] hover:text-[color:var(--rm-gray-fg-main)]"
+            ),
+            children: "A-Z"
+          }
+        )
+      ]
+    }
+  );
+}
+
+// src/components/ui/article-body.tsx
+import * as React16 from "react";
+
+// src/components/ui/video-player.tsx
+import * as React15 from "react";
+import {
+  Loader2,
+  Maximize,
+  Minimize,
+  Pause,
+  Play,
+  Volume2,
+  VolumeX
+} from "lucide-react";
+import { jsx as jsx40, jsxs as jsxs19 } from "react/jsx-runtime";
+function formatTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const total = Math.floor(seconds);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor(total % 3600 / 60);
+  const s = total % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+var HIDE_CONTROLS_DELAY = 2e3;
+function VideoPlayer({
+  src,
+  poster,
+  className,
+  videoClassName,
+  aspectRatio = 16 / 9,
+  preload = "metadata",
+  playsInline = true,
+  ...rest
+}) {
+  const containerRef = React15.useRef(null);
+  const videoRef = React15.useRef(null);
+  const hideTimerRef = React15.useRef(null);
+  const wasPlayingBeforeScrubRef = React15.useRef(false);
+  const [isPlaying, setIsPlaying] = React15.useState(false);
+  const [isBuffering, setIsBuffering] = React15.useState(false);
+  const [isMuted, setIsMuted] = React15.useState(false);
+  const [volume, setVolume] = React15.useState(1);
+  const [currentTime, setCurrentTime] = React15.useState(0);
+  const [duration, setDuration] = React15.useState(0);
+  const [buffered, setBuffered] = React15.useState(0);
+  const [isFullscreen, setIsFullscreen] = React15.useState(false);
+  const [controlsVisible, setControlsVisible] = React15.useState(true);
+  const [hasStarted, setHasStarted] = React15.useState(false);
+  const [hasError, setHasError] = React15.useState(false);
+  const [isScrubbing, setIsScrubbing] = React15.useState(false);
+  const scheduleHide = React15.useCallback(() => {
+    if (hideTimerRef.current !== null) {
+      window.clearTimeout(hideTimerRef.current);
+    }
+    hideTimerRef.current = window.setTimeout(() => {
+      setControlsVisible(false);
+    }, HIDE_CONTROLS_DELAY);
+  }, []);
+  const showControls = React15.useCallback(() => {
+    setControlsVisible(true);
+    if (hideTimerRef.current !== null) {
+      window.clearTimeout(hideTimerRef.current);
+    }
+    if (isPlaying && !isScrubbing) scheduleHide();
+  }, [isPlaying, isScrubbing, scheduleHide]);
+  React15.useEffect(() => {
+    if (!isPlaying || isScrubbing) {
+      if (hideTimerRef.current !== null) {
+        window.clearTimeout(hideTimerRef.current);
+      }
+      setControlsVisible(true);
+      return;
+    }
+    scheduleHide();
+    return () => {
+      if (hideTimerRef.current !== null) {
+        window.clearTimeout(hideTimerRef.current);
+      }
+    };
+  }, [isPlaying, isScrubbing, scheduleHide]);
+  React15.useEffect(() => {
+    const onChange = () => {
+      const fsEl = document.fullscreenElement ?? document.webkitFullscreenElement ?? null;
+      setIsFullscreen(fsEl === containerRef.current);
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("webkitfullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("webkitfullscreenchange", onChange);
+    };
+  }, []);
+  const togglePlay = React15.useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused || v.ended) {
+      v.play().catch(() => {
+      });
+    } else {
+      v.pause();
+    }
+  }, []);
+  const seekTo = React15.useCallback((time) => {
+    const v = videoRef.current;
+    if (!v || !Number.isFinite(v.duration)) return;
+    v.currentTime = clamp(time, 0, v.duration);
+  }, []);
+  const seekBy = React15.useCallback(
+    (delta) => {
+      const v = videoRef.current;
+      if (!v) return;
+      seekTo(v.currentTime + delta);
+    },
+    [seekTo]
+  );
+  const setVolumeValue = React15.useCallback((value) => {
+    const v = videoRef.current;
+    if (!v) return;
+    const next = clamp(value, 0, 1);
+    v.volume = next;
+    if (next > 0 && v.muted) v.muted = false;
+  }, []);
+  const toggleMute = React15.useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = !v.muted;
+    if (!v.muted && v.volume === 0) {
+      v.volume = 0.5;
+    }
+  }, []);
+  const toggleFullscreen = React15.useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const doc = document;
+    const fsEl = document.fullscreenElement ?? doc.webkitFullscreenElement;
+    if (fsEl) {
+      if (document.exitFullscreen) document.exitFullscreen().catch(() => {
+      });
+      else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
+    } else {
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {
+      });
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    }
+  }, []);
+  const scrubberRef = React15.useRef(null);
+  const updateScrubFromPointer = React15.useCallback(
+    (clientX) => {
+      const el = scrubberRef.current;
+      const v = videoRef.current;
+      if (!el || !v || !Number.isFinite(v.duration)) return;
+      const rect = el.getBoundingClientRect();
+      const pct = clamp((clientX - rect.left) / rect.width, 0, 1);
+      const nextTime = pct * v.duration;
+      setCurrentTime(nextTime);
+      if (!isScrubbing) {
+        v.currentTime = nextTime;
+      }
+    },
+    [isScrubbing]
+  );
+  const handleScrubPointerDown = (e) => {
+    const v = videoRef.current;
+    if (!v) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    wasPlayingBeforeScrubRef.current = !v.paused;
+    if (!v.paused) v.pause();
+    setIsScrubbing(true);
+    updateScrubFromPointer(e.clientX);
+  };
+  const handleScrubPointerMove = (e) => {
+    if (!isScrubbing) return;
+    updateScrubFromPointer(e.clientX);
+  };
+  const handleScrubPointerUp = (e) => {
+    const v = videoRef.current;
+    if (!v) {
+      setIsScrubbing(false);
+      return;
+    }
+    try {
+      ;
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+    }
+    const el = scrubberRef.current;
+    if (el && Number.isFinite(v.duration)) {
+      const rect = el.getBoundingClientRect();
+      const pct = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+      v.currentTime = pct * v.duration;
+    }
+    setIsScrubbing(false);
+    if (wasPlayingBeforeScrubRef.current) {
+      v.play().catch(() => {
+      });
+    }
+  };
+  const volumeRef = React15.useRef(null);
+  const [isVolScrubbing, setIsVolScrubbing] = React15.useState(false);
+  const updateVolumeFromPointer = React15.useCallback(
+    (clientX) => {
+      const el = volumeRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const pct = clamp((clientX - rect.left) / rect.width, 0, 1);
+      setVolumeValue(pct);
+    },
+    [setVolumeValue]
+  );
+  const handleVolPointerDown = (e) => {
+    ;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsVolScrubbing(true);
+    updateVolumeFromPointer(e.clientX);
+  };
+  const handleVolPointerMove = (e) => {
+    if (!isVolScrubbing) return;
+    updateVolumeFromPointer(e.clientX);
+  };
+  const handleVolPointerUp = (e) => {
+    try {
+      ;
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+    }
+    setIsVolScrubbing(false);
+  };
+  const handleKeyDown = (e) => {
+    const tag = e.target.tagName?.toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    const v = videoRef.current;
+    if (!v) return;
+    showControls();
+    switch (e.key) {
+      case " ":
+      case "k":
+      case "K":
+        e.preventDefault();
+        togglePlay();
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        seekBy(-5);
+        break;
+      case "ArrowRight":
+        e.preventDefault();
+        seekBy(5);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setVolumeValue(v.volume + 0.05);
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        setVolumeValue(v.volume - 0.05);
+        break;
+      case "m":
+      case "M":
+        e.preventDefault();
+        toggleMute();
+        break;
+      case "f":
+      case "F":
+        e.preventDefault();
+        toggleFullscreen();
+        break;
+      case "Home":
+        e.preventDefault();
+        seekTo(0);
+        break;
+      case "End":
+        e.preventDefault();
+        if (Number.isFinite(v.duration)) seekTo(v.duration);
+        break;
+      default:
+        break;
+    }
+  };
+  const handlePlay = () => {
+    setIsPlaying(true);
+    setHasStarted(true);
+  };
+  const handlePause = () => setIsPlaying(false);
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || isScrubbing) return;
+    setCurrentTime(v.currentTime);
+  };
+  const handleDurationChange = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (Number.isFinite(v.duration)) setDuration(v.duration);
+  };
+  const handleProgress = () => {
+    const v = videoRef.current;
+    if (!v || v.buffered.length === 0 || !Number.isFinite(v.duration)) return;
+    setBuffered(v.buffered.end(v.buffered.length - 1));
+  };
+  const handleVolumeChange = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setVolume(v.volume);
+    setIsMuted(v.muted || v.volume === 0);
+  };
+  const handleWaiting = () => setIsBuffering(true);
+  const handlePlaying = () => setIsBuffering(false);
+  const handleCanPlay = () => setIsBuffering(false);
+  const handleEnded = () => setIsPlaying(false);
+  const handleVideoError = () => {
+    setHasError(true);
+    setIsBuffering(false);
+  };
+  const progressPct = duration > 0 ? currentTime / duration * 100 : 0;
+  const bufferedPct = duration > 0 ? buffered / duration * 100 : 0;
+  const volumePct = (isMuted ? 0 : volume) * 100;
+  const effectiveControlsVisible = controlsVisible || !isPlaying || isScrubbing || !hasStarted;
+  return /* @__PURE__ */ jsxs19(
+    "div",
+    {
+      ref: containerRef,
+      tabIndex: 0,
+      onKeyDown: handleKeyDown,
+      onMouseMove: showControls,
+      onMouseEnter: showControls,
+      onMouseLeave: () => {
+        if (isPlaying && !isScrubbing) setControlsVisible(false);
+      },
+      onFocus: showControls,
+      onContextMenu: (e) => e.preventDefault(),
+      className: cn(
+        "group/video relative w-full overflow-hidden bg-black",
+        "rounded-[4px] outline-none",
+        "focus-visible:ring-2 focus-visible:ring-[color:var(--rm-yellow-100)]",
+        isFullscreen && "rounded-none",
+        className
+      ),
+      style: isFullscreen ? void 0 : { aspectRatio: String(aspectRatio) },
+      "data-state": isPlaying ? "playing" : "paused",
+      children: [
+        /* @__PURE__ */ jsx40(
+          "video",
+          {
+            ref: videoRef,
+            src,
+            poster,
+            preload,
+            playsInline,
+            onClick: togglePlay,
+            onPlay: handlePlay,
+            onPause: handlePause,
+            onTimeUpdate: handleTimeUpdate,
+            onDurationChange: handleDurationChange,
+            onLoadedMetadata: handleDurationChange,
+            onProgress: handleProgress,
+            onVolumeChange: handleVolumeChange,
+            onWaiting: handleWaiting,
+            onPlaying: handlePlaying,
+            onCanPlay: handleCanPlay,
+            onEnded: handleEnded,
+            onError: handleVideoError,
+            className: cn(
+              "absolute inset-0 h-full w-full cursor-pointer bg-black",
+              "object-contain",
+              videoClassName
+            ),
+            ...rest
+          }
+        ),
+        !isPlaying && !isBuffering && !hasError && /* @__PURE__ */ jsx40(
+          "button",
+          {
+            type: "button",
+            "aria-label": "\u0412\u043E\u0441\u043F\u0440\u043E\u0438\u0437\u0432\u0435\u0441\u0442\u0438",
+            onClick: togglePlay,
+            className: cn(
+              "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+              "flex h-16 w-16 items-center justify-center rounded-full",
+              "bg-[color:var(--rm-yellow-100)] text-[#0A0A0A]",
+              "shadow-[0_4px_24px_rgba(0,0,0,0.35)]",
+              "transition-transform duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
+              "hover:scale-[1.06] active:scale-[0.98]"
+            ),
+            children: /* @__PURE__ */ jsx40(Play, { className: "h-6 w-6 translate-x-[1px]", fill: "currentColor" })
+          }
+        ),
+        isBuffering && !hasError && /* @__PURE__ */ jsx40("div", { className: "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2", children: /* @__PURE__ */ jsx40(Loader2, { className: "h-10 w-10 animate-spin text-[#F0F0F0]/90" }) }),
+        hasError && /* @__PURE__ */ jsx40("div", { className: "absolute inset-0 flex items-center justify-center bg-black/60 px-6 text-center", children: /* @__PURE__ */ jsx40("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[#F0F0F0]", children: "\u0412\u0438\u0434\u0435\u043E \u043D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C" }) }),
+        /* @__PURE__ */ jsxs19(
+          "div",
+          {
+            className: cn(
+              "pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 px-3 pb-3 pt-6 md:px-4 md:pb-4",
+              "bg-gradient-to-t from-black/75 via-black/40 to-transparent",
+              "transition-opacity duration-[var(--duration-standard)] ease-[var(--ease-standard)]",
+              effectiveControlsVisible ? "opacity-100" : "opacity-0"
+            ),
+            children: [
+              /* @__PURE__ */ jsxs19(
+                "div",
+                {
+                  ref: scrubberRef,
+                  role: "slider",
+                  "aria-label": "\u041F\u0435\u0440\u0435\u043C\u043E\u0442\u043A\u0430",
+                  "aria-valuemin": 0,
+                  "aria-valuemax": duration || 0,
+                  "aria-valuenow": currentTime,
+                  onPointerDown: handleScrubPointerDown,
+                  onPointerMove: handleScrubPointerMove,
+                  onPointerUp: handleScrubPointerUp,
+                  onPointerCancel: handleScrubPointerUp,
+                  className: cn(
+                    "pointer-events-auto group/bar relative h-3 cursor-pointer touch-none select-none",
+                    "flex items-center"
+                  ),
+                  children: [
+                    /* @__PURE__ */ jsxs19("div", { className: "relative h-[3px] w-full overflow-hidden rounded-full bg-white/20 transition-[height] duration-[var(--duration-fast)] ease-[var(--ease-standard)] group-hover/bar:h-[5px] data-[scrub=true]:h-[5px]", "data-scrub": isScrubbing, children: [
+                      /* @__PURE__ */ jsx40(
+                        "div",
+                        {
+                          className: "absolute inset-y-0 left-0 bg-white/35",
+                          style: { width: `${bufferedPct}%` }
+                        }
+                      ),
+                      /* @__PURE__ */ jsx40(
+                        "div",
+                        {
+                          className: "absolute inset-y-0 left-0 bg-[color:var(--rm-yellow-100)]",
+                          style: { width: `${progressPct}%` }
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsx40(
+                      "div",
+                      {
+                        className: cn(
+                          "absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[color:var(--rm-yellow-100)]",
+                          "shadow-[0_0_0_2px_rgba(0,0,0,0.25)]",
+                          "opacity-0 transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
+                          "group-hover/bar:opacity-100",
+                          isScrubbing && "opacity-100"
+                        ),
+                        style: { left: `${progressPct}%` }
+                      }
+                    )
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs19("div", { className: "pointer-events-auto flex items-center gap-2 md:gap-3", children: [
+                /* @__PURE__ */ jsx40(ControlButton, { onClick: togglePlay, label: isPlaying ? "\u041F\u0430\u0443\u0437\u0430" : "\u0412\u043E\u0441\u043F\u0440\u043E\u0438\u0437\u0432\u0435\u0441\u0442\u0438", children: isPlaying ? /* @__PURE__ */ jsx40(Pause, { className: "h-4 w-4 md:h-5 md:w-5", fill: "currentColor" }) : /* @__PURE__ */ jsx40(Play, { className: "h-4 w-4 translate-x-[1px] md:h-5 md:w-5", fill: "currentColor" }) }),
+                /* @__PURE__ */ jsxs19("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-[0.02em] text-[#F0F0F0] md:text-[length:var(--text-12)]", children: [
+                  formatTime(currentTime),
+                  /* @__PURE__ */ jsx40("span", { className: "mx-1 text-[#F0F0F0]/50", children: "/" }),
+                  formatTime(duration)
+                ] }),
+                /* @__PURE__ */ jsxs19("div", { className: "ml-auto flex items-center gap-2 md:gap-3", children: [
+                  /* @__PURE__ */ jsxs19("div", { className: "flex items-center gap-1", children: [
+                    /* @__PURE__ */ jsx40(ControlButton, { onClick: toggleMute, label: isMuted ? "\u0412\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0437\u0432\u0443\u043A" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0437\u0432\u0443\u043A", children: isMuted || volume === 0 ? /* @__PURE__ */ jsx40(VolumeX, { className: "h-4 w-4 md:h-5 md:w-5" }) : /* @__PURE__ */ jsx40(Volume2, { className: "h-4 w-4 md:h-5 md:w-5" }) }),
+                    /* @__PURE__ */ jsxs19(
+                      "div",
+                      {
+                        ref: volumeRef,
+                        role: "slider",
+                        "aria-label": "\u0413\u0440\u043E\u043C\u043A\u043E\u0441\u0442\u044C",
+                        "aria-valuemin": 0,
+                        "aria-valuemax": 100,
+                        "aria-valuenow": Math.round(volumePct),
+                        onPointerDown: handleVolPointerDown,
+                        onPointerMove: handleVolPointerMove,
+                        onPointerUp: handleVolPointerUp,
+                        onPointerCancel: handleVolPointerUp,
+                        className: "relative hidden h-3 w-[72px] cursor-pointer touch-none select-none items-center md:flex",
+                        children: [
+                          /* @__PURE__ */ jsx40("div", { className: "relative h-[3px] w-full overflow-hidden rounded-full bg-white/20", children: /* @__PURE__ */ jsx40(
+                            "div",
+                            {
+                              className: "absolute inset-y-0 left-0 bg-[#F0F0F0]",
+                              style: { width: `${volumePct}%` }
+                            }
+                          ) }),
+                          /* @__PURE__ */ jsx40(
+                            "div",
+                            {
+                              className: "absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F0F0F0]",
+                              style: { left: `${volumePct}%` }
+                            }
+                          )
+                        ]
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsx40(
+                    ControlButton,
+                    {
+                      onClick: toggleFullscreen,
+                      label: isFullscreen ? "\u0421\u0432\u0435\u0440\u043D\u0443\u0442\u044C" : "\u041D\u0430 \u0432\u0435\u0441\u044C \u044D\u043A\u0440\u0430\u043D",
+                      children: isFullscreen ? /* @__PURE__ */ jsx40(Minimize, { className: "h-4 w-4 md:h-5 md:w-5" }) : /* @__PURE__ */ jsx40(Maximize, { className: "h-4 w-4 md:h-5 md:w-5" })
+                    }
+                  )
+                ] })
+              ] })
+            ]
+          }
+        )
+      ]
+    }
+  );
+}
+function ControlButton({
+  children,
+  onClick,
+  label
+}) {
+  return /* @__PURE__ */ jsx40(
+    "button",
+    {
+      type: "button",
+      onClick,
+      "aria-label": label,
+      title: label,
+      className: cn(
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] text-[#F0F0F0]",
+        "transition-colors duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
+        "hover:bg-white/10 hover:text-[color:var(--rm-yellow-100)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--rm-yellow-100)]",
+        "md:h-9 md:w-9"
+      ),
+      children
+    }
+  );
+}
+
+// src/components/ui/article-body.tsx
+import { Fragment as Fragment8, jsx as jsx41, jsxs as jsxs20 } from "react/jsx-runtime";
+var RU_MAP = {
+  \u0430: "a",
+  \u0431: "b",
+  \u0432: "v",
+  \u0433: "g",
+  \u0434: "d",
+  \u0435: "e",
+  \u0451: "e",
+  \u0436: "zh",
+  \u0437: "z",
+  \u0438: "i",
+  \u0439: "i",
+  \u043A: "k",
+  \u043B: "l",
+  \u043C: "m",
+  \u043D: "n",
+  \u043E: "o",
+  \u043F: "p",
+  \u0440: "r",
+  \u0441: "s",
+  \u0442: "t",
+  \u0443: "u",
+  \u0444: "f",
+  \u0445: "h",
+  \u0446: "c",
+  \u0447: "ch",
+  \u0448: "sh",
+  \u0449: "sch",
+  \u044A: "",
+  \u044B: "y",
+  \u044C: "",
+  \u044D: "e",
+  \u044E: "yu",
+  \u044F: "ya"
+};
+function slugify(input) {
+  const lower = input.toLowerCase().trim();
+  let out = "";
+  for (const ch of lower) out += RU_MAP[ch] ?? ch;
+  return out.replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").substring(0, 60);
+}
+function marginTopClass(prev, curr) {
+  const isMedia = (t) => t === "image" || t === "gallery" || t === "video";
+  if (isMedia(curr) || isMedia(prev)) {
+    return prev === null ? "mt-0" : "mt-[40px]";
+  }
+  if (prev === null) return "mt-0";
+  if (curr === "h2") return "mt-[44px] md:mt-[56px]";
+  if (prev === "h2" || prev === "quote") return "mt-[32px]";
+  if (curr === "quote" || curr === "h3") return "mt-[32px]";
+  if (curr === "h4") {
+    return prev === "h3" || prev === "h4" ? "mt-[16px]" : "mt-[32px]";
+  }
+  return "mt-[16px]";
+}
+var LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
+function renderInline(text) {
+  const nodes = [];
+  let last = 0;
+  let match;
+  const re = new RegExp(LINK_RE.source, "g");
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > last) {
+      nodes.push(renderLineBreaks(text.slice(last, match.index), `t-${last}`));
+    }
+    nodes.push(
+      /* @__PURE__ */ jsx41(
+        "a",
+        {
+          href: match[2],
+          className: "underline underline-offset-2 transition-colors hover:text-[color:var(--rm-yellow-100)]",
+          children: match[1]
+        },
+        `a-${match.index}`
+      )
+    );
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) {
+    nodes.push(renderLineBreaks(text.slice(last), `t-${last}`));
+  }
+  return nodes;
+}
+function renderLineBreaks(text, keyPrefix) {
+  const parts = text.split("\n");
+  if (parts.length === 1) return /* @__PURE__ */ jsx41(React16.Fragment, { children: text }, keyPrefix);
+  return /* @__PURE__ */ jsx41(React16.Fragment, { children: parts.map((p, i) => /* @__PURE__ */ jsxs20(React16.Fragment, { children: [
+    i > 0 && /* @__PURE__ */ jsx41("br", {}),
+    p
+  ] }, `${keyPrefix}-${i}`)) }, keyPrefix);
+}
+function H2({ text, className }) {
+  const id = slugify(text);
+  return /* @__PURE__ */ jsx41(
+    "h2",
+    {
+      id,
+      className: cn(
+        "scroll-mt-[92px] font-[family-name:var(--font-heading-family)] font-bold uppercase text-[color:var(--rm-gray-fg-main)]",
+        // Mobile/H3 → Desktop/H3 — см. DS MD §11.7
+        "text-[28px] leading-[1.16] tracking-[-0.015em]",
+        "md:text-[length:var(--text-32)] md:leading-[1.12] md:tracking-[-0.01em]",
+        className
+      ),
+      children: text
+    }
+  );
+}
+function H3({ text, className }) {
+  return /* @__PURE__ */ jsx41(
+    "h3",
+    {
+      className: cn(
+        "font-[family-name:var(--font-heading-family)] font-bold uppercase text-[color:var(--rm-gray-fg-main)]",
+        // Mobile/H4 → Desktop/H4
+        "text-[20px] leading-[1.2] tracking-[-0.01em]",
+        "md:text-[length:var(--text-24)] md:leading-[1.16]",
+        className
+      ),
+      children: text
+    }
+  );
+}
+function H4({ text, className }) {
+  return /* @__PURE__ */ jsx41(
+    "h4",
+    {
+      className: cn(
+        "font-[family-name:var(--font-heading-family)] font-bold uppercase text-[color:var(--rm-gray-fg-main)]",
+        // Mobile/H5 → Desktop/H5
+        "text-[16px] leading-[1.2] tracking-[-0.01em]",
+        "md:text-[length:var(--text-18)] md:leading-[1.16]",
+        className
+      ),
+      children: text
+    }
+  );
+}
+function Paragraph({ text, className }) {
+  return /* @__PURE__ */ jsx41(
+    "p",
+    {
+      className: cn(
+        "text-[length:var(--text-18)] leading-[1.2] text-[color:var(--rm-gray-fg-main)]",
+        className
+      ),
+      children: renderInline(text)
+    }
+  );
+}
+function Image2({
+  src,
+  caption,
+  className
+}) {
+  return /* @__PURE__ */ jsxs20("figure", { className: cn("flex flex-col gap-3", className), children: [
+    /* @__PURE__ */ jsx41(
+      "img",
+      {
+        src,
+        alt: caption ?? "",
+        className: "block h-auto w-full"
+      }
+    ),
+    caption && /* @__PURE__ */ jsx41("figcaption", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)]", children: caption })
+  ] });
+}
+function Gallery({
+  items,
+  className
+}) {
+  const [activeId, setActiveId] = React16.useState(
+    items[0]?.id ?? null
+  );
+  const [outgoing, setOutgoing] = React16.useState(null);
+  const mediaRef = React16.useRef(null);
+  const [lockedHeight, setLockedHeight] = React16.useState(null);
+  React16.useEffect(() => {
+    if (!items.some((it) => it.id === activeId)) {
+      setActiveId(items[0]?.id ?? null);
+    }
+  }, [items, activeId]);
+  React16.useEffect(() => {
+    if (typeof window === "undefined") return;
+    for (const it of items) {
+      if (it.kind === "video" || !it.src) continue;
+      const img = new window.Image();
+      img.src = it.src;
+    }
+  }, [items]);
+  React16.useEffect(() => {
+    if (!outgoing) return;
+    const t = window.setTimeout(() => {
+      setOutgoing(null);
+      setLockedHeight(null);
+    }, 440);
+    return () => window.clearTimeout(t);
+  }, [outgoing]);
+  if (items.length === 0) return null;
+  const active = items.find((it) => it.id === activeId) ?? items[0];
+  function handleSelect(nextId) {
+    if (nextId === active.id) return;
+    const nextIdx = items.findIndex((it) => it.id === nextId);
+    const curIdx = items.findIndex((it) => it.id === active.id);
+    const dir = nextIdx > curIdx ? 1 : -1;
+    const h = mediaRef.current?.offsetHeight ?? null;
+    if (h && h > 0) setLockedHeight(h);
+    setOutgoing({ item: active, dir, nonce: Date.now() });
+    setActiveId(nextId);
+  }
+  const enterAnim = outgoing && outgoing.dir === 1 ? "rm-gallery-enter-right" : outgoing && outgoing.dir === -1 ? "rm-gallery-enter-left" : null;
+  const exitAnim = outgoing && outgoing.dir === 1 ? "rm-gallery-exit-left" : outgoing && outgoing.dir === -1 ? "rm-gallery-exit-right" : null;
+  return /* @__PURE__ */ jsxs20("div", { className: cn("flex flex-col gap-2", className), children: [
+    /* @__PURE__ */ jsx41(
+      "div",
+      {
+        className: "flex items-center gap-3 overflow-x-auto rounded-[4px] border border-[#404040] bg-[#1A1A1A] p-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+        children: items.map((it) => {
+          const isActive = it.id === active.id;
+          return /* @__PURE__ */ jsx41(
+            "button",
+            {
+              type: "button",
+              onClick: () => handleSelect(it.id),
+              "aria-pressed": isActive,
+              className: cn(
+                "flex h-8 shrink-0 items-center justify-center rounded-[4px] px-3 py-1",
+                "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] text-[length:var(--text-12)] leading-[1.2] whitespace-nowrap",
+                "transition-colors duration-150 ease-[var(--ease-standard)]",
+                isActive ? "border border-[#404040] bg-[#0A0A0A] text-[#F0F0F0]" : "border border-transparent text-[#939393] hover:text-[#F0F0F0]"
+              ),
+              children: it.title
+            },
+            it.id
+          );
+        })
+      }
+    ),
+    /* @__PURE__ */ jsx41(
+      "div",
+      {
+        ref: mediaRef,
+        className: "relative overflow-hidden rounded-[4px]",
+        style: lockedHeight ? { minHeight: lockedHeight } : void 0,
+        children: active.kind === "video" ? (
+          // Видео-таб: без slide-анимации (на <video> она ломает воспроизведение)
+          // и без overlay (overlay dимит картинку в видео-превью).
+          /* @__PURE__ */ jsx41(VideoPlayer, { src: active.src }, active.id)
+        ) : /* @__PURE__ */ jsxs20(Fragment8, { children: [
+          /* @__PURE__ */ jsx41(
+            "img",
+            {
+              src: active.src,
+              alt: active.title,
+              decoding: "async",
+              className: "rm-gallery-enter block h-auto w-full",
+              style: enterAnim ? {
+                animation: `${enterAnim} var(--duration-smooth) var(--ease-enter) var(--duration-fast) both`
+              } : void 0
+            },
+            active.id
+          ),
+          outgoing && exitAnim && outgoing.item.kind !== "video" && /* eslint-disable-next-line @next/next/no-img-element */
+          /* @__PURE__ */ jsx41(
+            "img",
+            {
+              src: outgoing.item.src,
+              alt: "",
+              "aria-hidden": true,
+              className: "rm-gallery-exit pointer-events-none absolute left-0 top-0 block h-auto w-full",
+              style: {
+                animation: `${exitAnim} var(--duration-base) var(--ease-exit) both`
+              }
+            },
+            `out-${outgoing.item.id}-${outgoing.nonce}`
+          ),
+          /* @__PURE__ */ jsx41(
+            "div",
+            {
+              "aria-hidden": true,
+              className: "pointer-events-none absolute inset-0 bg-black/20"
+            }
+          )
+        ] })
+      }
+    ),
+    active.caption && active.caption.trim() && /* @__PURE__ */ jsx41(
+      "figcaption",
+      {
+        className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)]",
+        style: {
+          animation: "rm-gallery-caption-in var(--duration-smooth) var(--ease-enter) var(--duration-fast) both"
+        },
+        children: active.caption
+      },
+      `cap-${active.id}`
+    )
+  ] });
+}
+function Video({
+  src,
+  caption,
+  poster,
+  className
+}) {
+  return /* @__PURE__ */ jsxs20("figure", { className: cn("flex flex-col gap-3", className), children: [
+    /* @__PURE__ */ jsx41(VideoPlayer, { src, poster }),
+    caption && /* @__PURE__ */ jsx41("figcaption", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)]", children: caption })
+  ] });
+}
+function Quote({ text, className }) {
+  return /* @__PURE__ */ jsx41(
+    "blockquote",
+    {
+      className: cn(
+        // Mobile: 1px border, py-1, Label 18. Desktop: 2px border, py-2, Label 24.
+        "border-l-[1px] border-[color:var(--rm-yellow-100)] pl-4 py-1",
+        "md:border-l-[2px] md:py-2",
+        "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] text-[color:var(--rm-gray-fg-main)]",
+        "text-[length:var(--text-18)] leading-[1.12]",
+        "md:text-[length:var(--text-24)] md:leading-[1.16]",
+        className
+      ),
+      children: text
+    }
+  );
+}
+function ArticleBody({ blocks, className, ...props }) {
+  if (!blocks?.length) return null;
+  return /* @__PURE__ */ jsx41("div", { className: cn("flex flex-col items-stretch", className), ...props, children: blocks.map((block, i) => {
+    const prev = i === 0 ? null : blocks[i - 1].type;
+    const mt = marginTopClass(prev, block.type);
+    const text = typeof block.data?.text === "string" ? block.data.text : "";
+    if (block.type === "image") {
+      const src = typeof block.data?.src === "string" ? block.data.src : "";
+      if (!src) return null;
+      const caption = typeof block.data?.caption === "string" ? block.data.caption.trim() : "";
+      return /* @__PURE__ */ jsx41(
+        Image2,
+        {
+          src,
+          caption: caption || void 0,
+          className: mt
+        },
+        block.id
+      );
+    }
+    if (block.type === "video") {
+      const src = typeof block.data?.src === "string" ? block.data.src : "";
+      if (!src) return null;
+      const caption = typeof block.data?.caption === "string" ? block.data.caption.trim() : "";
+      const poster = typeof block.data?.poster === "string" && block.data.poster ? block.data.poster : void 0;
+      return /* @__PURE__ */ jsx41(
+        Video,
+        {
+          src,
+          caption: caption || void 0,
+          poster,
+          className: mt
+        },
+        block.id
+      );
+    }
+    if (block.type === "gallery") {
+      const raw = Array.isArray(block.data?.items) ? block.data.items : [];
+      const items = raw.map((it) => {
+        if (!it || typeof it !== "object") return null;
+        const rec = it;
+        const id = typeof rec.id === "string" ? rec.id : "";
+        const src = typeof rec.src === "string" ? rec.src : "";
+        const title = typeof rec.title === "string" ? rec.title : "";
+        const kind = rec.kind === "video" ? "video" : "image";
+        if (!id || !src) return null;
+        return { id, src, title, kind };
+      }).filter((it) => it !== null);
+      if (items.length === 0) return null;
+      return /* @__PURE__ */ jsx41(Gallery, { items, className: mt }, block.id);
+    }
+    if (!text) return null;
+    switch (block.type) {
+      case "h2":
+        return /* @__PURE__ */ jsx41(H2, { text, className: mt }, block.id);
+      case "h3":
+        return /* @__PURE__ */ jsx41(H3, { text, className: mt }, block.id);
+      case "h4":
+        return /* @__PURE__ */ jsx41(H4, { text, className: mt }, block.id);
+      case "paragraph":
+        return /* @__PURE__ */ jsx41(Paragraph, { text, className: mt }, block.id);
+      case "quote":
+        return /* @__PURE__ */ jsx41(Quote, { text, className: mt }, block.id);
+      default:
+        return null;
+    }
+  }) });
+}
+
+// src/components/ui/expert-quote.tsx
+import * as React17 from "react";
+import { jsx as jsx42, jsxs as jsxs21 } from "react/jsx-runtime";
+function QuoteText({
+  label,
+  paragraphs,
+  variant
+}) {
+  const visibleParagraphs = (paragraphs ?? []).filter((p) => p.trim().length > 0);
+  if (!label && visibleParagraphs.length === 0) return null;
+  const labelSize = variant === "mobile" ? "text-[length:var(--text-16)]" : "text-[length:var(--text-18)]";
+  return /* @__PURE__ */ jsxs21(
+    "div",
+    {
+      className: cn(
+        "flex flex-col",
+        variant === "mobile" ? "gap-4 p-5" : "gap-6 p-8"
+      ),
+      children: [
+        label && /* @__PURE__ */ jsx42(
+          "p",
+          {
+            className: cn(
+              "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em]",
+              "leading-[1.12] text-[#F0F0F0]",
+              labelSize
+            ),
+            children: label
+          }
+        ),
+        visibleParagraphs.length > 0 && /* @__PURE__ */ jsx42("div", { className: "flex flex-col gap-4", children: visibleParagraphs.map((p, i) => /* @__PURE__ */ jsx42(
+          "p",
+          {
+            className: "text-[length:var(--text-16)] leading-[1.28] text-[#939393] whitespace-pre-line",
+            children: p
+          },
+          i
+        )) })
+      ]
+    }
+  );
+}
+function QuoteAuthor({
+  name,
+  role,
+  avatarUrl,
+  variant
+}) {
+  const isMobile = variant === "mobile";
+  const avatarSize = isMobile ? "h-16 w-16" : "h-[72px] w-[72px]";
+  const nameSize = isMobile ? "text-[length:var(--text-20)] leading-[1.2]" : "text-[length:var(--text-24)] leading-[1.16]";
+  const pad = isMobile ? "p-5" : "p-8";
+  const gap = isMobile ? "gap-6" : "gap-6";
+  return /* @__PURE__ */ jsxs21(
+    "div",
+    {
+      className: cn(
+        "flex flex-col",
+        pad,
+        variant === "wide" ? "justify-between gap-6 h-full" : "gap-4"
+      ),
+      children: [
+        /* @__PURE__ */ jsxs21("div", { className: cn("flex items-center", gap), children: [
+          avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            /* @__PURE__ */ jsx42(
+              "img",
+              {
+                src: avatarUrl,
+                alt: name,
+                className: cn(
+                  "shrink-0 rounded-full object-cover bg-[#0A0A0A]",
+                  avatarSize
+                )
+              }
+            )
+          ) : /* @__PURE__ */ jsx42(
+            "div",
+            {
+              "aria-hidden": true,
+              className: cn("shrink-0 rounded-full bg-[#2D2D2D]", avatarSize)
+            }
+          ),
+          /* @__PURE__ */ jsx42(
+            "h4",
+            {
+              className: cn(
+                "font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.01em]",
+                "text-[#F0F0F0]",
+                nameSize
+              ),
+              children: name
+            }
+          )
+        ] }),
+        role && /* @__PURE__ */ jsx42("p", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: role })
+      ]
+    }
+  );
+}
+function QuoteRow({
+  quote,
+  variant
+}) {
+  if (variant === "wide") {
+    return /* @__PURE__ */ jsxs21("div", { className: "grid grid-cols-[2fr_1fr]", children: [
+      /* @__PURE__ */ jsx42(
+        QuoteText,
+        {
+          label: quote.label,
+          paragraphs: quote.paragraphs,
+          variant: "wide"
+        }
+      ),
+      /* @__PURE__ */ jsx42("div", { className: "border-l border-[#404040]", children: /* @__PURE__ */ jsx42(
+        QuoteAuthor,
+        {
+          name: quote.name,
+          role: quote.role,
+          avatarUrl: quote.avatarUrl,
+          variant: "wide"
+        }
+      ) })
+    ] });
+  }
+  if (variant === "mobile") {
+    return /* @__PURE__ */ jsxs21("div", { className: "flex flex-col", children: [
+      /* @__PURE__ */ jsx42(
+        QuoteText,
+        {
+          label: quote.label,
+          paragraphs: quote.paragraphs,
+          variant: "mobile"
+        }
+      ),
+      /* @__PURE__ */ jsx42("div", { className: "h-px bg-[#404040]" }),
+      /* @__PURE__ */ jsx42(
+        QuoteAuthor,
+        {
+          name: quote.name,
+          role: quote.role,
+          avatarUrl: quote.avatarUrl,
+          variant: "mobile"
+        }
+      )
+    ] });
+  }
+  return /* @__PURE__ */ jsxs21("div", { className: "flex flex-col", children: [
+    /* @__PURE__ */ jsx42(
+      QuoteText,
+      {
+        label: quote.label,
+        paragraphs: quote.paragraphs,
+        variant: "narrow"
+      }
+    ),
+    /* @__PURE__ */ jsx42(
+      QuoteAuthor,
+      {
+        name: quote.name,
+        role: quote.role,
+        avatarUrl: quote.avatarUrl,
+        variant: "narrow"
+      }
+    )
+  ] });
+}
+function ExpertQuoteStack({
+  quotes,
+  variant,
+  className
+}) {
+  if (!quotes || quotes.length === 0) return null;
+  return /* @__PURE__ */ jsx42(
+    "div",
+    {
+      className: cn(
+        "overflow-hidden rounded-[4px] border border-[#404040] bg-[#0A0A0A]",
+        className
+      ),
+      "data-variant": variant,
+      children: quotes.map((q, i) => /* @__PURE__ */ jsxs21(React17.Fragment, { children: [
+        i > 0 && /* @__PURE__ */ jsx42("div", { className: "h-px bg-[#404040]" }),
+        /* @__PURE__ */ jsx42(QuoteRow, { quote: q, variant })
+      ] }, q.id))
+    }
+  );
+}
+
+// src/components/ui/section-aside-chip.tsx
+import * as React18 from "react";
+import { ArrowUpRight } from "lucide-react";
+import { jsx as jsx43, jsxs as jsxs22 } from "react/jsx-runtime";
+var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
+  title,
+  href,
+  showPreview = false,
+  previewImageUrl,
+  previewCropMode = "top",
+  external = true,
+  download,
+  className,
+  ...rest
+}, ref) {
+  const hasPreview = showPreview && Boolean(previewImageUrl);
+  const objectPosition = previewCropMode === "top" ? "center top" : "center center";
+  return /* @__PURE__ */ jsxs22(
+    "a",
+    {
+      ref,
+      href,
+      target: external ? "_blank" : void 0,
+      rel: external ? "noopener noreferrer" : void 0,
+      download,
+      className: cn(
+        "group/chip flex flex-col overflow-hidden rounded-[5px] border border-[#404040] bg-[#0A0A0A] text-[color:var(--rm-gray-fg-main)] transition-colors",
+        "hover:bg-[#1A1A1A]",
+        className
+      ),
+      ...rest,
+      children: [
+        /* @__PURE__ */ jsxs22(
+          "div",
+          {
+            className: cn(
+              "flex items-center justify-between gap-3 px-3",
+              hasPreview ? "py-2.5" : "py-2.5 min-h-[36px]"
+            ),
+            children: [
+              /* @__PURE__ */ jsx43("span", { className: "line-clamp-1 font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] text-[length:var(--text-14)] leading-[1.2] transition-colors group-hover/chip:text-[color:var(--rm-yellow-100)]", children: title }),
+              /* @__PURE__ */ jsx43(
+                ArrowUpRight,
+                {
+                  "aria-hidden": true,
+                  className: "h-4 w-4 shrink-0 text-[color:var(--rm-yellow-100)] transition-transform group-hover/chip:translate-x-0.5 group-hover/chip:-translate-y-0.5"
+                }
+              )
+            ]
+          }
+        ),
+        hasPreview && /* @__PURE__ */ jsx43("div", { className: "relative w-full overflow-hidden", children: /* @__PURE__ */ jsx43("div", { style: { aspectRatio: "3 / 2" }, children: /* @__PURE__ */ jsx43(
+          "img",
+          {
+            src: previewImageUrl,
+            alt: "",
+            className: "h-full w-full object-cover",
+            style: { objectPosition },
+            loading: "lazy"
+          }
+        ) }) })
+      ]
+    }
+  );
+});
+
+// src/components/ui/section-aside-product-card.tsx
+import * as React19 from "react";
+import { ArrowUpRight as ArrowUpRight2 } from "lucide-react";
+import { jsx as jsx44, jsxs as jsxs23 } from "react/jsx-runtime";
+var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCard2({
+  href,
+  title,
+  description,
+  coverUrl,
+  experts,
+  variant = "default",
+  className,
+  ...rest
+}, ref) {
+  const list = experts ?? [];
+  const shown = list.slice(0, 2);
+  const extra = Math.max(0, list.length - shown.length);
+  return /* @__PURE__ */ jsxs23(
+    "a",
+    {
+      ref,
+      href,
+      className: cn(
+        "group/product relative flex flex-col gap-4 overflow-hidden rounded-[5px] border border-[#404040] bg-[#0A0A0A] p-4 text-[color:var(--rm-gray-fg-main)] transition-colors",
+        "hover:bg-[#1A1A1A]",
+        className
+      ),
+      ...rest,
+      children: [
+        /* @__PURE__ */ jsx44(
+          ArrowUpRight2,
+          {
+            "aria-hidden": true,
+            className: "absolute right-3 top-3 z-10 h-4 w-4 text-[color:var(--rm-yellow-100)] transition-transform group-hover/product:translate-x-0.5 group-hover/product:-translate-y-0.5"
+          }
+        ),
+        variant === "image" && coverUrl && /* @__PURE__ */ jsxs23("div", { className: "relative w-full overflow-hidden rounded-sm aspect-[286/191]", children: [
+          /* @__PURE__ */ jsx44(
+            "img",
+            {
+              src: coverUrl,
+              alt: "",
+              className: "h-full w-full object-cover",
+              loading: "lazy"
+            }
+          ),
+          /* @__PURE__ */ jsx44(
+            "div",
+            {
+              "aria-hidden": true,
+              className: "pointer-events-none absolute inset-0",
+              style: {
+                background: "linear-gradient(0deg, rgba(10,10,10,1) 4%, rgba(10,10,10,0.86) 21%, rgba(10,10,10,0.62) 46%, rgba(10,10,10,0.36) 61%, rgba(10,10,10,0) 78%)"
+              }
+            }
+          )
+        ] }),
+        variant === "default" && (coverUrl || list.length > 0) && /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-2", children: [
+          coverUrl && /* @__PURE__ */ jsx44("div", { className: "h-[72px] w-[72px] shrink-0 overflow-hidden rounded-sm", children: /* @__PURE__ */ jsx44(
+            "img",
+            {
+              src: coverUrl,
+              alt: "",
+              className: "h-full w-full object-cover",
+              loading: "lazy"
+            }
+          ) }),
+          list.length > 0 && /* @__PURE__ */ jsxs23("div", { className: "flex items-center -space-x-2", children: [
+            shown.map((ex, i) => /* @__PURE__ */ jsx44(Avatar2, { name: ex.name, image: ex.image }, i)),
+            extra > 0 && /* @__PURE__ */ jsxs23(
+              "span",
+              {
+                className: "flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-11)] font-medium text-[color:var(--rm-gray-fg-main)]",
+                title: `\u0435\u0449\u0451 ${extra}`,
+                children: [
+                  "+",
+                  extra
+                ]
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs23(
+          "div",
+          {
+            className: cn(
+              "relative flex flex-col gap-2",
+              // В image-варианте заголовок наезжает на bottom-fade зону картинки:
+              // gap-4 (16px) у родителя минус -mt-[38px] → overlap ≈ 22px.
+              variant === "image" && coverUrl && "-mt-[38px]"
+            ),
+            children: [
+              /* @__PURE__ */ jsx44("h3", { className: "line-clamp-3 pr-6 font-[family-name:var(--font-heading-family)] font-bold uppercase text-[length:var(--text-18)] leading-[1.16] tracking-[-0.01em]", children: title }),
+              description && /* @__PURE__ */ jsx44("p", { className: "line-clamp-3 text-[length:var(--text-12)] leading-[1.35] text-[color:var(--rm-gray-fg-sub)]", children: description })
+            ]
+          }
+        )
+      ]
+    }
+  );
+});
+function Avatar2({ name, image }) {
+  if (image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      /* @__PURE__ */ jsx44(
+        "img",
+        {
+          src: image,
+          alt: name,
+          className: "h-8 w-8 rounded-full border-2 border-[#0A0A0A] object-cover",
+          loading: "lazy"
+        }
+      )
+    );
+  }
+  const initials = name.split(/\s+/).map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+  return /* @__PURE__ */ jsx44("span", { className: "flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-11)] font-medium text-[color:var(--rm-gray-fg-main)]", children: initials });
+}
 
 // src/components/ui/for-whom-section.tsx
-import { Fragment as Fragment6, jsx as jsx39, jsxs as jsxs18 } from "react/jsx-runtime";
+import { Fragment as Fragment10, jsx as jsx45, jsxs as jsxs24 } from "react/jsx-runtime";
 function FactCard({ title, text }) {
-  return /* @__PURE__ */ jsxs18("div", { className: "grid grid-rows-[subgrid] row-span-3 gap-4", children: [
-    /* @__PURE__ */ jsx39("div", { className: "flex items-end", children: /* @__PURE__ */ jsx39("h4", { className: "h4 text-[#0A0A0A]", children: title }) }),
-    /* @__PURE__ */ jsx39("div", { className: "h-0 w-full border-t border-[#404040]" }),
-    /* @__PURE__ */ jsx39("div", { children: /* @__PURE__ */ jsx39(
+  return /* @__PURE__ */ jsxs24("div", { className: "grid grid-rows-[subgrid] row-span-3 gap-4", children: [
+    /* @__PURE__ */ jsx45("div", { className: "flex items-end", children: /* @__PURE__ */ jsx45("h4", { className: "h4 text-[#0A0A0A]", children: title }) }),
+    /* @__PURE__ */ jsx45("div", { className: "h-0 w-full border-t border-[#404040]" }),
+    /* @__PURE__ */ jsx45("div", { children: /* @__PURE__ */ jsx45(
       RichText,
       {
         text,
@@ -2694,19 +4341,19 @@ function ForWhomSection({
     color: "primary"
   });
   const hasParagraphs = resolvedParagraphsDesktop.length > 0;
-  return /* @__PURE__ */ jsxs18("section", { className: cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className), children: [
-    /* @__PURE__ */ jsxs18("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-      /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-2", children: [
-        /* @__PURE__ */ jsx39("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
-        /* @__PURE__ */ jsxs18("div", { className: "flex", children: [
-          /* @__PURE__ */ jsx39("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ jsxs18("h2", { className: "h2", children: [
-            /* @__PURE__ */ jsx39("span", { className: "text-[#0A0A0A]", children: title }),
-            titleSecondary ? /* @__PURE__ */ jsxs18(Fragment6, { children: [
-              /* @__PURE__ */ jsx39("span", { className: "text-[#0A0A0A]", children: " " }),
-              /* @__PURE__ */ jsx39("span", { className: "text-[#666666]", children: titleSecondary })
+  return /* @__PURE__ */ jsxs24("section", { className: cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className), children: [
+    /* @__PURE__ */ jsxs24("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+      /* @__PURE__ */ jsxs24("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx45("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
+        /* @__PURE__ */ jsxs24("div", { className: "flex", children: [
+          /* @__PURE__ */ jsx45("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ jsxs24("h2", { className: "h2", children: [
+            /* @__PURE__ */ jsx45("span", { className: "text-[#0A0A0A]", children: title }),
+            titleSecondary ? /* @__PURE__ */ jsxs24(Fragment10, { children: [
+              /* @__PURE__ */ jsx45("span", { className: "text-[#0A0A0A]", children: " " }),
+              /* @__PURE__ */ jsx45("span", { className: "text-[#666666]", children: titleSecondary })
             ] }) : null
           ] }) }),
-          hasParagraphs && /* @__PURE__ */ jsx39("div", { className: "w-1/2", children: /* @__PURE__ */ jsx39("div", { className: "max-w-[480px]", children: /* @__PURE__ */ jsx39(StyledParagraphs, { paragraphs: resolvedParagraphsDesktop, theme: "light", size: "18" }) }) })
+          hasParagraphs && /* @__PURE__ */ jsx45("div", { className: "w-1/2", children: /* @__PURE__ */ jsx45("div", { className: "max-w-[480px]", children: /* @__PURE__ */ jsx45(StyledParagraphs, { paragraphs: resolvedParagraphsDesktop, theme: "light", size: "18" }) }) })
         ] })
       ] }),
       (() => {
@@ -2727,10 +4374,10 @@ function ForWhomSection({
           leftFacts = [facts[0], facts[1]];
           rightFacts = [facts[2], facts[3]];
         }
-        const renderCard = (f, i) => /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-4", children: [
-          /* @__PURE__ */ jsx39("div", { className: "flex items-end", children: /* @__PURE__ */ jsx39("h4", { className: "h4 text-[#0A0A0A]", children: f.title }) }),
-          /* @__PURE__ */ jsx39("div", { className: "h-0 w-full border-t border-[#404040]" }),
-          /* @__PURE__ */ jsx39(
+        const renderCard = (f, i) => /* @__PURE__ */ jsxs24("div", { className: "flex flex-col gap-4", children: [
+          /* @__PURE__ */ jsx45("div", { className: "flex items-end", children: /* @__PURE__ */ jsx45("h4", { className: "h4 text-[#0A0A0A]", children: f.title }) }),
+          /* @__PURE__ */ jsx45("div", { className: "h-0 w-full border-t border-[#404040]" }),
+          /* @__PURE__ */ jsx45(
             RichText,
             {
               text: f.text,
@@ -2738,36 +4385,36 @@ function ForWhomSection({
             }
           )
         ] }, i);
-        return /* @__PURE__ */ jsxs18("div", { className: "flex", children: [
-          /* @__PURE__ */ jsx39("div", { className: "w-1/2 flex gap-4 pr-4", children: leftFacts.map((f, i) => /* @__PURE__ */ jsx39("div", { className: "flex-1", children: renderCard(f, i) }, i)) }),
-          /* @__PURE__ */ jsx39("div", { className: "w-1/2 flex gap-4", children: rightFacts.map((f, i) => /* @__PURE__ */ jsx39("div", { className: "flex-1", children: renderCard(f, i) }, i)) })
+        return /* @__PURE__ */ jsxs24("div", { className: "flex", children: [
+          /* @__PURE__ */ jsx45("div", { className: "w-1/2 flex gap-4 pr-4", children: leftFacts.map((f, i) => /* @__PURE__ */ jsx45("div", { className: "flex-1", children: renderCard(f, i) }, i)) }),
+          /* @__PURE__ */ jsx45("div", { className: "w-1/2 flex gap-4", children: rightFacts.map((f, i) => /* @__PURE__ */ jsx45("div", { className: "flex-1", children: renderCard(f, i) }, i)) })
         ] });
       })()
     ] }),
-    /* @__PURE__ */ jsxs18("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
-      /* @__PURE__ */ jsxs18("div", { className: "flex flex-col gap-2", children: [
-        /* @__PURE__ */ jsx39("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
-        /* @__PURE__ */ jsxs18("h2", { className: "h3", children: [
-          /* @__PURE__ */ jsx39("span", { className: "text-[#0A0A0A]", children: title }),
-          titleSecondary ? /* @__PURE__ */ jsxs18(Fragment6, { children: [
-            /* @__PURE__ */ jsx39("span", { className: "text-[#0A0A0A]", children: " " }),
-            /* @__PURE__ */ jsx39("span", { className: "text-[#666666]", children: titleSecondary })
+    /* @__PURE__ */ jsxs24("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
+      /* @__PURE__ */ jsxs24("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx45("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
+        /* @__PURE__ */ jsxs24("h2", { className: "h3", children: [
+          /* @__PURE__ */ jsx45("span", { className: "text-[#0A0A0A]", children: title }),
+          titleSecondary ? /* @__PURE__ */ jsxs24(Fragment10, { children: [
+            /* @__PURE__ */ jsx45("span", { className: "text-[#0A0A0A]", children: " " }),
+            /* @__PURE__ */ jsx45("span", { className: "text-[#666666]", children: titleSecondary })
           ] }) : null
         ] }),
-        hasParagraphs && /* @__PURE__ */ jsx39("div", { className: "mt-1", children: /* @__PURE__ */ jsx39(StyledParagraphs, { paragraphs: resolvedParagraphsDesktop, theme: "light", size: "16" }) })
+        hasParagraphs && /* @__PURE__ */ jsx45("div", { className: "mt-1", children: /* @__PURE__ */ jsx45(StyledParagraphs, { paragraphs: resolvedParagraphsDesktop, theme: "light", size: "16" }) })
       ] }),
-      /* @__PURE__ */ jsx39("div", { className: "flex flex-col gap-7", children: facts.map((f, i) => /* @__PURE__ */ jsx39("div", { className: "grid", style: { gridTemplateRows: "auto auto 1fr" }, children: /* @__PURE__ */ jsx39(FactCard, { ...f }) }, i)) })
+      /* @__PURE__ */ jsx45("div", { className: "flex flex-col gap-7", children: facts.map((f, i) => /* @__PURE__ */ jsx45("div", { className: "grid", style: { gridTemplateRows: "auto auto 1fr" }, children: /* @__PURE__ */ jsx45(FactCard, { ...f }) }, i)) })
     ] })
   ] });
 }
 
 // src/components/ui/contacts-section.tsx
-import * as React13 from "react";
+import * as React20 from "react";
 
 // src/components/icons/socials/vk.tsx
-import { jsx as jsx40, jsxs as jsxs19 } from "react/jsx-runtime";
+import { jsx as jsx46, jsxs as jsxs25 } from "react/jsx-runtime";
 function VkIcon({ className, ...props }) {
-  return /* @__PURE__ */ jsxs19(
+  return /* @__PURE__ */ jsxs25(
     "svg",
     {
       width: "40",
@@ -2778,8 +4425,8 @@ function VkIcon({ className, ...props }) {
       className,
       ...props,
       children: [
-        /* @__PURE__ */ jsx40("rect", { x: "0.75", y: "0.75", width: "38.5", height: "38.5", rx: "4", stroke: "currentColor", strokeWidth: "1.5" }),
-        /* @__PURE__ */ jsx40(
+        /* @__PURE__ */ jsx46("rect", { x: "0.75", y: "0.75", width: "38.5", height: "38.5", rx: "4", stroke: "currentColor", strokeWidth: "1.5" }),
+        /* @__PURE__ */ jsx46(
           "path",
           {
             d: "M9.5 13 L14.5 27 L19.5 13",
@@ -2789,7 +4436,7 @@ function VkIcon({ className, ...props }) {
             strokeLinejoin: "round"
           }
         ),
-        /* @__PURE__ */ jsx40(
+        /* @__PURE__ */ jsx46(
           "path",
           {
             d: "M22.5 13 L22.5 27 M22.5 20 L30 13 M22.5 20 L30 27",
@@ -2805,9 +4452,9 @@ function VkIcon({ className, ...props }) {
 }
 
 // src/components/icons/socials/telegram.tsx
-import { jsx as jsx41, jsxs as jsxs20 } from "react/jsx-runtime";
+import { jsx as jsx47, jsxs as jsxs26 } from "react/jsx-runtime";
 function TelegramIcon({ className, ...props }) {
-  return /* @__PURE__ */ jsxs20(
+  return /* @__PURE__ */ jsxs26(
     "svg",
     {
       width: "40",
@@ -2818,8 +4465,8 @@ function TelegramIcon({ className, ...props }) {
       className,
       ...props,
       children: [
-        /* @__PURE__ */ jsx41("rect", { x: "0.75", y: "0.75", width: "38.5", height: "38.5", rx: "4", stroke: "currentColor", strokeWidth: "1.5" }),
-        /* @__PURE__ */ jsx41(
+        /* @__PURE__ */ jsx47("rect", { x: "0.75", y: "0.75", width: "38.5", height: "38.5", rx: "4", stroke: "currentColor", strokeWidth: "1.5" }),
+        /* @__PURE__ */ jsx47(
           "path",
           {
             d: "M29.5 12.5 L10.5 20 L16.5 22.5 L19 28.5 L22.5 24.5 L27.5 28 L29.5 12.5 Z",
@@ -2829,7 +4476,7 @@ function TelegramIcon({ className, ...props }) {
             strokeLinejoin: "round"
           }
         ),
-        /* @__PURE__ */ jsx41(
+        /* @__PURE__ */ jsx47(
           "path",
           {
             d: "M16.5 22.5 L26 15.5 M19 28.5 L22.5 24.5",
@@ -2845,23 +4492,23 @@ function TelegramIcon({ className, ...props }) {
 }
 
 // src/components/ui/contacts-section.tsx
-import { Fragment as Fragment8, jsx as jsx42, jsxs as jsxs21 } from "react/jsx-runtime";
+import { Fragment as Fragment12, jsx as jsx48, jsxs as jsxs27 } from "react/jsx-runtime";
 function SocialIcon({
   kind,
   iconSrc,
   className
 }) {
-  if (kind === "vk") return /* @__PURE__ */ jsx42(VkIcon, { className });
-  if (kind === "telegram") return /* @__PURE__ */ jsx42(TelegramIcon, { className });
+  if (kind === "vk") return /* @__PURE__ */ jsx48(VkIcon, { className });
+  if (kind === "telegram") return /* @__PURE__ */ jsx48(TelegramIcon, { className });
   if (!iconSrc) return null;
-  return /* @__PURE__ */ jsx42(
+  return /* @__PURE__ */ jsx48(
     "span",
     {
       className: cn(
         "inline-flex h-10 w-10 items-center justify-center rounded-sm border border-current",
         className
       ),
-      children: /* @__PURE__ */ jsx42("img", { src: iconSrc, alt: "", className: "h-5 w-5 object-contain" })
+      children: /* @__PURE__ */ jsx48("img", { src: iconSrc, alt: "", className: "h-5 w-5 object-contain" })
     }
   );
 }
@@ -2879,7 +4526,7 @@ function socialTooltipText(social) {
 function ParagraphItem({ paragraph }) {
   const color = paragraph.color === "primary" ? "text-[#0A0A0A]" : "text-[#404040]";
   const caps = paragraph.uppercase ? "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase tracking-[0.02em]" : "text-[length:var(--text-16)] leading-[1.28]";
-  return /* @__PURE__ */ jsx42(
+  return /* @__PURE__ */ jsx48(
     RichText,
     {
       text: paragraph.text,
@@ -2889,9 +4536,9 @@ function ParagraphItem({ paragraph }) {
 }
 function SocialsItem({ socials }) {
   if (!socials.length) return null;
-  return /* @__PURE__ */ jsx42(TooltipProvider, { delay: 150, children: /* @__PURE__ */ jsx42("div", { className: "flex flex-wrap items-center gap-2 text-[#0A0A0A]", children: socials.map((s) => {
+  return /* @__PURE__ */ jsx48(TooltipProvider, { delay: 150, children: /* @__PURE__ */ jsx48("div", { className: "flex flex-wrap items-center gap-2 text-[#0A0A0A]", children: socials.map((s) => {
     const label = socialTooltipText(s);
-    const icon = /* @__PURE__ */ jsx42(
+    const icon = /* @__PURE__ */ jsx48(
       SocialIcon,
       {
         kind: s.kind,
@@ -2899,7 +4546,7 @@ function SocialsItem({ socials }) {
         className: "transition-colors group-hover/social:text-[#404040]"
       }
     );
-    const trigger = s.url ? /* @__PURE__ */ jsx42(
+    const trigger = s.url ? /* @__PURE__ */ jsx48(
       "a",
       {
         href: s.url,
@@ -2909,28 +4556,28 @@ function SocialsItem({ socials }) {
         className: "group/social inline-flex text-[#0A0A0A] hover:text-[#404040]",
         children: icon
       }
-    ) : /* @__PURE__ */ jsx42("span", { "aria-label": label || s.username, className: "group/social inline-flex", children: icon });
-    if (!label) return /* @__PURE__ */ jsx42(React13.Fragment, { children: trigger }, s.id);
-    return /* @__PURE__ */ jsxs21(Tooltip, { children: [
-      /* @__PURE__ */ jsx42(TooltipTrigger, { render: trigger }),
-      /* @__PURE__ */ jsx42(TooltipContent, { children: label })
+    ) : /* @__PURE__ */ jsx48("span", { "aria-label": label || s.username, className: "group/social inline-flex", children: icon });
+    if (!label) return /* @__PURE__ */ jsx48(React20.Fragment, { children: trigger }, s.id);
+    return /* @__PURE__ */ jsxs27(Tooltip, { children: [
+      /* @__PURE__ */ jsx48(TooltipTrigger, { render: trigger }),
+      /* @__PURE__ */ jsx48(TooltipContent, { children: label })
     ] }, s.id);
   }) }) });
 }
 function PersonItem({ person }) {
   const socialLabel = person.social ? socialTooltipText(person.social) : "";
-  return /* @__PURE__ */ jsxs21("div", { className: "flex items-start gap-4", children: [
-    /* @__PURE__ */ jsx42(
+  return /* @__PURE__ */ jsxs27("div", { className: "flex items-start gap-4", children: [
+    /* @__PURE__ */ jsx48(
       "div",
       {
         className: "h-14 w-14 shrink-0 rounded-sm bg-[#E0E0E0] bg-cover bg-center",
         style: person.avatar ? { backgroundImage: `url(${person.avatar})` } : void 0
       }
     ),
-    /* @__PURE__ */ jsxs21("div", { className: "flex min-w-0 flex-1 flex-col gap-1", children: [
-      /* @__PURE__ */ jsx42("div", { className: "text-[length:var(--text-16)] font-medium leading-[1.28] text-[#0A0A0A]", children: person.name }),
-      person.role ? /* @__PURE__ */ jsx42("div", { className: "text-[length:var(--text-14)] leading-[1.32] text-[#404040]", children: person.role }) : null,
-      person.phone ? /* @__PURE__ */ jsx42(
+    /* @__PURE__ */ jsxs27("div", { className: "flex min-w-0 flex-1 flex-col gap-1", children: [
+      /* @__PURE__ */ jsx48("div", { className: "text-[length:var(--text-16)] font-medium leading-[1.28] text-[#0A0A0A]", children: person.name }),
+      person.role ? /* @__PURE__ */ jsx48("div", { className: "text-[length:var(--text-14)] leading-[1.32] text-[#404040]", children: person.role }) : null,
+      person.phone ? /* @__PURE__ */ jsx48(
         "a",
         {
           href: `tel:${person.phone.replace(/[^+\d]/g, "")}`,
@@ -2938,11 +4585,11 @@ function PersonItem({ person }) {
           children: person.phone
         }
       ) : null,
-      person.social && (person.social.url || person.social.username) ? /* @__PURE__ */ jsx42(TooltipProvider, { delay: 150, children: /* @__PURE__ */ jsx42("div", { className: "mt-1 inline-flex text-[#0A0A0A]", children: /* @__PURE__ */ jsxs21(Tooltip, { children: [
-        /* @__PURE__ */ jsx42(
+      person.social && (person.social.url || person.social.username) ? /* @__PURE__ */ jsx48(TooltipProvider, { delay: 150, children: /* @__PURE__ */ jsx48("div", { className: "mt-1 inline-flex text-[#0A0A0A]", children: /* @__PURE__ */ jsxs27(Tooltip, { children: [
+        /* @__PURE__ */ jsx48(
           TooltipTrigger,
           {
-            render: person.social.url ? /* @__PURE__ */ jsx42(
+            render: person.social.url ? /* @__PURE__ */ jsx48(
               "a",
               {
                 href: person.social.url,
@@ -2950,7 +4597,7 @@ function PersonItem({ person }) {
                 rel: "noopener noreferrer",
                 "aria-label": socialLabel || person.social.username,
                 className: "inline-flex hover:text-[#404040]",
-                children: /* @__PURE__ */ jsx42(
+                children: /* @__PURE__ */ jsx48(
                   SocialIcon,
                   {
                     kind: person.social.kind,
@@ -2958,7 +4605,7 @@ function PersonItem({ person }) {
                   }
                 )
               }
-            ) : /* @__PURE__ */ jsx42("span", { className: "inline-flex", children: /* @__PURE__ */ jsx42(
+            ) : /* @__PURE__ */ jsx48("span", { className: "inline-flex", children: /* @__PURE__ */ jsx48(
               SocialIcon,
               {
                 kind: person.social.kind,
@@ -2967,21 +4614,21 @@ function PersonItem({ person }) {
             ) })
           }
         ),
-        socialLabel ? /* @__PURE__ */ jsx42(TooltipContent, { children: socialLabel }) : null
+        socialLabel ? /* @__PURE__ */ jsx48(TooltipContent, { children: socialLabel }) : null
       ] }) }) }) : null
     ] })
   ] });
 }
 function CardItemRenderer({ item }) {
-  if (item.kind === "paragraph") return /* @__PURE__ */ jsx42(ParagraphItem, { paragraph: item.paragraph });
-  if (item.kind === "socials") return /* @__PURE__ */ jsx42(SocialsItem, { socials: item.socials });
-  return /* @__PURE__ */ jsx42(PersonItem, { person: item.person });
+  if (item.kind === "paragraph") return /* @__PURE__ */ jsx48(ParagraphItem, { paragraph: item.paragraph });
+  if (item.kind === "socials") return /* @__PURE__ */ jsx48(SocialsItem, { socials: item.socials });
+  return /* @__PURE__ */ jsx48(PersonItem, { person: item.person });
 }
 function ContactCardView({ card }) {
-  return /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-4", children: [
-    /* @__PURE__ */ jsx42("div", { className: "flex items-end", children: /* @__PURE__ */ jsx42("h4", { className: "h4 text-[#0A0A0A]", children: card.title }) }),
-    /* @__PURE__ */ jsx42("div", { className: "h-0 w-full border-t border-[#404040]" }),
-    /* @__PURE__ */ jsx42("div", { className: "flex flex-col gap-4", children: card.items.map((item) => /* @__PURE__ */ jsx42(CardItemRenderer, { item }, item.id)) })
+  return /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-4", children: [
+    /* @__PURE__ */ jsx48("div", { className: "flex items-end", children: /* @__PURE__ */ jsx48("h4", { className: "h4 text-[#0A0A0A]", children: card.title }) }),
+    /* @__PURE__ */ jsx48("div", { className: "h-0 w-full border-t border-[#404040]" }),
+    /* @__PURE__ */ jsx48("div", { className: "flex flex-col gap-4", children: card.items.map((item) => /* @__PURE__ */ jsx48(CardItemRenderer, { item }, item.id)) })
   ] });
 }
 function ContactsSection({
@@ -3001,54 +4648,54 @@ function ContactsSection({
   const splitIndex = Math.ceil(cards.length / 2);
   const leftCards = cards.slice(0, splitIndex);
   const rightCards = cards.slice(splitIndex);
-  return /* @__PURE__ */ jsxs21("section", { className: cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className), children: [
-    /* @__PURE__ */ jsxs21("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-      /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-2", children: [
-        /* @__PURE__ */ jsx42("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
-        /* @__PURE__ */ jsxs21("div", { className: "flex", children: [
-          /* @__PURE__ */ jsx42("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ jsxs21("h2", { className: "h2", children: [
-            /* @__PURE__ */ jsx42("span", { className: "text-[#0A0A0A]", children: title }),
-            titleSecondary ? /* @__PURE__ */ jsxs21(Fragment8, { children: [
-              /* @__PURE__ */ jsx42("span", { className: "text-[#0A0A0A]", children: " " }),
-              /* @__PURE__ */ jsx42("span", { className: "text-[#666666]", children: titleSecondary })
+  return /* @__PURE__ */ jsxs27("section", { className: cn("w-full bg-[#F0F0F0] py-10 md:py-16 lg:py-20", className), children: [
+    /* @__PURE__ */ jsxs27("div", { className: "hidden lg:flex flex-col gap-[104px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+      /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
+        /* @__PURE__ */ jsxs27("div", { className: "flex", children: [
+          /* @__PURE__ */ jsx48("div", { className: "w-1/2 shrink-0 pr-8", children: /* @__PURE__ */ jsxs27("h2", { className: "h2", children: [
+            /* @__PURE__ */ jsx48("span", { className: "text-[#0A0A0A]", children: title }),
+            titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
+              /* @__PURE__ */ jsx48("span", { className: "text-[#0A0A0A]", children: " " }),
+              /* @__PURE__ */ jsx48("span", { className: "text-[#666666]", children: titleSecondary })
             ] }) : null
           ] }) }),
-          hasParagraphs && /* @__PURE__ */ jsx42("div", { className: "w-1/2", children: /* @__PURE__ */ jsx42("div", { className: "max-w-[480px]", children: /* @__PURE__ */ jsx42(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "light", size: "18" }) }) })
+          hasParagraphs && /* @__PURE__ */ jsx48("div", { className: "w-1/2", children: /* @__PURE__ */ jsx48("div", { className: "max-w-[480px]", children: /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "light", size: "18" }) }) })
         ] })
       ] }),
-      cards.length > 0 && /* @__PURE__ */ jsxs21("div", { className: "flex", children: [
-        /* @__PURE__ */ jsx42("div", { className: "w-1/2 flex gap-4 pr-4", children: leftCards.map((card) => /* @__PURE__ */ jsx42("div", { className: "flex-1", children: /* @__PURE__ */ jsx42(ContactCardView, { card }) }, card.id)) }),
-        /* @__PURE__ */ jsx42("div", { className: "w-1/2 flex gap-4", children: rightCards.map((card) => /* @__PURE__ */ jsx42("div", { className: "flex-1", children: /* @__PURE__ */ jsx42(ContactCardView, { card }) }, card.id)) })
+      cards.length > 0 && /* @__PURE__ */ jsxs27("div", { className: "flex", children: [
+        /* @__PURE__ */ jsx48("div", { className: "w-1/2 flex gap-4 pr-4", children: leftCards.map((card) => /* @__PURE__ */ jsx48("div", { className: "flex-1", children: /* @__PURE__ */ jsx48(ContactCardView, { card }) }, card.id)) }),
+        /* @__PURE__ */ jsx48("div", { className: "w-1/2 flex gap-4", children: rightCards.map((card) => /* @__PURE__ */ jsx48("div", { className: "flex-1", children: /* @__PURE__ */ jsx48(ContactCardView, { card }) }, card.id)) })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs21("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
-      /* @__PURE__ */ jsxs21("div", { className: "flex flex-col gap-2", children: [
-        /* @__PURE__ */ jsx42("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
-        /* @__PURE__ */ jsxs21("h2", { className: "h3", children: [
-          /* @__PURE__ */ jsx42("span", { className: "text-[#0A0A0A]", children: title }),
-          titleSecondary ? /* @__PURE__ */ jsxs21(Fragment8, { children: [
-            /* @__PURE__ */ jsx42("span", { className: "text-[#0A0A0A]", children: " " }),
-            /* @__PURE__ */ jsx42("span", { className: "text-[#666666]", children: titleSecondary })
+    /* @__PURE__ */ jsxs27("div", { className: "flex lg:hidden flex-col gap-16 px-5 md:px-8", children: [
+      /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#0A0A0A]", children: tag }),
+        /* @__PURE__ */ jsxs27("h2", { className: "h3", children: [
+          /* @__PURE__ */ jsx48("span", { className: "text-[#0A0A0A]", children: title }),
+          titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
+            /* @__PURE__ */ jsx48("span", { className: "text-[#0A0A0A]", children: " " }),
+            /* @__PURE__ */ jsx48("span", { className: "text-[#666666]", children: titleSecondary })
           ] }) : null
         ] }),
-        hasParagraphs && /* @__PURE__ */ jsx42("div", { className: "mt-1", children: /* @__PURE__ */ jsx42(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "light", size: "16" }) })
+        hasParagraphs && /* @__PURE__ */ jsx48("div", { className: "mt-1", children: /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "light", size: "16" }) })
       ] }),
-      /* @__PURE__ */ jsx42("div", { className: "flex flex-col gap-7", children: cards.map((card) => /* @__PURE__ */ jsx42(ContactCardView, { card }, card.id)) })
+      /* @__PURE__ */ jsx48("div", { className: "flex flex-col gap-7", children: cards.map((card) => /* @__PURE__ */ jsx48(ContactCardView, { card }, card.id)) })
     ] })
   ] });
 }
 
 // src/components/ui/process-section.tsx
-import { useEffect as useEffect6, useRef as useRef7, useState as useState2, useCallback as useCallback2 } from "react";
-import { Fragment as Fragment9, jsx as jsx43, jsxs as jsxs22 } from "react/jsx-runtime";
+import { useEffect as useEffect8, useRef as useRef10, useState as useState6, useCallback as useCallback3 } from "react";
+import { Fragment as Fragment13, jsx as jsx49, jsxs as jsxs28 } from "react/jsx-runtime";
 function TimelineColumn({
   isActive,
   isLast,
   fillProgress
 }) {
-  return /* @__PURE__ */ jsxs22("div", { className: "relative w-px shrink-0 self-stretch", children: [
-    /* @__PURE__ */ jsx43("div", { className: "absolute inset-0 bg-[#404040]" }),
-    /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsxs28("div", { className: "relative w-px shrink-0 self-stretch", children: [
+    /* @__PURE__ */ jsx49("div", { className: "absolute inset-0 bg-[#404040]" }),
+    /* @__PURE__ */ jsx49(
       "div",
       {
         className: "absolute top-0 left-0 right-0 h-full origin-top bg-[#F0F0F0]",
@@ -3058,7 +4705,7 @@ function TimelineColumn({
         }
       }
     ),
-    /* @__PURE__ */ jsx43(
+    /* @__PURE__ */ jsx49(
       "div",
       {
         className: "absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 shrink-0 transition-all duration-300",
@@ -3078,11 +4725,11 @@ function StepCard({
   className,
   titleClass
 }) {
-  return /* @__PURE__ */ jsxs22("div", { className: cn("flex gap-10 max-w-[364px]", className), children: [
-    /* @__PURE__ */ jsx43(TimelineColumn, { isActive, isLast, fillProgress }),
-    /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-3 pb-16", children: [
-      /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
-        /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsxs28("div", { className: cn("flex gap-10 max-w-[364px]", className), children: [
+    /* @__PURE__ */ jsx49(TimelineColumn, { isActive, isLast, fillProgress }),
+    /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-3 pb-16", children: [
+      /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-2", children: [
+        /* @__PURE__ */ jsx49(
           "span",
           {
             className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] transition-colors duration-300",
@@ -3090,7 +4737,7 @@ function StepCard({
             children: step.number
           }
         ),
-        /* @__PURE__ */ jsx43(
+        /* @__PURE__ */ jsx49(
           "h3",
           {
             className: cn(titleClass || "h3", "transition-colors duration-300"),
@@ -3099,14 +4746,14 @@ function StepCard({
           }
         )
       ] }),
-      /* @__PURE__ */ jsx43("div", { style: { color: isActive ? "#939393" : "rgba(147,147,147,0.5)" }, children: /* @__PURE__ */ jsx43(
+      /* @__PURE__ */ jsx49("div", { style: { color: isActive ? "#939393" : "rgba(147,147,147,0.5)" }, children: /* @__PURE__ */ jsx49(
         RichText,
         {
           text: step.text,
           className: "text-[length:var(--text-16)] leading-[1.28] transition-colors duration-300"
         }
       ) }),
-      /* @__PURE__ */ jsx43(
+      /* @__PURE__ */ jsx49(
         "span",
         {
           className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] transition-colors duration-300",
@@ -3122,11 +4769,11 @@ function ParticipantsBlock({
   participants,
   className
 }) {
-  return /* @__PURE__ */ jsxs22("div", { className: cn("bg-[#121212] rounded p-8 flex flex-col gap-8 max-w-[648px]", className), children: [
-    /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-    /* @__PURE__ */ jsx43("div", { className: "flex flex-col gap-5", children: participants.map((p, i) => /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
-      /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]", children: p.role }),
-      /* @__PURE__ */ jsx43(
+  return /* @__PURE__ */ jsxs28("div", { className: cn("bg-[#121212] rounded p-8 flex flex-col gap-8 max-w-[648px]", className), children: [
+    /* @__PURE__ */ jsx49("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+    /* @__PURE__ */ jsx49("div", { className: "flex flex-col gap-5", children: participants.map((p, i) => /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-2", children: [
+      /* @__PURE__ */ jsx49("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]", children: p.role }),
+      /* @__PURE__ */ jsx49(
         RichText,
         {
           text: p.text,
@@ -3141,7 +4788,7 @@ function AcademyStepCard({
   isFirst,
   className
 }) {
-  return /* @__PURE__ */ jsxs22(
+  return /* @__PURE__ */ jsxs28(
     "div",
     {
       className: cn(
@@ -3150,11 +4797,11 @@ function AcademyStepCard({
         className
       ),
       children: [
-        /* @__PURE__ */ jsxs22("div", { className: "flex items-start gap-6 lg:w-1/2 lg:items-center", children: [
-          /* @__PURE__ */ jsx43("span", { className: "flex-1 h4 text-[#F0F0F0]", children: step.title }),
-          /* @__PURE__ */ jsx43("span", { className: "w-[100px] shrink-0 text-right lg:text-left lg:order-first font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: step.number })
+        /* @__PURE__ */ jsxs28("div", { className: "flex items-start gap-6 lg:w-1/2 lg:items-center", children: [
+          /* @__PURE__ */ jsx49("span", { className: "flex-1 h4 text-[#F0F0F0]", children: step.title }),
+          /* @__PURE__ */ jsx49("span", { className: "w-[100px] shrink-0 text-right lg:text-left lg:order-first font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: step.number })
         ] }),
-        /* @__PURE__ */ jsx43("div", { className: "pl-0 lg:w-1/2 lg:pl-4", children: /* @__PURE__ */ jsx43(
+        /* @__PURE__ */ jsx49("div", { className: "pl-0 lg:w-1/2 lg:pl-4", children: /* @__PURE__ */ jsx49(
           RichText,
           {
             text: step.text,
@@ -3166,10 +4813,10 @@ function AcademyStepCard({
   );
 }
 function useStepProgress(stepCount) {
-  const [activeIndex, setActiveIndex] = useState2(-1);
-  const [fills, setFills] = useState2(() => Array(stepCount).fill(0));
-  const containerRef = useRef7(null);
-  const update = useCallback2(() => {
+  const [activeIndex, setActiveIndex] = useState6(-1);
+  const [fills, setFills] = useState6(() => Array(stepCount).fill(0));
+  const containerRef = useRef10(null);
+  const update = useCallback3(() => {
     const container = containerRef.current;
     if (!container) return;
     const allStepEls = container.querySelectorAll("[data-step]");
@@ -3195,7 +4842,7 @@ function useStepProgress(stepCount) {
     setActiveIndex(newActive);
     setFills(newFills);
   }, [stepCount]);
-  useEffect6(() => {
+  useEffect8(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -3238,33 +4885,33 @@ function ProcessSection({
   );
   const subtitleClassDesktop = subtitleUppercase ? "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]" : "text-[length:var(--text-18)] leading-[1.2] text-[#F0F0F0]";
   const subtitleClassSmall = subtitleUppercase ? "font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#F0F0F0]" : "text-[length:var(--text-16)] leading-[1.28] text-[#F0F0F0]";
-  return /* @__PURE__ */ jsxs22(
+  return /* @__PURE__ */ jsxs28(
     "section",
     {
       ref: containerRef,
       className: cn("w-full bg-[#0A0A0A] border-t border-border py-10 md:py-16 lg:py-20", className),
       children: [
-        /* @__PURE__ */ jsxs22("div", { className: "hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-          /* @__PURE__ */ jsxs22("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col", children: [
-            /* @__PURE__ */ jsx43("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx43("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-8 max-w-[560px]", children: [
-              /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
-                /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-                /* @__PURE__ */ jsxs22("h2", { className: "h2", children: [
-                  /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: title }),
-                  titleSecondary ? /* @__PURE__ */ jsxs22(Fragment9, { children: [
-                    /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: " " }),
-                    /* @__PURE__ */ jsx43("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs28("div", { className: "hidden lg:flex mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+          /* @__PURE__ */ jsxs28("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col", children: [
+            /* @__PURE__ */ jsx49("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx49("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-8 max-w-[560px]", children: [
+              /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-2", children: [
+                /* @__PURE__ */ jsx49("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+                /* @__PURE__ */ jsxs28("h2", { className: "h2", children: [
+                  /* @__PURE__ */ jsx49("span", { className: "text-[#F0F0F0]", children: title }),
+                  titleSecondary ? /* @__PURE__ */ jsxs28(Fragment13, { children: [
+                    /* @__PURE__ */ jsx49("span", { className: "text-[#F0F0F0]", children: " " }),
+                    /* @__PURE__ */ jsx49("span", { className: "text-[#939393]", children: titleSecondary })
                   ] }) : null
                 ] })
               ] }),
-              /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-1", children: [
-                /* @__PURE__ */ jsx43(RichText, { text: subtitle, className: subtitleClassDesktop }),
-                /* @__PURE__ */ jsx43(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" })
+              /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-1", children: [
+                /* @__PURE__ */ jsx49(RichText, { text: subtitle, className: subtitleClassDesktop }),
+                /* @__PURE__ */ jsx49(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" })
               ] })
             ] }) }) }),
-            hasParticipants && /* @__PURE__ */ jsx43("div", { className: "max-w-[648px]", children: /* @__PURE__ */ jsx43(ParticipantsBlock, { tag: participantsTag, participants }) })
+            hasParticipants && /* @__PURE__ */ jsx49("div", { className: "max-w-[648px]", children: /* @__PURE__ */ jsx49(ParticipantsBlock, { tag: participantsTag, participants }) })
           ] }),
-          /* @__PURE__ */ jsx43("div", { className: "w-1/2 pt-10", children: /* @__PURE__ */ jsx43("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx43(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx43("div", { "data-step": true, children: /* @__PURE__ */ jsx43(
+          /* @__PURE__ */ jsx49("div", { className: "w-1/2 pt-10", children: /* @__PURE__ */ jsx49("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx49(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx49("div", { "data-step": true, children: /* @__PURE__ */ jsx49(
             StepCard,
             {
               step,
@@ -3274,25 +4921,25 @@ function ProcessSection({
             }
           ) }, i)) }) })
         ] }),
-        /* @__PURE__ */ jsxs22("div", { className: "hidden md:flex lg:hidden gap-10 px-8", children: [
-          /* @__PURE__ */ jsxs22("div", { className: "w-[45%] shrink-0 flex flex-col", children: [
-            /* @__PURE__ */ jsx43("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx43("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-4", children: [
-              /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
-                /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-                /* @__PURE__ */ jsxs22("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
-                  /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: title }),
-                  titleSecondary ? /* @__PURE__ */ jsxs22(Fragment9, { children: [
-                    /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: " " }),
-                    /* @__PURE__ */ jsx43("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs28("div", { className: "hidden md:flex lg:hidden gap-10 px-8", children: [
+          /* @__PURE__ */ jsxs28("div", { className: "w-[45%] shrink-0 flex flex-col", children: [
+            /* @__PURE__ */ jsx49("div", { className: "flex-1 pb-10", children: /* @__PURE__ */ jsx49("div", { className: "sticky top-24", children: /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-4", children: [
+              /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-2", children: [
+                /* @__PURE__ */ jsx49("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+                /* @__PURE__ */ jsxs28("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
+                  /* @__PURE__ */ jsx49("span", { className: "text-[#F0F0F0]", children: title }),
+                  titleSecondary ? /* @__PURE__ */ jsxs28(Fragment13, { children: [
+                    /* @__PURE__ */ jsx49("span", { className: "text-[#F0F0F0]", children: " " }),
+                    /* @__PURE__ */ jsx49("span", { className: "text-[#939393]", children: titleSecondary })
                   ] }) : null
                 ] })
               ] }),
-              /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-1", children: [
-                /* @__PURE__ */ jsx43(RichText, { text: subtitle, className: subtitleClassSmall }),
-                /* @__PURE__ */ jsx43(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
+              /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-1", children: [
+                /* @__PURE__ */ jsx49(RichText, { text: subtitle, className: subtitleClassSmall }),
+                /* @__PURE__ */ jsx49(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
               ] })
             ] }) }) }),
-            hasParticipants && /* @__PURE__ */ jsx43(
+            hasParticipants && /* @__PURE__ */ jsx49(
               ParticipantsBlock,
               {
                 tag: participantsTag,
@@ -3301,7 +4948,7 @@ function ProcessSection({
               }
             )
           ] }),
-          /* @__PURE__ */ jsx43("div", { className: "flex-1 pt-10", children: /* @__PURE__ */ jsx43("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx43(AcademyStepCard, { step, isFirst: i === 0, className: "lg:flex-col lg:items-start" }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx43("div", { "data-step": true, children: /* @__PURE__ */ jsx43(
+          /* @__PURE__ */ jsx49("div", { className: "flex-1 pt-10", children: /* @__PURE__ */ jsx49("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx49(AcademyStepCard, { step, isFirst: i === 0, className: "lg:flex-col lg:items-start" }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx49("div", { "data-step": true, children: /* @__PURE__ */ jsx49(
             StepCard,
             {
               step,
@@ -3313,24 +4960,24 @@ function ProcessSection({
             }
           ) }, i)) }) })
         ] }),
-        /* @__PURE__ */ jsxs22("div", { className: "flex md:hidden flex-col px-5", children: [
-          /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-4 mb-10", children: [
-            /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-2", children: [
-              /* @__PURE__ */ jsx43("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-              /* @__PURE__ */ jsxs22("h2", { className: "h3", children: [
-                /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs22(Fragment9, { children: [
-                  /* @__PURE__ */ jsx43("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx43("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs28("div", { className: "flex md:hidden flex-col px-5", children: [
+          /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-4 mb-10", children: [
+            /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-2", children: [
+              /* @__PURE__ */ jsx49("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+              /* @__PURE__ */ jsxs28("h2", { className: "h3", children: [
+                /* @__PURE__ */ jsx49("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs28(Fragment13, { children: [
+                  /* @__PURE__ */ jsx49("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx49("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] })
             ] }),
-            /* @__PURE__ */ jsxs22("div", { className: "flex flex-col gap-1", children: [
-              /* @__PURE__ */ jsx43(RichText, { text: subtitle, className: subtitleClassSmall }),
-              /* @__PURE__ */ jsx43(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
+            /* @__PURE__ */ jsxs28("div", { className: "flex flex-col gap-1", children: [
+              /* @__PURE__ */ jsx49(RichText, { text: subtitle, className: subtitleClassSmall }),
+              /* @__PURE__ */ jsx49(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
             ] })
           ] }),
-          /* @__PURE__ */ jsx43("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx43(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx43("div", { "data-step": true, children: /* @__PURE__ */ jsx43(
+          /* @__PURE__ */ jsx49("div", { className: "flex flex-col", children: isAcademy ? steps.map((step, i) => /* @__PURE__ */ jsx49(AcademyStepCard, { step, isFirst: i === 0 }, i)) : steps.map((step, i) => /* @__PURE__ */ jsx49("div", { "data-step": true, children: /* @__PURE__ */ jsx49(
             StepCard,
             {
               step,
@@ -3339,7 +4986,7 @@ function ProcessSection({
               fillProgress: fills[i]
             }
           ) }, i)) }),
-          hasParticipants && /* @__PURE__ */ jsx43("div", { className: "mt-4", children: /* @__PURE__ */ jsx43(ParticipantsBlock, { tag: participantsTag, participants }) })
+          hasParticipants && /* @__PURE__ */ jsx49("div", { className: "mt-4", children: /* @__PURE__ */ jsx49(ParticipantsBlock, { tag: participantsTag, participants }) })
         ] })
       ]
     }
@@ -3347,19 +4994,19 @@ function ProcessSection({
 }
 
 // src/components/ui/results-section.tsx
-import { useEffect as useEffect7, useRef as useRef8, useState as useState3, useCallback as useCallback3 } from "react";
-import { Fragment as Fragment10, jsx as jsx44, jsxs as jsxs23 } from "react/jsx-runtime";
+import { useEffect as useEffect9, useRef as useRef11, useState as useState7, useCallback as useCallback4 } from "react";
+import { Fragment as Fragment14, jsx as jsx50, jsxs as jsxs29 } from "react/jsx-runtime";
 var STEP_OFFSET = 88;
 var STAGGER = 0.18;
 var CARD_DURATION = 0.25;
 function useResultsScroll(cardCount) {
-  const [progresses, setProgresses] = useState3(() => {
+  const [progresses, setProgresses] = useState7(() => {
     const arr = Array(cardCount).fill(0);
     arr[0] = 1;
     return arr;
   });
-  const sectionRef = useRef8(null);
-  const update = useCallback3(() => {
+  const sectionRef = useRef11(null);
+  const update = useCallback4(() => {
     const el = sectionRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -3380,7 +5027,7 @@ function useResultsScroll(cardCount) {
     }
     setProgresses(newProgresses);
   }, [cardCount]);
-  useEffect7(() => {
+  useEffect9(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -3420,37 +5067,37 @@ function ResultsSection({
       break;
     }
   }
-  return /* @__PURE__ */ jsxs23(
+  return /* @__PURE__ */ jsxs29(
     "section",
     {
       ref: sectionRef,
       className: cn("w-full bg-[#0A0A0A] border-t border-border py-10 md:py-16 lg:py-20", className),
       children: [
-        /* @__PURE__ */ jsx44("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs23("div", { className: "relative", style: { minHeight: `${contentHeight}px` }, children: [
-          /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-2 max-w-[560px]", children: [
-            /* @__PURE__ */ jsx44("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-6", children: [
-              /* @__PURE__ */ jsxs23("h2", { className: "h2", children: [
-                /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs23(Fragment10, { children: [
-                  /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx44("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsx50("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs29("div", { className: "relative", style: { minHeight: `${contentHeight}px` }, children: [
+          /* @__PURE__ */ jsxs29("div", { className: "flex flex-col gap-2 max-w-[560px]", children: [
+            /* @__PURE__ */ jsx50("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs29("div", { className: "flex flex-col gap-6", children: [
+              /* @__PURE__ */ jsxs29("h2", { className: "h2", children: [
+                /* @__PURE__ */ jsx50("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs29(Fragment14, { children: [
+                  /* @__PURE__ */ jsx50("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx50("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] }),
-              hasParagraphs && /* @__PURE__ */ jsx44(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" })
+              hasParagraphs && /* @__PURE__ */ jsx50(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" })
             ] })
           ] }),
-          /* @__PURE__ */ jsx44("div", { className: "absolute bottom-0 left-0 right-0 flex", children: cards.map((card, i) => {
+          /* @__PURE__ */ jsx50("div", { className: "absolute bottom-0 left-0 right-0 flex", children: cards.map((card, i) => {
             const progress = progresses[i];
             const offset = i === 0 ? 0 : -i * STEP_OFFSET * (1 - progress);
             const isCurrent = i === currentIndex;
             const isPast = progress >= 1 && !isCurrent;
-            return /* @__PURE__ */ jsx44(
+            return /* @__PURE__ */ jsx50(
               "div",
               {
                 className: "flex-1",
                 style: { transform: `translateY(${offset}px)` },
-                children: /* @__PURE__ */ jsxs23(
+                children: /* @__PURE__ */ jsxs29(
                   "div",
                   {
                     className: cn(
@@ -3458,7 +5105,7 @@ function ResultsSection({
                       isCurrent ? "bg-[#FFCC00] border-[#FFCC00]" : "border-[#404040]"
                     ),
                     children: [
-                      /* @__PURE__ */ jsx44(
+                      /* @__PURE__ */ jsx50(
                         "h3",
                         {
                           className: cn(
@@ -3468,7 +5115,7 @@ function ResultsSection({
                           children: card.title
                         }
                       ),
-                      /* @__PURE__ */ jsx44(
+                      /* @__PURE__ */ jsx50(
                         RichText,
                         {
                           text: card.text,
@@ -3486,27 +5133,27 @@ function ResultsSection({
             );
           }) })
         ] }) }),
-        /* @__PURE__ */ jsxs23("div", { className: "hidden md:flex lg:hidden flex-col px-8", children: [
-          /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-2 mb-6", children: [
-            /* @__PURE__ */ jsx44("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-4", children: [
-              /* @__PURE__ */ jsxs23("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
-                /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs23(Fragment10, { children: [
-                  /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx44("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs29("div", { className: "hidden md:flex lg:hidden flex-col px-8", children: [
+          /* @__PURE__ */ jsxs29("div", { className: "flex flex-col gap-2 mb-6", children: [
+            /* @__PURE__ */ jsx50("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs29("div", { className: "flex flex-col gap-4", children: [
+              /* @__PURE__ */ jsxs29("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
+                /* @__PURE__ */ jsx50("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs29(Fragment14, { children: [
+                  /* @__PURE__ */ jsx50("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx50("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] }),
-              hasParagraphs && /* @__PURE__ */ jsx44(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
+              hasParagraphs && /* @__PURE__ */ jsx50(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
             ] })
           ] }),
-          /* @__PURE__ */ jsx44("div", { className: "grid grid-cols-2 gap-2", children: cards.map((card, i) => /* @__PURE__ */ jsxs23(
+          /* @__PURE__ */ jsx50("div", { className: "grid grid-cols-2 gap-2", children: cards.map((card, i) => /* @__PURE__ */ jsxs29(
             "div",
             {
               className: "bg-[#FFCC00] flex flex-col justify-between p-5 h-[240px]",
               children: [
-                /* @__PURE__ */ jsx44("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
-                /* @__PURE__ */ jsx44(
+                /* @__PURE__ */ jsx50("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
+                /* @__PURE__ */ jsx50(
                   RichText,
                   {
                     text: card.text,
@@ -3518,39 +5165,39 @@ function ResultsSection({
             i
           )) })
         ] }),
-        /* @__PURE__ */ jsxs23("div", { className: "flex md:hidden flex-col px-5", children: [
-          /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-2 mb-6", children: [
-            /* @__PURE__ */ jsx44("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs23("div", { className: "flex flex-col gap-4", children: [
-              /* @__PURE__ */ jsxs23("h2", { className: "h3", children: [
-                /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs23(Fragment10, { children: [
-                  /* @__PURE__ */ jsx44("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx44("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs29("div", { className: "flex md:hidden flex-col px-5", children: [
+          /* @__PURE__ */ jsxs29("div", { className: "flex flex-col gap-2 mb-6", children: [
+            /* @__PURE__ */ jsx50("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs29("div", { className: "flex flex-col gap-4", children: [
+              /* @__PURE__ */ jsxs29("h2", { className: "h3", children: [
+                /* @__PURE__ */ jsx50("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs29(Fragment14, { children: [
+                  /* @__PURE__ */ jsx50("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx50("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] }),
-              hasParagraphs && /* @__PURE__ */ jsx44(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
+              hasParagraphs && /* @__PURE__ */ jsx50(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
             ] })
           ] }),
-          /* @__PURE__ */ jsx44(
+          /* @__PURE__ */ jsx50(
             "div",
             {
               className: "overflow-x-auto -mx-5",
               style: { scrollbarWidth: "none" },
-              children: /* @__PURE__ */ jsx44("div", { className: "px-5 w-fit", children: /* @__PURE__ */ jsx44(
+              children: /* @__PURE__ */ jsx50("div", { className: "px-5 w-fit", children: /* @__PURE__ */ jsx50(
                 "div",
                 {
                   className: "grid grid-rows-2 gap-2",
                   style: {
                     gridTemplateColumns: `repeat(${Math.ceil(cards.length / 2)}, 350px)`
                   },
-                  children: cards.map((card, i) => /* @__PURE__ */ jsxs23(
+                  children: cards.map((card, i) => /* @__PURE__ */ jsxs29(
                     "div",
                     {
                       className: "bg-[#FFCC00] flex flex-col justify-between p-5 h-[240px]",
                       children: [
-                        /* @__PURE__ */ jsx44("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
-                        /* @__PURE__ */ jsx44("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A]", children: card.text })
+                        /* @__PURE__ */ jsx50("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase leading-[1.2] tracking-[-0.01em] text-[#0A0A0A]", children: card.title }),
+                        /* @__PURE__ */ jsx50("p", { className: "text-[length:var(--text-16)] leading-[1.28] text-[#0A0A0A]", children: card.text })
                       ]
                     },
                     i
@@ -3566,9 +5213,9 @@ function ResultsSection({
 }
 
 // src/components/ui/services-section.tsx
-import { Fragment as Fragment11, jsx as jsx45, jsxs as jsxs24 } from "react/jsx-runtime";
+import { Fragment as Fragment15, jsx as jsx51, jsxs as jsxs30 } from "react/jsx-runtime";
 function Arrow({ featured }) {
-  return /* @__PURE__ */ jsx45(
+  return /* @__PURE__ */ jsx51(
     "div",
     {
       className: cn(
@@ -3576,7 +5223,7 @@ function Arrow({ featured }) {
         featured ? "text-[#0A0A0A] group-hover/card:text-[#F0F0F0]" : "text-[#404040] group-hover/card:text-[#0A0A0A]",
         "group-hover/card:-top-[2px] group-hover/card:-right-[2px]"
       ),
-      children: /* @__PURE__ */ jsx45("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx45("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
+      children: /* @__PURE__ */ jsx51("svg", { width: "11", height: "11", viewBox: "0 0 11 11", fill: "none", children: /* @__PURE__ */ jsx51("path", { d: "M1 10L10 1M10 1H3M10 1V8", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }) })
     }
   );
 }
@@ -3591,10 +5238,10 @@ function ServiceCard({ card }) {
     colSpan === 2 && "md:col-span-2",
     rowSpan === 2 && "lg:row-span-2"
   );
-  const content = /* @__PURE__ */ jsxs24(Fragment11, { children: [
-    !featured && /* @__PURE__ */ jsx45(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 1, variant: "yellow" }),
-    card.showArrow !== false && /* @__PURE__ */ jsx45(Arrow, { featured }),
-    /* @__PURE__ */ jsx45(
+  const content = /* @__PURE__ */ jsxs30(Fragment15, { children: [
+    !featured && /* @__PURE__ */ jsx51(GlowingEffect, { spread: 40, glow: false, disabled: false, proximity: 40, inactiveZone: 0.01, borderWidth: 1, variant: "yellow" }),
+    card.showArrow !== false && /* @__PURE__ */ jsx51(Arrow, { featured }),
+    /* @__PURE__ */ jsx51(
       "h3",
       {
         className: cn(
@@ -3604,14 +5251,14 @@ function ServiceCard({ card }) {
         children: card.title || "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u0443\u0441\u043B\u0443\u0433\u0438"
       }
     ),
-    /* @__PURE__ */ jsx45(
+    /* @__PURE__ */ jsx51(
       "div",
       {
         className: cn(
           "gap-3 md:gap-x-10",
           card.paragraphsTwoCol && colSpan === 2 ? "grid grid-cols-1 md:grid-cols-2" : "flex flex-col"
         ),
-        children: (card.paragraphs.length > 0 ? card.paragraphs : [""]).map((p, i) => /* @__PURE__ */ jsx45(
+        children: (card.paragraphs.length > 0 ? card.paragraphs : [""]).map((p, i) => /* @__PURE__ */ jsx51(
           "p",
           {
             className: cn(
@@ -3626,9 +5273,9 @@ function ServiceCard({ card }) {
     )
   ] });
   if (card.href) {
-    return /* @__PURE__ */ jsx45("a", { href: card.href, className: rootCn, children: content });
+    return /* @__PURE__ */ jsx51("a", { href: card.href, className: rootCn, children: content });
   }
-  return /* @__PURE__ */ jsx45("div", { className: rootCn, children: content });
+  return /* @__PURE__ */ jsx51("div", { className: rootCn, children: content });
 }
 function ServicesSection({
   tag,
@@ -3645,21 +5292,21 @@ function ServicesSection({
     color: "secondary"
   });
   const hasParagraphs = resolvedParagraphs.length > 0;
-  return /* @__PURE__ */ jsx45("section", { className: cn("w-full border-t border-[#404040] bg-[#0A0A0A] py-10 md:py-16 lg:py-20", className), children: /* @__PURE__ */ jsxs24("div", { className: "mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-    /* @__PURE__ */ jsxs24("div", { className: "mb-8 md:mb-12 flex flex-col gap-4 lg:flex-row lg:gap-10", children: [
-      /* @__PURE__ */ jsxs24("div", { className: "flex flex-col gap-4 lg:w-1/2", children: [
-        tag && /* @__PURE__ */ jsx45("span", { className: "font-[family-name:var(--font-mono-family)] text-[18px] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[var(--rm-yellow-100)]", children: tag }),
-        /* @__PURE__ */ jsxs24("h2", { className: "font-[family-name:var(--font-heading-family)] text-[28px] md:text-[36px] lg:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em]", children: [
-          /* @__PURE__ */ jsx45("span", { className: "text-[#F0F0F0]", children: title }),
-          titleSecondary ? /* @__PURE__ */ jsxs24(Fragment11, { children: [
-            /* @__PURE__ */ jsx45("span", { className: "text-[#F0F0F0]", children: " " }),
-            /* @__PURE__ */ jsx45("span", { className: "text-[#939393]", children: titleSecondary })
+  return /* @__PURE__ */ jsx51("section", { className: cn("w-full border-t border-[#404040] bg-[#0A0A0A] py-10 md:py-16 lg:py-20", className), children: /* @__PURE__ */ jsxs30("div", { className: "mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+    /* @__PURE__ */ jsxs30("div", { className: "mb-8 md:mb-12 flex flex-col gap-4 lg:flex-row lg:gap-10", children: [
+      /* @__PURE__ */ jsxs30("div", { className: "flex flex-col gap-4 lg:w-1/2", children: [
+        tag && /* @__PURE__ */ jsx51("span", { className: "font-[family-name:var(--font-mono-family)] text-[18px] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[var(--rm-yellow-100)]", children: tag }),
+        /* @__PURE__ */ jsxs30("h2", { className: "font-[family-name:var(--font-heading-family)] text-[28px] md:text-[36px] lg:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em]", children: [
+          /* @__PURE__ */ jsx51("span", { className: "text-[#F0F0F0]", children: title }),
+          titleSecondary ? /* @__PURE__ */ jsxs30(Fragment15, { children: [
+            /* @__PURE__ */ jsx51("span", { className: "text-[#F0F0F0]", children: " " }),
+            /* @__PURE__ */ jsx51("span", { className: "text-[#939393]", children: titleSecondary })
           ] }) : null
         ] })
       ] }),
-      hasParagraphs && /* @__PURE__ */ jsx45("div", { className: "lg:w-1/2 lg:flex lg:items-end", children: /* @__PURE__ */ jsx45(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" }) })
+      hasParagraphs && /* @__PURE__ */ jsx51("div", { className: "lg:w-1/2 lg:flex lg:items-end", children: /* @__PURE__ */ jsx51(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" }) })
     ] }),
-    /* @__PURE__ */ jsx45("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 auto-rows-[minmax(260px,auto)]", children: cards.map((card, i) => /* @__PURE__ */ jsx45(ServiceCard, { card }, i)) })
+    /* @__PURE__ */ jsx51("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 auto-rows-[minmax(260px,auto)]", children: cards.map((card, i) => /* @__PURE__ */ jsx51(ServiceCard, { card }, i)) })
   ] }) });
 }
 function repackBento(cards) {
@@ -3677,9 +5324,9 @@ function repackBento(cards) {
 }
 
 // src/components/ui/experts-section.tsx
-import { jsx as jsx46, jsxs as jsxs25 } from "react/jsx-runtime";
+import { jsx as jsx52, jsxs as jsxs31 } from "react/jsx-runtime";
 function CirclePattern({ className }) {
-  return /* @__PURE__ */ jsxs25(
+  return /* @__PURE__ */ jsxs31(
     "svg",
     {
       viewBox: "0 0 698 349",
@@ -3688,21 +5335,21 @@ function CirclePattern({ className }) {
       className,
       preserveAspectRatio: "xMidYMid meet",
       children: [
-        /* @__PURE__ */ jsx46("circle", { cx: "137.5", cy: "104.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx46("circle", { cx: "277.5", cy: "104.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx46("circle", { cx: "417.5", cy: "104.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx46("circle", { cx: "557.5", cy: "104.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx46("circle", { cx: "137.5", cy: "244.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx46("circle", { cx: "417.5", cy: "244.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx46("circle", { cx: "277.5", cy: "244.5", r: "88", stroke: "#404040" }),
-        /* @__PURE__ */ jsx46("circle", { cx: "557.5", cy: "244.5", r: "88", stroke: "#404040" })
+        /* @__PURE__ */ jsx52("circle", { cx: "137.5", cy: "104.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx52("circle", { cx: "277.5", cy: "104.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx52("circle", { cx: "417.5", cy: "104.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx52("circle", { cx: "557.5", cy: "104.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx52("circle", { cx: "137.5", cy: "244.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx52("circle", { cx: "417.5", cy: "244.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx52("circle", { cx: "277.5", cy: "244.5", r: "88", stroke: "#404040" }),
+        /* @__PURE__ */ jsx52("circle", { cx: "557.5", cy: "244.5", r: "88", stroke: "#404040" })
       ]
     }
   );
 }
 function ExpertCardHorizontal({ expert }) {
-  return /* @__PURE__ */ jsxs25("div", { className: "flex bg-[#121212] p-8 gap-8 h-[349px]", children: [
-    /* @__PURE__ */ jsx46(
+  return /* @__PURE__ */ jsxs31("div", { className: "flex bg-[#121212] p-8 gap-8 h-[349px]", children: [
+    /* @__PURE__ */ jsx52(
       "div",
       {
         className: "w-full h-full shrink-0 bg-cover bg-center",
@@ -3712,11 +5359,11 @@ function ExpertCardHorizontal({ expert }) {
         }
       }
     ),
-    /* @__PURE__ */ jsxs25("div", { className: "flex flex-col gap-2 flex-1", children: [
-      /* @__PURE__ */ jsx46("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: expert.tag ?? "\u042D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430" }),
-      /* @__PURE__ */ jsxs25("div", { className: "flex flex-col gap-6 flex-1", children: [
-        /* @__PURE__ */ jsx46("h3", { className: "h3 text-[#F0F0F0]", children: expert.name }),
-        /* @__PURE__ */ jsx46("div", { className: "flex-1 flex items-end", children: /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsxs31("div", { className: "flex flex-col gap-2 flex-1", children: [
+      /* @__PURE__ */ jsx52("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: expert.tag ?? "\u042D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430" }),
+      /* @__PURE__ */ jsxs31("div", { className: "flex flex-col gap-6 flex-1", children: [
+        /* @__PURE__ */ jsx52("h3", { className: "h3 text-[#F0F0F0]", children: expert.name }),
+        /* @__PURE__ */ jsx52("div", { className: "flex-1 flex items-end", children: /* @__PURE__ */ jsx52(
           RichText,
           {
             text: expert.bio,
@@ -3728,19 +5375,19 @@ function ExpertCardHorizontal({ expert }) {
   ] });
 }
 function ExpertCardVertical({ expert }) {
-  return /* @__PURE__ */ jsxs25("div", { className: "flex flex-col bg-[#121212] p-5 gap-8", children: [
-    /* @__PURE__ */ jsx46(
+  return /* @__PURE__ */ jsxs31("div", { className: "flex flex-col bg-[#121212] p-5 gap-8", children: [
+    /* @__PURE__ */ jsx52(
       "div",
       {
         className: "w-full h-[272px] bg-cover bg-center",
         style: { backgroundImage: `url(${expert.image})` }
       }
     ),
-    /* @__PURE__ */ jsxs25("div", { className: "flex flex-col gap-2", children: [
-      /* @__PURE__ */ jsx46("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: expert.tag ?? "\u042D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430" }),
-      /* @__PURE__ */ jsxs25("div", { className: "flex flex-col gap-4", children: [
-        /* @__PURE__ */ jsx46("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
-        /* @__PURE__ */ jsx46(
+    /* @__PURE__ */ jsxs31("div", { className: "flex flex-col gap-2", children: [
+      /* @__PURE__ */ jsx52("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: expert.tag ?? "\u042D\u043A\u0441\u043F\u0435\u0440\u0442 \u043F\u0440\u043E\u0434\u0443\u043A\u0442\u0430" }),
+      /* @__PURE__ */ jsxs31("div", { className: "flex flex-col gap-4", children: [
+        /* @__PURE__ */ jsx52("h3", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
+        /* @__PURE__ */ jsx52(
           RichText,
           {
             text: expert.bio,
@@ -3757,7 +5404,7 @@ function ExpertsSection({
 }) {
   if (experts.length === 0) return null;
   const isOdd = experts.length % 2 !== 0;
-  return /* @__PURE__ */ jsxs25(
+  return /* @__PURE__ */ jsxs31(
     "section",
     {
       className: cn(
@@ -3765,25 +5412,25 @@ function ExpertsSection({
         className
       ),
       children: [
-        /* @__PURE__ */ jsx46("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs25("div", { className: "grid grid-cols-2 gap-1", children: [
-          experts.map((expert, i) => /* @__PURE__ */ jsx46(ExpertCardHorizontal, { expert }, i)),
-          isOdd && /* @__PURE__ */ jsx46("div", { className: "flex items-center justify-center h-[349px] p-4", children: /* @__PURE__ */ jsx46(CirclePattern, { className: "w-full h-full" }) })
+        /* @__PURE__ */ jsx52("div", { className: "hidden lg:block mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: /* @__PURE__ */ jsxs31("div", { className: "grid grid-cols-2 gap-1", children: [
+          experts.map((expert, i) => /* @__PURE__ */ jsx52(ExpertCardHorizontal, { expert }, i)),
+          isOdd && /* @__PURE__ */ jsx52("div", { className: "flex items-center justify-center h-[349px] p-4", children: /* @__PURE__ */ jsx52(CirclePattern, { className: "w-full h-full" }) })
         ] }) }),
-        /* @__PURE__ */ jsx46("div", { className: "hidden md:block lg:hidden px-8", children: /* @__PURE__ */ jsx46("div", { className: "flex flex-col gap-1", children: experts.map((expert, i) => /* @__PURE__ */ jsx46(ExpertCardHorizontal, { expert }, i)) }) }),
-        /* @__PURE__ */ jsx46("div", { className: "block md:hidden px-5", children: /* @__PURE__ */ jsx46("div", { className: "flex flex-col gap-1", children: experts.map((expert, i) => /* @__PURE__ */ jsx46(ExpertCardVertical, { expert }, i)) }) })
+        /* @__PURE__ */ jsx52("div", { className: "hidden md:block lg:hidden px-8", children: /* @__PURE__ */ jsx52("div", { className: "flex flex-col gap-1", children: experts.map((expert, i) => /* @__PURE__ */ jsx52(ExpertCardHorizontal, { expert }, i)) }) }),
+        /* @__PURE__ */ jsx52("div", { className: "block md:hidden px-5", children: /* @__PURE__ */ jsx52("div", { className: "flex flex-col gap-1", children: experts.map((expert, i) => /* @__PURE__ */ jsx52(ExpertCardVertical, { expert }, i)) }) })
       ]
     }
   );
 }
 
 // src/components/ui/hero-experts.tsx
-import { useState as useState4, useRef as useRef9, useEffect as useEffect8, useCallback as useCallback4 } from "react";
-import { jsx as jsx47, jsxs as jsxs26 } from "react/jsx-runtime";
+import { useState as useState8, useRef as useRef12, useEffect as useEffect10, useCallback as useCallback5 } from "react";
+import { jsx as jsx53, jsxs as jsxs32 } from "react/jsx-runtime";
 var AVATAR_SIZE = 80;
 var AVATAR_OVERLAP = 16;
 var EFFECTIVE_WIDTH = AVATAR_SIZE - AVATAR_OVERLAP;
 var COLLAPSE_MS = 180;
-function Avatar2({
+function Avatar3({
   expert,
   overlap = false,
   lifted = false,
@@ -3791,7 +5438,7 @@ function Avatar2({
   onHover,
   onLeave
 }) {
-  return /* @__PURE__ */ jsx47(
+  return /* @__PURE__ */ jsx53(
     "div",
     {
       onMouseEnter: onHover,
@@ -3805,14 +5452,14 @@ function Avatar2({
         backgroundImage: expert.image ? `url(${expert.image})` : void 0
       },
       "aria-label": expert.name,
-      children: !expert.image && /* @__PURE__ */ jsx47("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
+      children: !expert.image && /* @__PURE__ */ jsx53("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx53("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
     }
   );
 }
 function SingleExpert({ expert, quote }) {
-  return /* @__PURE__ */ jsxs26("div", { className: "flex flex-col gap-4", children: [
-    /* @__PURE__ */ jsxs26("div", { className: "flex items-center gap-4", children: [
-      /* @__PURE__ */ jsx47(
+  return /* @__PURE__ */ jsxs32("div", { className: "flex flex-col gap-4", children: [
+    /* @__PURE__ */ jsxs32("div", { className: "flex items-center gap-4", children: [
+      /* @__PURE__ */ jsx53(
         "div",
         {
           className: "relative shrink-0 rounded-full border border-[#0A0A0A] bg-[#2a2a2a] bg-cover bg-center",
@@ -3821,15 +5468,15 @@ function SingleExpert({ expert, quote }) {
             height: AVATAR_SIZE,
             backgroundImage: expert.image ? `url(${expert.image})` : void 0
           },
-          children: !expert.image && /* @__PURE__ */ jsx47("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
+          children: !expert.image && /* @__PURE__ */ jsx53("div", { className: "flex h-full w-full items-center justify-center", children: /* @__PURE__ */ jsx53("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold text-[#F0F0F0]", children: expert.name.slice(0, 1) }) })
         }
       ),
-      /* @__PURE__ */ jsxs26("div", { className: "flex flex-col justify-center gap-1", children: [
-        /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
-        expert.tag && /* @__PURE__ */ jsx47("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: expert.tag })
+      /* @__PURE__ */ jsxs32("div", { className: "flex flex-col justify-center gap-1", children: [
+        /* @__PURE__ */ jsx53("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: expert.name }),
+        expert.tag && /* @__PURE__ */ jsx53("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: expert.tag })
       ] })
     ] }),
-    quote && /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
+    quote && /* @__PURE__ */ jsx53("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
   ] });
 }
 function MultiExperts({
@@ -3837,18 +5484,18 @@ function MultiExperts({
   quote,
   maxVisible
 }) {
-  const containerRef = useRef9(null);
-  const containerWidthRef = useRef9(0);
-  const [containerWidth, setContainerWidth] = useState4(0);
-  const [dynamicMax, setDynamicMax] = useState4(maxVisible);
-  const [activeIndex, setActiveIndex] = useState4(null);
-  const [tipVisible, setTipVisible] = useState4(false);
-  const [tipLeft, setTipLeft] = useState4(0);
-  const [tipFlipped, setTipFlipped] = useState4(false);
-  const [tipContent, setTipContent] = useState4(null);
-  const pendingRef = useRef9(null);
-  const timerRef = useRef9(null);
-  useEffect8(() => {
+  const containerRef = useRef12(null);
+  const containerWidthRef = useRef12(0);
+  const [containerWidth, setContainerWidth] = useState8(0);
+  const [dynamicMax, setDynamicMax] = useState8(maxVisible);
+  const [activeIndex, setActiveIndex] = useState8(null);
+  const [tipVisible, setTipVisible] = useState8(false);
+  const [tipLeft, setTipLeft] = useState8(0);
+  const [tipFlipped, setTipFlipped] = useState8(false);
+  const [tipContent, setTipContent] = useState8(null);
+  const pendingRef = useRef12(null);
+  const timerRef = useRef12(null);
+  useEffect10(() => {
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver(([entry]) => {
@@ -3861,16 +5508,16 @@ function MultiExperts({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  useEffect8(() => () => {
+  useEffect10(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   }, []);
   const effectiveMax = Math.min(dynamicMax, maxVisible);
   const visible = experts.slice(0, effectiveMax);
-  const computeLeft = useCallback4(
+  const computeLeft = useCallback5(
     (i) => i * EFFECTIVE_WIDTH + AVATAR_SIZE / 2,
     []
   );
-  const computeFlipped = useCallback4(
+  const computeFlipped = useCallback5(
     (left) => left > containerWidthRef.current / 2,
     []
   );
@@ -3912,9 +5559,9 @@ function MultiExperts({
     pendingRef.current = null;
     setTipVisible(false);
   };
-  return /* @__PURE__ */ jsxs26("div", { className: "flex flex-col gap-4", children: [
-    /* @__PURE__ */ jsxs26("div", { className: "relative w-full", ref: containerRef, children: [
-      /* @__PURE__ */ jsx47(
+  return /* @__PURE__ */ jsxs32("div", { className: "flex flex-col gap-4", children: [
+    /* @__PURE__ */ jsxs32("div", { className: "relative w-full", ref: containerRef, children: [
+      /* @__PURE__ */ jsx53(
         "div",
         {
           className: "pointer-events-none absolute z-50 bottom-full mb-3",
@@ -3922,7 +5569,7 @@ function MultiExperts({
             left: tipLeft,
             transform: tipFlipped ? "translateX(-100%)" : "translateX(0)"
           },
-          children: /* @__PURE__ */ jsx47(
+          children: /* @__PURE__ */ jsx53(
             "div",
             {
               className: `w-max bg-[#121212] px-5 py-4 will-change-[opacity,transform] ${tipFlipped ? "border-r" : "border-l"} border-[#F0F0F0]`,
@@ -3933,16 +5580,16 @@ function MultiExperts({
                 transform: tipVisible ? "translateY(0)" : "translateY(10px)",
                 transition: `opacity ${COLLAPSE_MS}ms ease-out, transform ${COLLAPSE_MS}ms ease-out`
               },
-              children: tipContent && /* @__PURE__ */ jsxs26("div", { className: "flex flex-col gap-1", children: [
-                /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: tipContent.name }),
-                tipContent.tag && /* @__PURE__ */ jsx47("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: tipContent.tag })
+              children: tipContent && /* @__PURE__ */ jsxs32("div", { className: "flex flex-col gap-1", children: [
+                /* @__PURE__ */ jsx53("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase leading-[1.16] tracking-[-0.01em] text-[#F0F0F0]", children: tipContent.name }),
+                tipContent.tag && /* @__PURE__ */ jsx53("span", { className: "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[#939393]", children: tipContent.tag })
               ] })
             }
           )
         }
       ),
-      /* @__PURE__ */ jsx47("div", { className: "flex items-center", children: visible.map((expert, i) => /* @__PURE__ */ jsx47(
-        Avatar2,
+      /* @__PURE__ */ jsx53("div", { className: "flex items-center", children: visible.map((expert, i) => /* @__PURE__ */ jsx53(
+        Avatar3,
         {
           expert,
           overlap: i > 0,
@@ -3954,7 +5601,7 @@ function MultiExperts({
         `${expert.name}-${i}`
       )) })
     ] }),
-    quote && /* @__PURE__ */ jsx47("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
+    quote && /* @__PURE__ */ jsx53("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#939393]", children: quote })
   ] });
 }
 function HeroExperts({
@@ -3964,24 +5611,24 @@ function HeroExperts({
   className
 }) {
   if (experts.length === 0) return null;
-  return /* @__PURE__ */ jsx47("div", { className, children: experts.length === 1 ? /* @__PURE__ */ jsx47(SingleExpert, { expert: experts[0], quote }) : /* @__PURE__ */ jsx47(MultiExperts, { experts, quote, maxVisible }) });
+  return /* @__PURE__ */ jsx53("div", { className, children: experts.length === 1 ? /* @__PURE__ */ jsx53(SingleExpert, { expert: experts[0], quote }) : /* @__PURE__ */ jsx53(MultiExperts, { experts, quote, maxVisible }) });
 }
 
 // src/components/ui/tools-section.tsx
-import { Fragment as Fragment12, jsx as jsx48, jsxs as jsxs27 } from "react/jsx-runtime";
+import { Fragment as Fragment16, jsx as jsx54, jsxs as jsxs33 } from "react/jsx-runtime";
 function ToolCardItem({
   tool,
   useIcons
 }) {
   const accent = tool.accent;
-  return /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-4 h-full", children: [
-    /* @__PURE__ */ jsx48("div", { className: "flex items-end", children: useIcons && tool.icon ? /* @__PURE__ */ jsx48(
+  return /* @__PURE__ */ jsxs33("div", { className: "flex flex-col gap-4 h-full", children: [
+    /* @__PURE__ */ jsx54("div", { className: "flex items-end", children: useIcons && tool.icon ? /* @__PURE__ */ jsx54(
       "div",
       {
         className: "h-[86px] w-[86px] bg-contain bg-center bg-no-repeat",
         style: { backgroundImage: `url(${tool.icon})` }
       }
-    ) : /* @__PURE__ */ jsx48(
+    ) : /* @__PURE__ */ jsx54(
       "span",
       {
         className: cn(
@@ -3991,7 +5638,7 @@ function ToolCardItem({
         children: tool.number
       }
     ) }),
-    /* @__PURE__ */ jsx48(
+    /* @__PURE__ */ jsx54(
       "h4",
       {
         className: cn(
@@ -4001,7 +5648,7 @@ function ToolCardItem({
         children: tool.title
       }
     ),
-    /* @__PURE__ */ jsx48(
+    /* @__PURE__ */ jsx54(
       RichText,
       {
         text: tool.text,
@@ -4029,7 +5676,7 @@ function ToolsSection({
     color: "secondary"
   });
   const hasParagraphs = resolvedParagraphs.length > 0;
-  return /* @__PURE__ */ jsxs27(
+  return /* @__PURE__ */ jsxs33(
     "section",
     {
       className: cn(
@@ -4037,36 +5684,36 @@ function ToolsSection({
         className
       ),
       children: [
-        /* @__PURE__ */ jsxs27("div", { className: "hidden lg:flex flex-col gap-[88px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
-          descriptionBelow ? /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-4", children: [
-            /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-2", children: [
-              /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-              /* @__PURE__ */ jsxs27("h2", { className: "h2", children: [
-                /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
-                  /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx48("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs33("div", { className: "hidden lg:flex flex-col gap-[88px] mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14", children: [
+          descriptionBelow ? /* @__PURE__ */ jsxs33("div", { className: "flex flex-col gap-4", children: [
+            /* @__PURE__ */ jsxs33("div", { className: "flex flex-col gap-2", children: [
+              /* @__PURE__ */ jsx54("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+              /* @__PURE__ */ jsxs33("h2", { className: "h2", children: [
+                /* @__PURE__ */ jsx54("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs33(Fragment16, { children: [
+                  /* @__PURE__ */ jsx54("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx54("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] })
             ] }),
-            hasParagraphs && /* @__PURE__ */ jsx48("div", { className: "max-w-[668px]", children: /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" }) })
-          ] }) : /* @__PURE__ */ jsxs27("div", { className: "flex", children: [
-            /* @__PURE__ */ jsxs27("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col gap-2", children: [
-              /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-              /* @__PURE__ */ jsxs27("h2", { className: "h2", children: [
-                /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: title }),
-                titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
-                  /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: " " }),
-                  /* @__PURE__ */ jsx48("span", { className: "text-[#939393]", children: titleSecondary })
+            hasParagraphs && /* @__PURE__ */ jsx54("div", { className: "max-w-[668px]", children: /* @__PURE__ */ jsx54(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" }) })
+          ] }) : /* @__PURE__ */ jsxs33("div", { className: "flex", children: [
+            /* @__PURE__ */ jsxs33("div", { className: "w-1/2 shrink-0 pr-8 flex flex-col gap-2", children: [
+              /* @__PURE__ */ jsx54("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+              /* @__PURE__ */ jsxs33("h2", { className: "h2", children: [
+                /* @__PURE__ */ jsx54("span", { className: "text-[#F0F0F0]", children: title }),
+                titleSecondary ? /* @__PURE__ */ jsxs33(Fragment16, { children: [
+                  /* @__PURE__ */ jsx54("span", { className: "text-[#F0F0F0]", children: " " }),
+                  /* @__PURE__ */ jsx54("span", { className: "text-[#939393]", children: titleSecondary })
                 ] }) : null
               ] })
             ] }),
-            hasParagraphs && /* @__PURE__ */ jsx48("div", { className: "w-1/2 flex items-end", children: /* @__PURE__ */ jsx48("div", { className: "max-w-[668px]", children: /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" }) }) })
+            hasParagraphs && /* @__PURE__ */ jsx54("div", { className: "w-1/2 flex items-end", children: /* @__PURE__ */ jsx54("div", { className: "max-w-[668px]", children: /* @__PURE__ */ jsx54(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "18" }) }) })
           ] }),
           (() => {
             const totalUnits = tools.reduce((sum, t) => sum + (t.wide ? 2 : 1), 0);
             let col = 1;
-            return /* @__PURE__ */ jsx48(
+            return /* @__PURE__ */ jsx54(
               "div",
               {
                 className: "grid",
@@ -4075,7 +5722,7 @@ function ToolsSection({
                   const span = tool.wide ? 2 : 1;
                   const start = col;
                   col += span;
-                  return /* @__PURE__ */ jsx48(
+                  return /* @__PURE__ */ jsx54(
                     "div",
                     {
                       className: cn(
@@ -4083,7 +5730,7 @@ function ToolsSection({
                         tool.accent ? "bg-[#FFCC00]" : "border border-[#404040]"
                       ),
                       style: { gridColumn: `${start} / span ${span}` },
-                      children: /* @__PURE__ */ jsx48(ToolCardItem, { tool, useIcons })
+                      children: /* @__PURE__ */ jsx54(ToolCardItem, { tool, useIcons })
                     },
                     i
                   );
@@ -4092,40 +5739,40 @@ function ToolsSection({
             );
           })()
         ] }),
-        /* @__PURE__ */ jsxs27("div", { className: "hidden md:flex lg:hidden flex-col gap-10 px-8", children: [
-          /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-2", children: [
-            /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs27("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
-              /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: title }),
-              titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
-                /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: " " }),
-                /* @__PURE__ */ jsx48("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs33("div", { className: "hidden md:flex lg:hidden flex-col gap-10 px-8", children: [
+          /* @__PURE__ */ jsxs33("div", { className: "flex flex-col gap-2", children: [
+            /* @__PURE__ */ jsx54("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs33("h2", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-28)] font-bold uppercase leading-[1.16] tracking-[-0.01em]", children: [
+              /* @__PURE__ */ jsx54("span", { className: "text-[#F0F0F0]", children: title }),
+              titleSecondary ? /* @__PURE__ */ jsxs33(Fragment16, { children: [
+                /* @__PURE__ */ jsx54("span", { className: "text-[#F0F0F0]", children: " " }),
+                /* @__PURE__ */ jsx54("span", { className: "text-[#939393]", children: titleSecondary })
               ] }) : null
             ] }),
-            hasParagraphs && /* @__PURE__ */ jsx48("div", { className: "mt-2", children: /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" }) })
+            hasParagraphs && /* @__PURE__ */ jsx54("div", { className: "mt-2", children: /* @__PURE__ */ jsx54(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" }) })
           ] }),
-          /* @__PURE__ */ jsx48("div", { className: "grid grid-cols-2 gap-px bg-[#404040]", children: tools.map((tool, i) => /* @__PURE__ */ jsx48("div", { className: cn("p-8", tool.accent ? "bg-[#FFCC00]" : "bg-[#0A0A0A]"), children: /* @__PURE__ */ jsx48(ToolCardItem, { tool, useIcons }) }, i)) })
+          /* @__PURE__ */ jsx54("div", { className: "grid grid-cols-2 gap-px bg-[#404040]", children: tools.map((tool, i) => /* @__PURE__ */ jsx54("div", { className: cn("p-8", tool.accent ? "bg-[#FFCC00]" : "bg-[#0A0A0A]"), children: /* @__PURE__ */ jsx54(ToolCardItem, { tool, useIcons }) }, i)) })
         ] }),
-        /* @__PURE__ */ jsxs27("div", { className: "flex md:hidden flex-col gap-8 px-5", children: [
-          /* @__PURE__ */ jsxs27("div", { className: "flex flex-col gap-2", children: [
-            /* @__PURE__ */ jsx48("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
-            /* @__PURE__ */ jsxs27("h2", { className: "h3", children: [
-              /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: title }),
-              titleSecondary ? /* @__PURE__ */ jsxs27(Fragment12, { children: [
-                /* @__PURE__ */ jsx48("span", { className: "text-[#F0F0F0]", children: " " }),
-                /* @__PURE__ */ jsx48("span", { className: "text-[#939393]", children: titleSecondary })
+        /* @__PURE__ */ jsxs33("div", { className: "flex md:hidden flex-col gap-8 px-5", children: [
+          /* @__PURE__ */ jsxs33("div", { className: "flex flex-col gap-2", children: [
+            /* @__PURE__ */ jsx54("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-18)] font-medium uppercase leading-[1.12] tracking-[0.02em] text-[#FFCC00]", children: tag }),
+            /* @__PURE__ */ jsxs33("h2", { className: "h3", children: [
+              /* @__PURE__ */ jsx54("span", { className: "text-[#F0F0F0]", children: title }),
+              titleSecondary ? /* @__PURE__ */ jsxs33(Fragment16, { children: [
+                /* @__PURE__ */ jsx54("span", { className: "text-[#F0F0F0]", children: " " }),
+                /* @__PURE__ */ jsx54("span", { className: "text-[#939393]", children: titleSecondary })
               ] }) : null
             ] }),
-            hasParagraphs && /* @__PURE__ */ jsx48(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
+            hasParagraphs && /* @__PURE__ */ jsx54(StyledParagraphs, { paragraphs: resolvedParagraphs, theme: "dark", size: "16" })
           ] }),
-          /* @__PURE__ */ jsx48("div", { className: "flex flex-col", children: tools.map((tool, i) => /* @__PURE__ */ jsx48(
+          /* @__PURE__ */ jsx54("div", { className: "flex flex-col", children: tools.map((tool, i) => /* @__PURE__ */ jsx54(
             "div",
             {
               className: cn(
                 "p-6",
                 tool.accent ? "bg-[#FFCC00]" : "border border-[#404040]"
               ),
-              children: /* @__PURE__ */ jsx48(ToolCardItem, { tool, useIcons })
+              children: /* @__PURE__ */ jsx54(ToolCardItem, { tool, useIcons })
             },
             i
           )) })
@@ -4137,7 +5784,7 @@ function ToolsSection({
 
 // src/components/ui/accordion-faq.tsx
 import { Accordion } from "@base-ui/react";
-import { jsx as jsx49, jsxs as jsxs28 } from "react/jsx-runtime";
+import { jsx as jsx55, jsxs as jsxs34 } from "react/jsx-runtime";
 var DEFAULT_ITEMS = [
   { id: "1", q: "\u0427\u0442\u043E \u0442\u0430\u043A\u043E\u0435 Rocketmind?", a: "Rocketmind \u2014 SaaS-\u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430 \u0441 \u0433\u043E\u0442\u043E\u0432\u044B\u043C\u0438 AI-\u0430\u0433\u0435\u043D\u0442\u0430\u043C\u0438 \u0434\u043B\u044F \u0432\u0435\u0434\u0435\u043D\u0438\u044F \u043A\u0435\u0439\u0441\u043E\u0432. \u041A\u0430\u0436\u0434\u044B\u0439 \u0430\u0433\u0435\u043D\u0442 \u0441\u043F\u0435\u0446\u0438\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u043D\u0430 \u043A\u043E\u043D\u043A\u0440\u0435\u0442\u043D\u043E\u0439 \u0437\u0430\u0434\u0430\u0447\u0435: \u0430\u043D\u0430\u043B\u0438\u0437, \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u044F, \u0438\u0441\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u0435 \u0440\u044B\u043D\u043A\u0430, \u0442\u0435\u0441\u0442\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0433\u0438\u043F\u043E\u0442\u0435\u0437." },
   { id: "2", q: "\u041A\u0430\u043A \u043D\u0430\u0447\u0430\u0442\u044C \u0440\u0430\u0431\u043E\u0442\u0443?", a: "\u041F\u0435\u0440\u0435\u0439\u0434\u0438\u0442\u0435 \u043F\u043E \u0441\u0441\u044B\u043B\u043A\u0435 /a/{agent_slug}, \u0432\u0432\u0435\u0434\u0438\u0442\u0435 email \u2014 \u0438 \u0441\u0440\u0430\u0437\u0443 \u043D\u0430\u0447\u0438\u043D\u0430\u0439\u0442\u0435 \u0434\u0438\u0430\u043B\u043E\u0433. \u041D\u0438\u043A\u0430\u043A\u0438\u0445 \u0434\u043E\u043B\u0433\u0438\u0445 \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u0439 \u0438 \u043D\u0430\u0441\u0442\u0440\u043E\u0435\u043A." },
@@ -4150,17 +5797,17 @@ function AccordionFAQ({
   defaultOpen = ["3"],
   className
 }) {
-  return /* @__PURE__ */ jsx49("div", { className: cn("w-full max-w-3xl", className), children: /* @__PURE__ */ jsx49(Accordion.Root, { defaultValue: defaultOpen, className: "w-full", children: items.map((item) => /* @__PURE__ */ jsxs28(
+  return /* @__PURE__ */ jsx55("div", { className: cn("w-full max-w-3xl", className), children: /* @__PURE__ */ jsx55(Accordion.Root, { defaultValue: defaultOpen, className: "w-full", children: items.map((item) => /* @__PURE__ */ jsxs34(
     Accordion.Item,
     {
       value: item.id,
       className: "border-b border-border",
       children: [
-        /* @__PURE__ */ jsx49(Accordion.Header, { children: /* @__PURE__ */ jsxs28(Accordion.Trigger, { className: "w-full text-left py-5 pl-6 md:pl-14 flex items-start gap-4 cursor-pointer text-foreground/20 transition-colors duration-200 data-[panel-open]:text-primary hover:text-foreground/50", children: [
-          /* @__PURE__ */ jsx49("span", { className: "text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] mt-2 shrink-0 tabular-nums", children: item.id }),
-          /* @__PURE__ */ jsx49("span", { className: "font-[family-name:var(--font-heading-family)] font-bold uppercase text-3xl md:text-[length:var(--text-52)] leading-none tracking-[-0.02em]", children: item.q })
+        /* @__PURE__ */ jsx55(Accordion.Header, { children: /* @__PURE__ */ jsxs34(Accordion.Trigger, { className: "w-full text-left py-5 pl-6 md:pl-14 flex items-start gap-4 cursor-pointer text-foreground/20 transition-colors duration-200 data-[panel-open]:text-primary hover:text-foreground/50", children: [
+          /* @__PURE__ */ jsx55("span", { className: "text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] mt-2 shrink-0 tabular-nums", children: item.id }),
+          /* @__PURE__ */ jsx55("span", { className: "font-[family-name:var(--font-heading-family)] font-bold uppercase text-3xl md:text-[length:var(--text-52)] leading-none tracking-[-0.02em]", children: item.q })
         ] }) }),
-        /* @__PURE__ */ jsx49(Accordion.Panel, { className: "accordion-05-panel", children: /* @__PURE__ */ jsx49("div", { className: "overflow-hidden", children: /* @__PURE__ */ jsx49("p", { className: "pb-6 pl-6 md:px-20 text-[length:var(--text-14)] text-muted-foreground", children: item.a }) }) })
+        /* @__PURE__ */ jsx55(Accordion.Panel, { className: "accordion-05-panel", children: /* @__PURE__ */ jsx55("div", { className: "overflow-hidden", children: /* @__PURE__ */ jsx55("p", { className: "pb-6 pl-6 md:px-20 text-[length:var(--text-14)] text-muted-foreground", children: item.a }) }) })
       ]
     },
     item.id
@@ -4168,7 +5815,7 @@ function AccordionFAQ({
 }
 
 // src/components/ui/cta-section-dark.tsx
-import { jsx as jsx50, jsxs as jsxs29 } from "react/jsx-runtime";
+import { jsx as jsx56, jsxs as jsxs35 } from "react/jsx-runtime";
 function CTASectionDark({
   heading = "\u0425\u043E\u0442\u0438\u0442\u0435 \u0443\u0432\u0438\u0434\u0435\u0442\u044C, \u043A\u0430\u043A \u043A\u043E\u043C\u0430\u043D\u0434\u0430 Rocketmind \u0440\u0435\u0448\u0438\u0442 \u0432\u0430\u0448\u0443 \u0441\u0442\u0440\u0430\u0442\u0435\u0433\u0438\u0447\u0435\u0441\u043A\u0443\u044E \u0437\u0430\u0434\u0430\u0447\u0443?",
   body = "\u0417\u0430\u043F\u043E\u043B\u043D\u0438\u0442\u0435 \u0444\u043E\u0440\u043C\u0443 \u2014 \u043C\u044B \u043F\u0440\u043E\u0432\u0435\u0434\u0451\u043C \u044D\u043A\u0441\u043F\u0440\u0435\u0441\u0441\u2011\u043E\u0446\u0435\u043D\u043A\u0443 \u0441\u0438\u0442\u0443\u0430\u0446\u0438\u0438, \u043E\u0431\u043E\u0437\u043D\u0430\u0447\u0438\u043C \u0432\u043E\u0437\u043C\u043E\u0436\u043D\u044B\u0435 \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u0438 \u0440\u0435\u0448\u0435\u043D\u0438\u044F \u0438 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0438\u043C \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439 \u0448\u0430\u0433",
@@ -4176,8 +5823,8 @@ function CTASectionDark({
   href = "#contact",
   className
 }) {
-  return /* @__PURE__ */ jsx50("section", { className: cn("dark bg-background text-foreground", className), children: /* @__PURE__ */ jsx50("div", { className: "mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14 pb-14 xl:pb-20", children: /* @__PURE__ */ jsxs29("div", { className: "relative overflow-hidden border border-border bg-[#0A0A0A] min-h-[320px] xl:min-h-[424px]", children: [
-    /* @__PURE__ */ jsx50(
+  return /* @__PURE__ */ jsx56("section", { className: cn("dark bg-background text-foreground", className), children: /* @__PURE__ */ jsx56("div", { className: "mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14 pb-14 xl:pb-20", children: /* @__PURE__ */ jsxs35("div", { className: "relative overflow-hidden border border-border bg-[#0A0A0A] min-h-[320px] xl:min-h-[424px]", children: [
+    /* @__PURE__ */ jsx56(
       "div",
       {
         className: "absolute pointer-events-none",
@@ -4187,7 +5834,7 @@ function CTASectionDark({
           left: "calc(39.6%)",
           top: -182
         },
-        children: /* @__PURE__ */ jsx50(
+        children: /* @__PURE__ */ jsx56(
           "div",
           {
             className: "w-full h-full rounded-full",
@@ -4203,7 +5850,7 @@ function CTASectionDark({
         )
       }
     ),
-    /* @__PURE__ */ jsx50(
+    /* @__PURE__ */ jsx56(
       "div",
       {
         className: "absolute inset-0 pointer-events-none",
@@ -4212,12 +5859,12 @@ function CTASectionDark({
         }
       }
     ),
-    /* @__PURE__ */ jsxs29("div", { className: "relative z-10 flex flex-col gap-9 p-8 xl:p-14 xl:max-w-[764px]", children: [
-      /* @__PURE__ */ jsxs29("div", { className: "flex flex-col gap-4", children: [
-        /* @__PURE__ */ jsx50("h2", { className: "font-heading text-[28px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-foreground", children: heading }),
-        /* @__PURE__ */ jsx50("p", { className: "text-[15px] xl:text-[18px] leading-[1.2] text-muted-foreground xl:max-w-[672px]", children: body })
+    /* @__PURE__ */ jsxs35("div", { className: "relative z-10 flex flex-col gap-9 p-8 xl:p-14 xl:max-w-[764px]", children: [
+      /* @__PURE__ */ jsxs35("div", { className: "flex flex-col gap-4", children: [
+        /* @__PURE__ */ jsx56("h2", { className: "font-heading text-[28px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-foreground", children: heading }),
+        /* @__PURE__ */ jsx56("p", { className: "text-[15px] xl:text-[18px] leading-[1.2] text-muted-foreground xl:max-w-[672px]", children: body })
       ] }),
-      /* @__PURE__ */ jsx50(
+      /* @__PURE__ */ jsx56(
         "a",
         {
           href,
@@ -4230,16 +5877,16 @@ function CTASectionDark({
 }
 
 // src/components/ui/cta-section-yellow.tsx
-import { jsx as jsx51, jsxs as jsxs30 } from "react/jsx-runtime";
+import { jsx as jsx57, jsxs as jsxs36 } from "react/jsx-runtime";
 function SpiralMobile({ className }) {
-  return /* @__PURE__ */ jsx51(
+  return /* @__PURE__ */ jsx57(
     "svg",
     {
       className,
       viewBox: "0 0 353 571",
       fill: "none",
       xmlns: "http://www.w3.org/2000/svg",
-      children: /* @__PURE__ */ jsx51(
+      children: /* @__PURE__ */ jsx57(
         "path",
         {
           d: "M0.722732 352.267L78.3109 352.267C79.9663 352.169 81.6264 352.119 83.2889 352.12C84.5725 352.12 85.8512 352.167 87.1229 352.26L135.225 352.26C135.25 352.26 135.274 352.263 135.297 352.267L352.099 352.267C351.495 157.943 194.439 0.882944 0.441071 0.882921L0.441071 -1.54108e-05C195.017 7.63774e-06 352.52 157.6 352.981 352.535C352.982 352.543 352.984 352.552 352.984 352.561L352.984 352.595C352.993 352.631 353 352.669 353 352.709C353 352.748 352.993 352.786 352.984 352.823L352.984 353.392C352.984 353.401 352.981 353.41 352.98 353.418C352.52 473.47 255.519 570.479 135.679 570.585C135.666 570.788 135.518 570.953 135.323 570.99C135.294 570.996 135.264 571 135.234 571C134.998 571 134.808 570.815 134.795 570.582C117.234 570.503 99.853 567.005 83.6222 560.271C67.1798 553.45 52.2405 543.446 39.6581 530.833C27.0749 518.22 17.0958 503.244 10.291 486.762C3.59834 470.552 0.108257 453.197 0.00519946 435.66C0.00324634 435.643 4.19933e-05 435.626 1.14765e-05 435.609L1.15128e-05 434.778C4.20312e-05 434.759 0.00382621 434.741 0.006054 434.723C0.113202 424.059 2.25676 413.51 6.32689 403.651C10.5104 393.519 16.6449 384.313 24.3797 376.559C32.1156 368.805 41.3003 362.655 51.4082 358.462C57.4569 355.952 63.7655 354.173 70.201 353.15L0.722732 353.15C0.479202 353.15 0.281692 352.953 0.281692 352.709C0.281692 352.465 0.479202 352.267 0.722732 352.267ZM78.3342 353.15C69.2049 353.696 60.2178 355.762 51.7459 359.277C41.7452 363.427 32.6581 369.51 25.0043 377.183C17.3513 384.854 11.281 393.963 7.14174 403.988C3.05504 413.888 0.931653 424.49 0.884655 435.201C0.884716 435.22 0.885449 435.239 0.88551 435.258L83.0718 435.258L83.0718 417.921C82.9238 416.909 82.847 415.882 82.847 414.847C82.847 414.12 82.9271 413.412 83.0787 412.729L83.0787 353.15L78.3342 353.15ZM83.5128 436.165C83.5076 436.165 83.5025 436.164 83.4973 436.163L0.890697 436.163C1.05699 453.414 4.52143 470.477 11.1058 486.425C17.8664 502.8 27.7805 517.679 40.2817 530.21C52.7822 542.741 67.6246 552.679 83.9599 559.455C100.083 566.144 117.348 569.621 134.793 569.7L134.793 436.165L83.5128 436.165ZM98.3545 435.281C94.8645 434.311 91.6484 432.452 89.0429 429.84C86.7192 427.51 84.993 424.695 83.9608 421.632L83.9608 435.281L98.3545 435.281ZM83.9608 415.511L83.9608 417.906C84.6075 422.163 86.5925 426.133 89.6674 429.216C93.3783 432.935 98.3804 435.063 103.618 435.162L103.618 415.511L83.9608 415.511ZM134.784 399.721C133.601 387.857 128.368 376.702 119.883 368.197C111.1 359.393 99.4854 354.081 87.1849 353.15L83.9616 353.15L83.9616 404.04L94.0751 404.04C94.078 404.04 94.0809 404.041 94.0837 404.041L104.05 404.041C104.053 404.041 104.056 404.04 104.059 404.04L134.784 404.041L134.784 399.721ZM93.6341 405.332C88.8365 405.51 84.9291 408.683 83.9616 412.839L83.9616 414.62L93.6341 414.62L93.6341 405.332ZM83.9616 404.924L83.9616 410.313C85.2959 407.754 87.7245 405.789 90.6735 404.924L83.9616 404.924ZM93.6384 353.15C103.743 355.182 113.112 360.16 120.508 367.573C127.771 374.854 132.691 384.043 134.784 393.965L134.784 353.15L93.6384 353.15ZM94.5161 404.924L94.5161 414.628L103.618 414.628L103.618 404.924L94.5161 404.924ZM104.5 404.924L104.5 414.981C104.505 415.009 104.508 415.039 104.508 415.07L104.508 435.161C112.557 435.029 120.248 431.768 125.95 426.054C130.825 421.167 133.91 414.821 134.784 408.04L134.784 404.924L104.5 404.924ZM134.784 412.518C133.331 417.826 130.525 422.717 126.574 426.677C122.255 431.006 116.826 433.967 110.957 435.281L134.784 435.281L134.784 412.518ZM135.675 353.15L135.675 399.768C135.81 401.159 135.891 402.558 135.915 403.965L135.923 404.051L135.923 404.881C135.923 404.919 135.917 404.955 135.908 404.99C135.878 406.012 135.801 407.028 135.675 408.035L135.675 435.651C135.678 435.674 135.682 435.698 135.682 435.722L135.682 569.702C255.121 569.595 351.784 472.838 352.1 353.15L135.675 353.15Z",
@@ -4250,14 +5897,14 @@ function SpiralMobile({ className }) {
   );
 }
 function SpiralDesktop({ className }) {
-  return /* @__PURE__ */ jsx51(
+  return /* @__PURE__ */ jsx57(
     "svg",
     {
       className,
       viewBox: "0 0 647 401",
       fill: "none",
       xmlns: "http://www.w3.org/2000/svg",
-      children: /* @__PURE__ */ jsx51(
+      children: /* @__PURE__ */ jsx57(
         "path",
         {
           d: "M399.155 399.564V311.561C399.043 309.683 398.986 307.8 398.988 305.915C398.988 304.459 399.041 303.009 399.147 301.566V247.007C399.147 246.979 399.15 246.952 399.155 246.925V1.02195C178.965 1.70684 1.00047 179.844 1.00046 399.883H0C1.64792e-05 179.19 178.577 0.543883 399.457 0.0214942C399.468 0.0208892 399.478 0.018565 399.488 0.0185631H399.526C399.567 0.00753993 399.61 0 399.655 0C399.7 0 399.743 0.00753993 399.784 0.0185631H400.429C400.439 0.0185631 400.449 0.0218754 400.459 0.0224712C536.489 0.543841 646.411 110.566 646.531 246.492C646.761 246.507 646.947 246.674 646.989 246.896C646.996 246.929 647.001 246.963 647.001 246.997C647.001 247.265 646.791 247.481 646.527 247.495C646.438 267.413 642.474 287.127 634.844 305.537C627.115 324.186 615.78 341.131 601.488 355.402C587.196 369.674 570.227 380.993 551.551 388.711C533.183 396.302 513.519 400.261 493.647 400.378C493.628 400.38 493.609 400.384 493.589 400.384H492.647C492.626 400.384 492.606 400.379 492.586 400.377C480.502 400.255 468.549 397.824 457.377 393.208C445.897 388.463 435.465 381.504 426.68 372.731C417.893 363.957 410.925 353.54 406.173 342.075C403.33 335.214 401.314 328.059 400.155 320.759V399.564C400.155 399.84 399.931 400.064 399.655 400.064C399.379 400.064 399.155 399.84 399.155 399.564ZM400.155 311.535C400.774 321.889 403.115 332.083 407.098 341.692C411.799 353.035 418.693 363.342 427.386 372.023C436.079 380.703 446.4 387.588 457.759 392.283C468.977 396.919 480.99 399.327 493.127 399.38C493.149 399.38 493.17 399.379 493.192 399.379V306.161H473.547C472.4 306.329 471.237 306.416 470.064 306.416C469.241 306.416 468.438 306.325 467.663 306.153H400.155V311.535ZM494.219 305.661C494.219 305.667 494.218 305.673 494.217 305.678V399.373C513.764 399.185 533.098 395.255 551.169 387.787C569.724 380.119 586.582 368.874 600.782 354.695C614.98 340.516 626.241 323.682 633.92 305.154C641.499 286.867 645.438 267.284 645.528 247.498H494.219V305.661ZM493.217 288.827C492.119 292.785 490.012 296.433 487.052 299.388C484.413 302.024 481.222 303.982 477.752 305.153H493.217V288.827ZM470.816 305.153H473.53C478.354 304.419 482.852 302.168 486.345 298.68C490.56 294.471 492.971 288.798 493.083 282.857H470.816V305.153ZM452.924 247.507C439.481 248.849 426.842 254.785 417.205 264.409C407.229 274.371 401.209 287.544 400.155 301.496V305.152H457.818V293.681C457.818 293.677 457.819 293.674 457.819 293.671V282.367C457.819 282.364 457.818 282.36 457.818 282.357L457.819 247.507H452.924ZM459.283 294.181C459.484 299.623 463.08 304.054 467.788 305.152H469.807V294.181H459.283ZM458.819 305.152H464.926C462.026 303.638 459.8 300.884 458.819 297.539V305.152ZM400.155 294.176C402.457 282.715 408.098 272.088 416.497 263.7C424.747 255.462 435.16 249.881 446.403 247.507H400.155V294.176ZM458.819 293.181H469.816V282.857H458.819V293.181ZM458.819 281.857H470.215C470.248 281.85 470.281 281.847 470.316 281.847H493.081C492.932 272.718 489.238 263.995 482.762 257.528C477.225 251.998 470.034 248.499 462.35 247.507H458.819V281.857ZM467.425 247.507C473.439 249.155 478.981 252.339 483.468 256.819C488.374 261.718 491.728 267.876 493.217 274.532V247.507H467.425ZM400.155 246.497H452.978C454.553 246.344 456.14 246.252 457.733 246.225L457.831 246.216H458.772C458.814 246.216 458.855 246.222 458.895 246.232C460.053 246.266 461.204 246.354 462.345 246.497H493.637C493.663 246.493 493.69 246.489 493.717 246.489H645.531C645.409 111.017 535.773 1.37951 400.155 1.02097V246.497Z",
@@ -4274,29 +5921,29 @@ function CTASectionYellow({
   href = "#contact",
   className
 }) {
-  return /* @__PURE__ */ jsx51("section", { className: cn("px-5 md:px-8 xl:px-14 pb-5 md:pb-8 xl:pb-14", className), children: /* @__PURE__ */ jsx51("div", { className: "mx-auto max-w-[1512px]", children: /* @__PURE__ */ jsxs30("div", { className: "bg-[#FFCC00] relative overflow-hidden rounded-none aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]", children: [
-    /* @__PURE__ */ jsx51(
+  return /* @__PURE__ */ jsx57("section", { className: cn("px-5 md:px-8 xl:px-14 pb-5 md:pb-8 xl:pb-14", className), children: /* @__PURE__ */ jsx57("div", { className: "mx-auto max-w-[1512px]", children: /* @__PURE__ */ jsxs36("div", { className: "bg-[#FFCC00] relative overflow-hidden rounded-none aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]", children: [
+    /* @__PURE__ */ jsx57(
       "div",
       {
         className: "absolute inset-0 pointer-events-none md:hidden",
         "aria-hidden": "true",
-        children: /* @__PURE__ */ jsx51(SpiralMobile, { className: "w-full h-full object-cover object-center" })
+        children: /* @__PURE__ */ jsx57(SpiralMobile, { className: "w-full h-full object-cover object-center" })
       }
     ),
-    /* @__PURE__ */ jsx51(
+    /* @__PURE__ */ jsx57(
       "div",
       {
         className: "absolute right-0 top-0 bottom-0 pointer-events-none hidden md:flex items-center",
         "aria-hidden": "true",
-        children: /* @__PURE__ */ jsx51(SpiralDesktop, { className: "h-full w-auto object-contain" })
+        children: /* @__PURE__ */ jsx57(SpiralDesktop, { className: "h-full w-auto object-contain" })
       }
     ),
-    /* @__PURE__ */ jsx51("div", { className: "relative z-10 p-5 md:px-8 md:py-11 xl:px-14", children: /* @__PURE__ */ jsxs30("div", { className: "flex flex-col gap-9 md:max-w-[75%] lg:max-w-[50%]", children: [
-      /* @__PURE__ */ jsxs30("div", { className: "flex flex-col gap-4", children: [
-        /* @__PURE__ */ jsx51("h2", { className: "font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]", children: heading }),
-        /* @__PURE__ */ jsx51("p", { className: "text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A]", children: body })
+    /* @__PURE__ */ jsx57("div", { className: "relative z-10 p-5 md:px-8 md:py-11 xl:px-14", children: /* @__PURE__ */ jsxs36("div", { className: "flex flex-col gap-9 md:max-w-[75%] lg:max-w-[50%]", children: [
+      /* @__PURE__ */ jsxs36("div", { className: "flex flex-col gap-4", children: [
+        /* @__PURE__ */ jsx57("h2", { className: "font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]", children: heading }),
+        /* @__PURE__ */ jsx57("p", { className: "text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A]", children: body })
       ] }),
-      /* @__PURE__ */ jsx51(
+      /* @__PURE__ */ jsx57(
         "a",
         {
           href,
@@ -4309,22 +5956,22 @@ function CTASectionYellow({
 }
 
 // src/components/ui/infinite-logo-marquee.tsx
-import { jsx as jsx52, jsxs as jsxs31 } from "react/jsx-runtime";
+import { jsx as jsx58, jsxs as jsxs37 } from "react/jsx-runtime";
 function LogoSequence({
   logos,
   gap,
   maxLogoHeight
 }) {
-  return /* @__PURE__ */ jsx52(
+  return /* @__PURE__ */ jsx58(
     "div",
     {
       className: "flex shrink-0 items-center py-[10px]",
       style: { gap: `${gap}px`, paddingRight: `${gap}px` },
-      children: logos.map((logo) => /* @__PURE__ */ jsx52(
+      children: logos.map((logo) => /* @__PURE__ */ jsx58(
         "div",
         {
           className: "flex shrink-0 items-center justify-center opacity-90",
-          children: /* @__PURE__ */ jsx52(
+          children: /* @__PURE__ */ jsx58(
             "img",
             {
               src: logo.src,
@@ -4362,7 +6009,7 @@ function InfiniteLogoMarquee({
   const marqueeStyle = {
     "--hero-marquee-duration": `${speedSeconds}s`
   };
-  return /* @__PURE__ */ jsx52(
+  return /* @__PURE__ */ jsx58(
     "div",
     {
       className: cn(
@@ -4370,16 +6017,16 @@ function InfiniteLogoMarquee({
         className
       ),
       style: buildFadeMask(fadeWidth),
-      children: /* @__PURE__ */ jsxs31("div", { className: `partner-logo-marquee-track${reverse ? " partner-logo-marquee-track--ltr" : ""}`, style: marqueeStyle, children: [
-        /* @__PURE__ */ jsx52(LogoSequence, { logos, gap, maxLogoHeight }),
-        /* @__PURE__ */ jsx52(LogoSequence, { logos, gap, maxLogoHeight })
+      children: /* @__PURE__ */ jsxs37("div", { className: `partner-logo-marquee-track${reverse ? " partner-logo-marquee-track--ltr" : ""}`, style: marqueeStyle, children: [
+        /* @__PURE__ */ jsx58(LogoSequence, { logos, gap, maxLogoHeight }),
+        /* @__PURE__ */ jsx58(LogoSequence, { logos, gap, maxLogoHeight })
       ] })
     }
   );
 }
 
 // src/components/ui/mobile-nav.tsx
-import { useState as useState5, useCallback as useCallback5, useEffect as useEffect9, useRef as useRef10 } from "react";
+import { useState as useState9, useCallback as useCallback6, useEffect as useEffect11, useRef as useRef13 } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import Link4 from "next/link";
@@ -4477,7 +6124,7 @@ var LEGAL_LINKS = [
 ];
 
 // src/components/ui/mobile-nav.tsx
-import { Fragment as Fragment13, jsx as jsx53, jsxs as jsxs32 } from "react/jsx-runtime";
+import { Fragment as Fragment17, jsx as jsx59, jsxs as jsxs38 } from "react/jsx-runtime";
 function BurgerIcon({
   open,
   barClass = "bg-foreground"
@@ -4486,9 +6133,9 @@ function BurgerIcon({
     "absolute left-0 block h-[2px] w-full rounded-full transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
     barClass
   );
-  return /* @__PURE__ */ jsxs32("div", { className: "relative h-[10px] w-[40px]", children: [
-    /* @__PURE__ */ jsx53("span", { className: cn(bar, open ? "top-[4px] rotate-45" : "top-0") }),
-    /* @__PURE__ */ jsx53("span", { className: cn(bar, open ? "top-[4px] -rotate-45" : "top-[8px]") })
+  return /* @__PURE__ */ jsxs38("div", { className: "relative h-[10px] w-[40px]", children: [
+    /* @__PURE__ */ jsx59("span", { className: cn(bar, open ? "top-[4px] rotate-45" : "top-0") }),
+    /* @__PURE__ */ jsx59("span", { className: cn(bar, open ? "top-[4px] -rotate-45" : "top-[8px]") })
   ] });
 }
 function MobileNav({
@@ -4496,13 +6143,13 @@ function MobileNav({
   nav
 }) {
   const navItems = nav ?? HEADER_NAV;
-  const [isOpen, setIsOpen] = useState5(false);
-  const [accordions, setAccordions] = useState5({});
-  const [mounted, setMounted] = useState5(false);
-  const [origin, setOrigin] = useState5(null);
-  const triggerRef = useRef10(null);
-  useEffect9(() => setMounted(true), []);
-  const open = useCallback5(() => {
+  const [isOpen, setIsOpen] = useState9(false);
+  const [accordions, setAccordions] = useState9({});
+  const [mounted, setMounted] = useState9(false);
+  const [origin, setOrigin] = useState9(null);
+  const triggerRef = useRef13(null);
+  useEffect11(() => setMounted(true), []);
+  const open = useCallback6(() => {
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect();
       setOrigin({
@@ -4515,20 +6162,20 @@ function MobileNav({
     setAccordions({});
     setIsOpen(true);
   }, []);
-  const close = useCallback5(() => {
+  const close = useCallback6(() => {
     setIsOpen(false);
     window.scrollTo(0, 0);
   }, []);
-  const toggleAccordion = useCallback5((label) => {
+  const toggleAccordion = useCallback6((label) => {
     setAccordions((prev) => ({ ...prev, [label]: !prev[label] }));
   }, []);
-  useEffect9(() => {
+  useEffect11(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-  useEffect9(() => {
+  useEffect11(() => {
     if (!isOpen) return;
     const handler = (e) => {
       if (e.key === "Escape") close();
@@ -4540,7 +6187,7 @@ function MobileNav({
   const cy = origin?.cy ?? 28;
   const clipOrigin = `${cx}px ${cy}px`;
   const overlay = mounted ? createPortal(
-    /* @__PURE__ */ jsx53(AnimatePresence, { children: isOpen && /* @__PURE__ */ jsxs32(
+    /* @__PURE__ */ jsx59(AnimatePresence, { children: isOpen && /* @__PURE__ */ jsxs38(
       motion.div,
       {
         initial: { clipPath: `circle(0px at ${clipOrigin})` },
@@ -4554,7 +6201,7 @@ function MobileNav({
         },
         className: "fixed inset-0 z-[55] overflow-y-auto bg-white",
         children: [
-          origin && /* @__PURE__ */ jsx53(
+          origin && /* @__PURE__ */ jsx59(
             "button",
             {
               type: "button",
@@ -4562,20 +6209,20 @@ function MobileNav({
               className: "absolute flex h-7 w-10 items-center justify-center",
               style: { top: origin.top, right: origin.right },
               "aria-label": "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E",
-              children: /* @__PURE__ */ jsx53(BurgerIcon, { open: true, barClass: "bg-black" })
+              children: /* @__PURE__ */ jsx59(BurgerIcon, { open: true, barClass: "bg-black" })
             }
           ),
-          /* @__PURE__ */ jsxs32(
+          /* @__PURE__ */ jsxs38(
             "nav",
             {
               className: "flex flex-col px-5 pb-16 pt-28 md:px-24",
               "aria-label": "\u041C\u043E\u0431\u0438\u043B\u044C\u043D\u0430\u044F \u043D\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044F",
               children: [
-                /* @__PURE__ */ jsx53("p", { className: "mb-6 font-mono text-[11px] uppercase tracking-[0.1em] text-black/30", children: "Navigation" }),
+                /* @__PURE__ */ jsx59("p", { className: "mb-6 font-mono text-[11px] uppercase tracking-[0.1em] text-black/30", children: "Navigation" }),
                 navItems.map((item, index) => {
                   const hasDropdown = item.items && item.items.length > 0;
                   const isExpanded = accordions[item.label] ?? false;
-                  return /* @__PURE__ */ jsx53(
+                  return /* @__PURE__ */ jsx59(
                     motion.div,
                     {
                       initial: { opacity: 0, y: 16 },
@@ -4586,8 +6233,8 @@ function MobileNav({
                         ease: [0.23, 1, 0.32, 1]
                       },
                       className: "border-b border-black/10",
-                      children: hasDropdown ? /* @__PURE__ */ jsxs32(Fragment13, { children: [
-                        /* @__PURE__ */ jsxs32(
+                      children: hasDropdown ? /* @__PURE__ */ jsxs38(Fragment17, { children: [
+                        /* @__PURE__ */ jsxs38(
                           "button",
                           {
                             type: "button",
@@ -4595,8 +6242,8 @@ function MobileNav({
                             className: "flex w-full items-center justify-between gap-4 py-5 font-mono text-[22px] font-light uppercase leading-[1.16] tracking-[0.02em] text-black",
                             "aria-expanded": isExpanded,
                             children: [
-                              /* @__PURE__ */ jsx53("span", { children: item.label }),
-                              /* @__PURE__ */ jsx53(
+                              /* @__PURE__ */ jsx59("span", { children: item.label }),
+                              /* @__PURE__ */ jsx59(
                                 "svg",
                                 {
                                   xmlns: "http://www.w3.org/2000/svg",
@@ -4612,13 +6259,13 @@ function MobileNav({
                                     "shrink-0 text-black/30 transition-transform duration-300",
                                     isExpanded && "rotate-180"
                                   ),
-                                  children: /* @__PURE__ */ jsx53("path", { d: "M1 1L5 5L9 1" })
+                                  children: /* @__PURE__ */ jsx59("path", { d: "M1 1L5 5L9 1" })
                                 }
                               )
                             ]
                           }
                         ),
-                        /* @__PURE__ */ jsx53(AnimatePresence, { initial: false, children: isExpanded && /* @__PURE__ */ jsx53(
+                        /* @__PURE__ */ jsx59(AnimatePresence, { initial: false, children: isExpanded && /* @__PURE__ */ jsx59(
                           motion.div,
                           {
                             initial: { height: 0, opacity: 0 },
@@ -4629,25 +6276,25 @@ function MobileNav({
                               opacity: { duration: 0.25 }
                             },
                             className: "overflow-hidden",
-                            children: /* @__PURE__ */ jsxs32("div", { className: "grid gap-0.5 pb-5", children: [
-                              /* @__PURE__ */ jsx53(
+                            children: /* @__PURE__ */ jsxs38("div", { className: "grid gap-0.5 pb-5", children: [
+                              /* @__PURE__ */ jsx59(
                                 Link4,
                                 {
                                   href: item.href,
                                   onClick: close,
                                   className: "rounded-sm px-3 py-3 transition-colors duration-150 hover:bg-black/5 border-b border-black/10 mb-1",
-                                  children: /* @__PURE__ */ jsx53("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black/50", children: "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u043A \u0440\u0430\u0437\u0434\u0435\u043B\u0443" })
+                                  children: /* @__PURE__ */ jsx59("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black/50", children: "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u043A \u0440\u0430\u0437\u0434\u0435\u043B\u0443" })
                                 }
                               ),
-                              item.items.map((sub) => /* @__PURE__ */ jsxs32(
+                              item.items.map((sub) => /* @__PURE__ */ jsxs38(
                                 Link4,
                                 {
                                   href: sub.href,
                                   onClick: close,
                                   className: "rounded-sm px-3 py-3 transition-colors duration-150 hover:bg-black/5",
                                   children: [
-                                    /* @__PURE__ */ jsx53("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black", children: sub.title }),
-                                    /* @__PURE__ */ jsx53("span", { className: "mt-1 block text-[13px] leading-[1.45] text-black/50", children: sub.description })
+                                    /* @__PURE__ */ jsx59("span", { className: "block font-mono text-[13px] uppercase tracking-[0.06em] text-black", children: sub.title }),
+                                    /* @__PURE__ */ jsx59("span", { className: "mt-1 block text-[13px] leading-[1.45] text-black/50", children: sub.description })
                                   ]
                                 },
                                 sub.href
@@ -4655,7 +6302,7 @@ function MobileNav({
                             ] })
                           }
                         ) })
-                      ] }) : /* @__PURE__ */ jsx53(
+                      ] }) : /* @__PURE__ */ jsx59(
                         Link4,
                         {
                           href: item.href,
@@ -4677,8 +6324,8 @@ function MobileNav({
     ) }),
     document.body
   ) : null;
-  return /* @__PURE__ */ jsxs32("div", { className: cn("hero-burger", className), children: [
-    /* @__PURE__ */ jsx53(
+  return /* @__PURE__ */ jsxs38("div", { className: cn("hero-burger", className), children: [
+    /* @__PURE__ */ jsx59(
       "button",
       {
         ref: triggerRef,
@@ -4687,7 +6334,7 @@ function MobileNav({
         className: "relative z-[60] flex h-7 w-10 items-center justify-center",
         "aria-label": isOpen ? "\u0417\u0430\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E" : "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u043C\u0435\u043D\u044E",
         "aria-expanded": isOpen,
-        children: /* @__PURE__ */ jsx53(BurgerIcon, { open: isOpen })
+        children: /* @__PURE__ */ jsx59(BurgerIcon, { open: isOpen })
       }
     ),
     overlay
@@ -4697,7 +6344,7 @@ function MobileNav({
 // src/components/ui/rocketmind-menu.tsx
 import Link5 from "next/link";
 import { useRouter } from "next/navigation";
-import { jsx as jsx54, jsxs as jsxs33 } from "react/jsx-runtime";
+import { jsx as jsx60, jsxs as jsxs39 } from "react/jsx-runtime";
 function RocketmindMenu({
   className,
   itemClassName,
@@ -4718,15 +6365,15 @@ function RocketmindMenu({
   );
   return (
     // gap-0.5 at the end wins over gap-5 lg:gap-7 coming from className via tailwind-merge
-    /* @__PURE__ */ jsxs33("div", { className: cn("relative z-10 flex items-center", className, "gap-0 lg:gap-0"), children: [
-      dropdownItems.length > 0 && /* @__PURE__ */ jsx54(
+    /* @__PURE__ */ jsxs39("div", { className: cn("relative z-10 flex items-center", className, "gap-0 lg:gap-0"), children: [
+      dropdownItems.length > 0 && /* @__PURE__ */ jsx60(
         NavigationMenu,
         {
           className: cn(
             "relative flex max-w-max items-center",
             "[&>div]:left-auto [&>div]:right-0 [&>div]:justify-end"
           ),
-          children: /* @__PURE__ */ jsx54(NavigationMenuList, { className: "flex list-none items-center gap-0.5", children: dropdownItems.map((item) => /* @__PURE__ */ jsx54(
+          children: /* @__PURE__ */ jsx60(NavigationMenuList, { className: "flex list-none items-center gap-0.5", children: dropdownItems.map((item) => /* @__PURE__ */ jsx60(
             DropdownSection,
             {
               item,
@@ -4736,7 +6383,7 @@ function RocketmindMenu({
           )) })
         }
       ),
-      plainItems.length > 0 && /* @__PURE__ */ jsx54("nav", { className: "flex list-none items-center gap-0.5", children: plainItems.map((item) => /* @__PURE__ */ jsx54(Link5, { href: item.href, className: linkClass, children: /* @__PURE__ */ jsx54("span", { children: item.label }) }, item.label)) })
+      plainItems.length > 0 && /* @__PURE__ */ jsx60("nav", { className: "flex list-none items-center gap-0.5", children: plainItems.map((item) => /* @__PURE__ */ jsx60(Link5, { href: item.href, className: linkClass, children: /* @__PURE__ */ jsx60("span", { children: item.label }) }, item.label)) })
     ] })
   );
 }
@@ -4745,8 +6392,8 @@ function DropdownSection({
   itemClassName
 }) {
   const router = useRouter();
-  return /* @__PURE__ */ jsxs33(NavigationMenuItem, { children: [
-    /* @__PURE__ */ jsx54(
+  return /* @__PURE__ */ jsxs39(NavigationMenuItem, { children: [
+    /* @__PURE__ */ jsx60(
       NavigationMenuTrigger,
       {
         className: cn(
@@ -4758,24 +6405,24 @@ function DropdownSection({
           itemClassName
         ),
         onClick: () => router.push(item.href),
-        children: /* @__PURE__ */ jsx54("span", { children: item.label })
+        children: /* @__PURE__ */ jsx60("span", { children: item.label })
       }
     ),
-    /* @__PURE__ */ jsx54(NavigationMenuContent, { children: /* @__PURE__ */ jsx54(
+    /* @__PURE__ */ jsx60(NavigationMenuContent, { children: /* @__PURE__ */ jsx60(
       "ul",
       {
         className: cn(
           "grid gap-0.5 p-2",
           item.items.length > 4 ? "w-[680px] grid-cols-3" : "w-[420px] grid-cols-2"
         ),
-        children: item.items.map((navItem) => /* @__PURE__ */ jsx54("li", { children: /* @__PURE__ */ jsx54(NavigationMenuLink, { asChild: true, children: /* @__PURE__ */ jsxs33(
+        children: item.items.map((navItem) => /* @__PURE__ */ jsx60("li", { children: /* @__PURE__ */ jsx60(NavigationMenuLink, { asChild: true, children: /* @__PURE__ */ jsxs39(
           Link5,
           {
             href: navItem.href,
             className: "flex flex-col rounded-sm px-2.5 py-2 text-left transition-[background-color,color,opacity] duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
             children: [
-              /* @__PURE__ */ jsx54("span", { className: "font-mono text-[11px] uppercase tracking-[0.08em] text-foreground", children: navItem.title }),
-              /* @__PURE__ */ jsx54("span", { className: "mt-0.5 text-[12px] leading-[1.4] text-muted-foreground", children: navItem.description })
+              /* @__PURE__ */ jsx60("span", { className: "font-mono text-[11px] uppercase tracking-[0.08em] text-foreground", children: navItem.title }),
+              /* @__PURE__ */ jsx60("span", { className: "mt-0.5 text-[12px] leading-[1.4] text-muted-foreground", children: navItem.description })
             ]
           }
         ) }) }, navItem.href))
@@ -4785,9 +6432,9 @@ function DropdownSection({
 }
 
 // src/components/ui/wave-animation.tsx
-import { useEffect as useEffect10, useRef as useRef11 } from "react";
+import { useEffect as useEffect12, useRef as useRef14 } from "react";
 import * as THREE from "three";
-import { jsx as jsx55 } from "react/jsx-runtime";
+import { jsx as jsx61 } from "react/jsx-runtime";
 function WaveAnimation({
   width,
   height,
@@ -4800,8 +6447,8 @@ function WaveAnimation({
   fadeFar = 200,
   className
 }) {
-  const containerRef = useRef11(null);
-  useEffect10(() => {
+  const containerRef = useRef14(null);
+  useEffect12(() => {
     const container = containerRef.current;
     if (!container) return;
     const fixed = typeof width === "number" && typeof height === "number";
@@ -4932,7 +6579,7 @@ function WaveAnimation({
     fadeFar
   ]);
   const hasFixedSize = typeof width === "number" && typeof height === "number";
-  return /* @__PURE__ */ jsx55(
+  return /* @__PURE__ */ jsx61(
     "div",
     {
       ref: containerRef,
@@ -4946,7 +6593,7 @@ function WaveAnimation({
 import Link6 from "next/link";
 import dynamic from "next/dynamic";
 import { ChevronUp } from "lucide-react";
-import { jsx as jsx56, jsxs as jsxs34 } from "react/jsx-runtime";
+import { jsx as jsx62, jsxs as jsxs40 } from "react/jsx-runtime";
 var DottedSurface2 = dynamic(
   () => import("./dotted-surface-OKVVT7AA.js").then((m) => m.DottedSurface),
   { ssr: false, loading: () => null }
@@ -4965,9 +6612,9 @@ function pickItems(nav, hrefMatch) {
   return section?.items ?? null;
 }
 function FooterColumn({ title, links }) {
-  return /* @__PURE__ */ jsxs34("div", { children: [
-    /* @__PURE__ */ jsx56("p", { className: "font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50", children: title }),
-    /* @__PURE__ */ jsx56("ul", { className: "mt-4 flex flex-col gap-2.5", children: links.map((link) => /* @__PURE__ */ jsx56("li", { children: /* @__PURE__ */ jsx56(
+  return /* @__PURE__ */ jsxs40("div", { children: [
+    /* @__PURE__ */ jsx62("p", { className: "font-mono text-[11px] uppercase tracking-[0.1em] text-muted-foreground/50", children: title }),
+    /* @__PURE__ */ jsx62("ul", { className: "mt-4 flex flex-col gap-2.5", children: links.map((link) => /* @__PURE__ */ jsx62("li", { children: /* @__PURE__ */ jsx62(
       Link6,
       {
         href: link.href,
@@ -4996,10 +6643,10 @@ function SiteFooter({
     ...companyLinks ?? DEFAULT_COMPANY_LINKS,
     ...resolvedLegalLinks
   ];
-  return /* @__PURE__ */ jsxs34("footer", { className: className ?? "relative overflow-hidden border-t border-border bg-background", children: [
-    /* @__PURE__ */ jsxs34("div", { className: "relative z-10 mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14", children: [
-      /* @__PURE__ */ jsxs34("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsx56(Link6, { href: "/", className: "inline-flex items-center", children: /* @__PURE__ */ jsx56(
+  return /* @__PURE__ */ jsxs40("footer", { className: className ?? "relative overflow-hidden border-t border-border bg-background", children: [
+    /* @__PURE__ */ jsxs40("div", { className: "relative z-10 mx-auto max-w-[1512px] px-5 py-12 md:px-8 md:py-16 xl:px-14", children: [
+      /* @__PURE__ */ jsxs40("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx62(Link6, { href: "/", className: "inline-flex items-center", children: /* @__PURE__ */ jsx62(
           "img",
           {
             src: `${basePath}/with_descriptor_dark_background_en.svg`,
@@ -5007,56 +6654,56 @@ function SiteFooter({
             className: "h-[42px] w-auto"
           }
         ) }),
-        /* @__PURE__ */ jsx56(
+        /* @__PURE__ */ jsx62(
           "button",
           {
             type: "button",
             onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }),
             "aria-label": "\u041D\u0430\u0432\u0435\u0440\u0445",
             className: "inline-flex items-center justify-center w-10 h-10 rounded-sm bg-secondary text-secondary-foreground transition-opacity duration-150 hover:opacity-[0.88] cursor-pointer",
-            children: /* @__PURE__ */ jsx56(ChevronUp, { size: 20, strokeWidth: 2 })
+            children: /* @__PURE__ */ jsx62(ChevronUp, { size: 20, strokeWidth: 2 })
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs34("div", { className: "mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12", children: [
-        /* @__PURE__ */ jsxs34("div", { className: "flex flex-col justify-between", children: [
-          /* @__PURE__ */ jsx56(FooterColumn, { title: "\u041A\u043E\u043D\u0441\u0430\u043B\u0442\u0438\u043D\u0433", links: consultingLinks.slice(0, 4) }),
-          /* @__PURE__ */ jsxs34("p", { className: "mt-8 text-[13px] text-muted-foreground/50 hidden md:block", children: [
+      /* @__PURE__ */ jsxs40("div", { className: "mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 md:gap-12", children: [
+        /* @__PURE__ */ jsxs40("div", { className: "flex flex-col justify-between", children: [
+          /* @__PURE__ */ jsx62(FooterColumn, { title: "\u041A\u043E\u043D\u0441\u0430\u043B\u0442\u0438\u043D\u0433", links: consultingLinks.slice(0, 4) }),
+          /* @__PURE__ */ jsxs40("p", { className: "mt-8 text-[13px] text-muted-foreground/50 hidden md:block", children: [
             "\xA9 ",
             (/* @__PURE__ */ new Date()).getFullYear(),
             " Rocketmind"
           ] })
         ] }),
-        /* @__PURE__ */ jsx56(FooterColumn, { title: "\xA0", links: consultingLinks.slice(4) }),
-        /* @__PURE__ */ jsxs34("div", { className: "flex flex-col gap-10", children: [
-          /* @__PURE__ */ jsx56(FooterColumn, { title: "\u041E\u043D\u043B\u0430\u0439\u043D-\u0448\u043A\u043E\u043B\u0430", links: academyLinks }),
-          /* @__PURE__ */ jsx56(FooterColumn, { title: "AI-\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B", links: aiProductLinks })
+        /* @__PURE__ */ jsx62(FooterColumn, { title: "\xA0", links: consultingLinks.slice(4) }),
+        /* @__PURE__ */ jsxs40("div", { className: "flex flex-col gap-10", children: [
+          /* @__PURE__ */ jsx62(FooterColumn, { title: "\u041E\u043D\u043B\u0430\u0439\u043D-\u0448\u043A\u043E\u043B\u0430", links: academyLinks }),
+          /* @__PURE__ */ jsx62(FooterColumn, { title: "AI-\u043F\u0440\u043E\u0434\u0443\u043A\u0442\u044B", links: aiProductLinks })
         ] }),
-        /* @__PURE__ */ jsx56(FooterColumn, { title: "\u041A\u043E\u043C\u043F\u0430\u043D\u0438\u044F", links: resolvedCompanyLinks })
+        /* @__PURE__ */ jsx62(FooterColumn, { title: "\u041A\u043E\u043C\u043F\u0430\u043D\u0438\u044F", links: resolvedCompanyLinks })
       ] }),
-      /* @__PURE__ */ jsxs34("p", { className: "mt-10 text-[13px] text-muted-foreground/50 md:hidden", children: [
+      /* @__PURE__ */ jsxs40("p", { className: "mt-10 text-[13px] text-muted-foreground/50 md:hidden", children: [
         "\xA9 ",
         (/* @__PURE__ */ new Date()).getFullYear(),
         " Rocketmind"
       ] })
     ] }),
-    /* @__PURE__ */ jsxs34("div", { className: "relative h-[440px] md:h-[460px]", children: [
-      /* @__PURE__ */ jsx56(DottedSurface2, {}),
-      children && /* @__PURE__ */ jsx56("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
+    /* @__PURE__ */ jsxs40("div", { className: "relative h-[440px] md:h-[460px]", children: [
+      /* @__PURE__ */ jsx62(DottedSurface2, {}),
+      children && /* @__PURE__ */ jsx62("div", { className: "pointer-events-auto absolute inset-0 z-10 flex flex-col justify-end", children })
     ] })
   ] });
 }
 
 // src/components/ui/site-header.tsx
-import { useEffect as useEffect11, useState as useState6 } from "react";
+import { useEffect as useEffect13, useState as useState10 } from "react";
 import Link7 from "next/link";
 import { usePathname } from "next/navigation";
-import { jsx as jsx57, jsxs as jsxs35 } from "react/jsx-runtime";
+import { jsx as jsx63, jsxs as jsxs41 } from "react/jsx-runtime";
 function SiteHeader({ basePath = "", className, nav }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const [isVisible, setIsVisible] = useState6(!isHome);
-  useEffect11(() => {
+  const [isVisible, setIsVisible] = useState10(!isHome);
+  useEffect13(() => {
     if (!isHome) {
       setIsVisible(true);
       return;
@@ -5069,7 +6716,7 @@ function SiteHeader({ basePath = "", className, nav }) {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
-  return /* @__PURE__ */ jsx57(
+  return /* @__PURE__ */ jsx63(
     "header",
     {
       className: cn(
@@ -5077,8 +6724,8 @@ function SiteHeader({ basePath = "", className, nav }) {
         isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none",
         className
       ),
-      children: /* @__PURE__ */ jsxs35("div", { className: "mx-auto flex w-full max-w-[1512px] items-center justify-between gap-6 px-5 md:px-8 xl:px-14", children: [
-        /* @__PURE__ */ jsx57(Link7, { href: "/", className: "flex items-center", children: /* @__PURE__ */ jsx57(
+      children: /* @__PURE__ */ jsxs41("div", { className: "mx-auto flex w-full max-w-[1512px] items-center justify-between gap-6 px-5 md:px-8 xl:px-14", children: [
+        /* @__PURE__ */ jsx63(Link7, { href: "/", className: "flex items-center", children: /* @__PURE__ */ jsx63(
           "img",
           {
             src: `${basePath}/text_logo_dark_background_en.svg`,
@@ -5086,7 +6733,7 @@ function SiteHeader({ basePath = "", className, nav }) {
             className: "h-auto w-[120px] md:w-[144px]"
           }
         ) }),
-        /* @__PURE__ */ jsx57(
+        /* @__PURE__ */ jsx63(
           RocketmindMenu,
           {
             className: "hero-menu-desktop ml-auto flex-1 items-center justify-end gap-5 lg:gap-7",
@@ -5095,13 +6742,14 @@ function SiteHeader({ basePath = "", className, nav }) {
             nav
           }
         ),
-        /* @__PURE__ */ jsx57(MobileNav, { className: "ml-auto", nav })
+        /* @__PURE__ */ jsx63(MobileNav, { className: "ml-auto", nav })
       ] })
     }
   );
 }
 export {
   AccordionFAQ,
+  ArticleBody,
   ArticleCard,
   ArticleNav,
   Author,
@@ -5143,8 +6791,12 @@ export {
   DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  ExpertQuoteStack,
   ExpertsSection,
   ForWhomSection,
+  GlossaryList,
+  GlossaryScriptToggle,
+  GlossaryWidget,
   GlowingEffect,
   HeroExperts,
   InfiniteLogoMarquee,
@@ -5174,6 +6826,8 @@ export {
   ScrollArea,
   ScrollBar,
   SearchCombobox,
+  SectionAsideChip,
+  SectionAsideProductCard,
   Separator2 as Separator,
   ServicesSection,
   ShowMore,
@@ -5206,6 +6860,7 @@ export {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  VideoPlayer,
   VkIcon,
   WaveAnimation,
   avatarVariants,
@@ -5213,12 +6868,15 @@ export {
   buttonVariants,
   checkboxBaseClassName,
   cn,
+  getGlossaryTermLetter,
+  getGlossaryTermScript,
   inputVariants,
   noteVariants,
   radioBaseClassName,
   repackBento,
   resolveStyledParagraphs,
   HEADER_NAV as rocketmindMenuItems,
+  slugify as slugifyArticleHeading,
   styledParagraphClassName,
   tabsListVariants,
   tagVariants,

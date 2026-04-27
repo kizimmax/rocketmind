@@ -1,11 +1,107 @@
 {
   "tags": [
-    { "id": "strategy",    "label": "Стратегии" },
-    { "id": "biz-design",  "label": "Бизнес-дизайн" },
-    { "id": "expert",      "label": "Экспертная статья" },
-    { "id": "ai-products", "label": "AI-продукты" },
-    { "id": "consulting",  "label": "Консалтинг и стратегия" },
-    { "id": "academy",     "label": "Академия" },
-    { "id": "team",        "label": "Команда" }
+    {
+      "id": "strategy",
+      "label": "Стратегии"
+    },
+    {
+      "id": "biz-design",
+      "label": "Бизнес-дизайн"
+    },
+    {
+      "id": "expert",
+      "label": "Экспертная статья"
+    },
+    {
+      "id": "ai-products",
+      "label": "AI-продукты"
+    },
+    {
+      "id": "consulting",
+      "label": "Консалтинг и стратегия"
+    },
+    {
+      "id": "academy",
+      "label": "Академия"
+    },
+    {
+      "id": "team",
+      "label": "Команда"
+    },
+    {
+      "id": "ekosistemy",
+      "label": "Экосистемы",
+      "createdAt": "2026-04-24T09:57:05.854Z"
+    },
+    {
+      "id": "platformy",
+      "label": "Платформы",
+      "createdAt": "2026-04-24T09:57:10.628Z"
+    },
+    {
+      "id": "inkubator",
+      "label": "Инкубатор",
+      "createdAt": "2026-04-24T09:57:18.895Z"
+    },
+    {
+      "id": "proryvnye-tehnologii",
+      "label": "Прорывные технологии",
+      "createdAt": "2026-04-24T09:57:30.829Z"
+    },
+    {
+      "id": "biznes-modeli",
+      "label": "Бизнес-модели",
+      "createdAt": "2026-04-24T09:57:43.203Z"
+    },
+    {
+      "id": "predprinimatelstvo",
+      "label": "Предпринимательство",
+      "createdAt": "2026-04-24T09:58:07.149Z"
+    },
+    {
+      "id": "lichnye-istorii",
+      "label": "Личные истории",
+      "createdAt": "2026-04-24T09:59:40.349Z"
+    },
+    {
+      "id": "finteh",
+      "label": "Финтех",
+      "createdAt": "2026-04-24T09:59:45.940Z"
+    },
+    {
+      "id": "kiberbezopasnost",
+      "label": "Кибербезопасность",
+      "createdAt": "2026-04-24T09:59:54.256Z"
+    },
+    {
+      "id": "brend",
+      "label": "Бренд",
+      "createdAt": "2026-04-24T10:00:14.282Z"
+    },
+    {
+      "id": "kommunikacii",
+      "label": "Коммуникации",
+      "createdAt": "2026-04-24T10:00:19.425Z"
+    },
+    {
+      "id": "kosmos",
+      "label": "Космос",
+      "createdAt": "2026-04-24T10:00:37.482Z"
+    },
+    {
+      "id": "marketing",
+      "label": "Маркетинг",
+      "createdAt": "2026-04-24T10:00:52.615Z"
+    },
+    {
+      "id": "gipotezy",
+      "label": "Гипотезы",
+      "createdAt": "2026-04-24T10:00:57.606Z"
+    },
+    {
+      "id": "issledovaniya",
+      "label": "Исследования",
+      "createdAt": "2026-04-24T10:01:03.715Z"
+    }
   ]
 }

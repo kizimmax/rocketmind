@@ -10,12 +10,6 @@ import {
   Textarea,
   Separator,
   Switch,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from "@rocketmind/ui";
 import { toast } from "sonner";
 import type { SitePage } from "@/lib/types";
@@ -25,6 +19,7 @@ import { useNavigationGuard } from "@/lib/navigation-guard";
 import { InlineEdit } from "@/components/inline-edit";
 import { EditorToolbar } from "./editor-toolbar";
 import { BlockList } from "./block-list";
+import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 
 const DESC_REC_MIN = 60;
 const DESC_REC_MAX = 120;
@@ -589,6 +584,44 @@ export function EditorShell({ initialPage }: EditorShellProps) {
                 onCheckedChange={(v) => updateMeta("expertProduct", v)}
               />
             </div>
+
+            {/* Visibility toggles — только для разделов consulting / academy / ai-products.
+                Неявный default = true (undefined трактуется как «показывать»). */}
+            {(page.sectionId === "consulting" ||
+              page.sectionId === "academy" ||
+              page.sectionId === "ai-products") && (
+              <>
+                <div className="flex items-start justify-between gap-4 rounded-sm border border-[#404040] bg-[#0A0A0A] p-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[length:var(--text-14)] font-medium text-[#F0F0F0]">
+                      Показывать в меню
+                    </span>
+                    <span className="text-[length:var(--text-12)] text-[#939393]">
+                      Выпадающее меню в шапке и список на странице «Продукты».
+                    </span>
+                  </div>
+                  <Switch
+                    checked={page.showInMenu !== false}
+                    onCheckedChange={(v) => updateMeta("showInMenu", v)}
+                  />
+                </div>
+
+                <div className="flex items-start justify-between gap-4 rounded-sm border border-[#404040] bg-[#0A0A0A] p-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[length:var(--text-14)] font-medium text-[#F0F0F0]">
+                      Показывать в футере
+                    </span>
+                    <span className="text-[length:var(--text-12)] text-[#939393]">
+                      Колонка со списком продуктов в футере сайта.
+                    </span>
+                  </div>
+                  <Switch
+                    checked={page.showInFooter !== false}
+                    onCheckedChange={(v) => updateMeta("showInFooter", v)}
+                  />
+                </div>
+              </>
+            )}
           </div>
           )}
         </div>
@@ -637,41 +670,13 @@ export function EditorShell({ initialPage }: EditorShellProps) {
       />
 
       {/* Unsaved changes dialog */}
-      <Dialog open={showUnsavedDialog} onOpenChange={(open) => { if (!open) handleCancelDialog(); }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Несохранённые изменения</DialogTitle>
-            <DialogDescription>
-              {changes.length > 0 ? (
-                <>
-                  <span className="mb-2 block">Вы изменили:</span>
-                  <ul className="mb-2 list-inside list-disc space-y-0.5">
-                    {changes.map((c) => (
-                      <li key={c}>{c}</li>
-                    ))}
-                  </ul>
-                  <span>Что сделать с изменениями?</span>
-                </>
-              ) : (
-                "Есть несохранённые изменения. Что сделать?"
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex gap-2 sm:justify-between">
-            <Button variant="outline" onClick={handleCancelDialog}>
-              Отмена
-            </Button>
-            <div className="flex gap-2">
-              <Button variant="destructive" onClick={handleDiscardAndNavigate}>
-                Да, отменить
-              </Button>
-              <Button onClick={handleSaveAndNavigate}>
-                Да, сохранить
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UnsavedChangesDialog
+        open={showUnsavedDialog}
+        changes={changes}
+        onCancel={handleCancelDialog}
+        onDiscard={handleDiscardAndNavigate}
+        onSave={handleSaveAndNavigate}
+      />
     </div>
   );
 }

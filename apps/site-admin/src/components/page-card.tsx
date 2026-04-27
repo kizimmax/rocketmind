@@ -45,6 +45,31 @@ function isImageSection(sectionId: string): boolean {
   return sectionId === "academy" || sectionId === "ai-products" || sectionId === "media";
 }
 
+/**
+ * Два мини-индикатора: «в меню» (МЕНЮ) и «в футере» (ФУТЕР) для продуктовых
+ * разделов. undefined → включено (default true). Выключенное — приглушено +
+ * зачёркнуто, чтобы при беглом просмотре списка видеть, что страница не
+ * попадает в соответствующий раздел сайта.
+ */
+function VisibilityDots({ page }: { page: SitePage }) {
+  const inMenu = page.showInMenu !== false;
+  const inFooter = page.showInFooter !== false;
+  const onCn =
+    "shrink-0 rounded-sm border border-[color:var(--rm-yellow-100)]/30 bg-[color:var(--rm-yellow-100)]/10 px-1 py-px text-[9px] font-medium uppercase tracking-[0.04em] text-[color:var(--rm-yellow-100)]";
+  const offCn =
+    "shrink-0 rounded-sm border border-border bg-muted/30 px-1 py-px text-[9px] font-medium uppercase tracking-[0.04em] text-muted-foreground/50 line-through";
+  return (
+    <span className="flex items-center gap-1">
+      <span className={inMenu ? onCn : offCn} title={inMenu ? "В меню" : "Скрыта в меню"}>
+        меню
+      </span>
+      <span className={inFooter ? onCn : offCn} title={inFooter ? "В футере" : "Скрыта в футере"}>
+        футер
+      </span>
+    </span>
+  );
+}
+
 /** Build a display path for the cover asset */
 function getCoverPath(page: SitePage): string {
   return `images/products/${page.sectionId}/${page.slug}/cover.*`;
@@ -394,6 +419,11 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
                 className={`h-3.5 w-3.5 ${page.featured ? "fill-[color:var(--rm-yellow-100)] text-[color:var(--rm-yellow-100)]" : ""}`}
               />
             </button>
+          )}
+          {(page.sectionId === "consulting" ||
+            page.sectionId === "academy" ||
+            page.sectionId === "ai-products") && (
+            <VisibilityDots page={page} />
           )}
           <span className="ml-auto shrink-0">
             <Badge variant={status.variant as never} size="sm">

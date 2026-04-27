@@ -12,6 +12,12 @@ export interface AuthorProps extends React.HTMLAttributes<HTMLDivElement> {
   date?: string
   /** Full — 2-line (name, date on separate row with calendar). Short — single row (name + date). */
   variant?: "full" | "short"
+  /**
+   * Если `false` и `avatarUrl` отсутствует/пустой — не рендерим круглый блок
+   * с инициалами (в карточках медиа дизайнер решает не показывать заглушку).
+   * По умолчанию `true` — прежнее поведение с fallback-инициалами.
+   */
+  showAvatarFallback?: boolean
 }
 
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
@@ -24,7 +30,7 @@ function formatDate(iso?: string): string | null {
   if (!iso) return null
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return null
-  return dateFormatter.format(d) + " г."
+  return dateFormatter.format(d)
 }
 
 /**
@@ -35,6 +41,7 @@ export function Author({
   avatarUrl,
   date,
   variant = "full",
+  showAvatarFallback = true,
   className,
   ...props
 }: AuthorProps) {
@@ -45,6 +52,7 @@ export function Author({
     .filter(Boolean)
     .slice(0, 2)
     .join("")
+  const showAvatar = !!avatarUrl || showAvatarFallback
 
   if (variant === "short") {
     return (
@@ -52,10 +60,12 @@ export function Author({
         className={cn("flex items-center gap-2 text-[length:var(--text-14)] min-w-0 flex-nowrap", className)}
         {...props}
       >
-        <Avatar size="xs" className="shrink-0 border-0">
-          {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} /> : null}
-          <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
-        </Avatar>
+        {showAvatar && (
+          <Avatar size="xs" className="shrink-0 border-0">
+            {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} /> : null}
+            <AvatarFallback className="text-[10px]">{initials}</AvatarFallback>
+          </Avatar>
+        )}
         <span className="min-w-0 flex-1 truncate font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[color:var(--rm-gray-fg-sub)]">
           {name}
         </span>
@@ -77,10 +87,12 @@ export function Author({
       className={cn("flex items-stretch gap-3", className)}
       {...props}
     >
-      <Avatar size="md" className="shrink-0 border-0">
-        {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} /> : null}
-        <AvatarFallback className="text-[length:var(--text-12)]">{initials}</AvatarFallback>
-      </Avatar>
+      {showAvatar && (
+        <Avatar size="md" className="shrink-0 border-0">
+          {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} /> : null}
+          <AvatarFallback className="text-[length:var(--text-12)]">{initials}</AvatarFallback>
+        </Avatar>
+      )}
       <div className="flex flex-col justify-center gap-1 min-w-0 flex-1">
         <span className="font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] truncate">
           {name}

@@ -8,6 +8,9 @@ import {
   KeyThoughts,
   ArticleNav,
   ArticleCard,
+  ArticleBody,
+  VideoPlayer,
+  type ArticleBodyBlock,
 } from "@rocketmind/ui"
 import { Section, SubSection } from "@/components/ds/shared"
 
@@ -23,6 +26,55 @@ const DEMO_THOUGHTS = [
   "Минсвязи объединяет государственные сайты в единую систему",
   "В экспертную сеть объединяются профессионалы из разных стран",
 ]
+
+const DEMO_BODY: ArticleBodyBlock[] = [
+  { id: "b1", type: "h2", data: { text: "Начало работы" } },
+  {
+    id: "b2",
+    type: "paragraph",
+    data: {
+      text: "Летом 2015 года Минкомсвязи объявило конкурс на продвижение нового портала. Победителем стала экспертная сеть Rocketmind — подробности в [анонсе проекта](#).",
+    },
+  },
+  {
+    id: "b3",
+    type: "quote",
+    data: { text: "Портал, как единая точка контакта с государством" },
+  },
+  { id: "b4", type: "h3", data: { text: "Подзаголовок второго уровня" } },
+  { id: "b5", type: "h4", data: { text: "Подзаголовок третьего уровня" } },
+  {
+    id: "b6",
+    type: "paragraph",
+    data: {
+      text: "Экспертная сеть объединяет профессионалов из разных стран. Они сами устанавливают правила работы и используют облачные сервисы.",
+    },
+  },
+  {
+    id: "b7",
+    type: "paragraph",
+    data: {
+      text: "Второй абзац подряд — проверяет плотный ритм 16px между параграфами.",
+    },
+  },
+  { id: "b8", type: "h2", data: { text: "Вторая секция" } },
+  {
+    id: "b9",
+    type: "paragraph",
+    data: { text: "Перед этим h2 должен быть большой отступ 56px (44px на mobile)." },
+  },
+  {
+    id: "b10",
+    type: "video",
+    data: {
+      src: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      caption: "Видео во всю ширину колонки, 16/9",
+    },
+  },
+]
+
+const DEMO_VIDEO_SRC =
+  "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
 
 const DEMO_NAV = [
   { id: "intro",   label: "Открытая платформа" },
@@ -182,6 +234,101 @@ export default function ArticlePage() {
             authorName="Мария Терминасова"
             date="2025-04-02"
           />
+        </div>
+
+        {/* ═══════════════ 7. ARTICLE BODY ═══════════════ */}
+        <SubSection id="article-body" title="ArticleBody / Тело статьи" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+          Сквозной поток блоков <code>h2 / h3 / paragraph / quote</code> с единой логикой вертикального ритма.
+          H2 → DS H3 (32/28), H3 → DS H4 (24/20). Перед h2 отступ 56px (desktop) / 44px (mobile) — начало новой секции.
+          После h2 — 32px. Параграфы подряд — 16px. Подробности в §11.7 DS MD.
+        </p>
+
+        <div className="rounded-lg border border-border p-10 mb-10 bg-[#0A0A0A]">
+          <div className="mx-auto max-w-[800px]">
+            <ArticleBody blocks={DEMO_BODY} />
+          </div>
+        </div>
+
+        {/* ═══════════════ 8. VIDEO PLAYER ═══════════════ */}
+        <SubSection id="article-video" title="VideoPlayer / Видео" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+          Плеер для видео-блоков тела статьи. Кастомные контролы на нативном <code>&lt;video&gt;</code>: play/pause, scrubber с буферизацией и миниатюрой,
+          таймер, регулятор громкости, fullscreen. Клавиши: <code>Space</code>/<code>K</code> — play/pause, <code>←</code>/<code>→</code> — ±5s, <code>↑</code>/<code>↓</code> — громкость,
+          <code>M</code> — mute, <code>F</code> — fullscreen, <code>Home</code>/<code>End</code> — в начало/конец. Контролы автоскрываются через 2s во время
+          воспроизведения, появляются на hover/mousemove/focus. Аспект 16/9 по умолчанию, цвет прогресса — <code>--rm-yellow-100</code>.
+        </p>
+
+        <div className="rounded-lg border border-border p-6 mb-6 bg-rm-gray-1/30">
+          <div className="text-[length:var(--text-11)] uppercase tracking-wider text-muted-foreground mb-4">Standalone</div>
+          <div className="mx-auto max-w-[800px]">
+            <VideoPlayer src={DEMO_VIDEO_SRC} />
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-border p-6 mb-10 bg-rm-gray-1/30">
+          <div className="text-[length:var(--text-11)] uppercase tracking-wider text-muted-foreground mb-4">
+            В теле статьи (<code>type: &quot;video&quot;</code>, отступ 40px сверху/снизу как у <code>image</code>)
+          </div>
+          <div className="mx-auto max-w-[800px]">
+            <ArticleBody
+              blocks={[
+                { id: "v1", type: "paragraph", data: { text: "Абзац перед видео — 40px до него." } },
+                {
+                  id: "v2",
+                  type: "video",
+                  data: {
+                    src: DEMO_VIDEO_SRC,
+                    caption: "Подпись — mono, 12px, uppercase, под плеером",
+                  },
+                },
+                { id: "v3", type: "paragraph", data: { text: "Абзац после — 40px от видео." } },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* ═══════════════ 9. MIXED GALLERY (image + video) ═══════════════ */}
+        <SubSection id="article-gallery" title="Gallery / Смешанные табы (image + video)" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+          Таб-свитчер в теле статьи. Элемент галереи может быть изображением (<code>kind: &quot;image&quot;</code>, default) или видео
+          (<code>kind: &quot;video&quot;</code>). Image-табы сохраняют slide-анимацию и overlay <code>bg-black/20</code>. Video-табы рендерятся
+          через <code>VideoPlayer</code> без slide и overlay.
+        </p>
+
+        <div className="rounded-lg border border-border p-6 mb-10 bg-rm-gray-1/30">
+          <div className="mx-auto max-w-[800px]">
+            <ArticleBody
+              blocks={[
+                {
+                  id: "g1",
+                  type: "gallery",
+                  data: {
+                    items: [
+                      {
+                        id: "gi1",
+                        title: "Кадр 1",
+                        src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
+                        kind: "image",
+                      },
+                      {
+                        id: "gv1",
+                        title: "Видео",
+                        src: DEMO_VIDEO_SRC,
+                        kind: "video",
+                      },
+                      {
+                        id: "gi2",
+                        title: "Кадр 2",
+                        src: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+                        kind: "image",
+                      },
+                    ],
+                  },
+                },
+              ]}
+            />
+          </div>
         </div>
       </Section>
     </>

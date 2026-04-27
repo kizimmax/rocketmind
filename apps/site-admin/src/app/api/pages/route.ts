@@ -97,11 +97,34 @@ export async function GET() {
   for (const { sectionId, dir } of getAllContentDirs()) {
     if (!fs.existsSync(dir)) continue;
     const files = fs.readdirSync(dir).filter((f: string) => f.endsWith(".md") && !f.startsWith("_"));
-    files.forEach((file: string, index: number) => {
+
+    // Предварительно читаем frontmatter, чтобы отсортировать страницы в секции
+    // по полю `order` ПЕРЕД тем, как начинаем индексировать. `order: index` дальше
+    // внизу использует уже этот отсортированный порядок, так что store получает
+    // страницы в нужной последовательности (важно для админа-drag-reorder и
+    // всех потребителей на сайте).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    type Entry = { file: string; data: Record<string, any> };
+    const entries = files
+      .map((file: string): Entry | null => {
+        try {
+          const raw = fs.readFileSync(path.join(dir, file), "utf-8");
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return { file, data: matter(raw).data as Record<string, any> };
+        } catch {
+          return null;
+        }
+      })
+      .filter((e): e is Entry => e !== null && !!e.data.slug);
+    entries.sort((a, b) => {
+      const ao = typeof a.data.order === "number" ? a.data.order : Number.MAX_SAFE_INTEGER;
+      const bo = typeof b.data.order === "number" ? b.data.order : Number.MAX_SAFE_INTEGER;
+      if (ao !== bo) return ao - bo;
+      return a.file.localeCompare(b.file);
+    });
+
+    entries.forEach(({ file, data }, index) => {
       try {
-        const raw = fs.readFileSync(path.join(dir, file), "utf-8");
-        const { data } = matter(raw);
-        if (!data.slug) return;
 
         // Resolve static asset URLs for this page
         const coverUrl = resolveAssetAsDataUrl(fs, path, sitePublicDir, data.category || sectionId, data.slug, "cover", IMAGE_EXTS);
@@ -310,6 +333,8 @@ export async function GET() {
           expertProduct: typeof data.expertProduct === "boolean" ? data.expertProduct : undefined,
           caseType: data.caseType === "mini" || data.caseType === "big" ? data.caseType : undefined,
           featured: data.featured === true ? true : (data.featured === false ? false : undefined),
+          showInMenu: typeof data.showInMenu === "boolean" ? data.showInMenu : undefined,
+          showInFooter: typeof data.showInFooter === "boolean" ? data.showInFooter : undefined,
           blocks: finalBlocks,
           createdAt: stat.birthtime.toISOString(),
           updatedAt: stat.mtime.toISOString(),

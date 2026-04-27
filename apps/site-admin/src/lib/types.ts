@@ -153,7 +153,7 @@ export interface ToolsBlockData {
   paragraphs?: StyledParagraph[];
   useIcons?: boolean;
   descriptionBelow?: boolean;
-  tools: Array<{ number: string; title: string; text: string; icon?: string | null; wide?: boolean }>;
+  tools: Array<{ number: string; title: string; text: string; icon?: string | null; wide?: boolean; accent?: boolean }>;
 }
 
 export interface ResultsBlockData {
@@ -380,6 +380,16 @@ export interface SitePage {
   caseType?: CaseType;
   /** Cases section only. If true, this case appears in the cross-block CasesSection on all pages. Max 5 site-wide. */
   featured?: boolean;
+  /**
+   * Только для разделов consulting / academy / ai-products.
+   * Показывать в выпадающих меню шапки. По умолчанию true.
+   */
+  showInMenu?: boolean;
+  /**
+   * Только для разделов consulting / academy / ai-products.
+   * Показывать в футере. По умолчанию true.
+   */
+  showInFooter?: boolean;
   blocks: PageBlock[];
   createdAt: string;
   updatedAt: string;
@@ -400,6 +410,7 @@ export interface AdminStore {
   pages: SitePage[];
   articles: Article[];
   mediaTags: MediaTag[];
+  glossaryTerms: GlossaryTerm[];
   lastSaved: string;
 }
 
@@ -428,16 +439,142 @@ export type ArticleBodyBlockType =
   | "paragraph"
   | "h2"
   | "h3"
+  | "h4"
   | "quote"
   | "image"
+  | "gallery"
+  | "video"
   | "list"
   | "callout";
+
+export interface ArticleGalleryItem {
+  /** Уникальный ID внутри галереи (локальный, не зависит от slug статьи). */
+  id: string;
+  /** Заголовок таба. */
+  title: string;
+  /** Публичный URL загруженного файла (/media/uploads/<slug>/<hash>.<ext>). */
+  src: string;
+  /** Тип контента: изображение (default для обратной совместимости) или видео. */
+  kind?: "image" | "video";
+  /** Опциональная подпись под активным медиа. Пустая строка/undefined — не рендерится. */
+  caption?: string;
+}
 
 export interface ArticleBodyBlock {
   id: string;
   type: ArticleBodyBlockType;
-  /** Block-specific payload; shape defined per type in next iteration. */
-  data: Record<string, unknown>;
+  /**
+   * Block-specific payload. В текущей итерации используется только поле `text`
+   * для h2/h3/paragraph/quote; image/list/callout зарезервированы под следующую
+   * итерацию и расширят shape по месту.
+   */
+  data: { text?: string } & Record<string, unknown>;
+}
+
+/**
+ * Виджеты в правой колонке секции (файл, внешняя ссылка, мини-карточка продукта).
+ * На публичной странице колонка sticky на уровне секции.
+ */
+/** Как кропать превью 3:2 относительно оригинальной картинки. */
+export type AsidePreviewCropMode = "top" | "center";
+
+export type ArticleAside =
+  | {
+      id: string;
+      kind: "file";
+      /** Публичный URL, возвращённый upload-эндпоинтом (напр. "/media/uploads/<slug>/<hash>.pdf"). */
+      fileUrl: string;
+      /** Оригинальное имя файла (для скачивания). */
+      fileName: string;
+      /** Отображаемое название в UI. Пустая строка — fallback на fileName. */
+      displayName: string;
+      /** Показывать превью 3:2 над названием. */
+      showPreview: boolean;
+      /** Ручной превью (вариант A — upload картинки админом). */
+      previewImageUrl?: string;
+      /** Вертикальное позиционирование при кропе 3:2. Default — "top". */
+      previewCropMode?: AsidePreviewCropMode;
+    }
+  | {
+      id: string;
+      kind: "link";
+      url: string;
+      displayName: string;
+      showPreview: boolean;
+      previewImageUrl?: string;
+      previewCropMode?: AsidePreviewCropMode;
+    }
+  | {
+      id: string;
+      kind: "product";
+      /** Slug продукта из `content/products|academy|ai-products`. */
+      productSlug: string;
+      /** Категория запоминается на момент вставки — на случай миграции слэгов. */
+      productCategory: "consulting" | "academy" | "ai-products";
+    }
+  | {
+      id: string;
+      kind: "logos";
+      /** Список логотипов. Рендерятся в колонку, монохром --rm-gray-fg-sub. */
+      logos: ArticleLogoAsideItem[];
+    };
+
+/**
+ * Цитата эксперта в конце секции статьи. Минимум одно из `label`/`text` —
+ * ровно как в Figma (оба поля опциональны, но блок с пустыми текстом и
+ * заголовком не имеет смысла). Автор берётся либо из `content/experts/` по
+ * `expertSlug`, либо задаётся вручную через `name`/`role`/`avatarUrl`.
+ */
+export interface ArticleSectionQuote {
+  id: string;
+  /** Опциональный slug из content/experts/ — источник name/role/avatar по умолчанию. */
+  expertSlug?: string;
+  /** Ручной override имени (и источник, если expertSlug не задан). */
+  name?: string;
+  /** Ручной override должности. */
+  role?: string;
+  /** Ручной override URL аватара (/media/uploads/<slug>/ или абсолютный). */
+  avatarUrl?: string;
+  /** Label — Label 18 desktop / Label 16 mobile. Uppercase. */
+  label?: string;
+  /** Параграфы расширенного текста цитаты (Copy 16). Пустые строки игнорируются. */
+  paragraphs?: string[];
+}
+
+/** Элемент списка логотипов в logos-aside. */
+export interface ArticleLogoAsideItem {
+  /** Уникальный ID внутри aside. */
+  id: string;
+  /** Публичный URL логотипа (SVG/PNG). См. `/api/logos`. */
+  src: string;
+  /** Ширина в пикселях, настраивается zoom-кнопками в админке. */
+  widthPx: number;
+}
+
+/**
+ * Секция статьи: один H2-заголовок + свой массив inline-блоков + отдельный
+ * label для ToC-навигации (fallback на title) + свой список asides.
+ */
+export interface ArticleSection {
+  id: string;
+  /** H2 секции. Пустая строка — секция без заголовка и не попадает в ToC. */
+  title: string;
+  /** Name в боковой навигации. Пустая строка — fallback на title. */
+  navLabel: string;
+  /** Inline-блоки внутри секции. Тип "h2" внутри не используется по соглашению. */
+  blocks: ArticleBodyBlock[];
+  /** Aside-виджеты правой колонки (sticky в рамках секции на публичной странице). */
+  asides: ArticleAside[];
+  /**
+   * Цитаты экспертов, привязанные к концу секции. Рендер зависит от соотношения
+   * высот body vs aside: body > aside → wide-вариант на всю ширину секции,
+   * иначе — narrow вариант в body-колонке. На mobile всегда mobile-вариант.
+   */
+  quotes: ArticleSectionQuote[];
+  /** Заголовок правой колонки (например «Материалы»). */
+  asidesTitle: string;
+  /** Показывать заголовок над колонкой asides. */
+  asidesTitleEnabled: boolean;
 }
 
 // ── Media: article ──────────────────────────────────────────────────────────
@@ -465,13 +602,49 @@ export interface Article {
   // Editor-pinned key thoughts, шапка
   keyThoughts: string[];
 
-  // Body — deferred, пустой массив в текущей итерации
-  body: ArticleBodyBlock[];
+  // Body — массив секций (каждая с H2 + свои блоки + navLabel для ToC)
+  body: ArticleSection[];
+
+  // Media-list display
+  /**
+   * Вариант карточки в списке /media. "default" — стандартная (1 колонка из 3).
+   * "wide" — широкая карточка (2 колонки из 3, обложка слева, теги/автор справа).
+   */
+  cardVariant: "default" | "wide";
+  /**
+   * Закреплена ли статья на /media. Закреплённые идут первыми, упорядочиваются
+   * по `pinnedOrder` (asc). Новая закреплённая получает max+1, что даёт по-дате
+   * позицию в конце пина — ручная перестановка через DnD меняет `pinnedOrder`.
+   */
+  pinned: boolean;
+  /** Ручной порядок среди закреплённых (asc). Игнорируется если pinned=false. */
+  pinnedOrder: number;
 
   // Meta
   metaTitle: string;
   metaDescription: string;
 
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Glossary term ───────────────────────────────────────────────────────────
+
+/**
+ * Термин глоссария. Хранится как `apps/site/content/glossary/{slug}.md` (аналог
+ * статьи) — в ближайшей итерации сюда добавится body-редактор, сейчас только
+ * метаданные: title, tagIds, metaTitle, metaDescription.
+ */
+export interface GlossaryTerm {
+  /** Uniform с Article: `glossary/{slug}`. */
+  id: string;
+  slug: string;
+  status: PageStatus;
+  order: number;
+  title: string;
+  tagIds: string[];
+  metaTitle: string;
+  metaDescription: string;
   createdAt: string;
   updatedAt: string;
 }

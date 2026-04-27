@@ -7,20 +7,18 @@ import {
   Button,
   Input,
   Textarea,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Switch,
 } from "@rocketmind/ui";
+import { Pin, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminStore } from "@/lib/store";
 import { useArticleEditor, getArticleChanges } from "@/lib/use-article-editor";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { EditorToolbar } from "@/components/page-editor/editor-toolbar";
+import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-dialog";
 import { ArticleHeroEditor } from "./article-hero-editor";
 import { ArticlePreviewCard } from "./article-preview-card";
+import { ArticleSectionsEditor } from "./article-sections-editor";
 
 interface Props {
   articleId: string;
@@ -179,6 +177,36 @@ function ArticleEditorInner({
                 </div>
               </Section>
 
+              <Section title="Отображение в списке /media">
+                <div className="flex flex-col gap-4">
+                  <ToggleRow
+                    icon={<Pin className="h-4 w-4" strokeWidth={1.5} />}
+                    label="Закрепить"
+                    description="Закреплённые статьи показываются в начале списка на /media."
+                    checked={article.pinned}
+                    onCheckedChange={(v) => {
+                      // Новая закреплённая получает max+1 для начального порядка.
+                      // Точный расчёт уровня store не доступен здесь — задаём
+                      // достаточно большое значение и позволяем UI списка/DnD
+                      // перенормировать при необходимости.
+                      update("pinned", v);
+                      if (v && article.pinnedOrder === 0) {
+                        update("pinnedOrder", Math.floor(Date.now() / 1000));
+                      }
+                    }}
+                  />
+                  <ToggleRow
+                    icon={<LayoutGrid className="h-4 w-4" strokeWidth={1.5} />}
+                    label="2 колонки (широкая карточка)"
+                    description="Карточка занимает 2 колонки из 3 и меняет layout: обложка слева, текст ниже."
+                    checked={article.cardVariant === "wide"}
+                    onCheckedChange={(v) =>
+                      update("cardVariant", v ? "wide" : "default")
+                    }
+                  />
+                </div>
+              </Section>
+
               <Section title="SEO" grow>
                 <div className="flex flex-1 flex-col gap-4 min-h-0">
                   <Field label="Meta title">
@@ -208,19 +236,17 @@ function ArticleEditorInner({
           {/* 2. Hero — главный экран */}
           <ArticleHeroEditor draft={article} onChange={update} />
 
-          {/* 3. Body placeholder */}
-          <Section title="Тело статьи">
-            <div className="flex flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-border bg-[color:var(--rm-gray-1)] px-6 py-10 text-center">
-              <p className="text-[length:var(--text-14)] font-medium text-foreground">
-                Редактор тела статьи — следующий этап
-              </p>
-              <p className="max-w-md text-[length:var(--text-12)] text-muted-foreground">
-                В следующей итерации здесь появятся inline-блоки (параграф, H2,
-                цитата, картинка, список, callout). Левая ToC-навигация на странице
-                будет автоматически собираться из H2 в этом теле.
-              </p>
-            </div>
-          </Section>
+          {/* 3. Body editor — без внешней рамки/фона: редактор живёт «в ленте» страницы */}
+          <section>
+            <h2 className="mb-4 font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-14)] uppercase tracking-[0.02em] text-foreground">
+              Тело статьи
+            </h2>
+            <ArticleSectionsEditor
+              articleSlug={article.slug}
+              sections={article.body}
+              onChange={(next) => update("body", next)}
+            />
+          </section>
         </div>
       </div>
 
@@ -238,42 +264,13 @@ function ArticleEditorInner({
       />
 
       {/* Unsaved changes dialog */}
-      <Dialog
+      <UnsavedChangesDialog
         open={unsavedOpen}
-        onOpenChange={(open) => {
-          if (!open) handleCancelDialog();
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Несохранённые изменения</DialogTitle>
-            <DialogDescription>
-              {changes.length > 0 ? (
-                <>
-                  <span className="mb-2 block">Вы изменили:</span>
-                  <ul className="mb-2 list-inside list-disc space-y-0.5">
-                    {changes.map((c) => (
-                      <li key={c}>{c}</li>
-                    ))}
-                  </ul>
-                  <span>Что сделать с изменениями?</span>
-                </>
-              ) : (
-                "Есть несохранённые изменения. Что сделать?"
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={handleDiscardAndLeave}>
-              Отменить изменения
-            </Button>
-            <Button variant="outline" onClick={handleCancelDialog}>
-              Продолжить редактирование
-            </Button>
-            <Button onClick={handleSaveAndLeave}>Сохранить и выйти</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        changes={changes}
+        onCancel={handleCancelDialog}
+        onDiscard={handleDiscardAndLeave}
+        onSave={handleSaveAndLeave}
+      />
     </div>
   );
 }
@@ -299,6 +296,41 @@ function Section({
       </h2>
       {children}
     </section>
+  );
+}
+
+function ToggleRow({
+  icon,
+  label,
+  description,
+  checked,
+  onCheckedChange,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (value: boolean) => void;
+}) {
+  return (
+    <label className="flex items-start justify-between gap-4 rounded-sm border border-border p-3">
+      <div className="flex items-start gap-2.5 min-w-0">
+        <span className="mt-0.5 text-muted-foreground">{icon}</span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="text-[length:var(--text-14)] font-medium text-foreground">
+            {label}
+          </span>
+          <span className="text-[length:var(--text-12)] text-muted-foreground">
+            {description}
+          </span>
+        </div>
+      </div>
+      <Switch
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        className="shrink-0"
+      />
+    </label>
   );
 }
 

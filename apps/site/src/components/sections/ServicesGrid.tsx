@@ -1,19 +1,26 @@
 import { ServicesGridClient, type ServiceSection } from "./ServicesGridClient";
-import {
-  CONSULTING_SERVICES,
-  ACADEMY_COURSES,
-  AI_PRODUCTS,
-} from "@/content/site-nav";
 import { getAllCatalogProducts, type ProductData } from "@/lib/products";
 import { getHomePage, type HomeSectionItem } from "@/lib/unique";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
+/**
+ * Собирает карточки категории из централизованного списка продуктов,
+ * отфильтрованного по showInMenu и отсортированного по `order` (см.
+ * `getAllCatalogProducts`). Так порядок в админке = порядку на главной.
+ */
+function cardsFromProducts(
+  products: ProductData[],
+  category: string,
+  makeCard: (p: ProductData) => ServiceSection["cards"][number],
+): ServiceSection["cards"] {
+  return products
+    .filter((p) => p.category === category && p.showInMenu)
+    .map(makeCard);
+}
+
 export function ServicesGrid() {
   const allProducts = getAllCatalogProducts();
-  const productMap = new Map(
-    allProducts.map((p) => [`${p.category}/${p.slug}`, p]),
-  );
 
   const home = getHomePage();
   const overrides: HomeSectionItem[] = home.sections?.sections ?? [];
@@ -70,21 +77,17 @@ export function ServicesGrid() {
         catalogLabel: "Все продукты",
         showIcons: true,
       },
-      cards: CONSULTING_SERVICES.map((s) => {
-        const slug = s.href.split("/").pop()!;
-        const product = productMap.get(`consulting/${slug}`);
-        return {
-          title: s.title,
-          description: s.description,
-          href: s.href,
-          coverImage: product?.heroImage ?? undefined,
-          experts:
-            product?.experts
-              ?.filter((e) => e.image)
-              .map((e) => ({ name: e.name, image: e.image! })) ?? [],
-          expertProduct: product?.expertProduct ?? false,
-        };
-      }),
+      cards: cardsFromProducts(allProducts, "consulting", (p) => ({
+        title: p.menuTitle,
+        description: p.menuDescription,
+        href: `${BASE_PATH}/consulting/${p.slug}`,
+        coverImage: p.heroImage ?? undefined,
+        experts:
+          p.experts
+            ?.filter((e) => e.image)
+            .map((e) => ({ name: e.name, image: e.image! })) ?? [],
+        expertProduct: p.expertProduct,
+      })),
     },
     academy: {
       defaults: {
@@ -106,17 +109,13 @@ export function ServicesGrid() {
           ],
         },
       },
-      cards: ACADEMY_COURSES.map((s) => {
-        const slug = s.href.split("/").pop()!;
-        const product = productMap.get(`academy/${slug}`);
-        return {
-          title: s.title,
-          description: s.description,
-          href: s.href,
-          coverImage: product?.heroImage ?? undefined,
-          factoids: product?.hero?.factoids?.slice(0, 3).map((f) => ({ number: f.number, text: f.text })),
-        };
-      }),
+      cards: cardsFromProducts(allProducts, "academy", (p) => ({
+        title: p.menuTitle,
+        description: p.menuDescription,
+        href: `${BASE_PATH}/academy/${p.slug}`,
+        coverImage: p.heroImage ?? undefined,
+        factoids: p.hero?.factoids?.slice(0, 3).map((f) => ({ number: f.number, text: f.text })),
+      })),
     },
     "ai-products": {
       defaults: {
@@ -129,17 +128,13 @@ export function ServicesGrid() {
         catalogLabel: "Все продукты",
         showImages: true,
       },
-      cards: AI_PRODUCTS.map((s) => {
-        const slug = s.href.split("/").pop()!;
-        const product = productMap.get(`ai-products/${slug}`);
-        return {
-          title: s.title,
-          description: s.description,
-          href: s.href,
-          coverImage: product?.heroImage ?? undefined,
-          factoids: product?.hero?.factoids?.slice(0, 3).map((f) => ({ number: f.number, text: f.text })),
-        };
-      }),
+      cards: cardsFromProducts(allProducts, "ai-products", (p) => ({
+        title: p.menuTitle,
+        description: p.menuDescription,
+        href: `${BASE_PATH}/ai-products/${p.slug}`,
+        coverImage: p.heroImage ?? undefined,
+        factoids: p.hero?.factoids?.slice(0, 3).map((f) => ({ number: f.number, text: f.text })),
+      })),
     },
     expert: {
       defaults: {
