@@ -28,7 +28,8 @@ RUN npm install --ignore-scripts && npm run postinstall
 # Build UI package
 RUN npm run build --workspace=packages/ui
 
-# Build site (root)
+# Build site (static export for nginx)
+ENV NEXT_STATIC_EXPORT=1
 RUN npm run build --workspace=apps/site
 
 # Build SaaS (served at /app)

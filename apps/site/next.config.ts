@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
-// Статический экспорт включаем только когда CI собирает билд для GitHub Pages
-// (там задаётся NEXT_PUBLIC_BASE_PATH). В dev режиме это сильно замедляет
-// компиляцию и мешает некоторым HMR-оптимизациям.
-const isStaticExport = Boolean(process.env.NEXT_PUBLIC_BASE_PATH);
+// Статический экспорт:
+// - GitHub Pages: задаётся NEXT_PUBLIC_BASE_PATH
+// - Docker/Amvera: задаётся NEXT_STATIC_EXPORT=1
+const isStaticExport =
+  Boolean(process.env.NEXT_PUBLIC_BASE_PATH) ||
+  process.env.NEXT_STATIC_EXPORT === "1";
 
 const nextConfig: NextConfig = {
   ...(isStaticExport ? { output: "export" as const } : {}),
