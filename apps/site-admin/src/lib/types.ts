@@ -426,6 +426,12 @@ export interface MediaTag {
   /** Отображаемое название. */
   label: string;
   createdAt: string;
+  /**
+   * Если true — тег скрыт на публичных страницах (Медиа, Глоссарий, статьи,
+   * термины). В CMS отображается с визуальным индикатором. Не удаляет тег из
+   * статей/терминов — только прячет с фронта.
+   */
+  disabled?: boolean;
 }
 
 // ── Media: article body blocks (inline, stub for next iteration) ────────────

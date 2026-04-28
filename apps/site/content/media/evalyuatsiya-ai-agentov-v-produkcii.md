@@ -18,8 +18,8 @@ keyThoughts:
   - 'Главная метрика AI-агента — вовсе не качество, а стоимость ошибки'
 body:
   - id: s_test_ai_eval_1
-    title: Почему accuracy ломается
-    navLabel: Accuracy
+    title: ''
+    navLabel: ''
     blocks:
       - id: b_ai_eval_1_1
         type: paragraph
@@ -28,7 +28,32 @@ body:
             В классическом ML мы привыкли сводить качество модели к одному
             числу. В продуктовых LLM-агентах это число почти всегда врёт —
             слишком много ответов формально правильные, но бесполезные для
-            пользователя.
+            пользователя. лвдыоа 
+      - id: b_moh5rvth_pglyq
+        type: paragraph
+        data:
+          text: выа двылоалд выо
+      - id: b_moh5rwh5_le7gu
+        type: paragraph
+        data:
+          text: выа двфыоа лдыфво аы
+      - id: b_moh5rx59_eaw2q
+        type: paragraph
+        data:
+          text: в авыфлаор выфола выа ывалд в
+      - id: b_moh5s27s_zuazg
+        type: image
+        data:
+          src: ''
+          caption: ''
+      - id: b_moh5rxs3_ubldt
+        type: paragraph
+        data:
+          text: ыва з
+      - id: b_moh5rxx4_uxqun
+        type: paragraph
+        data:
+          text: выф а
       - id: b_ai_eval_1_2
         type: paragraph
         data:
@@ -62,6 +87,6 @@ metaDescription: >-
   Набор метрик для оценки LLM-агентов в продуктовой эксплуатации — альтернатива
   accuracy.
 createdAt: '2026-03-12T09:00:00.000Z'
-updatedAt: '2026-04-24T07:56:24.490Z'
+updatedAt: '2026-04-27T12:14:52.342Z'
 ---
 

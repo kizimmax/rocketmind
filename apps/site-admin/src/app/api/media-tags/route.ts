@@ -10,6 +10,7 @@ interface MediaTag {
   id: string;
   label: string;
   createdAt?: string;
+  disabled?: boolean;
 }
 
 function readTags(fs: typeof import("fs")): MediaTag[] {
@@ -34,7 +35,10 @@ function sanitize(tags: unknown): MediaTag[] {
       if (!id || !label) return null;
       const createdAt =
         typeof r.createdAt === "string" ? r.createdAt : undefined;
-      return createdAt ? { id, label, createdAt } : { id, label };
+      const disabled = r.disabled === true ? true : undefined;
+      const tag: MediaTag = createdAt ? { id, label, createdAt } : { id, label };
+      if (disabled) tag.disabled = true;
+      return tag;
     })
     .filter((t): t is MediaTag => t !== null);
 }

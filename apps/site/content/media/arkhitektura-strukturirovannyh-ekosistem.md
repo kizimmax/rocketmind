@@ -26,7 +26,7 @@ body:
     title: >-
       Название длинное Название длинное Название длинное Название длинное
       Название длинное 
-    navLabel: 'Название '
+    navLabel: Короткое
     blocks:
       - id: b_mo9s9gtg_e4flh
         type: h3
@@ -40,6 +40,23 @@ body:
         type: h3
         data:
           text: валрпыводл
+      - id: b_moh56msr_w0s4a
+        type: quote
+        data:
+          text: |-
+            1. вылдаыв д ываодфывда о вад
+            2. выадловыадловоыа
+            3. выадовлдао
+      - id: b_moh58b4g_xdfv4
+        type: image
+        data:
+          src: >-
+            /media/uploads/arkhitektura-strukturirovannyh-ekosistem/be82ce783f6b.jpg
+          caption: аовыдалолвдыоа
+      - id: b_moh57fus_o9743
+        type: h3
+        data:
+          text: ''
     asides:
       - id: a_mobc9djl_rgjvh
         kind: logos
@@ -134,7 +151,16 @@ body:
         url: 'https://ru.pinterest.com/pin/14425661318274493/'
         displayName: Пинтерест
         showPreview: false
-    quotes: []
+    quotes:
+      - id: q_moh5dtac_ns0h
+        name: Вася Васин
+        role: Директор
+        avatarUrl: >-
+          /media/uploads/arkhitektura-strukturirovannyh-ekosistem/cb97dce04ae6.jpg
+        label: ваывадлоывашдоыва
+        paragraphs:
+          - выдла оыфвд фвоыалд фыоад ывфоаывфла
+          - выф адлфвыо лдыофв ладоыфвл аолвдыфо ылвдо афы
     asidesTitle: Материалы
     asidesTitleEnabled: true
   - id: s_mob44vca_89drv
@@ -229,6 +255,10 @@ body:
         kind: product
         productSlug: strategy-sessions
         productCategory: consulting
+      - id: a_moh5gsd6_xjrjg
+        kind: product
+        productSlug: team-readiness
+        productCategory: consulting
     quotes:
       - id: q_mock5wli_4hjg
         expertSlug: alexander-pavlovich
@@ -268,6 +298,6 @@ metaDescription: >-
   Как устроены экспертные сети профессионалов и почему North Star Metric —
   главная опора продакта.
 createdAt: ''
-updatedAt: '2026-04-24T11:16:25.921Z'
+updatedAt: '2026-04-27T12:08:05.124Z'
 ---
 

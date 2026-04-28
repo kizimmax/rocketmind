@@ -36,6 +36,6 @@ pinnedOrder: 1
 metaTitle: Discovery-спринт за 5 дней | Rocketmind
 metaDescription: Как за неделю дойти от постановки задачи до подтверждённого прототипа.
 createdAt: '2025-11-22T09:00:00.000Z'
-updatedAt: '2026-04-24T10:11:34.913Z'
+updatedAt: '2026-04-27T11:52:52.837Z'
 ---
 

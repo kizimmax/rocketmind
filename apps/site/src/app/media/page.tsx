@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getAllArticles, getAllTags, getTagUsage } from "@/lib/articles";
+import { getAllArticles, getPublicTags, getTagUsage } from "@/lib/articles";
 import { getAllGlossaryTerms } from "@/lib/glossary";
 import { getExpertBySlug } from "@/lib/experts";
 import { MediaListClient } from "@/components/media/media-list-client";
@@ -29,7 +29,7 @@ function flattenBodyText(sections: Array<{ title: string; blocks: Array<{ type: 
 
 export default function MediaPage() {
   const articles = getAllArticles();
-  const tags = getAllTags();
+  const tags = getPublicTags();
   const usage = getTagUsage();
   const glossary = getAllGlossaryTerms();
 

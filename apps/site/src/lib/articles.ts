@@ -9,6 +9,8 @@ import { getProductBySlug } from "./products";
 export type MediaTag = {
   id: string;
   label: string;
+  /** Если true — тег скрыт с публичных страниц (фильтр, карточки, термины). */
+  disabled?: boolean;
 };
 
 export type ArticleStatus = "published" | "hidden" | "archived";
@@ -424,12 +426,20 @@ export function getAllTags(): MediaTag[] {
   if (!fs.existsSync(file)) return [];
   try {
     const json = JSON.parse(fs.readFileSync(file, "utf-8")) as {
-      tags?: MediaTag[];
+      tags?: Array<{ id: string; label: string; disabled?: boolean; createdAt?: string }>;
     };
-    return Array.isArray(json.tags) ? json.tags : [];
+    if (!Array.isArray(json.tags)) return [];
+    return json.tags
+      .filter((t) => t && typeof t.id === "string" && typeof t.label === "string")
+      .map((t) => ({ id: t.id, label: t.label, ...(t.disabled ? { disabled: true } : {}) }));
   } catch {
     return [];
   }
+}
+
+/** Публичные теги — без тех, у которых disabled=true. */
+export function getPublicTags(): MediaTag[] {
+  return getAllTags().filter((t) => !t.disabled);
 }
 
 /** Usage count per tag id across all published articles. */

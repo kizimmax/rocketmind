@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getAllGlossaryTerms } from "@/lib/glossary";
-import { getAllTags, getTagUsage } from "@/lib/articles";
+import { getPublicTags, getTagUsage } from "@/lib/articles";
 import { GlossaryPageClient } from "@/components/glossary/glossary-page-client";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export default function GlossaryPage() {
   const terms = getAllGlossaryTerms();
-  const allTags = getAllTags();
+  const allTags = getPublicTags();
   const usage = getTagUsage();
 
   // Показываем только теги, которые встречаются хоть в одном термине или статье.

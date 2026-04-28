@@ -11,6 +11,7 @@ import {
   Briefcase,
   Sun,
   Moon,
+  Bot,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@rocketmind/ui";
@@ -48,6 +49,7 @@ export function AdminHeader() {
   const isOnExperts = pathname.startsWith("/experts");
   const isOnCases = pathname.startsWith("/cases");
   const isOnTestimonials = pathname.startsWith("/testimonials");
+  const isOnSystem = pathname.startsWith("/system");
 
   function guardedClick(e: React.MouseEvent, href: string) {
     if (!tryNavigate(href)) e.preventDefault();
@@ -64,6 +66,10 @@ export function AdminHeader() {
     { href: "/experts", label: "Эксперты", Icon: Users, isActive: isOnExperts },
     { href: "/cases", label: "Кейсы", Icon: Briefcase, isActive: isOnCases },
     { href: "/testimonials", label: "Отзывы", Icon: MessageSquareQuote, isActive: isOnTestimonials },
+  ];
+
+  const systemTabs = [
+    { href: "/system/robots", label: "robots.txt", Icon: Bot, isActive: isOnSystem },
   ];
 
   const separator = (
@@ -132,6 +138,23 @@ export function AdminHeader() {
               </Link>
             );
           })}
+
+          {/* System section separator */}
+          <span className="mx-2 h-4 w-px shrink-0 bg-border" aria-hidden />
+          <span className="mr-1 text-[length:var(--text-11)] font-medium uppercase tracking-widest text-muted-foreground/50 select-none">
+            Системные
+          </span>
+          {systemTabs.map((tab) => (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              onClick={(e) => guardedClick(e, tab.href)}
+              className={`flex items-center gap-1.5 ${linkBase} ${tab.isActive ? linkActive : linkIdle}`}
+            >
+              <tab.Icon className="h-3.5 w-3.5" />
+              {tab.label}
+            </Link>
+          ))}
         </nav>
       </div>
 

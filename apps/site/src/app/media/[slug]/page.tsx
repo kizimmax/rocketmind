@@ -5,7 +5,7 @@ import {
   collectResolvedQuoteExperts,
   getAllArticles,
   getArticleBySlug,
-  getAllTags,
+  getPublicTags,
 } from "@/lib/articles";
 import { getExpertBySlug } from "@/lib/experts";
 import { ArticlePageClient } from "@/components/media/article-page-client";
@@ -40,7 +40,7 @@ export default async function ArticlePage({
   if (!article) notFound();
 
   const expert = article.expertSlug ? getExpertBySlug(article.expertSlug) : null;
-  const tags = getAllTags();
+  const tags = getPublicTags();
   const tagLabelById: Record<string, string> = {};
   for (const t of tags) tagLabelById[t.id] = t.label;
 

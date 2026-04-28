@@ -143,6 +143,8 @@ interface StoreContext {
   upsertMediaTag(label: string): MediaTag;
   renameMediaTag(id: string, label: string): void;
   deleteMediaTag(id: string): void;
+  /** Toggle disabled flag — скрыть/показать тег на публичных страницах без удаления. */
+  toggleMediaTagDisabled(id: string): void;
 
   reload(): Promise<void>;
 }
@@ -782,6 +784,16 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
     });
   }, [persistTags]);
 
+  const toggleMediaTagDisabled = useCallback((id: string) => {
+    setMediaTags((prev) => {
+      const next = prev.map((t) =>
+        t.id === id ? { ...t, disabled: !t.disabled } : t,
+      );
+      persistTags(next);
+      return next;
+    });
+  }, [persistTags]);
+
   if (loading) {
     return React.createElement(
       "div",
@@ -827,6 +839,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         upsertMediaTag,
         renameMediaTag,
         deleteMediaTag,
+        toggleMediaTagDisabled,
         reload: fetchPages,
       },
     },

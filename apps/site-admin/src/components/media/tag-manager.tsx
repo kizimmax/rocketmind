@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, Eye, EyeOff } from "lucide-react";
 import { Button, Input } from "@rocketmind/ui";
 import { toast } from "sonner";
 import { useAdminStore } from "@/lib/store";
@@ -9,7 +9,8 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 
 /**
  * Менеджер тегов медиа-раздела — справочник.
- * Создание, переименование, удаление (с удалением тега у всех статей).
+ * Создание, переименование, деактивация (скрытие с публичных страниц),
+ * удаление (с удалением тега у всех статей).
  */
 export function TagManager() {
   const {
@@ -18,6 +19,7 @@ export function TagManager() {
     upsertMediaTag,
     renameMediaTag,
     deleteMediaTag,
+    toggleMediaTagDisabled,
   } = useAdminStore();
 
   const [newLabel, setNewLabel] = useState("");
@@ -51,6 +53,16 @@ export function TagManager() {
     renameMediaTag(editingId, t);
     toast.success("Тег переименован");
     setEditingId(null);
+  }
+
+  function handleToggleDisabled(id: string, currentlyDisabled: boolean) {
+    toggleMediaTagDisabled(id);
+    const tag = mediaTags.find((x) => x.id === id);
+    if (currentlyDisabled) {
+      toast.success(`Тег «${tag?.label}» снова активен`);
+    } else {
+      toast.info(`Тег «${tag?.label}» скрыт с публичных страниц`);
+    }
   }
 
   function handleDelete() {
@@ -97,12 +109,13 @@ export function TagManager() {
                 <th className="py-2 px-3">Название</th>
                 <th className="py-2 px-3 w-[180px]">Slug</th>
                 <th className="py-2 px-3 w-[120px]">Статьи</th>
-                <th className="py-2 px-3 w-[120px]"></th>
+                <th className="py-2 px-3 w-[140px]"></th>
               </tr>
             </thead>
             <tbody>
               {mediaTags.map((t) => {
                 const isEditing = editingId === t.id;
+                const isDisabled = !!t.disabled;
                 return (
                   <tr
                     key={t.id}
@@ -122,8 +135,21 @@ export function TagManager() {
                           className="max-w-xs"
                         />
                       ) : (
-                        <span className="font-[family-name:var(--font-mono-family)] uppercase tracking-[0.02em] text-foreground">
-                          {t.label}
+                        <span className="flex items-center gap-2">
+                          <span
+                            className={
+                              isDisabled
+                                ? "font-[family-name:var(--font-mono-family)] uppercase tracking-[0.02em] text-muted-foreground line-through"
+                                : "font-[family-name:var(--font-mono-family)] uppercase tracking-[0.02em] text-foreground"
+                            }
+                          >
+                            {t.label}
+                          </span>
+                          {isDisabled && (
+                            <span className="inline-flex items-center rounded-sm bg-muted px-1.5 py-0.5 text-[length:var(--text-11)] font-medium uppercase tracking-wider text-muted-foreground">
+                              Скрыт
+                            </span>
+                          )}
                         </span>
                       )}
                     </td>
@@ -156,6 +182,23 @@ export function TagManager() {
                           </>
                         ) : (
                           <>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleDisabled(t.id, isDisabled)}
+                              className="rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                              aria-label={isDisabled ? "Включить тег" : "Скрыть тег"}
+                              title={
+                                isDisabled
+                                  ? "Показать тег на публичных страницах"
+                                  : "Скрыть тег с публичных страниц"
+                              }
+                            >
+                              {isDisabled ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
                             <button
                               type="button"
                               onClick={() => handleStartEdit(t.id, t.label)}
