@@ -98,8 +98,10 @@ export function CaseCard({ entry }: { entry: CaseEntry }) {
   );
 
   if (isBig) {
+    // Big-cases теперь хранятся как Article с `type: "case"` и живут на
+    // /media/<slug>. Стрелка `CaseArrow` остаётся (визуал не меняется).
     return (
-      <Link href={`/cases/${slug}`} className="block group">
+      <Link href={`/media/${slug}`} className="block group">
         {inner}
       </Link>
     );

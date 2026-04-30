@@ -21,6 +21,7 @@ const SUPPORTED_TYPES: ArticleBodyBlockType[] = [
   "image",
   "gallery",
   "video",
+  "table",
 ];
 
 function newBlockId(): string {
@@ -38,6 +39,14 @@ function makeBlock(type: ArticleBodyBlockType): ArticleBodyBlock {
   }
   if (type === "video") {
     return { id: newBlockId(), type, data: { src: "", caption: "" } };
+  }
+  if (type === "table") {
+    // Дефолт — 2×2 с шапкой. Колонки/строки добавляются через UI редактора.
+    return {
+      id: newBlockId(),
+      type,
+      data: { rows: [["", ""], ["", ""]], hasHeader: true },
+    };
   }
   return { id: newBlockId(), type, data: { text: "" } };
 }

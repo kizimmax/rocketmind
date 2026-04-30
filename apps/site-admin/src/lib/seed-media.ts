@@ -1,12 +1,42 @@
 import type { Article, GlossaryTerm, MediaTag } from "./types";
 
 /**
+ * Системные теги — отображаются в общем списке тегов на /media и в менеджере
+ * тегов в админке. Не могут быть удалены, но label/SEO/cardColor — редактируются.
+ * Фильтр по такому тегу читает `article.type`, не `article.tagIds`.
+ *
+ * Цвета берутся из DS-палитр (`design/design-system.md` §1.4):
+ *  - `lesson` → `sky` (бирюзовый),
+ *  - `case` → `terracotta`.
+ */
+export function createSystemMediaTags(): MediaTag[] {
+  const now = new Date("2025-01-01T00:00:00Z").toISOString();
+  return [
+    {
+      id: "lesson",
+      label: "Урок",
+      createdAt: now,
+      system: true,
+      cardColor: "sky",
+    },
+    {
+      id: "case",
+      label: "Кейс",
+      createdAt: now,
+      system: true,
+      cardColor: "terracotta",
+    },
+  ];
+}
+
+/**
  * Стартовый набор тегов для раздела МЕДИА.
  * В демо-режиме создаётся при первой загрузке.
  */
 export function createSeedMediaTags(): MediaTag[] {
   const now = new Date("2025-01-01T00:00:00Z").toISOString();
   return [
+    ...createSystemMediaTags(),
     { id: "strategy",     label: "Стратегии",            createdAt: now },
     { id: "biz-design",   label: "Бизнес-дизайн",        createdAt: now },
     { id: "expert",       label: "Экспертная статья",    createdAt: now },
@@ -30,6 +60,7 @@ export function createSeedArticles(_tags: MediaTag[]): Article[] {
     slug,
     status: "published",
     order: offset,
+    type: "default",
     coverImageData: undefined,
     publishedAt: new Date(2025, 4 - offset, 16).toISOString().slice(0, 10),
     body: [],
@@ -91,9 +122,11 @@ export function createSeedGlossaryTerms(): GlossaryTerm[] {
     status: "published",
     order: 0,
     title,
+    description: "",
     tagIds,
     metaTitle: `${title} | Глоссарий Rocketmind`,
     metaDescription: "",
+    sections: [],
     createdAt: now,
     updatedAt: now,
   });

@@ -16,6 +16,7 @@ import {
   LayoutGrid,
   ArrowUp,
   ArrowDown,
+  Star,
 } from "lucide-react";
 import {
   Badge,
@@ -43,6 +44,12 @@ interface Props {
     canUp: boolean;
     canDown: boolean;
   };
+  /**
+   * Featured-toggle для case-статей. Если задан — рядом с заголовком
+   * рендерится ★, кликом переключается. Используется в админ-разделе
+   * «Кейсы»; на /media (медиа-вьюхе) не пробрасывается.
+   */
+  onToggleFeatured?: (id: string) => void;
 }
 
 const STATUS_BADGE: Record<
@@ -154,6 +161,7 @@ export function ArticleAdminCard({
   onDelete,
   onTogglePublish,
   pinMove,
+  onToggleFeatured,
 }: Props) {
   const router = useRouter();
   const { mediaTags, setArticlePinned, saveArticle } = useAdminStore();
@@ -250,6 +258,32 @@ export function ArticleAdminCard({
               >
                 <LayoutGrid className="h-2.5 w-2.5" strokeWidth={2} />2 кол
               </span>
+            )}
+            {onToggleFeatured && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFeatured(article.id);
+                }}
+                className="shrink-0 rounded-sm p-0.5 text-muted-foreground transition hover:bg-foreground/10"
+                aria-label={
+                  article.featured ? "На всех страницах" : "Сделать общим"
+                }
+                title={
+                  article.featured
+                    ? "На всех страницах — кликните, чтобы убрать"
+                    : "Отображать на всех страницах"
+                }
+              >
+                <Star
+                  className={`h-3.5 w-3.5 ${
+                    article.featured
+                      ? "fill-[color:var(--rm-yellow-100)] text-[color:var(--rm-yellow-100)]"
+                      : ""
+                  }`}
+                />
+              </button>
             )}
           </div>
         </td>
@@ -384,15 +418,43 @@ export function ArticleAdminCard({
             </span>
           </div>
 
-          <ArticleActionsMenu
-            article={article}
-            onArchive={onArchive}
-            onRestore={onRestore}
-            onDelete={onDelete}
-            onTogglePublish={onTogglePublish}
-            onTogglePin={handleTogglePin}
-            onToggleWide={handleToggleWide}
-          />
+          <div className="flex items-center gap-1">
+            {onToggleFeatured && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFeatured(article.id);
+                }}
+                className="rounded-sm p-1 text-muted-foreground transition hover:bg-foreground/10"
+                aria-label={
+                  article.featured ? "На всех страницах" : "Сделать общим"
+                }
+                title={
+                  article.featured
+                    ? "На всех страницах — кликните, чтобы убрать"
+                    : "Отображать на всех страницах"
+                }
+              >
+                <Star
+                  className={`h-3.5 w-3.5 ${
+                    article.featured
+                      ? "fill-[color:var(--rm-yellow-100)] text-[color:var(--rm-yellow-100)]"
+                      : ""
+                  }`}
+                />
+              </button>
+            )}
+            <ArticleActionsMenu
+              article={article}
+              onArchive={onArchive}
+              onRestore={onRestore}
+              onDelete={onDelete}
+              onTogglePublish={onTogglePublish}
+              onTogglePin={handleTogglePin}
+              onToggleWide={handleToggleWide}
+            />
+          </div>
         </div>
 
         <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-16)] uppercase tracking-[-0.005em] leading-[1.2] text-foreground line-clamp-2">

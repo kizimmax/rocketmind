@@ -14,6 +14,8 @@ import type {
   PageStatus,
   CaseType,
   Article,
+  ArticleType,
+  CaseCardBlockData,
   MediaTag,
   GlossaryTerm,
 } from "./types";
@@ -23,7 +25,44 @@ import {
   createSeedGlossaryTerms,
   createSeedMediaTags,
 } from "./seed-media";
-import { MAX_FEATURED_CASES } from "./constants";
+import {
+  MAX_FEATURED_CASES,
+  SYNTHETIC_PAGES,
+  SYNTHETIC_PAGE_IDS,
+} from "./constants";
+
+/**
+ * Раскрывает SYNTHETIC_PAGES в полные SitePage-записи. Это «фасадные»
+ * карточки (не привязаны к .md), но в store живут наравне с реальными.
+ */
+function buildSyntheticPages(): SitePage[] {
+  const now = new Date().toISOString();
+  return SYNTHETIC_PAGES.map((s) => ({
+    id: s.id,
+    sectionId: s.sectionId,
+    slug: s.slug,
+    status: "published",
+    order: s.order,
+    menuTitle: s.menuTitle,
+    menuDescription: s.menuDescription,
+    cardTitle: s.cardTitle,
+    cardDescription: s.cardDescription,
+    metaTitle: "",
+    metaDescription: "",
+    blocks: [],
+    createdAt: now,
+    updatedAt: now,
+  }));
+}
+
+/**
+ * Прибавляет синтетические страницы к набору реальных, отбрасывая дубликаты
+ * (на случай, если LS-снапшот их сохранил с прошлой сессии).
+ */
+function withSynthetics(real: SitePage[]): SitePage[] {
+  const filtered = real.filter((p) => !SYNTHETIC_PAGE_IDS.has(p.id));
+  return [...filtered, ...buildSyntheticPages()];
+}
 import { apiFetch, IS_STATIC } from "./api-client";
 
 const LS_KEY = "cms:demo:v1:pages";
@@ -121,7 +160,14 @@ interface StoreContext {
 
   // ── Articles ──
   getArticle(id: string): Article | undefined;
-  createArticle(title: string): Article;
+  /**
+   * Создаёт новую статью. `type` управляет тремя вещами:
+   *  - `default` — обычная статья;
+   *  - `lesson` — карточка с бирюзовым бейджем «Урок»;
+   *  - `case` — карточка с терракотовым бейджем «Кейс», доп. блок «Карточка
+   *    кейса» в редакторе и появление в ленте /cases.
+   */
+  createArticle(title: string, type?: ArticleType): Article;
   saveArticle(article: Article): void;
   deleteArticle(id: string): void;
   setArticleStatus(id: string, status: PageStatus): void;
@@ -130,6 +176,12 @@ interface StoreContext {
   setArticlePinned(id: string, value: boolean): void;
   /** Reorder pinned articles (orderedIds == pinned article IDs, desired order asc). */
   reorderPinnedArticles(orderedIds: string[]): void;
+  /**
+   * Toggle featured-флаг на case-статье (article.type === "case"). Лимит общий
+   * с mini-кейсами SitePage (см. `featuredCasesCount` / `MAX_FEATURED_CASES`).
+   * Возвращает false если попытка превысить лимит.
+   */
+  setArticleFeatured(id: string, value: boolean): Promise<boolean>;
 
   // ── Glossary ──
   getGlossaryTerm(id: string): GlossaryTerm | undefined;
@@ -145,6 +197,16 @@ interface StoreContext {
   deleteMediaTag(id: string): void;
   /** Toggle disabled flag — скрыть/показать тег на публичных страницах без удаления. */
   toggleMediaTagDisabled(id: string): void;
+  /** Заменить SEO-overrides тега (передать пустой объект → удалить overrides). */
+  updateMediaTagSeo(id: string, seo: import("./types").MediaTagSeo): void;
+  /**
+   * Установить цвет бейджа на карточке статьи (применяется только к системным
+   * тегам — `lesson`, `case` — но физически разрешён на любом).
+   */
+  setMediaTagCardColor(
+    id: string,
+    color: import("./types").DsAccentColor,
+  ): void;
 
   reload(): Promise<void>;
 }
@@ -237,7 +299,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
     if (isStaticExport) {
       const ls = readLS();
       if (ls) {
-        setPages(ls);
+        setPages(withSynthetics(ls));
         setLoading(false);
         return;
       }
@@ -247,9 +309,9 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       if (!res.ok) throw new Error();
       const data = await res.json();
       const pages = Array.isArray(data) && data.length ? (data as SitePage[]) : createSeedPages();
-      setPages(pages);
+      setPages(withSynthetics(pages));
     } catch {
-      setPages(createSeedPages());
+      setPages(withSynthetics(createSeedPages()));
     } finally {
       setLoading(false);
     }
@@ -278,6 +340,9 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       title: string,
       options?: { caseType?: CaseType },
     ): Promise<SitePage | null> => {
+      // `options.caseType` теперь принимает только "mini" — оставлен в сигнатуре
+      // ради совместимости интерфейса StoreContext, но игнорируется.
+      void options;
       const slug = title
         .toLowerCase()
         .replace(/[^a-zа-яё0-9\s-]/gi, "")
@@ -299,7 +364,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
           cardDescription: "",
           metaTitle: `${title} — Rocketmind`,
           metaDescription: "",
-          caseType: sectionId === "cases" ? options?.caseType ?? "big" : undefined,
+          caseType: sectionId === "cases" ? "mini" : undefined,
           featured: sectionId === "cases" ? false : undefined,
           blocks: [],
           createdAt: now,
@@ -319,7 +384,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
             sectionId,
             slug,
             menuTitle: title,
-            ...(sectionId === "cases" ? { caseType: options?.caseType ?? "big" } : {}),
+            ...(sectionId === "cases" ? { caseType: "mini" } : {}),
           }),
         });
         if (!res.ok) return null;
@@ -414,6 +479,10 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         // SitePage. State уже обновлён оптимистично; сетевые ошибки глотаем —
         // следующий reload или savePage перезапишет. Single-admin юзкейс.
         for (const page of next) {
+          // Синтетические страницы не имеют .md-источника — PUT не делаем,
+          // их order живёт только в памяти (на следующем reload вернётся
+          // дефолтный из SYNTHETIC_PAGES).
+          if (SYNTHETIC_PAGE_IDS.has(page.id)) continue;
           const orig = prev.find((p) => p.id === page.id);
           if (!orig || orig.order === page.order) continue;
           apiFetch(`/api/pages/${encodeURIComponent(page.id)}`, {
@@ -431,8 +500,11 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
   );
 
   const featuredCasesCount = useCallback(
-    () => pages.filter((p) => p.sectionId === "cases" && p.featured === true).length,
-    [pages],
+    () =>
+      pages.filter((p) => p.sectionId === "cases" && p.featured === true)
+        .length +
+      articles.filter((a) => a.type === "case" && a.featured === true).length,
+    [pages, articles],
   );
 
   const setCaseFeatured = useCallback(
@@ -467,51 +539,110 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
     [articles],
   );
 
-  const createArticle = useCallback((title: string): Article => {
-    const base = slugify(title) || `article-${Date.now()}`;
-    const taken = new Set(articles.map((a) => a.slug));
-    let slug = base;
-    let n = 2;
-    while (taken.has(slug)) slug = `${base}-${n++}`;
-    const now = new Date().toISOString();
-    const article: Article = {
-      id: `media/${slug}`,
-      slug,
-      status: "hidden",
-      order: articles.length,
-      title,
-      description: "",
-      publishedAt: now.slice(0, 10),
-      expertSlug: undefined,
-      tagIds: [],
-      keyThoughts: [],
-      body: [],
-      cardVariant: "default",
-      pinned: false,
-      pinnedOrder: 0,
-      metaTitle: `${title} — Rocketmind`,
-      metaDescription: "",
-      createdAt: now,
-      updatedAt: now,
-    };
+  const createArticle = useCallback(
+    (title: string, type: ArticleType = "default"): Article => {
+      const base = slugify(title) || `article-${Date.now()}`;
+      const taken = new Set(articles.map((a) => a.slug));
+      let slug = base;
+      let n = 2;
+      while (taken.has(slug)) slug = `${base}-${n++}`;
+      const now = new Date().toISOString();
+      const emptyCaseCard: CaseCardBlockData = {
+        title: "",
+        description: "",
+        stats: [
+          { value: "", label: "", description: "" },
+          { value: "", label: "", description: "" },
+          { value: "", label: "", description: "" },
+        ],
+        result: "",
+      };
+      const article: Article = {
+        id: `media/${slug}`,
+        slug,
+        status: "hidden",
+        order: articles.length,
+        type,
+        title,
+        description: "",
+        publishedAt: now.slice(0, 10),
+        expertSlug: "r-editorial",
+        tagIds: [],
+        keyThoughts: [],
+        body: [],
+        ...(type === "case"
+          ? { caseCard: emptyCaseCard, featured: false }
+          : {}),
+        cardVariant: "default",
+        pinned: false,
+        pinnedOrder: 0,
+        metaTitle: `${title} — Rocketmind`,
+        metaDescription: "",
+        createdAt: now,
+        updatedAt: now,
+      };
 
-    // Optimistic local insert
-    const next = [...articles, article];
-    setArticles(next);
-    if (isStaticExport) {
-      saveArticlesToLS(next);
+      // Optimistic local insert
+      const next = [...articles, article];
+      setArticles(next);
+      if (isStaticExport) {
+        saveArticlesToLS(next);
+        return article;
+      }
+
+      // Dev/prod: create .md via API (fire-and-forget — на случай гонки пойдём без await)
+      void apiFetch("/api/articles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, title, type }),
+      }).catch(() => {});
+
       return article;
-    }
+    },
+    [articles],
+  );
 
-    // Dev/prod: create .md via API (fire-and-forget — на случай гонки пойдём без await)
-    void apiFetch("/api/articles", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, title }),
-    }).catch(() => {});
-
-    return article;
-  }, [articles]);
+  const setArticleFeatured = useCallback(
+    async (id: string, value: boolean): Promise<boolean> => {
+      const target = articles.find((a) => a.id === id);
+      if (!target || target.type !== "case") return false;
+      if (value === true && target.featured !== true) {
+        const sitePages = pages.filter(
+          (p) => p.sectionId === "cases" && p.featured === true,
+        ).length;
+        const articleCases = articles.filter(
+          (a) => a.type === "case" && a.featured === true,
+        ).length;
+        if (sitePages + articleCases >= MAX_FEATURED_CASES) return false;
+      }
+      const updated: Article = {
+        ...target,
+        featured: value,
+        updatedAt: new Date().toISOString(),
+      };
+      setArticles((prev) => prev.map((a) => (a.id === id ? updated : a)));
+      if (isStaticExport) {
+        saveArticlesToLS(
+          articles.map((a) => (a.id === id ? updated : a)),
+        );
+      } else {
+        try {
+          await apiFetch(
+            `/api/articles/${encodeURIComponent(target.slug)}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(updated),
+            },
+          );
+        } catch {
+          /* ignore */
+        }
+      }
+      return true;
+    },
+    [articles, pages],
+  );
 
   const saveArticle = useCallback((article: Article) => {
     const updated = { ...article, updatedAt: new Date().toISOString() };
@@ -641,9 +772,11 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       status: "hidden",
       order: glossaryTerms.length,
       title,
+      description: "",
       tagIds: [],
       metaTitle: `${title} | Глоссарий Rocketmind`,
       metaDescription: "",
+      sections: [],
       createdAt: now,
       updatedAt: now,
     };
@@ -768,6 +901,10 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
   }, [persistTags]);
 
   const deleteMediaTag = useCallback((id: string) => {
+    // Системные теги (lesson, case) удалить нельзя — даже если клиентская
+    // логика пропустит, сервер всё равно вернёт их через `withSystemTags`.
+    const target = mediaTags.find((t) => t.id === id);
+    if (target?.system) return;
     setMediaTags((prev) => {
       const next = prev.filter((t) => t.id !== id);
       persistTags(next);
@@ -782,7 +919,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       saveArticlesToLS(next);
       return next;
     });
-  }, [persistTags]);
+  }, [persistTags, mediaTags]);
 
   const toggleMediaTagDisabled = useCallback((id: string) => {
     setMediaTags((prev) => {
@@ -793,6 +930,51 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       return next;
     });
   }, [persistTags]);
+
+  const setMediaTagCardColor = useCallback(
+    (id: string, color: import("./types").DsAccentColor) => {
+      setMediaTags((prev) => {
+        const next = prev.map((t) =>
+          t.id === id ? { ...t, cardColor: color } : t,
+        );
+        persistTags(next);
+        return next;
+      });
+    },
+    [persistTags],
+  );
+
+  const updateMediaTagSeo = useCallback(
+    (id: string, seo: import("./types").MediaTagSeo) => {
+      setMediaTags((prev) => {
+        // Очищаем пустые поля; если ни одного — убираем seo вовсе.
+        const cleaned: import("./types").MediaTagSeo = {};
+        for (const k of [
+          "pageTitlePrefix",
+          "pageTitleAccent",
+          "metaTitle",
+          "metaDescription",
+          "intro",
+        ] as const) {
+          const v = seo[k];
+          if (typeof v === "string" && v.trim()) cleaned[k] = v.trim();
+        }
+        const hasAny = Object.keys(cleaned).length > 0;
+        const next = prev.map((t) => {
+          if (t.id !== id) return t;
+          if (!hasAny) {
+            const { seo: _drop, ...rest } = t;
+            void _drop;
+            return rest;
+          }
+          return { ...t, seo: cleaned };
+        });
+        persistTags(next);
+        return next;
+      });
+    },
+    [persistTags],
+  );
 
   if (loading) {
     return React.createElement(
@@ -831,6 +1013,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         reorderArticles,
         setArticlePinned,
         reorderPinnedArticles,
+        setArticleFeatured,
         getGlossaryTerm,
         createGlossaryTerm,
         saveGlossaryTerm,
@@ -840,6 +1023,8 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         renameMediaTag,
         deleteMediaTag,
         toggleMediaTagDisabled,
+        updateMediaTagSeo,
+        setMediaTagCardColor,
         reload: fetchPages,
       },
     },

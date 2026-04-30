@@ -66,6 +66,8 @@ export * from './components/ui/tools-section';
 export * from './components/ui/accordion-faq';
 export * from './components/ui/cta-section-dark';
 export * from './components/ui/cta-section-yellow';
+export * from './components/ui/cta-section-mini';
+export * from './components/ui/form-modal';
 export * from './components/ui/infinite-logo-marquee';
 export * from './components/ui/mobile-nav';
 export * from './components/ui/rocketmind-menu';

@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   StyledParagraphs,
   resolveStyledParagraphs,
+  useFormModal,
   type StyledParagraph,
 } from "@rocketmind/ui";
 import type { Factoid, HeroTag } from "@/lib/products";
@@ -34,6 +35,10 @@ type ProductHeroImageProps = {
   tags?: HeroTag[];
   secondaryCta?: string;
   audioSrc?: string;
+  /** ID формы для CTA-кнопки. Без него кнопка остаётся «мёртвой». */
+  formId?: string | null;
+  availableChips?: string[];
+  chipsConfig?: { multi?: boolean; label?: string };
 };
 
 // ── Factoid Card ───────────────────────────────────────────────────────────────
@@ -65,10 +70,11 @@ function FactoidCard({
 
 // ── CTA Button ─────────────────────────────────────────────────────────────────
 
-function HeroCTA({ text }: { text: string }) {
+function HeroCTA({ text, onClick }: { text: string; onClick?: () => void }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="group flex flex-col justify-between w-full h-full bg-[#FFCC00] p-5 md:p-7 cursor-pointer transition-colors duration-200 hover:bg-[#FFE040]"
     >
       <div className="flex justify-end w-full">
@@ -212,7 +218,14 @@ export function ProductHeroImage({
   tags,
   secondaryCta,
   audioSrc,
+  formId,
+  availableChips,
+  chipsConfig,
 }: ProductHeroImageProps) {
+  const { openForm } = useFormModal();
+  const onCtaClick = formId
+    ? () => openForm(formId, { availableChips, chipsConfig })
+    : undefined;
   const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
     uppercase: false,
     color: "primary",
@@ -268,7 +281,7 @@ export function ProductHeroImage({
                   </div>
                 )}
               </div>
-              <h1 className="h1 whitespace-pre-line" style={fadeIn(1)}><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h1>
+              <div className="h1 whitespace-pre-line" style={fadeIn(1)}><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</div>
             </div>
 
             {/* Description */}
@@ -298,14 +311,14 @@ export function ProductHeroImage({
               </div>
             ))}
             <div className="border-t border-b border-l border-[#404040] self-stretch" style={fadeIn(1)}>
-              <HeroCTA text={ctaText} />
+              <HeroCTA text={ctaText} onClick={onCtaClick} />
             </div>
           </div>
         )}
         {/* Narrow desktop fallback — 2-col grid */}
         {hasFactoids && (
           <div className="hidden lg:grid xl:hidden grid-cols-2 px-5 md:px-8 xl:px-14">
-            <div style={fadeIn(1)}><HeroCTA text={ctaText} /></div>
+            <div style={fadeIn(1)}><HeroCTA text={ctaText} onClick={onCtaClick} /></div>
             {visibleFactoids.map((f, i) => (
               <div key={f.number || i} style={fadeIn(1 + i)}>
                 <FactoidCard
@@ -322,6 +335,7 @@ export function ProductHeroImage({
           <div className="px-5 md:px-8 xl:px-14 pt-4 pb-8">
             <button
               type="button"
+              onClick={onCtaClick}
               className="inline-flex items-center gap-2 bg-[#FFCC00] px-6 py-3.5 cursor-pointer transition-colors duration-200 hover:bg-[#FFE040]"
             >
               <span className="h4 text-[#0A0A0A]">{ctaText}</span>
@@ -365,7 +379,7 @@ export function ProductHeroImage({
                   </div>
                 )}
               </div>
-              <h1 className="h1 whitespace-pre-line" style={fadeIn(1)}><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</h1>
+              <div className="h1 whitespace-pre-line" style={fadeIn(1)}><span className="text-[#F0F0F0]">{title}</span>{titleSecondary ? <><span className="text-[#F0F0F0]"> </span><span className="text-[#939393]">{titleSecondary}</span></> : null}</div>
             </div>
 
             {descriptionEl18 && (
@@ -379,7 +393,7 @@ export function ProductHeroImage({
         {/* Factoids + CTA */}
         {hasFactoids ? (
           <div className="grid grid-cols-2 px-10">
-            <div style={fadeIn(1)}><HeroCTA text={ctaText} /></div>
+            <div style={fadeIn(1)}><HeroCTA text={ctaText} onClick={onCtaClick} /></div>
             {visibleFactoids.map((f, i) => (
               <div key={f.number || i} style={fadeIn(1 + i)}>
                 <FactoidCard
@@ -393,6 +407,7 @@ export function ProductHeroImage({
           <div className="px-10 pt-4 pb-8">
             <button
               type="button"
+              onClick={onCtaClick}
               className="inline-flex items-center gap-2 bg-[#FFCC00] px-6 py-3.5 cursor-pointer transition-colors duration-200 hover:bg-[#FFE040]"
             >
               <span className="h4 text-[#0A0A0A]">{ctaText}</span>
@@ -454,6 +469,7 @@ export function ProductHeroImage({
           {/* CTA */}
           <button
             type="button"
+            onClick={onCtaClick}
             style={fadeIn(1)}
             className="group flex items-center justify-between w-full bg-[#FFCC00] p-5 cursor-pointer transition-colors duration-200 hover:bg-[#FFE040]"
           >

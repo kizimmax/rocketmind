@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { getAllGlossaryTerms } from "@/lib/glossary";
-import { getPublicTags, getTagUsage } from "@/lib/articles";
+import { getPublicTags } from "@/lib/articles";
 import { GlossaryPageClient } from "@/components/glossary/glossary-page-client";
+import { PageBottom } from "@/components/sections/PageBottom";
 
 export const metadata: Metadata = {
   title: "Глоссарий | Rocketmind",
@@ -14,21 +15,24 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 export default function GlossaryPage() {
   const terms = getAllGlossaryTerms();
   const allTags = getPublicTags();
-  const usage = getTagUsage();
 
-  // Показываем только теги, которые встречаются хоть в одном термине или статье.
+  // Показываем только теги, которые встречаются хотя бы в одном термине —
+  // у них есть статическая landing-страница `/media/glossary/tag/<id>`.
   const termTagIds = new Set<string>();
   for (const t of terms) for (const tag of t.tags) termTagIds.add(tag);
-  const visibleTags = allTags.filter(
-    (t) => termTagIds.has(t.id) || (usage[t.id] ?? 0) > 0,
-  );
+  const visibleTags = allTags.filter((t) => termTagIds.has(t.id));
 
   const items = terms.map((t) => ({
     slug: t.slug,
     title: t.title,
-    href: `${BASE}/media/glossary#${t.slug}`,
+    href: `${BASE}/media/glossary/term/${t.slug}`,
     tagIds: t.tags,
   }));
 
-  return <GlossaryPageClient terms={items} tags={visibleTags} />;
+  return (
+    <>
+      <GlossaryPageClient terms={items} tags={visibleTags} />
+      <PageBottom />
+    </>
+  );
 }

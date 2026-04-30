@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useMemo, useRef, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn, ProductCard, ProductImageCard, PartnershipBlock } from "@rocketmind/ui";
 import { ShaderBackground } from "@/components/ui/ShaderBackground";
 import type { CatalogSection, CatalogCard, PartnershipsData } from "@/app/products/page";
@@ -82,6 +83,14 @@ const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 type Props = {
   sections: CatalogSection[];
   partnerships?: PartnershipsData | null;
+  /** Активная категория из URL (`/products/[slug]`). По умолчанию "all" — `/products`. */
+  activeCategory?: FilterKey;
+  /** Опциональный H1: первая часть. Дефолт = "Продукты". */
+  headingPrefix?: string;
+  /** Опциональный H1: акцент (вторая часть, секондарным цветом). Если задан — рендерится. */
+  headingAccent?: string;
+  /** Опциональный лид-текст под H1, заменяет дефолтное описание. */
+  intro?: string;
 };
 
 /** Mount-only fade-in helper (runs once on page load, not on filter changes). */
@@ -129,25 +138,33 @@ function renderCatalogCard(card: CatalogCard, compact = false) {
   );
 }
 
-export function ProductsCatalog({ sections, partnerships }: Props) {
-  return (
-    <Suspense>
-      <ProductsCatalogInner sections={sections} partnerships={partnerships} />
-    </Suspense>
-  );
-}
-
-function ProductsCatalogInner({ sections, partnerships }: Props) {
-  const searchParams = useSearchParams();
+export function ProductsCatalog({
+  sections,
+  partnerships,
+  activeCategory = "all",
+  headingPrefix,
+  headingAccent,
+  intro,
+}: Props) {
+  const activeFilter: FilterKey = activeCategory;
   const router = useRouter();
-
-  const paramFilter = (searchParams.get("filter") as FilterKey) || "all";
-  const [activeFilter, setActiveFilter] = useState<FilterKey>(paramFilter);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Legacy `?filter=X` → `/products/X` (one-time client redirect; site is static
+  // export, middleware/`redirects()` недоступны).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (activeCategory !== "all") return;
+    const params = new URLSearchParams(window.location.search);
+    const legacy = params.get("filter");
+    if (!legacy) return;
+    const valid = ["consulting", "academy", "expert", "ai-products"];
+    if (valid.includes(legacy)) router.replace(`/products/${legacy}`);
+  }, [activeCategory, router]);
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const filterBarRef = useRef<HTMLDivElement>(null);
-  const activeChipRef = useRef<HTMLButtonElement>(null);
+  const activeChipRef = useRef<HTMLAnchorElement>(null);
 
   // Scroll active filter chip into view on mount and when filter changes
   useEffect(() => {
@@ -160,12 +177,9 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
     container.scrollLeft = chipLeft - containerWidth / 2 + chipWidth / 2;
   }, [activeFilter]);
 
-  // Sync filter state when URL param changes (e.g. header nav click)
-  const prevParam = useRef(paramFilter);
-  if (prevParam.current !== paramFilter) {
-    prevParam.current = paramFilter;
-    setActiveFilter(paramFilter);
-  }
+  const filterHref = (key: FilterKey) =>
+    key === "all" ? "/products" : `/products/${key}`;
+  const titlePrefix = headingPrefix ?? "Продукты";
 
   const allCards = useMemo(
     () => sections.flatMap((s) => s.cards),
@@ -182,15 +196,6 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
     };
     return c;
   }, [allCards]);
-
-  const handleFilter = useCallback(
-    (key: FilterKey) => {
-      setActiveFilter(key);
-      const url = key === "all" ? "/products" : `/products?filter=${key}`;
-      router.replace(url, { scroll: false });
-    },
-    [router],
-  );
 
   const filteredSections = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -237,7 +242,13 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
                   className="font-heading text-[28px] font-bold uppercase leading-[1.16] tracking-[-0.01em] shrink-0 transition-opacity duration-300"
                   style={{ opacity: searchOpen ? 0 : 1, width: searchOpen ? 0 : "auto", overflow: "hidden" }}
                 >
-                  Продукты
+                  {titlePrefix}
+                  {headingAccent && (
+                    <>
+                      {" "}
+                      <span className="text-muted-foreground">{headingAccent}</span>
+                    </>
+                  )}
                 </h1>
                 {/* Search: chip → full-width input with smooth expand/collapse */}
                 <div
@@ -279,9 +290,13 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
 
               {/* Description */}
               <p className="text-[16px] md:text-[18px] leading-[1.2] text-foreground">
-                Единый маркетплейс решений для трансформации вашего бизнеса.
-                {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
-                {" "}и цифровых продуктов.
+                {intro ?? (
+                  <>
+                    Единый маркетплейс решений для трансформации вашего бизнеса.
+                    {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
+                    {" "}и цифровых продуктов.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -292,10 +307,11 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
               {FILTERS.map((f) => {
                 const isActive = f.key === activeFilter;
                 return (
-                  <button
+                  <Link
                     key={f.key}
+                    href={filterHref(f.key)}
+                    scroll={false}
                     ref={isActive ? activeChipRef : null}
-                    onClick={() => handleFilter(f.key)}
                     className={[
                       "inline-flex items-center gap-1 h-10 px-2 border rounded-[4px] shrink-0",
                       "font-mono text-[12px] uppercase tracking-[0.02em] transition-colors cursor-pointer whitespace-nowrap",
@@ -307,7 +323,7 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
                     {f.icon}
                     <span>{f.label}</span>
                     <span className="text-[11px] text-muted-foreground/60">{counts[f.key]}</span>
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -321,14 +337,24 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
                 <div className="grid grid-cols-2">
                   <div className="pr-10" style={heroFade(0)}>
                     <h1 className="font-heading text-[80px] font-extrabold uppercase leading-[1.08] tracking-[-0.02em]">
-                      продукты
+                      {titlePrefix}
+                      {headingAccent && (
+                        <>
+                          {" "}
+                          <span className="text-muted-foreground">{headingAccent}</span>
+                        </>
+                      )}
                     </h1>
                   </div>
                   <div className="flex items-center" style={heroFade(1)}>
                     <p className="text-[18px] leading-[1.2] text-foreground pt-2">
-                      Единый маркетплейс решений для трансформации вашего бизнеса.
-                      {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
-                      {" "}и цифровых продуктов.
+                      {intro ?? (
+                        <>
+                          Единый маркетплейс решений для трансформации вашего бизнеса.
+                          {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
+                          {" "}и цифровых продуктов.
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -359,9 +385,10 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
                     {FILTERS.map((f) => {
                       const isActive = f.key === activeFilter;
                       return (
-                        <button
+                        <Link
                           key={f.key}
-                          onClick={() => handleFilter(f.key)}
+                          href={filterHref(f.key)}
+                          scroll={false}
                           className={[
                             "inline-flex items-center gap-2 h-[48px] px-3.5 border rounded-[4px]",
                             "font-mono text-[16px] uppercase tracking-[0.02em] transition-colors cursor-pointer whitespace-nowrap",
@@ -373,7 +400,7 @@ function ProductsCatalogInner({ sections, partnerships }: Props) {
                           {f.icon}
                           <span>{f.label}</span>
                           <span className="text-[14px] ml-0.5 text-muted-foreground/60">{counts[f.key]}</span>
-                        </button>
+                        </Link>
                       );
                     })}
                   </div>

@@ -49,11 +49,17 @@ export async function GET() {
         const raw = fs.readFileSync(path.join(MEDIA_DIR, file), "utf-8");
         const { data } = matter(raw);
         const slug = (data.slug as string) || file.replace(/\.md$/, "");
+        const type = data.type === "lesson" || data.type === "case" ? data.type : "default";
+        const caseCard =
+          type === "case" && data.caseCard && typeof data.caseCard === "object"
+            ? data.caseCard
+            : undefined;
         return {
           id: `media/${slug}`,
           slug,
           status: (data.status as string) || "published",
           order: typeof data.order === "number" ? data.order : 0,
+          type,
           title: (data.title as string) || "",
           description: (data.description as string) || "",
           coverImageData: resolveCoverAsDataUrl(fs, slug) ?? undefined,
@@ -66,6 +72,8 @@ export async function GET() {
             ? data.keyThoughts.filter((t: unknown): t is string => typeof t === "string")
             : [],
           body: Array.isArray(data.body) ? data.body : [],
+          caseCard,
+          featured: type === "case" && data.featured === true ? true : undefined,
           cardVariant: data.cardVariant === "wide" ? "wide" : "default",
           pinned: data.pinned === true,
           pinnedOrder:
@@ -92,8 +100,14 @@ export async function POST(request: Request) {
   const matter = (await import("gray-matter")).default;
 
   const body = await request.json();
-  const { slug, title } = body as { slug?: string; title?: string };
+  const { slug, title, type: rawType } = body as {
+    slug?: string;
+    title?: string;
+    type?: string;
+  };
   if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
+  const type =
+    rawType === "lesson" || rawType === "case" ? rawType : "default";
 
   if (!fs.existsSync(MEDIA_DIR)) fs.mkdirSync(MEDIA_DIR, { recursive: true });
 
@@ -102,13 +116,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "exists" }, { status: 409 });
 
   const now = new Date().toISOString();
+  const emptyCaseCard = {
+    title: "",
+    description: "",
+    stats: [
+      { value: "", label: "", description: "" },
+      { value: "", label: "", description: "" },
+      { value: "", label: "", description: "" },
+    ],
+    result: "",
+  };
   const fm: Record<string, unknown> = {
     slug,
     status: "hidden",
     order: 0,
+    type,
     title: title || "",
     description: "",
     publishedAt: now.slice(0, 10),
+    expertSlug: "r-editorial",
     tags: [],
     keyThoughts: [],
     body: [],
@@ -120,6 +146,10 @@ export async function POST(request: Request) {
     createdAt: now,
     updatedAt: now,
   };
+  if (type === "case") {
+    fm.featured = false;
+    fm.caseCard = emptyCaseCard;
+  }
   fs.writeFileSync(filePath, matter.stringify("", fm), "utf-8");
 
   return NextResponse.json(
@@ -128,14 +158,17 @@ export async function POST(request: Request) {
       slug,
       status: fm.status,
       order: fm.order,
+      type,
       title: fm.title,
       description: "",
       coverImageData: undefined,
       publishedAt: fm.publishedAt,
-      expertSlug: undefined,
+      expertSlug: "r-editorial",
       tagIds: [],
       keyThoughts: [],
       body: [],
+      caseCard: type === "case" ? emptyCaseCard : undefined,
+      featured: type === "case" ? false : undefined,
       cardVariant: "default",
       pinned: false,
       pinnedOrder: 0,

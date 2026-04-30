@@ -130,6 +130,30 @@ npm run release        # bump version + commit + push
 
 ---
 
+## Memory wiki (Karpathy-method, общая для всех проектов)
+
+**Путь:** `/Users/Maxi/GitHub/Obsidian_Brain/`
+
+Авто-память Claude Code между сессиями. Хуки в `.claude/settings.json` уже настроены — при старте сессии в контекст инжектится `knowledge/index.md` + последний `daily/YYYY-MM-DD.md`. При закрытии сессии `flush.py` через Claude Agent SDK достаёт уроки/решения из последних 30 ходов и складывает в daily-лог. Раз в день `compile.py` превращает daily-логи в структурные статьи в `knowledge/concepts/`.
+
+**Правила использования (для меня, Claude):**
+
+1. **Перед исследованием темы** (архитектура, конкретный баг, выбор библиотеки) — сначала читай `Obsidian_Brain/knowledge/index.md`. Если есть релевантная статья — читай её, не лезь снова сканировать код.
+2. **Перед очередным «как мы это решили»** — посмотри в `Obsidian_Brain/daily/` за последние 3-7 дней.
+3. **Не дублируй** в этот CLAUDE.md то, что уже есть в wiki. Здесь только правила и неизменные факты, эфемерное — в wiki.
+4. **Принимай поправки от пользователя как сигнал** — если он говорит «мы это уже обсуждали», в следующей сессии flush.py сам это сохранит, специально записывать руками не надо.
+
+**Команды (запускать из `Obsidian_Brain/`):**
+```bash
+uv run python scripts/query.py "вопрос"     # спросить вики из терминала
+uv run python scripts/compile.py             # руками скомпилировать новые daily в статьи
+uv run python scripts/lint.py                # проверка здоровья вики
+```
+
+**Архивный second-brain** (`Sessions/`, `Conversations/`, `Code-Snippets/`, `_INDEX.md` и пр. в той же папке) — это снимок прошлых 113 сессий, read-only. Управляется отдельным скриптом `build_brain.py`, не путать с живой wiki.
+
+---
+
 ## R-Акселератор 1.2 — Wave 1 scope
 
 - **PRD:** `docs/R-Akselerator-PRD-Documentation.md`
@@ -142,4 +166,4 @@ npm run release        # bump version + commit + push
 
 ---
 
-**Last updated:** 2026-04-18 | **Version:** 2.1.0
+**Last updated:** 2026-04-30 | **Version:** 2.2.0

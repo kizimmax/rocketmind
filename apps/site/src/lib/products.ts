@@ -131,6 +131,19 @@ export type ServiceCardData = {
   rowSpan?: 1 | 2;
   featured?: boolean;
   paragraphsTwoCol?: boolean;
+  showInForm?: boolean;
+};
+
+/**
+ * Конфиг чипсов в форме заявки страницы. Настраивается на блоке «Услуги»
+ * в админке (свитч + кнопка «Настроить»). Если `enabled = false` — чипсы
+ * не отображаются в модалке. Если `true` — все карточки услуг блока станут
+ * чипсами, multi/label определяют поведение блока чипсов.
+ */
+export type ServicesFormChipsData = {
+  enabled: boolean;
+  multi?: boolean;
+  label?: string;
 };
 
 export type ServicesData = {
@@ -142,6 +155,8 @@ export type ServicesData = {
   /** Structured paragraphs under the title. */
   paragraphs?: StyledParagraph[];
   cards: ServiceCardData[];
+  /** Конфиг чипсов в форме (см. ServicesFormChipsData). */
+  formChips?: ServicesFormChipsData;
 };
 
 export type ResultsData = {
@@ -242,6 +257,21 @@ export type ProductData = {
   showInMenu: boolean;
   /** Показывать в футере. По умолчанию true. */
   showInFooter: boolean;
+  /**
+   * ID формы (FormEntity), привязанной к странице. Любая CTA-кнопка на странице
+   * (включая клики по карточкам блока «Услуги») открывает именно эту форму.
+   */
+  formId: string | null;
+  /**
+   * ID CTA-блока в pageBottom-секции. На рендере резолвится через getCtaById;
+   * если не задан — используется дефолтный CTASectionYellow.
+   */
+  pageBottomCtaId: string | null;
+  /**
+   * Показывать блок «Кейсы + CTA». По умолчанию true; скрыть можно только
+   * явным `pageBottom: false` в фронтматтере.
+   */
+  pageBottomEnabled: boolean;
   // Image paths (auto-resolved)
   coverImage: string;
   /** Resolved cover image path (null if file doesn't exist) */
@@ -459,6 +489,17 @@ export function getProductBySlug(slug: string, category?: string): ProductData |
       typeof data.order === "number" ? data.order : Number.MAX_SAFE_INTEGER,
     showInMenu: data.showInMenu !== false,
     showInFooter: data.showInFooter !== false,
+    formId:
+      typeof data.formId === "string" && data.formId ? data.formId : null,
+    pageBottomCtaId: (() => {
+      const pb = data.pageBottom;
+      if (pb && typeof pb === "object" && typeof (pb as Record<string, unknown>).ctaId === "string") {
+        const id = ((pb as Record<string, unknown>).ctaId as string).trim();
+        return id || null;
+      }
+      return null;
+    })(),
+    pageBottomEnabled: data.pageBottom !== false,
     coverImage,
     heroImage,
     aboutImage,

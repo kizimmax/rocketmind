@@ -31,7 +31,23 @@ function resolveExpertImage(slug: string): string | null {
 
 // ── API ────────────────────────────────────────────────────────────────────────
 
+/**
+ * Synthetic «редакционный» автор. Используется как дефолт для статей без
+ * персонального эксперта. Не имеет .md-файла и не попадает в getAllExperts.
+ */
+export const EDITORIAL_EXPERT_SLUG = "r-editorial";
+const EDITORIAL_EXPERT: ExpertData = {
+  slug: EDITORIAL_EXPERT_SLUG,
+  name: "R-Редакция",
+  tag: "",
+  shortBio: "",
+  bio: "",
+  image: null,
+};
+
 export function getExpertBySlug(slug: string): ExpertData | null {
+  if (slug === EDITORIAL_EXPERT_SLUG) return EDITORIAL_EXPERT;
+
   const filePath = path.join(EXPERTS_DIR, `${slug}.md`);
   if (!fs.existsSync(filePath)) return null;
 

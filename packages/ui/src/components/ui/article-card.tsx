@@ -8,6 +8,17 @@ import { GlowingEffect } from "./glowing-effect"
 
 export type ArticleCardVariant = "default" | "wide"
 
+/** 8 акцентных DS-палитр (см. `design/design-system.md` §1.4). */
+export type ArticleCardTypeBadgeColor =
+  | "yellow"
+  | "violet"
+  | "sky"
+  | "terracotta"
+  | "pink"
+  | "blue"
+  | "red"
+  | "green"
+
 export interface ArticleCardProps extends React.HTMLAttributes<HTMLElement> {
   /** If omitted — карточка рендерится как статичное превью без ссылки и без стрелки-выноски. */
   href?: string
@@ -20,6 +31,12 @@ export interface ArticleCardProps extends React.HTMLAttributes<HTMLElement> {
   date?: string
   /** Max tags to show (excess are clipped). Default 3. */
   maxTags?: number
+  /**
+   * Бейдж типа статьи. Рендерится первым в ленте тегов с фоном из DS-палитры.
+   * Используется для системных типов «Урок» (sky) / «Кейс» (terracotta);
+   * на странице самой статьи такие теги выводятся как обычные, без `typeBadge`.
+   */
+  typeBadge?: { label: string; color: ArticleCardTypeBadgeColor }
   /**
    * "default" — обычная карточка (обложка сверху, контент ниже).
    * "wide" — широкая: обложка слева, теги и автор справа, заголовок с описанием
@@ -56,11 +73,16 @@ export function ArticleCard({
   authorAvatarUrl,
   date,
   maxTags = 3,
+  typeBadge,
   variant = "default",
   className,
   ...props
 }: ArticleCardProps) {
-  const visibleTags = (tags ?? []).slice(0, maxTags)
+  // Если задан typeBadge — он занимает один из maxTags-слотов, чтобы карточка
+  // не вырастала при переполнении. На /media страница самой статьи передаёт
+  // typeBadge=undefined → бейдж типа выглядит как обычный тег в общем списке.
+  const reservedForBadge = typeBadge ? 1 : 0
+  const visibleTags = (tags ?? []).slice(0, Math.max(0, maxTags - reservedForBadge))
   const titleRef = React.useRef<HTMLHeadingElement | null>(null)
   const [titleLines, setTitleLines] = React.useState<number>(1)
 
@@ -149,6 +171,7 @@ export function ArticleCard({
         <WideLayout
           coverUrl={coverUrl}
           visibleTags={visibleTags}
+          typeBadge={typeBadge}
           authorName={authorName}
           authorAvatarUrl={authorAvatarUrl}
           date={date}
@@ -157,6 +180,7 @@ export function ArticleCard({
         <DefaultLayout
           coverUrl={coverUrl}
           visibleTags={visibleTags}
+          typeBadge={typeBadge}
         />
       )}
 
@@ -206,12 +230,38 @@ export function ArticleCard({
   )
 }
 
+function TypeBadge({
+  badge,
+}: {
+  badge: { label: string; color: ArticleCardTypeBadgeColor }
+}) {
+  // Геометрия и типографика — 1-в-1 как у `Tag size="s"`, чтобы стоять в
+  // одном ряду с обычными тегами и не выглядеть тяжелее их.
+  // Окраска — DS-вариант «{color}-subtle» (см. Badge): bg `--rm-{c}-900`,
+  // border `--rm-{c}-700`, text `--rm-{c}-fg-subtle`. Спокойный цветной фон
+  // с тёмным текстом — не «активная заливка», а маркировка типа.
+  return (
+    <span
+      className="inline-flex max-w-full items-center justify-center gap-2 break-words rounded-sm border px-2 py-1 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-left [overflow-wrap:anywhere]"
+      style={{
+        backgroundColor: `var(--rm-${badge.color}-900)`,
+        borderColor: `var(--rm-${badge.color}-700)`,
+        color: `var(--rm-${badge.color}-fg-subtle)`,
+      }}
+    >
+      {badge.label}
+    </span>
+  )
+}
+
 function DefaultLayout({
   coverUrl,
   visibleTags,
+  typeBadge,
 }: {
   coverUrl?: string | null
   visibleTags: string[]
+  typeBadge?: { label: string; color: ArticleCardTypeBadgeColor }
 }) {
   return (
     <>
@@ -243,8 +293,9 @@ function DefaultLayout({
         {/* Tags — absolute, прибиты к левому-нижнему углу обложки. При
             переполнении flex-wrap-reverse отправляет новые ряды ВВЕРХ,
             поэтому теги наползают на изображение без роста высоты карточки. */}
-        {visibleTags.length > 0 && (
+        {(visibleTags.length > 0 || typeBadge) && (
           <div className="absolute inset-x-0 bottom-3 z-[1] flex flex-wrap-reverse gap-x-2 gap-y-1">
+            {typeBadge && <TypeBadge badge={typeBadge} />}
             {visibleTags.map((t) => (
               <Tag key={t} size="s">
                 {t}
@@ -260,12 +311,14 @@ function DefaultLayout({
 function WideLayout({
   coverUrl,
   visibleTags,
+  typeBadge,
   authorName,
   authorAvatarUrl,
   date,
 }: {
   coverUrl?: string | null
   visibleTags: string[]
+  typeBadge?: { label: string; color: ArticleCardTypeBadgeColor }
   authorName?: string
   authorAvatarUrl?: string | null
   date?: string
@@ -289,8 +342,9 @@ function WideLayout({
 
       {/* Right column: tags (стек, right-align) сверху, Author full — снизу */}
       <div className="flex flex-[2] flex-col justify-between gap-4">
-        {visibleTags.length > 0 && (
+        {(visibleTags.length > 0 || typeBadge) && (
           <div className="flex flex-col items-start gap-1.5">
+            {typeBadge && <TypeBadge badge={typeBadge} />}
             {visibleTags.map((t) => (
               <Tag key={t} size="s">
                 {t}

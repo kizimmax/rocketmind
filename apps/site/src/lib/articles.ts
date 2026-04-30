@@ -6,12 +6,56 @@ import { getProductBySlug } from "./products";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
+/**
+ * SEO-поля редактируемой tag-страницы (`/media/tag/<id>`, `/media/glossary/tag/<id>`).
+ * Все поля опциональны — при отсутствии берётся дефолт от секции и `label`.
+ */
+export type MediaTagSeo = {
+  /** Первая часть H1 (по умолчанию: «Медиа» / «Глоссарий»). */
+  pageTitlePrefix?: string;
+  /** Вторая часть H1 (рендерится секондарным цветом, дефолт = label). */
+  pageTitleAccent?: string;
+  /** <title> — если пусто, собирается из H1 + " | Rocketmind". */
+  metaTitle?: string;
+  metaDescription?: string;
+  /** Опциональный лид-текст под H1. */
+  intro?: string;
+};
+
+/** 8 акцентных DS-палитр (см. `design/design-system.md` §1.4). */
+export type DsAccentColor =
+  | "yellow"
+  | "violet"
+  | "sky"
+  | "terracotta"
+  | "pink"
+  | "blue"
+  | "red"
+  | "green";
+
 export type MediaTag = {
   id: string;
   label: string;
   /** Если true — тег скрыт с публичных страниц (фильтр, карточки, термины). */
   disabled?: boolean;
+  /** SEO-поля для landing-страниц тега. */
+  seo?: MediaTagSeo;
+  /**
+   * Системный тег (`lesson`, `case`). Не удаляется в админке. Фильтр
+   * по такому тегу читает `article.type`, а не `article.tags`.
+   */
+  system?: boolean;
+  /** Цвет бейджа на карточке /media (только для системных). */
+  cardColor?: DsAccentColor;
 };
+
+/**
+ * Тип статьи. Управляет бейджем на карточке и попаданием в ленту /cases:
+ *  - `default` — обычная статья;
+ *  - `lesson` — бирюзовый бейдж «Урок» на карточке;
+ *  - `case` — терракотовый бейдж «Кейс»; статья появляется в /cases с CaseArrow.
+ */
+export type ArticleType = "default" | "lesson" | "case";
 
 export type ArticleStatus = "published" | "hidden" | "archived";
 
@@ -47,6 +91,11 @@ export type ArticleAside =
       id: string;
       kind: "logos";
       logos: ArticleLogoAsideItem[];
+    }
+  | {
+      id: string;
+      kind: "cta";
+      ctaId: string;
     };
 
 export type ArticleLogoAsideItem = {
@@ -71,6 +120,19 @@ export type ArticleSectionQuote = {
   paragraphs?: string[];
 };
 
+/**
+ * Карточка фактоида в `ArticleSection.factoids`. Большая цифра + текст.
+ * `accent: true` — жёлтая подложка `--rm-yellow-100` с тёмным текстом.
+ */
+export type FactoidCardData = {
+  id: string;
+  number: string;
+  text: string;
+  accent: boolean;
+  /** Принудительно начать новый ряд с этой карточки (gridColumnStart: 1). */
+  newRow?: boolean;
+};
+
 export type ArticleSection = {
   id: string;
   /** H2 секции. Пустая — без заголовка, не попадает в ToC. */
@@ -78,11 +140,22 @@ export type ArticleSection = {
   /** Название в ToC. Пустая — fallback на title. */
   navLabel: string;
   blocks: ArticleBodyBlock[];
+  /**
+   * Сетка фактоидов — section-level, всегда сверху секции под H2. Размещение
+   * детерминировано (не блок внутри `blocks`), потому что 3-я карточка вылезает
+   * в col-4 и сдвигает sticky-asides секции вниз — эта дельта рассчитываема
+   * только когда фактоиды строго в начале.
+   */
+  factoids: FactoidCardData[];
+  /** Явное число колонок (1/2/3). Если не задано — авто из `factoids.length`. */
+  factoidCols?: 1 | 2 | 3;
   asides: ArticleAside[];
   /** Цитаты экспертов, привязанные к концу секции. */
   quotes: ArticleSectionQuote[];
   asidesTitle: string;
   asidesTitleEnabled: boolean;
+  /** ID CtaEntity, рендерится перед quotes (если задан). */
+  bottomCtaId?: string;
 };
 
 export type ArticleEntry = {
@@ -91,6 +164,8 @@ export type ArticleEntry = {
   description: string;
   status: ArticleStatus;
   order: number;
+  /** Тип статьи. Дефолт — `default`. */
+  type: ArticleType;
   publishedAt: string;
   expertSlug: string | null;
   tags: string[];
@@ -132,6 +207,7 @@ const BODY_BLOCK_TYPES = new Set([
   "image",
   "gallery",
   "video",
+  "table",
 ]);
 
 function parseBlock(raw: unknown, fallbackId: string): ArticleBodyBlock | null {
@@ -165,6 +241,27 @@ function parseBlock(raw: unknown, fallbackId: string): ArticleBodyBlock | null {
       return { ...rec, kind: rec.kind === "video" ? "video" : "image" };
     });
     (data as Record<string, unknown>).items = normalizedItems;
+  } else if (type === "table") {
+    // Table: rows[][] прямоугольной формы. Любая ячейка не-string становится "".
+    // Пустая таблица (нет строк или все строки пустые) отбрасывается.
+    const rawRows = (data as Record<string, unknown>).rows;
+    if (!Array.isArray(rawRows)) return null;
+    const rows: string[][] = rawRows
+      .map((row) =>
+        Array.isArray(row)
+          ? row.map((c) => (typeof c === "string" ? c : ""))
+          : null,
+      )
+      .filter((r): r is string[] => r !== null);
+    if (rows.length === 0) return null;
+    const cols = Math.max(...rows.map((r) => r.length));
+    if (cols === 0) return null;
+    const normalized = rows.map((r) =>
+      r.length === cols ? r : [...r, ...Array(cols - r.length).fill("")],
+    );
+    if (normalized.every((r) => r.every((c) => !c.trim()))) return null;
+    (data as Record<string, unknown>).rows = normalized;
+    (data as Record<string, unknown>).hasHeader = data.hasHeader !== false;
   } else {
     if (typeof data.text !== "string" || !data.text.trim()) return null;
   }
@@ -224,6 +321,11 @@ function parseAside(raw: unknown, fallbackId: string): ArticleAside | null {
         ? cat
         : "consulting";
     return { id, kind: "product", productSlug, productCategory };
+  }
+  if (kind === "cta") {
+    const ctaId = typeof rec.ctaId === "string" ? rec.ctaId.trim() : "";
+    if (!ctaId) return null;
+    return { id, kind: "cta", ctaId };
   }
   if (kind === "logos") {
     const rawLogos = rec.logos;
@@ -293,7 +395,7 @@ function parseQuote(
  * Тут валидируем и возвращаем типизированную структуру. Секции без заголовка
  * и с пустыми blocks/asides допустимы — отфильтровываются в рендере по месту.
  */
-function parseSections(raw: unknown): ArticleSection[] {
+export function parseSections(raw: unknown): ArticleSection[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .map((item, sIdx): ArticleSection | null => {
@@ -318,11 +420,40 @@ function parseSections(raw: unknown): ArticleSection[] {
             .map((q, i) => parseQuote(q, `${sectionId}_q${i}`))
             .filter((q): q is ArticleSectionQuote => q !== null)
         : [];
+      const bottomCtaId =
+        typeof rec.bottomCtaId === "string" && rec.bottomCtaId.trim()
+          ? rec.bottomCtaId.trim()
+          : undefined;
+      const rawFactoids = rec.factoids;
+      const factoids: FactoidCardData[] = Array.isArray(rawFactoids)
+        ? rawFactoids
+            .map((c) => {
+              if (!c || typeof c !== "object") return null;
+              const r = c as Record<string, unknown>;
+              const id = typeof r.id === "string" ? r.id : "";
+              const number = typeof r.number === "string" ? r.number : "";
+              const text = typeof r.text === "string" ? r.text : "";
+              const accent = r.accent === true;
+              if (!id) return null;
+              if (!number.trim() && !text.trim()) return null;
+              const card: FactoidCardData = { id, number, text, accent };
+              if (r.newRow === true) card.newRow = true;
+              return card;
+            })
+            .filter((c): c is FactoidCardData => c !== null)
+        : [];
+      const factoidColsRaw = rec.factoidCols;
+      const factoidCols =
+        factoidColsRaw === 1 || factoidColsRaw === 2 || factoidColsRaw === 3
+          ? (factoidColsRaw as 1 | 2 | 3)
+          : undefined;
       return {
         id: sectionId,
         title: typeof rec.title === "string" ? rec.title : "",
         navLabel: typeof rec.navLabel === "string" ? rec.navLabel : "",
         blocks,
+        factoids,
+        factoidCols,
         asides,
         quotes,
         asidesTitle:
@@ -333,6 +464,7 @@ function parseSections(raw: unknown): ArticleSection[] {
           typeof rec.asidesTitleEnabled === "boolean"
             ? rec.asidesTitleEnabled
             : true,
+        bottomCtaId,
       };
     })
     .filter((s): s is ArticleSection => s !== null);
@@ -358,12 +490,15 @@ function readArticle(filePath: string): ArticleEntry | null {
     const { data } = matter(raw);
     if (typeof data.slug !== "string" || !data.slug) return null;
     const slug = data.slug;
+    const type: ArticleType =
+      data.type === "lesson" || data.type === "case" ? data.type : "default";
     return {
       slug,
       title: typeof data.title === "string" ? data.title : "",
       description: typeof data.description === "string" ? data.description : "",
       status: parseStatus(data.status),
       order: typeof data.order === "number" ? data.order : 0,
+      type,
       publishedAt: typeof data.publishedAt === "string" ? data.publishedAt : "",
       expertSlug: typeof data.expertSlug === "string" ? data.expertSlug : null,
       tags: Array.isArray(data.tags)
@@ -421,20 +556,103 @@ export function getArticleBySlug(slug: string): ArticleEntry | null {
   return readArticle(file);
 }
 
+function parseTagSeo(raw: unknown): MediaTagSeo | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const r = raw as Record<string, unknown>;
+  const out: MediaTagSeo = {};
+  for (const k of [
+    "pageTitlePrefix",
+    "pageTitleAccent",
+    "metaTitle",
+    "metaDescription",
+    "intro",
+  ] as const) {
+    const v = r[k];
+    if (typeof v === "string" && v.trim()) out[k] = v;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+const DS_ACCENTS: ReadonlySet<DsAccentColor> = new Set([
+  "yellow",
+  "violet",
+  "sky",
+  "terracotta",
+  "pink",
+  "blue",
+  "red",
+  "green",
+]);
+
+const SYSTEM_TAG_DEFAULTS: ReadonlyArray<MediaTag> = [
+  { id: "lesson", label: "Урок", system: true, cardColor: "sky" },
+  { id: "case", label: "Кейс", system: true, cardColor: "terracotta" },
+];
+
+function isDsAccent(v: unknown): v is DsAccentColor {
+  return typeof v === "string" && DS_ACCENTS.has(v as DsAccentColor);
+}
+
 export function getAllTags(): MediaTag[] {
   const file = path.join(MEDIA_DIR, "_tags.json");
-  if (!fs.existsSync(file)) return [];
-  try {
-    const json = JSON.parse(fs.readFileSync(file, "utf-8")) as {
-      tags?: Array<{ id: string; label: string; disabled?: boolean; createdAt?: string }>;
-    };
-    if (!Array.isArray(json.tags)) return [];
-    return json.tags
-      .filter((t) => t && typeof t.id === "string" && typeof t.label === "string")
-      .map((t) => ({ id: t.id, label: t.label, ...(t.disabled ? { disabled: true } : {}) }));
-  } catch {
-    return [];
+  let tags: MediaTag[] = [];
+  if (fs.existsSync(file)) {
+    try {
+      const json = JSON.parse(fs.readFileSync(file, "utf-8")) as {
+        tags?: Array<{
+          id: string;
+          label: string;
+          disabled?: boolean;
+          createdAt?: string;
+          seo?: unknown;
+          system?: boolean;
+          cardColor?: unknown;
+        }>;
+      };
+      if (Array.isArray(json.tags)) {
+        tags = json.tags
+          .filter(
+            (t) =>
+              t && typeof t.id === "string" && typeof t.label === "string",
+          )
+          .map((t): MediaTag => {
+            const seo = parseTagSeo(t.seo);
+            const cardColor = isDsAccent(t.cardColor) ? t.cardColor : undefined;
+            return {
+              id: t.id,
+              label: t.label,
+              ...(t.disabled ? { disabled: true } : {}),
+              ...(seo ? { seo } : {}),
+              ...(t.system ? { system: true } : {}),
+              ...(cardColor ? { cardColor } : {}),
+            };
+          });
+      }
+    } catch {
+      // fall through — пустой массив, ниже домерджим системные
+    }
   }
+  // Гарантируем наличие системных тегов даже если файла нет (свежий проект).
+  const byId = new Map(tags.map((t) => [t.id, t]));
+  const merged: MediaTag[] = [];
+  for (const def of SYSTEM_TAG_DEFAULTS) {
+    const user = byId.get(def.id);
+    byId.delete(def.id);
+    merged.push({
+      ...def,
+      ...(user ?? {}),
+      id: def.id,
+      label: user?.label?.trim() || def.label,
+      system: true,
+      cardColor: user?.cardColor ?? def.cardColor,
+    });
+  }
+  for (const t of tags) if (byId.has(t.id)) merged.push(t);
+  return merged;
+}
+
+export function getTagById(id: string): MediaTag | null {
+  return getAllTags().find((t) => t.id === id) ?? null;
 }
 
 /** Публичные теги — без тех, у которых disabled=true. */
@@ -442,11 +660,19 @@ export function getPublicTags(): MediaTag[] {
   return getAllTags().filter((t) => !t.disabled);
 }
 
-/** Usage count per tag id across all published articles. */
+/**
+ * Usage count per tag id across all published articles. Системные теги
+ * (`lesson`, `case`) считаются по `article.type`, не по `article.tags` —
+ * фильтр на /media для них работает через тип статьи, а в `tagIds` они не
+ * хранятся.
+ */
 export function getTagUsage(): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const a of getAllArticles())
-    for (const t of a.tags) out[t] = (out[t] ?? 0) + 1;
+  const all = getAllArticles();
+  for (const a of all) for (const t of a.tags) out[t] = (out[t] ?? 0) + 1;
+  out.lesson =
+    (out.lesson ?? 0) + all.filter((a) => a.type === "lesson").length;
+  out.case = (out.case ?? 0) + all.filter((a) => a.type === "case").length;
   return out;
 }
 
@@ -502,6 +728,34 @@ export function collectResolvedProductAsides(
         aside.productCategory,
       );
       if (resolved) out[key] = resolved;
+    }
+  }
+  return out;
+}
+
+// ── CTA resolver ───────────────────────────────────────────────────────────
+
+import type { CtaEntity } from "./ctas";
+import { getCtaById } from "./ctas";
+
+/**
+ * Собирает все CtaEntity, упомянутые в статье — `bottomCtaId` секций и
+ * cta-aside в правой колонке. Map ключ — id CTA.
+ */
+export function collectResolvedCtas(
+  article: ArticleEntry,
+): Record<string, CtaEntity> {
+  const out: Record<string, CtaEntity> = {};
+  for (const section of article.sections) {
+    if (section.bottomCtaId && !out[section.bottomCtaId]) {
+      const cta = getCtaById(section.bottomCtaId);
+      if (cta) out[section.bottomCtaId] = cta;
+    }
+    for (const aside of section.asides) {
+      if (aside.kind === "cta" && aside.ctaId && !out[aside.ctaId]) {
+        const cta = getCtaById(aside.ctaId);
+        if (cta) out[aside.ctaId] = cta;
+      }
     }
   }
   return out;

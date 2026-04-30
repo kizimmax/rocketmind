@@ -16,7 +16,7 @@ import { ItemMoveButtons } from "@/components/item-move-buttons";
 import { InsertButton } from "@/components/insert-button";
 import { ParagraphsEditor, paragraphClassName, type StyledParagraph } from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
-import { VkIcon, TelegramIcon } from "@rocketmind/ui";
+import { VkIcon, TelegramIcon, MaxIcon } from "@rocketmind/ui";
 import type {
   ContactCard,
   ContactCardItem,
@@ -56,6 +56,7 @@ function SocialIconPreview({
 }) {
   if (kind === "vk") return <VkIcon className={className} />;
   if (kind === "telegram") return <TelegramIcon className={className} />;
+  if (kind === "max") return <MaxIcon className={className} />;
   if (!iconSrc) {
     return (
       <span
@@ -235,7 +236,7 @@ function SocialEditor({
           <SocialIconPreview kind={social.kind} iconSrc={social.iconSrc} />
         </div>
         <div className="flex gap-0.5">
-          {(["vk", "telegram", "custom"] as ContactSocialKind[]).map((k) => (
+          {(["vk", "telegram", "max", "custom"] as ContactSocialKind[]).map((k) => (
             <button
               key={k}
               type="button"
@@ -246,7 +247,7 @@ function SocialEditor({
                   : "bg-[#2a2a2a] text-[#939393] hover:text-[#F0F0F0]"
               }`}
             >
-              {k === "vk" ? "ВК" : k === "telegram" ? "TG" : "свой"}
+              {k === "vk" ? "ВК" : k === "telegram" ? "TG" : k === "max" ? "MAX" : "свой"}
             </button>
           ))}
         </div>
@@ -279,9 +280,11 @@ function SocialEditor({
           placeholder={
             social.kind === "telegram"
               ? "никнейм (без @)"
-              : social.kind === "vk"
-                ? "никнейм (vk.com/...)"
-                : "никнейм для тултипа"
+              : social.kind === "max"
+                ? "никнейм (без @)"
+                : social.kind === "vk"
+                  ? "никнейм (vk.com/...)"
+                  : "никнейм для тултипа"
           }
           className="rounded bg-[#2a2a2a] px-2 py-1.5 text-sm text-[#F0F0F0] outline-none placeholder:text-[#939393]"
         />
@@ -353,7 +356,9 @@ function SocialsItemEditor({
       ? "telegram"
       : !usedKinds.has("vk")
         ? "vk"
-        : "custom";
+        : !usedKinds.has("max")
+          ? "max"
+          : "custom";
     onChange({ ...item, socials: [...item.socials, newSocial(nextKind)] });
   }
 

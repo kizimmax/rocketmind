@@ -5,10 +5,12 @@ import { AboutProduct } from "@/components/sections/AboutProduct";
 import { LogoMarqueeSection } from "@/components/sections/LogoMarqueeSection";
 import { AboutRocketmindSection } from "@/components/sections/AboutRocketmindSection";
 import { ABOUT_RM_DEFAULTS } from "@/components/sections/about-rocketmind-defaults";
-import { ForWhomSection, ProcessSection, ResultsSection, ExpertsSection, ToolsSection, PartnershipBlock, ServicesSection } from "@rocketmind/ui";
+import { ForWhomSection, ProcessSection, ResultsSection, ExpertsSection, ToolsSection, PartnershipBlock } from "@rocketmind/ui";
+import { ServicesSectionWithForm } from "@/components/sections/ServicesSectionWithForm";
 import type { ProductData, CustomSectionData } from "@/lib/products";
 import { getPartnershipsData } from "@/lib/partnerships";
 import { getAboutRocketmindPhotos } from "@/lib/about-rocketmind";
+import { getCtaById } from "@/lib/ctas";
 
 function CustomSectionsAfter({
   type,
@@ -68,6 +70,24 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
   const partnerships = isAcademy ? getPartnershipsData() : null;
   const aboutRmPhotos = getAboutRocketmindPhotos();
   const customSections: CustomSectionData[] = hasProduct ? props.product.customSections : [];
+  const pageFormId = hasProduct
+    ? props.product.formId ?? getCtaById("default")?.formId ?? null
+    : null;
+
+  const heroAvailableChips =
+    hasProduct && props.product.services?.formChips?.enabled
+      ? (props.product.services.cards ?? [])
+          .filter((c) => c.showInForm !== false)
+          .map((c) => c.title)
+          .filter(Boolean)
+      : undefined;
+  const heroChipsConfig =
+    hasProduct && props.product.services?.formChips?.enabled
+      ? {
+          multi: props.product.services.formChips.multi,
+          label: props.product.services.formChips.label,
+        }
+      : undefined;
 
   return (
     <div className="flex flex-col">
@@ -88,6 +108,9 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
           tags={props.product.hero.tags}
           secondaryCta={props.product.hero.secondaryCta}
           audioSrc={props.product.hero.audioData}
+          formId={pageFormId}
+          availableChips={heroAvailableChips}
+          chipsConfig={heroChipsConfig}
         />
       ) : hasProduct ? (
         <ProductHero
@@ -109,6 +132,9 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
             })) ?? undefined
           }
           quote={props.product.hero.quote}
+          formId={pageFormId}
+          availableChips={heroAvailableChips}
+          chipsConfig={heroChipsConfig}
         />
       ) : (
         <section className="flex min-h-[60vh] flex-col items-center justify-center px-5 py-24 text-center md:px-8 xl:px-14">
@@ -211,13 +237,15 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
 
       {/* Услуги (опционально, перед процессом) */}
       {hasProduct && props.product.services && props.product.services.cards?.length > 0 ? (
-        <ServicesSection
+        <ServicesSectionWithForm
           tag={props.product.services.tag}
           title={props.product.services.title}
           titleSecondary={props.product.services.titleSecondary}
           description={props.product.services.description}
           paragraphs={props.product.services.paragraphs}
           cards={props.product.services.cards}
+          formId={pageFormId}
+          formChips={props.product.services.formChips}
         />
       ) : null}
       <CustomSectionsAfter type="services" sections={customSections} />
@@ -257,7 +285,40 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
       <CustomSectionsAfter type="aboutRocketmind" sections={customSections} />
 
       {/* 12–14. Кейсы + отзывы + логотипы + CTA */}
-      <PageBottom />
+      {(!hasProduct || props.product.pageBottomEnabled) && (
+        <PageBottom
+          cta={(() => {
+            if (!hasProduct || !props.product.pageBottomCtaId) return null;
+            const cta = getCtaById(props.product.pageBottomCtaId);
+            if (!cta) return null;
+            return {
+              heading: cta.heading,
+              body: cta.body,
+              buttonText: cta.buttonText,
+              formId: cta.formId,
+            };
+          })()}
+          pageFormId={pageFormId}
+          availableChips={
+            hasProduct &&
+            props.product.services?.formChips?.enabled &&
+            props.product.services?.cards
+              ? props.product.services.cards
+                  .filter((c) => c.showInForm !== false)
+                  .map((c) => c.title)
+                  .filter(Boolean)
+              : undefined
+          }
+          chipsConfig={
+            hasProduct && props.product.services?.formChips?.enabled
+              ? {
+                  multi: props.product.services.formChips.multi,
+                  label: props.product.services.formChips.label,
+                }
+              : undefined
+          }
+        />
+      )}
       <CustomSectionsAfter type="pageBottom" sections={customSections} />
     </div>
   );

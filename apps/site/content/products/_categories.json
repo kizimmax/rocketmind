@@ -1,0 +1,20 @@
+{
+  "categories": [
+    {
+      "id": "consulting",
+      "seo": {}
+    },
+    {
+      "id": "academy",
+      "seo": {}
+    },
+    {
+      "id": "expert",
+      "seo": {}
+    },
+    {
+      "id": "ai-products",
+      "seo": {}
+    }
+  ]
+}

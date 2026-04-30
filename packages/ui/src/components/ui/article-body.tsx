@@ -15,6 +15,15 @@ export type ArticleBodyBlockType =
   | "image"
   | "gallery"
   | "video"
+  | "table"
+
+/** Структура table-блока (см. Figma 1417:24035 / 1446:34320). */
+export interface ArticleTableData {
+  /** Прямоугольный массив ячеек: rows[r][c]. Все строки имеют одинаковую длину. */
+  rows: string[][]
+  /** Если true — первая строка рендерится как шапка (label-стиль, muted color). */
+  hasHeader: boolean
+}
 
 export interface ArticleGalleryItem {
   id: string
@@ -24,6 +33,24 @@ export interface ArticleGalleryItem {
   kind?: "image" | "video"
   /** Опциональная подпись под активным медиа. Пустая — не рендерится. */
   caption?: string
+}
+
+/**
+ * Карточка фактоида (factoid-grid). Большая цифра H2 + текст-описание Copy 16.
+ * `accent: true` — жёлтая подложка `--rm-yellow-100` с тёмным текстом.
+ */
+export interface FactoidCardData {
+  id: string
+  number: string
+  text: string
+  accent: boolean
+  /**
+   * Принудительно начать новую строку с этой карточки. Реализуется через
+   * `grid-column-start: 1` — пустые ячейки предыдущей строки остаются
+   * пустыми (фон `--rm-gray-3` остаётся видим, как разделитель). Кнопка
+   * «Карточка ниже» в редакторе ставит этот флаг.
+   */
+  newRow?: boolean
 }
 
 export interface ArticleBodyBlock {
@@ -63,12 +90,12 @@ function marginTopClass(
   prev: ArticleBodyBlockType | null,
   curr: ArticleBodyBlockType,
 ): string {
-  // Изображение/галерея всегда отделяются 40px сверху и снизу — как от
-  // предыдущего, так и от следующего блока. Обрабатываем оба направления
+  // Изображение/галерея/видео/таблица всегда отделяются 40px сверху и снизу —
+  // как от предыдущего, так и от следующего блока. Обрабатываем оба направления
   // здесь, чтобы суммарный отступ был ровно 40px (в flex-col margin'ы не
   // схлопываются).
   const isMedia = (t: ArticleBodyBlockType | null) =>
-    t === "image" || t === "gallery" || t === "video"
+    t === "image" || t === "gallery" || t === "video" || t === "table"
   if (isMedia(curr) || isMedia(prev)) {
     return prev === null ? "mt-0" : "mt-[40px]"
   }
@@ -444,6 +471,280 @@ function Video({
   )
 }
 
+// ── Table ──────────────────────────────────────────────────────────────────
+
+/**
+ * Table — таблица в теле статьи. См. Figma 1417:24035 (desktop), 1446:34320 (mobile).
+ *
+ * Раскладка:
+ *  - CSS Grid с `grid-template-columns: repeat(N, fit-content(280px))` —
+ *    каждая колонка растёт по самой длинной строке, но не шире 280px.
+ *    Дальше — перенос текста внутри ячейки.
+ *  - 16px горизонтальный gap между колонками.
+ *  - 1px разделитель между строками (`--rm-gray-3`).
+ *  - Ячейки: padding-y 11px (header) / 14px (body) на десктопе; 8px / 8px на мобилке.
+ *
+ * Скролл:
+ *  - Если строка не помещается в контейнер — горизонтальный скролл
+ *    (скрытый scrollbar, как в Gallery).
+ *  - Слева/справа — два gradient-фейда, появляются по фактическому скролл-состоянию.
+ */
+function Table({
+  rows,
+  hasHeader,
+  className,
+}: {
+  rows: string[][]
+  hasHeader: boolean
+  className?: string
+}) {
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [fade, setFade] = React.useState<{ left: boolean; right: boolean }>({
+    left: false,
+    right: false,
+  })
+
+  React.useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const update = () => {
+      const overflows = el.scrollWidth - el.clientWidth > 1
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1
+      setFade({
+        left: overflows && el.scrollLeft > 1,
+        right: overflows && !atEnd,
+      })
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    el.addEventListener("scroll", update, { passive: true })
+    return () => {
+      ro.disconnect()
+      el.removeEventListener("scroll", update)
+    }
+  }, [rows])
+
+  if (!rows.length || !rows[0]?.length) return null
+  const cols = Math.max(...rows.map((r) => r.length))
+  // Нормализуем — все строки имеют ровно `cols` ячеек.
+  const grid = rows.map((r) => {
+    if (r.length === cols) return r
+    return r.length > cols ? r.slice(0, cols) : [...r, ...Array(cols - r.length).fill("")]
+  })
+
+  return (
+    <div className={cn("relative", className)}>
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <div
+          className="grid w-max gap-x-4"
+          style={{
+            gridTemplateColumns: `repeat(${cols}, fit-content(280px))`,
+          }}
+        >
+          {grid.map((row, ri) => {
+            const isHeader = hasHeader && ri === 0
+            return (
+              <React.Fragment key={ri}>
+                {/* Сплошной горизонтальный разделитель перед каждой строкой
+                    кроме первой. Отдельный grid-item с `grid-column: 1 / -1`
+                    спанит все колонки + column-gap'ы → линия не рвётся. */}
+                {ri > 0 && (
+                  <div
+                    aria-hidden
+                    style={{ gridColumn: "1 / -1" }}
+                    className="border-t border-[color:var(--rm-gray-3)]"
+                  />
+                )}
+                {row.map((cell, ci) => (
+                  <div
+                    key={ci}
+                    className={cn(
+                      isHeader ? "py-2 md:py-[11px]" : "py-2 md:py-[14px]",
+                      isHeader
+                        ? "text-[length:var(--text-12)] leading-[1.36] tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)] md:text-[length:var(--text-14)] md:leading-[1.32] md:tracking-[0.01em]"
+                        : "text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[color:var(--rm-gray-fg-main)] md:text-[length:var(--text-16)] md:leading-[1.28] md:tracking-[0]",
+                      "min-w-0 break-words [overflow-wrap:anywhere] whitespace-pre-line",
+                    )}
+                  >
+                    {cell || " "}
+                  </div>
+                ))}
+              </React.Fragment>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Fade left/right — управляются opacity по фактическому скролл-состоянию.
+          pointer-events-none, чтобы не перехватывать клики/скролл по таблице. */}
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent transition-opacity duration-200",
+          fade.left ? "opacity-100" : "opacity-0",
+        )}
+      />
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent transition-opacity duration-200",
+          fade.right ? "opacity-100" : "opacity-0",
+        )}
+      />
+    </div>
+  )
+}
+
+// ── FactoidGrid ────────────────────────────────────────────────────────────
+//
+// Сетка карточек-фактоидов под заголовком секции. Адаптив: 1 колонка
+// (mobile) / 2 (planshet, ≥768) / 3 (desktop, ≥1280). На десктопе 3-я
+// карточка визуально «вылезает» в правую aside-колонку — это делает
+// внешний слой ([data-factoid-grid] + sync в article-page-client).
+//
+// Card: padding 28px, gap 24 между числом и текстом.
+// Number: H2 (Roboto Cond Bold, 52px desktop / 32px mobile, line-height 108%).
+// Text: Copy 16 (Roboto 16/128%).
+// Линии решётки: gap-px на сетке + bg-gray-3 на родителе + outline gray-3.
+// Каждая клетка имеет непрозрачный bg-background, поэтому 1px gap'ы
+// складываются в сплошные линии, а accent-карточка просто меняет bg на
+// жёлтый — линии решётки рядом с ней сохраняются.
+
+function FactoidCardEl({
+  card,
+  borders,
+  style,
+}: {
+  card: FactoidCardData
+  borders: { top: boolean; left: boolean; right: boolean; bottom: boolean }
+  style?: React.CSSProperties
+}) {
+  const accent = card.accent
+  return (
+    <div
+      data-factoid-card
+      style={style}
+      className={cn(
+        "flex flex-col gap-6 p-7",
+        // Per-cell бордеры. У пустых клеток в неполном последнем ряду их
+        // никто не рисует — рамки нет.
+        "border-[color:var(--rm-gray-3)]",
+        borders.top && "border-t",
+        borders.left && "border-l",
+        borders.right && "border-r",
+        borders.bottom && "border-b",
+        accent
+          ? "bg-[color:var(--rm-yellow-100)]"
+          : "bg-background",
+      )}
+    >
+      <div
+        className={cn(
+          "font-[family-name:var(--font-heading-family)] font-bold uppercase",
+          "text-[length:var(--text-32)] leading-[1.08] tracking-[-0.02em]",
+          "md:text-[length:var(--text-52)]",
+          accent ? "text-[#0A0A0A]" : "text-[color:var(--rm-gray-fg-main)]",
+        )}
+      >
+        {card.number}
+      </div>
+      <p
+        className={cn(
+          "text-[length:var(--text-16)] leading-[1.28]",
+          accent ? "text-[#0A0A0A]" : "text-[color:var(--rm-gray-fg-sub)]",
+        )}
+      >
+        {card.text}
+      </p>
+    </div>
+  )
+}
+
+/**
+ * FactoidGrid — section-level сетка карточек-фактоидов. Рендерится поверх
+ * содержимого секции (всегда сверху, под H2), не как блок тела статьи.
+ *
+ * Кол-во колонок: явный `cols` (если задан) или авто-кламп по `cards.length`
+ * (max 3). Колонки задаются inline через `grid-template-columns` — Tailwind
+ * не нужен, гарантирует что при `cols=3` и виде ≥768 рендерится именно 3 кол.
+ *
+ * Бордеры — поячеечно (right + bottom всегда; первая строка — top; первая
+ * колонка — left). У пустых ячеек неполного последнего ряда рамок нет —
+ * никто их не рисует.
+ *
+ * Третья карточка визуально вылезает в col-4 — это делает обёртка
+ * [data-section-factoids] + sync в article-page-client.
+ */
+export function FactoidGrid({
+  cards,
+  cols,
+  className,
+}: {
+  cards: FactoidCardData[]
+  cols?: 1 | 2 | 3
+  className?: string
+}) {
+  if (!cards.length) return null
+  const n = cards.length
+  const effectiveCols = cols ?? Math.min(3, n)
+
+  // Computе позицию (row, col) каждой карточки с учётом newRow + auto-wrap.
+  let curRow = 0
+  let curCol = 0
+  const positions: Array<{ row: number; col: number }> = cards.map(
+    (card, i) => {
+      if (i > 0) {
+        if (card.newRow || curCol >= effectiveCols) {
+          curRow += 1
+          curCol = 0
+        }
+      }
+      const pos = { row: curRow, col: curCol }
+      curCol += 1
+      return pos
+    },
+  )
+
+  return (
+    <div
+      data-factoid-grid
+      className={cn("grid", className)}
+      style={{
+        gridTemplateColumns: `repeat(${effectiveCols}, minmax(0, 1fr))`,
+      }}
+    >
+      {cards.map((card, i) => {
+        const { row, col } = positions[i]
+        const isFirstRow = row === 0
+        const isFirstCol = col === 0
+        return (
+          <FactoidCardEl
+            key={card.id}
+            card={card}
+            // newRow → принудительно ставим в первую колонку.
+            // CSS grid оставит пустые ячейки в предыдущей строке — без рамки.
+            style={
+              i > 0 && card.newRow
+                ? { gridColumnStart: 1 }
+                : undefined
+            }
+            borders={{
+              top: isFirstRow,
+              left: isFirstCol,
+              right: true,
+              bottom: true,
+            }}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
 function Quote({ text, className }: { text: string; className?: string }) {
   return (
     <blockquote
@@ -537,6 +838,29 @@ export function ArticleBody({ blocks, className, ...props }: ArticleBodyProps) {
             .filter((it): it is ArticleGalleryItem => it !== null)
           if (items.length === 0) return null
           return <Gallery key={block.id} items={items} className={mt} />
+        }
+
+        if (block.type === "table") {
+          const rawRows = Array.isArray(block.data?.rows) ? block.data.rows : []
+          const rows: string[][] = rawRows
+            .map((row) =>
+              Array.isArray(row)
+                ? row.map((c) => (typeof c === "string" ? c : ""))
+                : null,
+            )
+            .filter((r): r is string[] => r !== null)
+          if (rows.length === 0 || rows.every((r) => r.every((c) => !c.trim()))) {
+            return null
+          }
+          const hasHeader = block.data?.hasHeader !== false
+          return (
+            <Table
+              key={block.id}
+              rows={rows}
+              hasHeader={hasHeader}
+              className={mt}
+            />
+          )
         }
 
         if (!text) return null

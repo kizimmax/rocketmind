@@ -6,6 +6,7 @@ import {
   HeroExperts,
   StyledParagraphs,
   resolveStyledParagraphs,
+  useFormModal,
   type HeroExpert,
   type StyledParagraph,
 } from "@rocketmind/ui";
@@ -31,6 +32,11 @@ type ProductHeroProps = {
   experts?: HeroExpert[];
   /** Optional quote under the experts block. */
   quote?: string;
+  /** ID формы для CTA-кнопки. Без него кнопка остаётся «мёртвой». */
+  formId?: string | null;
+  /** Чипсы услуг для предзаполнения формы (только те, где showInForm !== false). */
+  availableChips?: string[];
+  chipsConfig?: { multi?: boolean; label?: string };
 };
 
 // ── Hero Tag Badge ────────────────────────────────────────────────────────────
@@ -79,10 +85,19 @@ function FactoidCard({ number, label, text, stretch, className }: Factoid & { st
 
 // ── CTA Button ─────────────────────────────────────────────────────────────────
 
-function HeroCTA({ text, stretch }: { text: string; stretch?: boolean }) {
+function HeroCTA({
+  text,
+  stretch,
+  onClick,
+}: {
+  text: string;
+  stretch?: boolean;
+  onClick?: () => void;
+}) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className={`group flex flex-col justify-between w-full bg-[#FFCC00] p-5 md:p-7 cursor-pointer transition-colors duration-200 hover:bg-[#FFE040] ${stretch ? "flex-1" : "h-[126px] md:h-[189px]"}`}
     >
       <div className="flex justify-end w-full">
@@ -167,7 +182,14 @@ export function ProductHero({
   expertProduct,
   experts,
   quote,
+  formId,
+  availableChips,
+  chipsConfig,
 }: ProductHeroProps) {
+  const { openForm } = useFormModal();
+  const onCtaClick = formId
+    ? () => openForm(formId, { availableChips, chipsConfig })
+    : undefined;
   const showExpertsBlock = !!expertProduct && !!experts && experts.length > 0;
   const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
     uppercase: false,
@@ -175,7 +197,7 @@ export function ProductHero({
   });
 
   const titleBlock = (
-    <h1 className="h1 whitespace-pre-line" style={fadeIn(1)}>
+    <div className="h1 whitespace-pre-line" style={fadeIn(1)}>
       <span className="text-[#F0F0F0]">{title}</span>
       {titleSecondary ? (
         <>
@@ -183,7 +205,7 @@ export function ProductHero({
           <span className="text-[#939393]">{titleSecondary}</span>
         </>
       ) : null}
-    </h1>
+    </div>
   );
 
   const descriptionEl =
@@ -266,7 +288,7 @@ export function ProductHero({
             </div>
           ))}
           <div className="flex-1 flex flex-col" style={fadeIn(1)}>
-            <HeroCTA text={ctaText} stretch />
+            <HeroCTA text={ctaText} stretch onClick={onCtaClick} />
           </div>
         </div>
       </div>
@@ -334,7 +356,7 @@ export function ProductHero({
 
         {/* Cards: 2-col grid — [CTA, F1] / [F2, F3] */}
         <div className="grid grid-cols-2 px-10">
-          <div style={fadeIn(1)}><HeroCTA text={ctaText} /></div>
+          <div style={fadeIn(1)}><HeroCTA text={ctaText} onClick={onCtaClick} /></div>
           <div style={fadeIn(1)}><FactoidCard {...factoids[0]} className="border border-[#404040]" /></div>
           <div style={fadeIn(2)}><FactoidCard {...factoids[1]} className="border border-[#404040]" /></div>
           <div style={fadeIn(3)}><FactoidCard {...factoids[2]} className="border-r border-b border-[#404040]" /></div>
@@ -404,6 +426,7 @@ export function ProductHero({
 
           <button
             type="button"
+            onClick={onCtaClick}
             style={fadeIn(1)}
             className="group flex items-center justify-between w-full bg-[#FFCC00] p-5 cursor-pointer transition-colors duration-200 hover:bg-[#FFE040]"
           >

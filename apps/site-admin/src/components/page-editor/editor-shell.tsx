@@ -12,7 +12,7 @@ import {
   Switch,
 } from "@rocketmind/ui";
 import { toast } from "sonner";
-import type { SitePage } from "@/lib/types";
+import type { SitePage, FormEntity } from "@/lib/types";
 import { useEditor } from "@/lib/use-editor";
 import { useAdminStore } from "@/lib/store";
 import { useNavigationGuard } from "@/lib/navigation-guard";
@@ -311,6 +311,56 @@ function ProductCardPreview({
           </span>
         </InlineEdit>
       </div>
+    </div>
+  );
+}
+
+// ── Page-level form selector ───────────────────────────────────────────────
+
+function PageFormSelector({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (next: string | undefined) => void;
+}) {
+  const [forms, setForms] = useState<FormEntity[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/api/forms")
+      .then((r) => r.json() as Promise<FormEntity[]>)
+      .then((all) => {
+        if (cancelled) return;
+        setForms(all.filter((f) => f.scope !== "article"));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-1.5 rounded-sm border border-[#404040] bg-[#0A0A0A] p-4">
+      <span className="text-[length:var(--text-14)] font-medium text-[#F0F0F0]">
+        Форма страницы
+      </span>
+      <span className="text-[length:var(--text-12)] text-[#939393]">
+        Открывается при клике на любую CTA-кнопку этой страницы и на карточки
+        в блоке «Услуги». Перебивает форму, заданную в самом CTA.
+      </span>
+      <select
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value || undefined)}
+        className="mt-1 h-9 rounded-sm border border-[#404040] bg-[#0A0A0A] px-2 text-[length:var(--text-13)] text-[#F0F0F0]"
+      >
+        <option value="">— не задано —</option>
+        {forms.map((f) => (
+          <option key={f.id} value={f.id}>
+            {f.name || f.id}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
@@ -620,6 +670,11 @@ export function EditorShell({ initialPage }: EditorShellProps) {
                     onCheckedChange={(v) => updateMeta("showInFooter", v)}
                   />
                 </div>
+
+                <PageFormSelector
+                  value={page.formId}
+                  onChange={(v) => updateMeta("formId", v)}
+                />
               </>
             )}
           </div>

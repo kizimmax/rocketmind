@@ -32,6 +32,7 @@ import type {
   ArticleAside,
   ArticleLogoAsideItem,
   AsidePreviewCropMode,
+  CtaEntity,
 } from "@/lib/types";
 
 const FILE_ACCEPT =
@@ -42,6 +43,7 @@ type FileAside = Extract<ArticleAside, { kind: "file" }>;
 type LinkAside = Extract<ArticleAside, { kind: "link" }>;
 type ProductAside = Extract<ArticleAside, { kind: "product" }>;
 type LogosAside = Extract<ArticleAside, { kind: "logos" }>;
+type CtaAside = Extract<ArticleAside, { kind: "cta" }>;
 
 // ── Logos: width bounds и шаг zoom (совпадает с клиентским зуммом на сайте) ──
 
@@ -943,5 +945,90 @@ function LogoPickerDialog({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ── CTA aside editor ────────────────────────────────────────────────────────
+
+export function AsideCtaEditor({
+  aside,
+  ...shell
+}: AsideItemProps & { aside: CtaAside }) {
+  const [ctas, setCtas] = useState<CtaEntity[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/api/ctas")
+      .then((r) => r.json() as Promise<CtaEntity[]>)
+      .then((all) => {
+        if (cancelled) return;
+        setCtas(all.filter((c) => c.scope !== "product"));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const selected = ctas.find((c) => c.id === aside.ctaId);
+
+  return (
+    <AsideRowShell
+      icon={<MousePointerClickIcon />}
+      label="CTA-блок"
+      onRemove={shell.onRemove}
+      onMoveUp={shell.onMoveUp}
+      onMoveDown={shell.onMoveDown}
+      canMoveUp={shell.canMoveUp}
+      canMoveDown={shell.canMoveDown}
+    >
+      <select
+        value={aside.ctaId}
+        onChange={(e) => shell.onChange({ ...aside, ctaId: e.target.value })}
+        className="h-7 w-full rounded-sm border border-border bg-background px-1.5 text-[length:var(--text-12)] text-foreground"
+      >
+        <option value="">— выберите CTA —</option>
+        {ctas.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name || c.id}
+          </option>
+        ))}
+      </select>
+
+      {selected && (
+        <p className="mt-1.5 text-[length:var(--text-11)] text-muted-foreground">
+          «{selected.heading || "(без заголовка)"}» —{" "}
+          {selected.formId
+            ? `форма: ${selected.formId}`
+            : "форма не задана"}
+        </p>
+      )}
+      {selected && !selected.formId && (
+        <p className="mt-1 text-[length:var(--text-11)] text-[#ED4843]">
+          У выбранного CTA не задана форма — кнопка не откроет модалку.
+        </p>
+      )}
+    </AsideRowShell>
+  );
+}
+
+function MousePointerClickIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M14 4.1 12 6" />
+      <path d="m5.1 8-2.9-.8" />
+      <path d="m6 12-1.9 2" />
+      <path d="M7.2 2.2 8 5.1" />
+      <path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z" />
+    </svg>
   );
 }

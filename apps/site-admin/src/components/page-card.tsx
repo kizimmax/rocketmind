@@ -12,6 +12,7 @@ import {
   Eye,
   EyeOff,
   Star,
+  Settings,
 } from "lucide-react";
 import {
   Badge,
@@ -23,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@rocketmind/ui";
 import { ItemMoveButtons } from "@/components/item-move-buttons";
+import { SYNTHETIC_PAGE_IDS } from "@/lib/constants";
 import type { SitePage } from "@/lib/types";
 
 const STATUS_BADGE: Record<
@@ -75,11 +77,13 @@ function getCoverPath(page: SitePage): string {
   return `images/products/${page.sectionId}/${page.slug}/cover.*`;
 }
 
-/** Extract card tag: "Экспертный продукт", "Большой кейс", "Мини-кейс", or null */
+/**
+ * Extract card tag: "Экспертный продукт", "Мини-кейс", or null.
+ * Большие кейсы — теперь Article(type=case), на /cases-секции SitePage остался
+ * только mini.
+ */
 function getCardTag(page: SitePage): string | null {
-  if (page.sectionId === "cases") {
-    return page.caseType === "mini" ? "Мини-кейс" : "Большой кейс";
-  }
+  if (page.sectionId === "cases") return "Мини-кейс";
   const expertsBlock = page.blocks.find((b) => b.type === "experts");
   const experts = expertsBlock?.data?.experts as string[] | undefined;
   if (experts && experts.length > 0) return "Экспертный продукт";
@@ -205,6 +209,16 @@ interface PageCardProps {
 
 export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDelete, onTogglePublish, onToggleFeatured, onGripDown, onGripUp, index, count, onMove, dragProps }: PageCardProps) {
   const router = useRouter();
+
+  // «Системный» макет: title + description + pencil без номера, drag-handle,
+  // dropdown'а статусов и удаления. Применяется к:
+  //   - синтетическим страницам (без .md, со своим редактором);
+  //   - всем страницам секции «Уникальные» (home/about/cases-index и т.п.) —
+  //     это служебные страницы, не карточки контента.
+  if (SYNTHETIC_PAGE_IDS.has(page.id) || page.sectionId === "unique") {
+    return <SyntheticPageCard page={page} viewMode={viewMode} dragProps={dragProps} />;
+  }
+
   const status = STATUS_BADGE[page.status] || STATUS_BADGE.hidden;
   const isArchived = page.status === "archived";
   const isMiniCase = page.sectionId === "cases" && page.caseType === "mini";
@@ -456,6 +470,103 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
           </div>
           <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
             <PageActions page={page} isArchived={isArchived} onArchive={onArchive} onRestore={onRestore} onDelete={onDelete} onTogglePublish={onTogglePublish} onToggleFeatured={onToggleFeatured} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Synthetic page card (system-level entries, no .md source) ─────────────
+
+function SyntheticPageCard({
+  page,
+  viewMode,
+  dragProps,
+}: {
+  page: SitePage;
+  viewMode: "grid" | "list";
+  dragProps?: PageCardProps["dragProps"];
+}) {
+  const router = useRouter();
+  const open = () => router.push(`/pages/${page.id}`);
+
+  const systemBadge = (
+    <span className="shrink-0 rounded-sm bg-foreground/10 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wider text-foreground">
+      Системная
+    </span>
+  );
+
+  if (viewMode === "list") {
+    return (
+      <tr
+        className={`group border-b border-border transition-colors hover:bg-muted/50 cursor-pointer ${dragProps?.isDragging ? "opacity-50" : ""}`}
+        onClick={open}
+      >
+        <td className="w-8 py-2 pl-3 pr-1 text-center align-middle">
+          <span className="text-[length:var(--text-12)] text-muted-foreground/40">—</span>
+        </td>
+        <td className="w-10 py-2 px-1 align-middle">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-dashed border-border text-muted-foreground/60">
+            <Settings className="h-3.5 w-3.5" />
+          </div>
+        </td>
+        <td className="py-2 px-2 align-middle">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[length:var(--text-14)] font-semibold text-foreground line-clamp-1">
+              {page.menuTitle || page.cardTitle}
+            </span>
+            {systemBadge}
+          </div>
+        </td>
+        <td className="hidden md:table-cell py-2 px-2 align-middle max-w-[260px]">
+          <span className="text-[length:var(--text-12)] text-muted-foreground line-clamp-1">
+            {page.menuDescription || page.cardDescription}
+          </span>
+        </td>
+        <td className="hidden lg:table-cell py-2 px-2 align-middle">
+          <span className="text-[length:var(--text-10)] text-muted-foreground/40">—</span>
+        </td>
+        <td className="py-2 px-2 align-middle">
+          <span className="text-[length:var(--text-10)] text-muted-foreground/40">—</span>
+        </td>
+        <td className="hidden sm:table-cell py-2 px-2 align-middle">
+          <span className="text-[length:var(--text-10)] font-mono text-muted-foreground/40">—</span>
+        </td>
+        <td className="py-2 pr-3 pl-1 align-middle" onClick={(e) => e.stopPropagation()}>
+          <Button variant="ghost" size="icon-sm" onClick={open}>
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <div
+      className="group relative flex h-full flex-col overflow-hidden rounded-sm border border-border bg-card transition-colors hover:border-foreground/25 cursor-pointer"
+      onClick={open}
+    >
+      <div className="flex h-[80px] items-center px-4 pt-4">
+        <div className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-sm border border-dashed border-border text-muted-foreground/60">
+          <Settings className="h-5 w-5" />
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col gap-2 px-4 pb-3 pt-2">
+        <div className="flex items-center gap-1.5">
+          {systemBadge}
+        </div>
+        <h3 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-14)] font-bold uppercase leading-[1.2] tracking-tight text-foreground line-clamp-2 min-h-[2.4em]">
+          {page.menuTitle || page.cardTitle}
+        </h3>
+        <p className="text-[length:var(--text-12)] leading-[1.32] text-muted-foreground line-clamp-2">
+          {page.menuDescription || page.cardDescription}
+        </p>
+        <div className="mt-auto flex items-end justify-end pt-1">
+          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="icon-sm" onClick={open}>
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
           </div>
         </div>
       </div>

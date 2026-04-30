@@ -7,71 +7,36 @@ import {
   Author,
   KeyThoughts,
   ArticleNav,
-  ArticleBody,
-  ExpertQuoteStack,
-  SectionAsideChip,
-  SectionAsideProductCard,
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
   slugifyArticleHeading,
-  type ArticleBodyBlock,
-  type ExpertQuoteItem,
 } from "@rocketmind/ui";
 import type {
-  ArticleAside,
   ArticleEntry,
-  ArticleSection,
-  ArticleSectionQuote,
   ResolvedProductAside,
   ResolvedQuoteExpert,
 } from "@/lib/articles";
+import type { CtaEntity } from "@/lib/ctas";
 import {
   FilePreviewModal,
   type FilePreviewFile,
 } from "./file-preview-modal";
+import {
+  SectionBody,
+  SectionMobile,
+  AsideItem,
+} from "./article-section-renderers";
 
 interface Props {
   article: ArticleEntry;
   expertName: string | null;
   expertAvatarUrl: string | null;
-  tagLabels: string[];
+  tagItems: { id: string; label: string }[];
   /** Резолвенные данные продуктов (ключ `${category}:${slug}`). */
   resolvedProducts: Record<string, ResolvedProductAside>;
   /** Резолвенные данные экспертов для цитат (ключ — expertSlug). */
   resolvedQuoteExperts: Record<string, ResolvedQuoteExpert>;
-}
-
-// ── Quote helpers ──────────────────────────────────────────────────────────
-
-/**
- * Резолвит `ArticleSectionQuote` в `ExpertQuoteItem` для рендера.
- * Порядок приоритетов: ручные поля → expert → пусто. Пустые цитаты
- * (без имени или без контента) отфильтровываются.
- */
-function resolveQuote(
-  quote: ArticleSectionQuote,
-  experts: Record<string, ResolvedQuoteExpert>,
-): ExpertQuoteItem | null {
-  const expert = quote.expertSlug ? experts[quote.expertSlug] : undefined;
-  const name = (quote.name ?? "").trim() || expert?.name || "";
-  const role = (quote.role ?? "").trim() || expert?.role || "";
-  const avatarUrl = quote.avatarUrl || expert?.avatarUrl || null;
-  const label = (quote.label ?? "").trim();
-  const paragraphs = (quote.paragraphs ?? [])
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0);
-  if (!name) return null;
-  if (!label && paragraphs.length === 0) return null;
-  return {
-    id: quote.id,
-    name,
-    role,
-    avatarUrl,
-    label: label || undefined,
-    paragraphs: paragraphs.length > 0 ? paragraphs : undefined,
-  };
+  /** Резолвенные CTA-блоки (ключ — id CTA). Используются в bottomCtaId секции и cta-aside. */
+  resolvedCtas: Record<string, CtaEntity>;
 }
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -83,13 +48,24 @@ const BODY_GAP_PX = 96;
 const ASIDE_GAP_PX = 40;
 const GAP_COMPENSATION = BODY_GAP_PX - ASIDE_GAP_PX;
 
+// Staggered entrance: opacity 0 → 1, slide-up 20px → 0. Easing — easeOutExpo
+// (`cubic-bezier(0.16, 1, 0.3, 1)`) для мягкого «прибытия». Шаг 90ms между
+// уровнями: breadcrumbs/ToC → заголовок → обложка/aside → тело статьи.
+function stagger(index: number): React.CSSProperties {
+  return {
+    opacity: 0,
+    animation: `heroFadeIn 700ms cubic-bezier(0.16, 1, 0.3, 1) ${index * 90}ms forwards`,
+  };
+}
+
 export function ArticlePageClient({
   article,
   resolvedQuoteExperts,
   expertName,
   expertAvatarUrl,
-  tagLabels,
+  tagItems,
   resolvedProducts,
+  resolvedCtas,
 }: Props) {
   // ── ToC: items из section.title/navLabel (пропускаем секции без заголовка) ──
   const navItems = useMemo(
@@ -258,6 +234,13 @@ export function ArticlePageClient({
           `[data-section-body-blocks="${id}"]`,
         );
         const bbH = blocks ? blocks.getBoundingClientRect().height : 0;
+        // Bottom CTA — full-bleed только по ширине body-колонки, aside-колонку
+        // НЕ перекрывает. Поэтому sticky-карточки должны оставаться в потоке
+        // на всю высоту CTA (видимы рядом с ним), а не отлипать на его верху.
+        const cta = document.querySelector<HTMLElement>(
+          `[data-section-body-cta="${id}"]`,
+        );
+        const ctaH = cta ? cta.getBoundingClientRect().height : 0;
         const quoteLayout: "wide" | "narrow" | null = quote
           ? bbH >= innerH
             ? "wide"
@@ -266,10 +249,118 @@ export function ArticlePageClient({
 
         // Sticky-zone: в wide-режиме цитата перекрывает aside-колонку по ширине,
         // поэтому sticky-карточки должны отлипать ДО цитаты — ограничиваем zone
-        // высотой блоков (без цитаты). В остальных случаях — полная bodyH.
+        // высотой блоков + CTA (CTA остаётся в body-колонке, не пересекается
+        // с aside). В остальных случаях — полная bodyH (она уже включает CTA).
         if (zone && innerH > 0) {
-          const zoneCap = quoteLayout === "wide" && bbH > 0 ? bbH : bodyH;
+          const blocksAndCta = bbH + ctaH;
+          const zoneCap =
+            quoteLayout === "wide" && blocksAndCta > 0 ? blocksAndCta : bodyH;
           zone.style.height = `${Math.max(innerH, zoneCap)}px`;
+        }
+
+        // Factoid-grid sync (section-level). Сетка живёт строго сверху секции,
+        // под H2 — поэтому offset для aside-inner детерминирован.
+        //   - в 3-кол layout растягиваем обёртку в col-4 negative marginRight'ом
+        //     (как wide-quote), чтобы 3-я карточка визуально жила в aside-col;
+        //   - суммируем высоты рядов, где есть 3-я карточка (только они
+        //     перекрывают aside-колонку), и применяем как paddingTop на
+        //     aside-inner — sticky-карточки начинают зону ниже 3-х
+        //     карточек фактоидов и не пересекаются с ними.
+        const factoidsEl = body.querySelector<HTMLElement>(
+          `[data-section-factoids="${id}"]`,
+        );
+        let factoidOffset = 0;
+        if (factoidsEl) {
+          const grid = factoidsEl.querySelector<HTMLElement>(
+            "[data-factoid-grid]",
+          );
+          if (grid) {
+            const cells = Array.from(
+              grid.querySelectorAll<HTMLElement>("[data-factoid-card]"),
+            );
+            // cols берём из реальной CSS-сетки. На сайте grid-template-columns
+            // выставляется inline (`repeat(N, ...)`).
+            const tpl = window
+              .getComputedStyle(grid)
+              .getPropertyValue("grid-template-columns")
+              .trim();
+            const cols = tpl ? tpl.split(/\s+/).length : 1;
+
+            // Col-4 overflow — только в 3-кол layout (≥1280).
+            const asideCol = document.querySelector<HTMLElement>(
+              "[data-aside-col]",
+            );
+            const asideW = asideCol ? asideCol.offsetWidth : 0;
+            // 3-я карточка визуально полностью занимает col-4 (как wide-quote).
+            // Aside-контент НЕ накладывается потому, что мы сдвигаем его вниз
+            // через paddingTop на aside-inner (см. ниже).
+            if (cols >= 3 && asideW > 0 && cells.length >= 3) {
+              factoidsEl.style.marginRight = `-${asideW + 8}px`;
+            } else {
+              factoidsEl.style.marginRight = "";
+            }
+
+            // Группируем клетки по фактическому viewport-Y — это даёт
+            // ряды независимо от newRow / auto-wrap логики FactoidGrid.
+            // Берём BOTTOM-Y последнего ряда, в котором >=3 карточки
+            // (=есть 3-я карточка в col-4-зоне), относительно top'а
+            // aside-inner. Это даёт точный paddingTop: aside-контент
+            // начнётся РОВНО под этим рядом + 24px воздуха.
+            if (cols >= 3 && cells.length > 0 && inner) {
+              type RowInfo = { top: number; bottom: number; count: number };
+              const rows: RowInfo[] = [];
+              for (const cell of cells) {
+                const r = cell.getBoundingClientRect();
+                const top = Math.round(r.top);
+                let row = rows.find((x) => Math.abs(x.top - top) < 2);
+                if (!row) {
+                  row = { top, bottom: r.bottom, count: 0 };
+                  rows.push(row);
+                }
+                row.count += 1;
+                if (r.bottom > row.bottom) row.bottom = r.bottom;
+              }
+              let lastConflictBottom = 0;
+              for (const row of rows) {
+                if (row.count >= 3 && row.bottom > lastConflictBottom) {
+                  lastConflictBottom = row.bottom;
+                }
+              }
+              if (lastConflictBottom > 0) {
+                // Берём wrap.top (не inner.top) — wrap не sticky, его top
+                // соответствует НАТУРАЛЬНОЙ позиции inner. Если inner уже
+                // pinned, его getBoundingClientRect().top = 96, что даст
+                // неверный paddingTop при последующем re-sync.
+                const wrapTop = wrap.getBoundingClientRect().top;
+                factoidOffset = Math.max(0, lastConflictBottom - wrapTop + 24);
+              }
+            }
+          }
+        }
+        // Применяем offset через spacer внутри aside-zone (перед inner),
+        // а НЕ через padding-top на inner. paddingTop сделал бы inner таким
+        // же высоким, и при sticky-pinned контент инера оказывался бы на
+        // viewport y = 96 + paddingTop (= где-то в середине экрана). Spacer
+        // же — обычный элемент в потоке, пушит inner natural-top вниз, но
+        // pinned-позиция inner остаётся на top:24 viewport.
+        const spacer = wrap.querySelector<HTMLElement>(
+          `[data-section-aside-spacer="${id}"]`,
+        );
+        if (spacer) {
+          spacer.style.height = factoidOffset > 0 ? `${factoidOffset}px` : "";
+        }
+        if (inner) {
+          // Зачищаем старый paddingTop (от предыдущих версий sync).
+          inner.style.paddingTop = "";
+        }
+        // Пересчитываем zone height, учитывая spacer перед inner.
+        // Без этого zone может оказаться меньше (innerH + factoidOffset), и
+        // sticky inner упрётся в bottom зоны раньше, чем нужно.
+        if (zone && innerH > 0 && factoidOffset > 0) {
+          const blocksAndCta = bbH + ctaH;
+          const zoneCap =
+            quoteLayout === "wide" && blocksAndCta > 0 ? blocksAndCta : bodyH;
+          zone.style.height = `${Math.max(innerH + factoidOffset, zoneCap)}px`;
         }
 
         if (quote && quoteLayout) {
@@ -440,11 +531,11 @@ export function ArticlePageClient({
   if (isWide) {
     return (
       <TooltipProvider delay={200}>
-        <article className="px-5 py-16 md:px-8 md:py-20 xl:px-14">
-          <div className="mx-auto max-w-[1512px]">
+        <article className="py-16 md:py-20">
+          <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
             <div className="grid grid-cols-4 gap-2">
               {/* Col 1 — ToC, sticky через всю страницу */}
-              <aside className="col-span-1">
+              <aside className="col-span-1" style={stagger(0)}>
                 <div className="sticky top-24">
                   <ArticleNav
                     items={navItems}
@@ -465,10 +556,10 @@ export function ArticlePageClient({
                   стартовали на одном Y. */}
               <div className="col-span-2 flex flex-col">
                 <div data-hero-left>
-                  <div className="mb-10 pt-4">{breadcrumbs}</div>
+                  <div className="mb-10 pt-4" style={stagger(0)}>{breadcrumbs}</div>
 
                   <div className="flex flex-col gap-10" data-hero-title-block>
-                    <div className="flex flex-col gap-7">
+                    <div className="flex flex-col gap-7" style={stagger(1)}>
                       <h1 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-32)] uppercase tracking-[-0.02em] leading-[1.08] text-[color:var(--rm-gray-fg-main)] md:text-[52px]">
                         {article.title}
                       </h1>
@@ -480,7 +571,10 @@ export function ArticlePageClient({
                     </div>
 
                     {article.coverUrl ? (
-                      <div className="relative overflow-hidden rounded-sm bg-[color:var(--rm-gray-1)]">
+                      <div
+                        className="relative overflow-hidden rounded-sm bg-[color:var(--rm-gray-1)]"
+                        style={stagger(2)}
+                      >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={article.coverUrl}
@@ -497,6 +591,7 @@ export function ArticlePageClient({
                       <div
                         className="rounded-sm bg-[color:var(--rm-gray-1)] lg:h-[465px] aspect-[16/9] lg:aspect-auto"
                         aria-hidden
+                        style={stagger(2)}
                       />
                     )}
                   </div>
@@ -506,18 +601,23 @@ export function ArticlePageClient({
                   <div
                     id="article-body"
                     className="mt-24 flex flex-col gap-24"
+                    style={stagger(3)}
                   >
                     {article.sections.map((section) => (
                       <div key={section.id} data-section-body={section.id}>
                         <SectionBody
                           section={section}
                           resolvedQuoteExperts={resolvedQuoteExperts}
+                          resolvedCtas={resolvedCtas}
                         />
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="mt-24 flex flex-col items-start gap-3 rounded-sm border border-dashed border-[color:var(--rm-gray-3)] bg-[color:var(--rm-gray-1)]/20 p-6 md:p-10">
+                  <div
+                    className="mt-24 flex flex-col items-start gap-3 rounded-sm border border-dashed border-[color:var(--rm-gray-3)] bg-[color:var(--rm-gray-1)]/20 p-6 md:p-10"
+                    style={stagger(3)}
+                  >
                     <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)]">
                       Тело статьи пусто
                     </p>
@@ -533,11 +633,17 @@ export function ArticlePageClient({
                   min-height = высоте data-hero-left. Так первая body-aside-секция
                   попадает на тот же Y, что и первая body-секция в col-2-3. */}
               <aside data-aside-col className="col-span-1 pl-[45px]">
-                <div data-hero-aside className="flex flex-col gap-10">
-                  {tagLabels.length > 0 && (
+                <div data-hero-aside className="flex flex-col gap-10" style={stagger(2)}>
+                  {tagItems.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                      {tagLabels.map((label) => (
-                        <Tag key={label} size="l">
+                      {tagItems.map(({ id, label }) => (
+                        <Tag
+                          key={id}
+                          as="a"
+                          href={`${BASE}/media/tag/${id}`}
+                          size="l"
+                          state="interactive"
+                        >
                           {label}
                         </Tag>
                       ))}
@@ -557,7 +663,7 @@ export function ArticlePageClient({
                 </div>
 
                 {hasAnyContent && (
-                  <div className="mt-24 flex flex-col gap-10">
+                  <div className="mt-24 flex flex-col gap-10" style={stagger(3)}>
                     {article.sections.map((section) => (
                       <div
                         key={section.id}
@@ -566,6 +672,12 @@ export function ArticlePageClient({
                       >
                         {section.asides.length > 0 && (
                           <div data-section-aside-sticky-zone={section.id}>
+                            {/* Spacer пушит inner вниз в потоке зоны на
+                                высоту ряда factoid'ов с 3-й карточкой —
+                                но НЕ влияет на pinned-позицию (sticky сам
+                                встаёт на top:24 viewport). Высоту spacer'а
+                                выставляет sync в article-page-client. */}
+                            <div data-section-aside-spacer={section.id} />
                             <div
                               data-section-aside-inner={section.id}
                               className="sticky top-24 flex flex-col gap-3"
@@ -581,6 +693,7 @@ export function ArticlePageClient({
                                   key={aside.id}
                                   aside={aside}
                                   resolvedProducts={resolvedProducts}
+                                  resolvedCtas={resolvedCtas}
                                   onPreviewFile={setPreviewFile}
                                 />
                               ))}
@@ -606,9 +719,12 @@ export function ArticlePageClient({
 
   return (
     <TooltipProvider delay={200}>
-    <article className="px-5 py-16 md:px-8 md:py-20 xl:px-14">
-      <div className="mx-auto max-w-[1512px]">
-        <div className="mb-8 pt-2 md:mb-10 md:pt-0 -mx-5 px-5 md:mx-0 md:px-0">
+    <article className="py-16 md:py-20">
+      <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
+        <div
+          className="mb-8 pt-2 md:mb-10 md:pt-0"
+          style={stagger(0)}
+        >
           {breadcrumbs}
         </div>
 
@@ -619,7 +735,7 @@ export function ArticlePageClient({
             см. Figma 1133:8040). На узких экранах (<lg) стекается в 1 колонку. */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-4 lg:gap-2">
           <div className="flex flex-col gap-8 md:gap-10 lg:col-span-3">
-            <div className="flex flex-col gap-4 md:gap-7">
+            <div className="flex flex-col gap-4 md:gap-7" style={stagger(1)}>
               <h1 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-32)] uppercase tracking-[-0.02em] leading-[1.08] text-[color:var(--rm-gray-fg-main)] md:text-[52px]">
                 {article.title}
               </h1>
@@ -630,11 +746,17 @@ export function ArticlePageClient({
               )}
             </div>
 
-            <div className="flex flex-col gap-5 lg:hidden">
-              {tagLabels.length > 0 && (
+            <div className="flex flex-col gap-5 lg:hidden" style={stagger(2)}>
+              {tagItems.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {tagLabels.map((label) => (
-                    <Tag key={label} size="m">
+                  {tagItems.map(({ id, label }) => (
+                    <Tag
+                      key={id}
+                      as="a"
+                      href={`${BASE}/media/tag/${id}`}
+                      size="m"
+                      state="interactive"
+                    >
                       {label}
                     </Tag>
                   ))}
@@ -651,7 +773,10 @@ export function ArticlePageClient({
             </div>
 
             {article.coverUrl ? (
-              <div className="relative overflow-hidden rounded-sm bg-[color:var(--rm-gray-1)]">
+              <div
+                className="relative overflow-hidden rounded-sm bg-[color:var(--rm-gray-1)]"
+                style={stagger(2)}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={article.coverUrl}
@@ -668,15 +793,25 @@ export function ArticlePageClient({
               <div
                 className="rounded-sm bg-[color:var(--rm-gray-1)] lg:h-[465px] aspect-[16/9] lg:aspect-auto"
                 aria-hidden
+                style={stagger(2)}
               />
             )}
           </div>
 
-          <aside className="hidden flex-col gap-10 lg:col-span-1 lg:flex lg:pl-[45px]">
-            {tagLabels.length > 0 && (
+          <aside
+            className="hidden flex-col gap-10 lg:col-span-1 lg:flex lg:pl-[45px]"
+            style={stagger(2)}
+          >
+            {tagItems.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {tagLabels.map((label) => (
-                  <Tag key={label} size="l">
+                {tagItems.map(({ id, label }) => (
+                  <Tag
+                    key={id}
+                    as="a"
+                    href={`${BASE}/media/tag/${id}`}
+                    size="l"
+                    state="interactive"
+                  >
                     {label}
                   </Tag>
                 ))}
@@ -699,7 +834,7 @@ export function ArticlePageClient({
           </aside>
 
           {article.keyThoughts.length > 0 && (
-            <div className="lg:hidden">
+            <div className="lg:hidden" style={stagger(3)}>
               <KeyThoughts thoughts={article.keyThoughts} />
             </div>
           )}
@@ -710,7 +845,7 @@ export function ArticlePageClient({
             На десктопе (lg+): адаптивная 4-колоночная сетка с ДВУМЯ НЕЗАВИСИМЫМИ
             потоками — все bodies текут в col 2-3 (без дыр, даже если aside-колонка
             длиннее), все asides текут в col 4. Asides sticky — стекуются по скроллу. */}
-        <div className="mt-16 md:mt-24">
+        <div className="mt-16 md:mt-24" style={stagger(3)}>
           {hasAnyContent ? (
             !isDesktop ? (
               /* Mobile layout — per-section стек (body + aside одной пачкой) */
@@ -724,6 +859,7 @@ export function ArticlePageClient({
                     section={section}
                     resolvedProducts={resolvedProducts}
                     resolvedQuoteExperts={resolvedQuoteExperts}
+                    resolvedCtas={resolvedCtas}
                     onPreviewFile={setPreviewFile}
                   />
                 ))}
@@ -754,6 +890,7 @@ export function ArticlePageClient({
                       <SectionBody
                         section={section}
                         resolvedQuoteExperts={resolvedQuoteExperts}
+                        resolvedCtas={resolvedCtas}
                       />
                     </div>
                   ))}
@@ -782,6 +919,12 @@ export function ArticlePageClient({
                       >
                         {section.asides.length > 0 && (
                           <div data-section-aside-sticky-zone={section.id}>
+                            {/* Spacer пушит inner вниз в потоке зоны на
+                                высоту ряда factoid'ов с 3-й карточкой —
+                                но НЕ влияет на pinned-позицию (sticky сам
+                                встаёт на top:24 viewport). Высоту spacer'а
+                                выставляет sync в article-page-client. */}
+                            <div data-section-aside-spacer={section.id} />
                             <div
                               data-section-aside-inner={section.id}
                               className="sticky top-24 flex flex-col gap-3"
@@ -797,6 +940,7 @@ export function ArticlePageClient({
                                   key={aside.id}
                                   aside={aside}
                                   resolvedProducts={resolvedProducts}
+                                  resolvedCtas={resolvedCtas}
                                   onPreviewFile={setPreviewFile}
                                 />
                               ))}
@@ -831,250 +975,3 @@ export function ArticlePageClient({
   );
 }
 
-// ── Сборка блоков секции (H2 + блоки) для ArticleBody ───────────────────────
-// Title добавляется как h2-блок, чтобы переиспользовать логику ritm-отступов
-// и slugify id (якоря / ToC) из article-body.tsx.
-function sectionBlocks(section: ArticleSection): ArticleBodyBlock[] {
-  const title = section.title.trim();
-  return title
-    ? [
-        { id: `${section.id}_h2`, type: "h2", data: { text: title } },
-        ...section.blocks,
-      ]
-    : section.blocks;
-}
-
-function SectionBody({
-  section,
-  resolvedQuoteExperts,
-}: {
-  section: ArticleSection;
-  resolvedQuoteExperts: Record<string, ResolvedQuoteExpert>;
-}) {
-  const blocks = sectionBlocks(section);
-  const quotes = section.quotes
-    .map((q) => resolveQuote(q, resolvedQuoteExperts))
-    .filter((q): q is ExpertQuoteItem => q !== null);
-  if (blocks.length === 0 && quotes.length === 0) return null;
-  return (
-    <div className="min-w-0">
-      {blocks.length > 0 && (
-        <div data-section-body-blocks={section.id}>
-          <ArticleBody blocks={blocks} />
-        </div>
-      )}
-      {quotes.length > 0 && (
-        <div
-          data-section-quote={section.id}
-          // layout по умолчанию "narrow" — переключается на "wide" в
-          // useLayoutEffect по соотношению высот body (блоки) vs aside.
-          data-quote-layout="narrow"
-          className={blocks.length > 0 ? "mt-[40px]" : ""}
-        >
-          {/* Оба варианта в DOM, видимым управляет JS через display
-              (см. useLayoutEffect sync). До первого measure — narrow (SSR). */}
-          <div data-quote-variant="narrow">
-            <ExpertQuoteStack quotes={quotes} variant="narrow" />
-          </div>
-          <div data-quote-variant="wide" style={{ display: "none" }}>
-            <ExpertQuoteStack quotes={quotes} variant="wide" />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Мобильная секция: body + aside-кластер стеком (aside идёт под body секции).
-function SectionMobile({
-  section,
-  resolvedProducts,
-  resolvedQuoteExperts,
-  onPreviewFile,
-}: {
-  section: ArticleSection;
-  resolvedProducts: Record<string, ResolvedProductAside>;
-  resolvedQuoteExperts: Record<string, ResolvedQuoteExpert>;
-  onPreviewFile: (file: FilePreviewFile) => void;
-}) {
-  const blocks = sectionBlocks(section);
-  const hasAsides = section.asides.length > 0;
-  const quotes = section.quotes
-    .map((q) => resolveQuote(q, resolvedQuoteExperts))
-    .filter((q): q is ExpertQuoteItem => q !== null);
-  return (
-    <section className="flex flex-col gap-8">
-      {blocks.length > 0 && (
-        <div className="min-w-0">
-          <ArticleBody blocks={blocks} />
-        </div>
-      )}
-      {quotes.length > 0 && (
-        <div className="min-w-0">
-          <ExpertQuoteStack quotes={quotes} variant="mobile" />
-        </div>
-      )}
-      {hasAsides && (
-        <div className="flex flex-col gap-3">
-          {section.asidesTitleEnabled && section.asidesTitle.trim() && (
-            <h4 className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)]">
-              {section.asidesTitle}
-            </h4>
-          )}
-          {section.asides.map((aside) => (
-            <AsideItem
-              key={aside.id}
-              aside={aside}
-              resolvedProducts={resolvedProducts}
-              onPreviewFile={onPreviewFile}
-            />
-          ))}
-        </div>
-      )}
-    </section>
-  );
-}
-
-function AsideItem({
-  aside,
-  resolvedProducts,
-  onPreviewFile,
-}: {
-  aside: ArticleAside;
-  resolvedProducts: Record<string, ResolvedProductAside>;
-  onPreviewFile: (file: FilePreviewFile) => void;
-}) {
-  if (aside.kind === "file") {
-    const title = aside.displayName.trim() || aside.fileName || "Файл";
-    return (
-      <AsideHint action="Открыть предпросмотр файла" detail={title}>
-        <SectionAsideChip
-          title={title}
-          href={aside.fileUrl}
-          showPreview={aside.showPreview}
-          previewImageUrl={aside.previewImageUrl}
-          previewCropMode={aside.previewCropMode}
-          external={false}
-          onClick={(e) => {
-            // Открываем модал предпросмотра вместо перехода по ссылке.
-            // Download-функция всё равно доступна — в модале есть кнопка «Скачать».
-            e.preventDefault();
-            onPreviewFile({
-              url: aside.fileUrl,
-              fileName: aside.fileName,
-              displayName: aside.displayName,
-            });
-          }}
-        />
-      </AsideHint>
-    );
-  }
-  if (aside.kind === "link") {
-    const title = aside.displayName.trim() || aside.url;
-    return (
-      <AsideHint
-        action="Перейти по внешней ссылке (новая вкладка)"
-        detail={title}
-      >
-        <SectionAsideChip
-          title={title}
-          href={aside.url}
-          showPreview={aside.showPreview}
-          previewImageUrl={aside.previewImageUrl}
-          previewCropMode={aside.previewCropMode}
-          external
-        />
-      </AsideHint>
-    );
-  }
-  if (aside.kind === "logos") {
-    // Монохромная колонка логотипов. Высота каждого лого — авто (по маске),
-    // ширина — из widthPx. Вертикальные отступы между лого 32px desktop / 24px mobile.
-    return (
-      <ul className="flex list-none flex-col gap-6 md:gap-8">
-        {aside.logos.map((logo) => (
-          <li
-            key={logo.id}
-            className="block"
-            style={{
-              width: `${logo.widthPx}px`,
-              height: "32px",
-              backgroundColor: "var(--rm-gray-fg-sub)",
-              WebkitMaskImage: `url("${logo.src}")`,
-              maskImage: `url("${logo.src}")`,
-              WebkitMaskRepeat: "no-repeat",
-              maskRepeat: "no-repeat",
-              WebkitMaskPosition: "left center",
-              maskPosition: "left center",
-              WebkitMaskSize: "contain",
-              maskSize: "contain",
-            }}
-            aria-label="logo"
-          />
-        ))}
-      </ul>
-    );
-  }
-  // product
-  const key = `${aside.productCategory}:${aside.productSlug}`;
-  const resolved = resolvedProducts[key];
-  if (!resolved) return null;
-  return (
-    <AsideHint
-      action="Перейти на страницу продукта"
-      detail={resolved.title}
-    >
-      <SectionAsideProductCard
-        href={resolved.href}
-        title={resolved.title}
-        description={resolved.description}
-        coverUrl={resolved.coverUrl}
-        experts={resolved.experts}
-        variant={
-          resolved.category === "academy" ||
-          resolved.category === "ai-products"
-            ? "image"
-            : "default"
-        }
-      />
-    </AsideHint>
-  );
-}
-
-/**
- * Обёртка с тултипом над asid-карточкой: при hover/focus показывает
- * «что произойдёт при клике» + полное название (актуально когда оно усекается
- * line-clamp'ом).
- *
- * Используется base-ui Tooltip: trigger рендерится через `render={...}` prop —
- * тултип подхватывает ref/события ссылки, без лишней обёртки <button>.
- */
-function AsideHint({
-  action,
-  detail,
-  children,
-}: {
-  action: string;
-  detail: string;
-  children: React.ReactElement;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger render={children} />
-      <TooltipContent
-        side="left"
-        align="start"
-        className="max-w-[280px] border border-[#404040] bg-[#0A0A0A] text-[color:var(--rm-gray-fg-main)]"
-      >
-        <div className="flex flex-col gap-0.5">
-          <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-10)] uppercase tracking-[0.02em] text-[color:var(--rm-yellow-100)]">
-            {action}
-          </span>
-          <span className="text-[length:var(--text-12)] leading-[1.35]">
-            {detail}
-          </span>
-        </div>
-      </TooltipContent>
-    </Tooltip>
-  );
-}

@@ -25,6 +25,7 @@ function makeSection(): ArticleSection {
     title: "",
     navLabel: "",
     blocks: [],
+    factoids: [],
     asides: [],
     quotes: [],
     asidesTitle: DEFAULT_ASIDES_TITLE,
@@ -45,6 +46,9 @@ function normalizeSections(raw: unknown): ArticleSection[] {
         title: typeof rec.title === "string" ? rec.title : "",
         navLabel: typeof rec.navLabel === "string" ? rec.navLabel : "",
         blocks: rec.blocks as ArticleSection["blocks"],
+        factoids: Array.isArray(rec.factoids)
+          ? (rec.factoids as ArticleSection["factoids"])
+          : [],
         asides: Array.isArray(rec.asides)
           ? (rec.asides as ArticleSection["asides"])
           : [],

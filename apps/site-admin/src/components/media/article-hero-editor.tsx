@@ -35,6 +35,17 @@ type Expert = {
   image: string | null;
 };
 
+/**
+ * Виртуальный автор «R-Редакция» — дефолт для новых статей. Не имеет .md-файла,
+ * не возвращается из /api/experts; добавляется в начало списка пикера и
+ * резолвится на сайте через getExpertBySlug("r-editorial").
+ */
+const EDITORIAL_EXPERT: Expert = {
+  slug: "r-editorial",
+  name: "R-Редакция",
+  image: null,
+};
+
 interface Props {
   draft: Article;
   onChange: <K extends keyof Article>(field: K, value: Article[K]) => void;
@@ -48,22 +59,27 @@ export function ArticleHeroEditor({ draft, onChange }: Props) {
   const { mediaTags, upsertMediaTag } = useAdminStore();
   const coverInputRef = useRef<HTMLInputElement>(null);
 
-  const [experts, setExperts] = useState<Expert[]>([]);
+  const [experts, setExperts] = useState<Expert[]>([EDITORIAL_EXPERT]);
   useEffect(() => {
     apiFetch("/api/experts")
       .then((r) => (r.ok ? r.json() : []))
       .then((data) =>
         setExperts(
           Array.isArray(data)
-            ? data.map((e: { slug: string; name: string; image?: string | null }) => ({
-                slug: e.slug,
-                name: e.name,
-                image: e.image ?? null,
-              }))
-            : []
+            ? [
+                EDITORIAL_EXPERT,
+                ...data.map(
+                  (e: { slug: string; name: string; image?: string | null }) => ({
+                    slug: e.slug,
+                    name: e.name,
+                    image: e.image ?? null,
+                  }),
+                ),
+              ]
+            : [EDITORIAL_EXPERT]
         )
       )
-      .catch(() => setExperts([]));
+      .catch(() => setExperts([EDITORIAL_EXPERT]));
   }, []);
 
   const selectedExpert = experts.find((e) => e.slug === draft.expertSlug);
@@ -204,6 +220,7 @@ export function ArticleHeroEditor({ draft, onChange }: Props) {
                         variant="full"
                         name={selectedExpert.name}
                         avatarUrl={selectedExpert.image}
+                        showAvatarFallback={!!selectedExpert.image}
                       />
                     ) : (
                       <>

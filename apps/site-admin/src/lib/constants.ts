@@ -14,6 +14,44 @@ export const ADMIN_SECTIONS: AdminSection[] = [
 /** Section IDs where pages cannot be created manually — they are seeded and fixed. */
 export const LOCKED_SECTIONS = new Set<string>(["unique"]);
 
+/**
+ * Синтетические страницы — карточки в админке, не подвязанные на .md-файл и
+ * открывающие кастомный редактор вместо стандартного EditorShell. Используются
+ * для системно-уникальных страниц вроде «Продукты» (SEO tag-страниц
+ * /products/<slug>) — у них нет блочной структуры, есть свой набор полей.
+ *
+ * Логика в store/page-card специально пропускает их в reorder-PUT и не
+ * показывает действия публикации/архива/удаления.
+ */
+export const SYNTHETIC_PAGE_IDS = new Set<string>(["unique/products"]);
+
+/**
+ * Метаданные синтетических страниц для рендера карточки в списке. Расширять
+ * при добавлении новых записей в SYNTHETIC_PAGE_IDS.
+ */
+export const SYNTHETIC_PAGES: Array<{
+  id: string;
+  sectionId: string;
+  slug: string;
+  menuTitle: string;
+  menuDescription: string;
+  cardTitle: string;
+  cardDescription: string;
+  /** Порядок относительно реальных страниц секции; ставим в конец. */
+  order: number;
+}> = [
+  {
+    id: "unique/products",
+    sectionId: "unique",
+    slug: "products",
+    menuTitle: "Продукты",
+    menuDescription: "SEO-настройки tag-страниц /products/<категория>",
+    cardTitle: "Продукты",
+    cardDescription: "SEO-настройки tag-страниц /products/<категория>",
+    order: 1000,
+  },
+];
+
 /** Unique pages and their absolute routes on the public site. */
 export const UNIQUE_PAGE_ROUTES: Record<string, string> = {
   home: "/",

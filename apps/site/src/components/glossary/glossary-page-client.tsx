@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { ArrowLeft, Search } from "lucide-react";
 import {
   cn,
@@ -16,9 +17,27 @@ import type { MediaTag } from "@/lib/articles";
 interface Props {
   terms: GlossaryTermItem[];
   tags: MediaTag[];
+  /** Активный тег из URL (`/media/glossary/tag/[slug]`). */
+  activeTag?: string;
+  /** H1 prefix override (default "Глоссарий"). */
+  headingPrefix?: string;
+  /** H1 accent (вторая часть, секондарным цветом). */
+  headingAccent?: string;
+  /** Опциональный лид-текст. */
+  intro?: string;
 }
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
+// Staggered entrance: opacity 0 → 1, slide-up 20px → 0. Easing — easeOutExpo
+// (`cubic-bezier(0.16, 1, 0.3, 1)`) для мягкого «прибытия». Шаг 90ms между
+// уровнями — глаз ловит последовательность без затягивания первого впечатления.
+function stagger(index: number): React.CSSProperties {
+  return {
+    opacity: 0,
+    animation: `heroFadeIn 700ms cubic-bezier(0.16, 1, 0.3, 1) ${index * 90}ms forwards`,
+  };
+}
 
 // ── Tag-row dynamic layout helpers (shared shape with /media) ──────────────
 
@@ -45,10 +64,20 @@ function splitTagsByChars(items: TagItem[]): [TagItem[], TagItem[]] {
   return [items.slice(0, bestAt), items.slice(bestAt)];
 }
 
-export function GlossaryPageClient({ terms, tags }: Props) {
+export function GlossaryPageClient({
+  terms,
+  tags,
+  activeTag,
+  headingPrefix,
+  headingAccent,
+  intro,
+}: Props) {
   const [script, setScript] = useState<GlossaryScript>("cyrillic");
-  const [filter, setFilter] = useState<string>("all");
+  const filter: string = activeTag ?? "all";
   const [query, setQuery] = useState<string>("");
+  const tagHref = (id: string) =>
+    id === "all" ? `${BASE}/media/glossary` : `${BASE}/media/glossary/tag/${id}`;
+  const titlePrefix = headingPrefix ?? "Глоссарий";
 
   // Видимость gradient-хвоста под sticky-шапкой. Скрыт на hero + фильтрах
   // (ниже sticky-шапки ничего не скроллится), появляется когда низ тег-фильтров
@@ -155,15 +184,15 @@ export function GlossaryPageClient({ terms, tags }: Props) {
   }, [isTagScroll, allTagItems]);
 
   const renderTagButton = (t: TagItem) => (
-    <Tag
-      key={t.id}
-      size="m"
-      state={filter === t.id ? "active" : "interactive"}
-      as="button"
-      onClick={() => setFilter(t.id)}
-    >
-      {t.label}
-    </Tag>
+    <Link key={t.id} href={tagHref(t.id)} scroll={false}>
+      <Tag
+        size="m"
+        state={filter === t.id ? "active" : "interactive"}
+        as="span"
+      >
+        {t.label}
+      </Tag>
+    </Link>
   );
 
   return (
@@ -171,33 +200,60 @@ export function GlossaryPageClient({ terms, tags }: Props) {
       {/* Hero — исходный: большой заголовок, back-link, ShaderBackground.
           Прокручивается вместе со страницей. */}
       <div className="relative">
-        <div className="pointer-events-none absolute inset-0 bottom-[-120px] lg:bottom-[-200px]">
+        <div
+          className="pointer-events-none absolute inset-0 bottom-[-120px] lg:bottom-[-200px]"
+          style={{ opacity: 0, animation: "heroBgFade 900ms ease-out 0ms forwards" }}
+        >
           <ShaderBackground className="absolute inset-0 h-full w-full opacity-10" />
           <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-background to-transparent" />
         </div>
 
-        <div className="relative z-10 px-5 pt-[102px] pb-8 md:px-8 lg:pt-[144px] lg:pb-12 xl:px-14">
-          <div className="mx-auto max-w-[1512px]">
+        <div className="relative z-10 pt-[102px] pb-8 lg:pt-[144px] lg:pb-12">
+          <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
             <a
               href={`${BASE}/media`}
               className="group mb-6 inline-flex items-center gap-2 font-mono text-[12px] font-medium uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:text-[var(--rm-yellow-100)]"
+              style={stagger(0)}
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden />
               Назад
             </a>
 
-            <h1 className="font-heading text-[28px] font-bold uppercase leading-[1.08] tracking-[-0.02em] lg:text-[80px] lg:font-extrabold">
-              Глоссарий
+            <h1
+              className="font-heading text-[28px] font-bold uppercase leading-[1.08] tracking-[-0.02em] lg:text-[80px] lg:font-extrabold"
+              style={stagger(1)}
+            >
+              {titlePrefix}
+              {headingAccent && (
+                <>
+                  {" "}
+                  <span className="text-muted-foreground">{headingAccent}</span>
+                </>
+              )}
             </h1>
+            {intro && (
+              <p
+                className="mt-6 max-w-3xl text-[16px] leading-[1.4] text-foreground md:text-[18px]"
+                style={stagger(2)}
+              >
+                {intro}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
       {/* Sticky-шапка: только поиск. Заголовок «Глоссарий» и back-link
-          остаются в hero (не дублируются в sticky). */}
-      <div ref={stickyRef} className="sticky top-16 z-20">
-        <div className="bg-background/85 px-5 py-4 backdrop-blur-md md:px-8 md:py-5 xl:px-14">
-          <div className="mx-auto max-w-[1512px]">
+          остаются в hero (не дублируются в sticky).
+          `pointer-events-none` на обёртке, чтобы клики в области
+          gradient-хвоста (-mt-10 у тегов) проходили на верхний ряд тегов;
+          `pointer-events-auto` возвращаем на блоке поиска. */}
+      <div ref={stickyRef} className="pointer-events-none sticky top-16 z-20">
+        <div
+          className="pointer-events-auto bg-background/85 py-4 backdrop-blur-md md:py-5"
+          style={stagger(intro ? 3 : 2)}
+        >
+          <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
             <label className="flex w-full items-center gap-2 rounded-sm border border-[color:var(--rm-gray-3)] bg-background/60 px-4 py-3 transition-colors focus-within:border-[color:var(--rm-yellow-100)] md:max-w-md">
               <Search
                 className="h-4 w-4 shrink-0 text-[color:var(--rm-gray-fg-sub)]"
@@ -225,14 +281,14 @@ export function GlossaryPageClient({ terms, tags }: Props) {
       </div>
 
       {/* Прокручиваемая часть: фильтры, script-toggle, список. */}
-      <div className="relative z-10 -mt-10 px-5 pb-16 md:px-8 md:pb-24 xl:px-14">
-        <div className="mx-auto max-w-[1512px]">
+      <div className="relative z-10 -mt-10 pb-16 md:pb-24">
+        <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
           {/* Теги: раскладка выбирается динамически — как на /media.
                 1 ряд — если всё помещается горизонтально;
                 2 ряда (flex-wrap) — если одной строки не хватает;
                 2 ряда с горизонтальным скроллом и фейдами — если
                 естественно потребовалось бы 3+ строки. */}
-          <div ref={tagsWrapperRef} className="relative mb-8">
+          <div ref={tagsWrapperRef} className="relative mb-8" style={stagger(intro ? 4 : 3)}>
             <div
               ref={tagsProbeRef}
               aria-hidden
@@ -295,11 +351,13 @@ export function GlossaryPageClient({ terms, tags }: Props) {
           {/* Sentinel для gradient-хвоста sticky-шапки. */}
           <div ref={tagsEndRef} aria-hidden className="h-0 w-full" />
 
-          <div className="mb-10">
+          <div className="mb-10" style={stagger(intro ? 5 : 4)}>
             <GlossaryScriptToggle value={script} onChange={setScript} />
           </div>
 
-          <GlossaryList items={filtered} script={script} />
+          <div style={stagger(intro ? 5 : 4)}>
+            <GlossaryList items={filtered} script={script} />
+          </div>
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import {
   cn,
   Tag,
@@ -13,7 +14,24 @@ import {
 } from "@rocketmind/ui";
 import { ArrowUpRight, Search } from "lucide-react";
 import { ShaderBackground } from "@/components/ui/ShaderBackground";
+import type { ArticleCardTypeBadgeColor } from "@rocketmind/ui";
 import type { MediaTag } from "@/lib/articles";
+
+/**
+ * Маппинг `article.type` → системный тег → `{ label, color }` для бейджа на
+ * карточке /media. Если соответствующий системный тег отсутствует или
+ * `disabled` — бейдж не рисуем.
+ */
+function typeBadgeFor(
+  type: "default" | "lesson" | "case",
+  tags: MediaTag[],
+): { label: string; color: ArticleCardTypeBadgeColor } | undefined {
+  if (type === "default") return undefined;
+  const sys = tags.find((t) => t.id === type);
+  if (!sys || sys.disabled) return undefined;
+  const color = (sys.cardColor ?? (type === "lesson" ? "sky" : "terracotta")) as ArticleCardTypeBadgeColor;
+  return { label: sys.label, color };
+}
 
 type Item = {
   slug: string;
@@ -22,6 +40,8 @@ type Item = {
   publishedAt: string;
   coverUrl: string | null;
   tags: string[];
+  /** `default` | `lesson` | `case` — управляет бейджем «Урок»/«Кейс» на карточке. */
+  type: "default" | "lesson" | "case";
   expertName: string | null;
   expertAvatarUrl: string | null;
   cardVariant: ArticleCardVariant;
@@ -34,10 +54,31 @@ interface Props {
   articles: Item[];
   tags: MediaTag[];
   glossaryTerms: GlossaryTermItem[];
+  /** Активный тег из URL (`/media/tag/[slug]`). Если undefined — показ всех. */
+  activeTag?: string;
+  /** H1 prefix override (default "Медиа"). */
+  headingPrefix?: string;
+  /** H1 accent (вторая часть, секондарным цветом). */
+  headingAccent?: string;
+  /** Опциональный лид-текст под H1. */
+  intro?: string;
+  /** Breadcrumb-крошки (по умолчанию: Главная / Медиа). */
+  breadcrumbs?: { label: string; href?: string }[];
 }
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const PAGE_SIZE = 12;
+
+// Stagger entrance: opacity 0 → 1, slide-up 20px → 0. Easing — easeOutExpo
+// (`cubic-bezier(0.16, 1, 0.3, 1)`) для мягкого «прибытия» без жёсткого стопа.
+// Шаг 90ms между уровнями — хватает, чтобы глаз поймал последовательность,
+// но не растягивает первое впечатление.
+function stagger(index: number): React.CSSProperties {
+  return {
+    opacity: 0,
+    animation: `heroFadeIn 700ms cubic-bezier(0.16, 1, 0.3, 1) ${index * 90}ms forwards`,
+  };
+}
 
 type TagItem = { id: string; label: string };
 const TAG_ROW_HEIGHT = 28; // Tag size=m: min-h-7
@@ -66,15 +107,34 @@ function splitTagsByChars(items: TagItem[]): [TagItem[], TagItem[]] {
   return [items.slice(0, bestAt), items.slice(bestAt)];
 }
 
-export function MediaListClient({ articles, tags, glossaryTerms }: Props) {
-  const [filter, setFilter] = useState<string>("all");
+export function MediaListClient({
+  articles,
+  tags,
+  glossaryTerms,
+  activeTag,
+  headingPrefix,
+  headingAccent,
+  intro,
+  breadcrumbs,
+}: Props) {
+  const filter: string = activeTag ?? "all";
   const [query, setQuery] = useState<string>("");
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
+
+  const tagHref = (id: string) =>
+    id === "all" ? `${BASE}/media` : `${BASE}/media/tag/${id}`;
+  const titlePrefix = headingPrefix ?? "Медиа";
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return articles.filter((a) => {
-      if (filter !== "all" && !a.tags.includes(filter)) return false;
+      if (filter !== "all") {
+        // Системные фильтры `lesson`/`case` читают `a.type`, а не `a.tags` —
+        // на этих статьях системный тег физически в `tagIds` не хранится.
+        if (filter === "lesson" || filter === "case") {
+          if (a.type !== filter) return false;
+        } else if (!a.tags.includes(filter)) return false;
+      }
       if (!q) return true;
       if (a.title.toLowerCase().includes(q)) return true;
       if (a.description.toLowerCase().includes(q)) return true;
@@ -170,38 +230,41 @@ export function MediaListClient({ articles, tags, glossaryTerms }: Props) {
   }, [isTagScroll, allTagItems]);
 
   const renderTagButton = (t: TagItem) => (
-    <Tag
-      key={t.id}
-      size="m"
-      state={filter === t.id ? "active" : "interactive"}
-      as="button"
-      onClick={() => {
-        setFilter(t.id);
-        setVisibleCount(PAGE_SIZE);
-      }}
-    >
-      {t.label}
-    </Tag>
+    <Link key={t.id} href={tagHref(t.id)} scroll={false}>
+      <Tag
+        size="m"
+        state={filter === t.id ? "active" : "interactive"}
+        as="span"
+      >
+        {t.label}
+      </Tag>
+    </Link>
   );
 
   return (
     <section className="bg-background text-foreground">
       <div className="relative">
-        {/* Shader-декорация только в верхней части страницы. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[680px] overflow-hidden">
+        {/* Shader-декорация только в верхней части страницы.
+            Анимируем медленным fade'ом без translate — фон не должен «прыгать». */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-[680px] overflow-hidden"
+          style={{ opacity: 0, animation: "heroBgFade 900ms ease-out 0ms forwards" }}
+        >
           <ShaderBackground className="absolute inset-0 h-full w-full opacity-10" />
           <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-background to-transparent" />
         </div>
 
-        <div className="relative z-10 px-5 pt-[102px] pb-16 md:px-8 md:pb-24 lg:pt-[144px] xl:px-14">
-          <div className="mx-auto max-w-[1512px]">
+        <div className="relative z-10 pt-[102px] pb-16 md:pb-24 lg:pt-[144px]">
+          <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
             {/* Breadcrumbs — над двухколоночной раскладкой */}
-            <div className="mb-6">
+            <div className="mb-6" style={stagger(0)}>
               <Breadcrumbs
-                items={[
-                  { label: "Главная", href: `${BASE}/` },
-                  { label: "Медиа" },
-                ]}
+                items={
+                  breadcrumbs ?? [
+                    { label: "Главная", href: `${BASE}/` },
+                    { label: "Медиа" },
+                  ]
+                }
               />
             </div>
 
@@ -210,9 +273,20 @@ export function MediaListClient({ articles, tags, glossaryTerms }: Props) {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_344px] lg:gap-2">
               <div className="flex min-w-0 flex-col gap-10">
                 {/* H1 + mobile-only glossary link */}
-                <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div
+                  className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+                  style={stagger(1)}
+                >
                   <h1 className="font-heading text-[28px] font-bold uppercase leading-[1.08] tracking-[-0.02em] lg:text-[80px] lg:font-extrabold">
-                    Медиа
+                    {titlePrefix}
+                    {headingAccent && (
+                      <>
+                        {" "}
+                        <span className="text-muted-foreground">
+                          {headingAccent}
+                        </span>
+                      </>
+                    )}
                   </h1>
 
                   <a
@@ -228,8 +302,17 @@ export function MediaListClient({ articles, tags, glossaryTerms }: Props) {
                   </a>
                 </div>
 
+                {intro && (
+                  <p
+                    className="-mt-4 max-w-3xl text-[16px] leading-[1.4] text-foreground md:text-[18px]"
+                    style={stagger(2)}
+                  >
+                    {intro}
+                  </p>
+                )}
+
                 {/* Search + tag filter row */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4" style={stagger(intro ? 3 : 2)}>
                   <label className="flex w-full items-center gap-2 rounded-sm border border-[color:var(--rm-gray-3)] bg-transparent px-4 py-3 focus-within:border-[color:var(--rm-yellow-100)] md:max-w-md">
                     <Search
                       className="h-4 w-4 shrink-0 text-[color:var(--rm-gray-fg-sub)]"
@@ -328,13 +411,19 @@ export function MediaListClient({ articles, tags, glossaryTerms }: Props) {
                     `-mt-5` сокращает outer flex gap (40px) → 20px между
                     тегами и карточками. */}
                 {visible.length === 0 ? (
-                  <p className="-mt-5 py-16 text-center text-[length:var(--text-14)] text-[color:var(--rm-gray-fg-sub)]">
+                  <p
+                    className="-mt-5 py-16 text-center text-[length:var(--text-14)] text-[color:var(--rm-gray-fg-sub)]"
+                    style={stagger(intro ? 4 : 3)}
+                  >
                     {query.trim() || filter !== "all"
                       ? "По выбранным фильтрам статей нет."
                       : "Пока нет опубликованных статей."}
                   </p>
                 ) : (
-                  <div className="-mt-5 grid grid-flow-dense grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+                  <div
+                    className="-mt-5 grid grid-flow-dense grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
+                    style={stagger(intro ? 4 : 3)}
+                  >
                     {visible.map((a) => (
                       <div
                         key={a.slug}
@@ -350,7 +439,10 @@ export function MediaListClient({ articles, tags, glossaryTerms }: Props) {
                           title={a.title}
                           description={a.description}
                           coverUrl={a.coverUrl}
-                          tags={a.tags.map((id) => tagLabelById[id] ?? id)}
+                          tags={a.tags
+                            .map((id) => tagLabelById[id])
+                            .filter((label): label is string => Boolean(label))}
+                          typeBadge={typeBadgeFor(a.type, tags)}
                           authorName={a.expertName ?? undefined}
                           authorAvatarUrl={a.expertAvatarUrl}
                           date={a.publishedAt}
@@ -362,17 +454,26 @@ export function MediaListClient({ articles, tags, glossaryTerms }: Props) {
                 )}
 
                 {filtered.length > visible.length && (
-                  <ShowMore
-                    expanded={false}
-                    onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
-                    fade
-                  />
+                  // -mt pulls ShowMore over the cards visually; matching mb
+                  // restores the column's flex-layout height so the cards
+                  // don't overflow below the column into the footer.
+                  // -ml-px aligns the skirt with the leftmost card cell,
+                  // which also has -ml-px to merge borders with neighbours.
+                  <div className="relative z-10 -ml-px -mt-[120px] mb-[80px] sm:-mt-[160px] sm:mb-[120px] lg:-mt-[200px] lg:mb-[160px]">
+                    <ShowMore
+                      expanded={false}
+                      onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+                      fade
+                      fadeHeight={160}
+                      fadeBelow={240}
+                    />
+                  </div>
                 )}
               </div>
 
               {/* Glossary widget — правая колонка (desktop only), поднята на
                   уровень H1. Шапка закреплена sticky через `stickyTop`. */}
-              <div className="hidden lg:block">
+              <div className="hidden lg:block" style={stagger(2)}>
                 <GlossaryWidget items={glossaryTerms} stickyTop="4rem" />
               </div>
             </div>

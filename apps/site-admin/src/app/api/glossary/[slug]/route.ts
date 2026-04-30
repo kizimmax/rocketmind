@@ -27,9 +27,11 @@ export async function PUT(
     status: body.status ?? "published",
     order: typeof body.order === "number" ? body.order : 0,
     title: body.title ?? "",
+    description: body.description ?? "",
     tags: Array.isArray(body.tagIds) ? body.tagIds : [],
     metaTitle: body.metaTitle ?? "",
     metaDescription: body.metaDescription ?? "",
+    body: Array.isArray(body.sections) ? body.sections : [],
     createdAt: body.createdAt ?? now,
     updatedAt: now,
   };

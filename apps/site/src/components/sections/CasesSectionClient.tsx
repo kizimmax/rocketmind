@@ -279,7 +279,7 @@ export function CasesSectionClient({
                     </div>
                   );
                   return isBig ? (
-                    <Link href={`/cases/${currentEntry.slug}`} className="block group">
+                    <Link href={`/media/${currentEntry.slug}`} className="block group">
                       {box}
                     </Link>
                   ) : (

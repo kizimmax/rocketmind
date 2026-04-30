@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Users ──────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  login     String   @unique
+  password  String
+  role      Role     @default(EDITOR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+// ── Pages ─────────────────────────────────────────────────────────────────────
+
+model Page {
+  id              String   @id @default(uuid())
+  slug            String
+  url             String   @unique
+  category        String
+  name            String
+  status          String   @default("published")
+  sortOrder       Int      @default(0)
+  content         Json
+  menuTitle       String   @default("")
+  menuDescription String   @default("")
+  cardTitle       String   @default("")
+  cardDescription String   @default("")
+  metaTitle       String   @default("")
+  metaDescription String   @default("")
+  assets          Asset[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("pages")
+}
+
+// ── Articles (lessons / cases / default) ─────────────────────────────────────
+
+model Article {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  type            String   @default("default")
+  status          String   @default("published")
+  title           String
+  description     String   @default("")
+  content         Json
+  coverPath       String?
+  expertSlug      String?
+  publishedAt     String   @default("")
+  tagIds          String[]
+  pinned          Boolean  @default(false)
+  pinnedOrder     Int      @default(0)
+  featured        Boolean  @default(false)
+  cardVariant     String   @default("default")
+  metaTitle       String   @default("")
+  metaDescription String   @default("")
+  assets          Asset[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("articles")
+}
+
+// ── Glossary ──────────────────────────────────────────────────────────────────
+
+model GlossaryTerm {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  status          String   @default("published")
+  title           String
+  description     String   @default("")
+  content         Json
+  tagIds          String[]
+  metaTitle       String   @default("")
+  metaDescription String   @default("")
+  assets          Asset[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("glossary_terms")
+}
+
+// ── Media Tags ────────────────────────────────────────────────────────────────
+
+model MediaTag {
+  id        String   @id
+  label     String
+  disabled  Boolean  @default(false)
+  system    Boolean  @default(false)
+  cardColor String?
+  seo       Json?
+  createdAt DateTime @default(now())
+
+  @@map("media_tags")
+}
+
+// ── Experts ───────────────────────────────────────────────────────────────────
+
+model Expert {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  content   Json
+  photoPath String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("experts")
+}
+
+// ── Testimonials ──────────────────────────────────────────────────────────────
+
+model Testimonial {
+  id         String   @id @default(uuid())
+  content    Json
+  avatarPath String?
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("testimonials")
+}
+
+// ── CTAs & Forms ──────────────────────────────────────────────────────────────
+
+model CtaEntity {
+  id        String   @id @default(uuid())
+  name      String
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ctas")
+}
+
+model FormEntity {
+  id        String   @id @default(uuid())
+  name      String
+  content   Json
+  assets    Asset[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("forms")
+}
+
+// ── Assets (centralized file registry) ────────────────────────────────────────
+
+model Asset {
+  id           String        @id @default(uuid())
+  filePath     String        @unique
+  publicUrl    String
+  mimeType     String
+  sizeBytes    Int
+  role         String
+  originalName String        @default("")
+  pageId       String?
+  articleId    String?
+  glossaryId   String?
+  formId       String?
+  page         Page?         @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  article      Article?      @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  glossaryTerm GlossaryTerm? @relation(fields: [glossaryId], references: [id], onDelete: Cascade)
+  form         FormEntity?   @relation(fields: [formId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+
+  @@map("assets")
+}

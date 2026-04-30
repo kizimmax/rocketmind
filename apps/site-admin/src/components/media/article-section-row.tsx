@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Compass, Trash2 } from "lucide-react";
 import { Input } from "@rocketmind/ui";
 import type {
@@ -7,8 +8,12 @@ import type {
   ArticleBodyBlock,
   ArticleSection,
   ArticleSectionQuote,
+  CtaEntity,
+  FactoidCardData,
 } from "@/lib/types";
+import { apiFetch } from "@/lib/api-client";
 import { ArticleBodyEditor } from "./article-body-editor";
+import { ArticleBodyFactoidGridEditor } from "./article-body-factoid-grid-editor";
 import { ArticleBodyTextarea } from "./article-body-textarea";
 import { SectionAsidesEditor } from "./section-asides-editor";
 import { SectionQuotesEditor } from "./section-quotes-editor";
@@ -62,11 +67,20 @@ export function ArticleSectionRow({
     onChange({ ...section, quotes });
   }
 
+  function updateFactoids(factoids: FactoidCardData[]) {
+    onChange({ ...section, factoids });
+  }
+
+  function updateFactoidCols(factoidCols: 1 | 2 | 3 | undefined) {
+    onChange({ ...section, factoidCols });
+  }
+
   const title = section.title ?? "";
   const navLabel = section.navLabel ?? "";
   const blocks = Array.isArray(section.blocks) ? section.blocks : [];
   const asides = Array.isArray(section.asides) ? section.asides : [];
   const quotes = Array.isArray(section.quotes) ? section.quotes : [];
+  const factoids = Array.isArray(section.factoids) ? section.factoids : [];
   const asidesTitle =
     typeof section.asidesTitle === "string" ? section.asidesTitle : "Материалы";
   const asidesTitleEnabled =
@@ -153,12 +167,56 @@ export function ArticleSectionRow({
               textClassName="font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.01em] text-[length:var(--text-24)] leading-[1.12]"
             />
           </div>
+          {/* Сетка фактоидов — section-level, всегда сверху под H2.
+              Если карточек нет — показываем кнопку добавления. */}
+          {factoids.length === 0 ? (
+            <button
+              type="button"
+              onClick={() =>
+                updateFactoids([
+                  {
+                    id: `fc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+                    number: "",
+                    text: "",
+                    accent: false,
+                  },
+                ])
+              }
+              className="mb-4 flex w-full items-center justify-center gap-2 rounded-sm border border-dashed border-border bg-[color:var(--rm-gray-1)]/40 px-3 py-2 text-[length:var(--text-12)] font-medium uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+            >
+              + Добавить сетку фактоидов
+            </button>
+          ) : (
+            <div className="mb-4">
+              <ArticleBodyFactoidGridEditor
+                cards={factoids}
+                onChange={updateFactoids}
+                cols={section.factoidCols}
+                onColsChange={updateFactoidCols}
+                onRemoveAll={() => {
+                  updateFactoids([]);
+                  updateFactoidCols(undefined);
+                }}
+              />
+            </div>
+          )}
           {/* Inline-блоки секции */}
           <ArticleBodyEditor
             articleSlug={articleSlug}
             blocks={blocks}
             onChange={updateBlocks}
           />
+
+          {/* CTA-блок над цитатами — рендерится между blocks и quotes. */}
+          <div className="mt-4 flex flex-col gap-2">
+            <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-10)] uppercase tracking-[0.02em] text-muted-foreground">
+              CTA-блок (над цитатой эксперта)
+            </span>
+            <SectionBottomCtaSelector
+              value={section.bottomCtaId}
+              onChange={(id) => onChange({ ...section, bottomCtaId: id })}
+            />
+          </div>
 
           {/* Цитаты экспертов — в конце body-колонки, под блоками.
               На публичной странице: wide если body > aside, narrow иначе,
@@ -188,5 +246,61 @@ export function ArticleSectionRow({
         </aside>
       </div>
     </section>
+  );
+}
+
+function SectionBottomCtaSelector({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (next: string | undefined) => void;
+}) {
+  const [ctas, setCtas] = useState<CtaEntity[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/api/ctas")
+      .then((r) => r.json() as Promise<CtaEntity[]>)
+      .then((all) => {
+        if (cancelled) return;
+        setCtas(all.filter((c) => c.scope !== "product"));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const selected = ctas.find((c) => c.id === value);
+
+  return (
+    <div className="rounded-sm border border-dashed border-border bg-background/30 p-2">
+      <select
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value || undefined)}
+        className="h-7 w-full rounded-sm border border-border bg-background px-1.5 text-[length:var(--text-12)] text-foreground"
+      >
+        <option value="">— нет CTA —</option>
+        {ctas.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name || c.id}
+          </option>
+        ))}
+      </select>
+      {selected && (
+        <p className="mt-1.5 text-[length:var(--text-11)] text-muted-foreground">
+          «{selected.heading || "(без заголовка)"}» —{" "}
+          {selected.formId
+            ? `форма: ${selected.formId}`
+            : "форма не задана"}
+        </p>
+      )}
+      {selected && !selected.formId && (
+        <p className="mt-1 text-[length:var(--text-11)] text-[#ED4843]">
+          У выбранного CTA не задана форма — кнопка не откроет модалку.
+        </p>
+      )}
+    </div>
   );
 }

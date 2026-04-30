@@ -578,6 +578,14 @@ code {
   to   { opacity: 1; }
 }
 
+/* ── Modal form-field stagger ──
+ * Меньшая амплитуда (8px) чем у hero — поля внутри модалки не должны
+ * перекрывать собственный slide-up диалога визуально. */
+@keyframes formStaggerIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Responsive Heading Utilities ──
  * Auto-apply mobile sizes from the DS heading table.
  * Usage:  <h1 class="h1">…</h1>

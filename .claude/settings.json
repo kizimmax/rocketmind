@@ -117,5 +117,43 @@
       "/Users/Maxi/GitHub/Rocketmind/apps/site/.next/dev",
       "/Users/Maxi/GitHub/Rocketmind/apps/site/.next"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/Maxi/.local/bin/uv run --directory /Users/Maxi/GitHub/Obsidian_Brain python hooks/session-start.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/Maxi/.local/bin/uv run --directory /Users/Maxi/GitHub/Obsidian_Brain python hooks/pre-compact.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/Maxi/.local/bin/uv run --directory /Users/Maxi/GitHub/Obsidian_Brain python hooks/session-end.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,7 +1,7 @@
 import { ClassValue } from 'clsx';
 import * as react_jsx_runtime from 'react/jsx-runtime';
 import * as React$1 from 'react';
-import React__default from 'react';
+import React__default, { ReactNode } from 'react';
 import { ThemeProvider as ThemeProvider$1 } from 'next-themes';
 import * as class_variance_authority_types from 'class-variance-authority/types';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
@@ -198,9 +198,15 @@ interface ShowMoreProps {
     fade?: boolean;
     /** CSS color value for gradient end. Default: var(--background) */
     fadeBg?: string;
+    /** Height of the fade gradient above the button (px). Default: 72 */
+    fadeHeight?: number;
+    /** Height of the solid background skirt below the button's center line (px).
+     *  Use to hide content sitting visually behind the button when ShowMore is
+     *  pulled up over preceding content via negative margin. Default: 0 */
+    fadeBelow?: number;
     className?: string;
 }
-declare function ShowMore({ expanded, onClick, label, labelExpanded, fade, fadeBg, className, }: ShowMoreProps): react_jsx_runtime.JSX.Element;
+declare function ShowMore({ expanded, onClick, label, labelExpanded, fade, fadeBg, fadeHeight, fadeBelow, className, }: ShowMoreProps): react_jsx_runtime.JSX.Element;
 interface ShowMorePanelProps {
     expanded: boolean;
     children: React$1.ReactNode;
@@ -492,6 +498,8 @@ interface ArticleNavProps extends React$1.HTMLAttributes<HTMLElement> {
 declare function ArticleNav({ items, activeId, onNavigate, className, ...props }: ArticleNavProps): react_jsx_runtime.JSX.Element | null;
 
 type ArticleCardVariant = "default" | "wide";
+/** 8 акцентных DS-палитр (см. `design/design-system.md` §1.4). */
+type ArticleCardTypeBadgeColor = "yellow" | "violet" | "sky" | "terracotta" | "pink" | "blue" | "red" | "green";
 interface ArticleCardProps extends React$1.HTMLAttributes<HTMLElement> {
     /** If omitted — карточка рендерится как статичное превью без ссылки и без стрелки-выноски. */
     href?: string;
@@ -504,6 +512,15 @@ interface ArticleCardProps extends React$1.HTMLAttributes<HTMLElement> {
     date?: string;
     /** Max tags to show (excess are clipped). Default 3. */
     maxTags?: number;
+    /**
+     * Бейдж типа статьи. Рендерится первым в ленте тегов с фоном из DS-палитры.
+     * Используется для системных типов «Урок» (sky) / «Кейс» (terracotta);
+     * на странице самой статьи такие теги выводятся как обычные, без `typeBadge`.
+     */
+    typeBadge?: {
+        label: string;
+        color: ArticleCardTypeBadgeColor;
+    };
     /**
      * "default" — обычная карточка (обложка сверху, контент ниже).
      * "wide" — широкая: обложка слева, теги и автор справа, заголовок с описанием
@@ -529,7 +546,7 @@ interface ArticleCardProps extends React$1.HTMLAttributes<HTMLElement> {
  *   default: 1→5, 2→3, 3→2
  *   wide:    1→2, 2→1
  */
-declare function ArticleCard({ href, title, description, coverUrl, tags, authorName, authorAvatarUrl, date, maxTags, variant, className, ...props }: ArticleCardProps): react_jsx_runtime.JSX.Element;
+declare function ArticleCard({ href, title, description, coverUrl, tags, authorName, authorAvatarUrl, date, maxTags, typeBadge, variant, className, ...props }: ArticleCardProps): react_jsx_runtime.JSX.Element;
 
 type GlossaryTermItem = {
     slug: string;
@@ -596,7 +613,14 @@ interface GlossaryScriptToggleProps extends Omit<React$1.HTMLAttributes<HTMLDivE
 }
 declare function GlossaryScriptToggle({ value, onChange, className, ...props }: GlossaryScriptToggleProps): react_jsx_runtime.JSX.Element;
 
-type ArticleBodyBlockType = "h2" | "h3" | "h4" | "paragraph" | "quote" | "image" | "gallery" | "video";
+type ArticleBodyBlockType = "h2" | "h3" | "h4" | "paragraph" | "quote" | "image" | "gallery" | "video" | "table";
+/** Структура table-блока (см. Figma 1417:24035 / 1446:34320). */
+interface ArticleTableData {
+    /** Прямоугольный массив ячеек: rows[r][c]. Все строки имеют одинаковую длину. */
+    rows: string[][];
+    /** Если true — первая строка рендерится как шапка (label-стиль, muted color). */
+    hasHeader: boolean;
+}
 interface ArticleGalleryItem {
     id: string;
     title: string;
@@ -605,6 +629,23 @@ interface ArticleGalleryItem {
     kind?: "image" | "video";
     /** Опциональная подпись под активным медиа. Пустая — не рендерится. */
     caption?: string;
+}
+/**
+ * Карточка фактоида (factoid-grid). Большая цифра H2 + текст-описание Copy 16.
+ * `accent: true` — жёлтая подложка `--rm-yellow-100` с тёмным текстом.
+ */
+interface FactoidCardData {
+    id: string;
+    number: string;
+    text: string;
+    accent: boolean;
+    /**
+     * Принудительно начать новую строку с этой карточки. Реализуется через
+     * `grid-column-start: 1` — пустые ячейки предыдущей строки остаются
+     * пустыми (фон `--rm-gray-3` остаётся видим, как разделитель). Кнопка
+     * «Карточка ниже» в редакторе ставит этот флаг.
+     */
+    newRow?: boolean;
 }
 interface ArticleBodyBlock {
     id: string;
@@ -617,6 +658,26 @@ interface ArticleBodyProps extends React$1.HTMLAttributes<HTMLDivElement> {
     blocks: ArticleBodyBlock[];
 }
 declare function slugify(input: string): string;
+/**
+ * FactoidGrid — section-level сетка карточек-фактоидов. Рендерится поверх
+ * содержимого секции (всегда сверху, под H2), не как блок тела статьи.
+ *
+ * Кол-во колонок: явный `cols` (если задан) или авто-кламп по `cards.length`
+ * (max 3). Колонки задаются inline через `grid-template-columns` — Tailwind
+ * не нужен, гарантирует что при `cols=3` и виде ≥768 рендерится именно 3 кол.
+ *
+ * Бордеры — поячеечно (right + bottom всегда; первая строка — top; первая
+ * колонка — left). У пустых ячеек неполного последнего ряда рамок нет —
+ * никто их не рисует.
+ *
+ * Третья карточка визуально вылезает в col-4 — это делает обёртка
+ * [data-section-factoids] + sync в article-page-client.
+ */
+declare function FactoidGrid({ cards, cols, className, }: {
+    cards: FactoidCardData[];
+    cols?: 1 | 2 | 3;
+    className?: string;
+}): react_jsx_runtime.JSX.Element | null;
 /**
  * ArticleBody — тело статьи /media/[slug]. Рендерит типизированные блоки
  * (h2/h3/paragraph/quote) с единой логикой вертикального ритма.
@@ -786,7 +847,7 @@ type ForWhomSectionProps = {
 };
 declare function ForWhomSection({ tag, title, titleSecondary, subtitle, paragraphs, facts, wideColumn, className, }: ForWhomSectionProps): react_jsx_runtime.JSX.Element;
 
-type SocialKind = "vk" | "telegram" | "custom";
+type SocialKind = "vk" | "telegram" | "max" | "custom";
 type ContactSocial = {
     id: string;
     kind: SocialKind;
@@ -840,6 +901,8 @@ declare function ContactsSection({ tag, title, titleSecondary, subtitle, paragra
 declare function VkIcon({ className, ...props }: React$1.SVGProps<SVGSVGElement>): react_jsx_runtime.JSX.Element;
 
 declare function TelegramIcon({ className, ...props }: React$1.SVGProps<SVGSVGElement>): react_jsx_runtime.JSX.Element;
+
+declare function MaxIcon({ className, ...props }: React$1.SVGProps<SVGSVGElement>): react_jsx_runtime.JSX.Element;
 
 type ProcessStep = {
     number: string;
@@ -923,8 +986,14 @@ interface ServicesSectionProps {
     paragraphs?: StyledParagraph[];
     cards: ServiceCardData[];
     className?: string;
+    /**
+     * Click-handler карточки. Если задан — карточка рендерится как `<button>`
+     * (даже если у неё есть `href`). Используется для открытия формы страницы
+     * с предзаданным чипсом = заголовок карточки.
+     */
+    onCardClick?: (card: ServiceCardData) => void;
 }
-declare function ServicesSection({ tag, title, titleSecondary, description, paragraphs, cards, className, }: ServicesSectionProps): react_jsx_runtime.JSX.Element | null;
+declare function ServicesSection({ tag, title, titleSecondary, description, paragraphs, cards, className, onCardClick, }: ServicesSectionProps): react_jsx_runtime.JSX.Element | null;
 /**
  * Assign bento-style sizing to cards based on content volume, then sort so
  * larger cards tend to come first for dense packing on a 4-column grid.
@@ -1026,8 +1095,18 @@ type CTASectionYellowProps = {
     body?: string;
     /** Button label */
     buttonText?: string;
-    /** Button href */
+    /** Button href. Игнорируется, если передан `onClick`. */
     href?: string;
+    /** Если задан — кнопка рендерится как `<button>` и вызывает onClick (для открытия модалки). */
+    onClick?: () => void;
+    /**
+     * Варианты вёрстки.
+     * - `"default"` — полноразмерный CTA для конца страницы (с боковыми отступами,
+     *   крупный H1/H2-заголовок, fixed aspect ratio).
+     * - `"article"` — компактный для тела статьи: full-bleed (без боковых px),
+     *   заголовок H3, меньше внутренних отступов.
+     */
+    variant?: "default" | "article";
     className?: string;
 };
 /**
@@ -1038,7 +1117,108 @@ type CTASectionYellowProps = {
  * - Текст/кнопка: #0A0A0A
  * - Спираль: #FFE066 (--rm-yellow-300)
  */
-declare function CTASectionYellow({ heading, body, buttonText, href, className, }: CTASectionYellowProps): react_jsx_runtime.JSX.Element;
+declare function CTASectionYellow({ heading, body, buttonText, href, onClick, variant, className, }: CTASectionYellowProps): react_jsx_runtime.JSX.Element;
+
+type CTASectionMiniProps = {
+    heading?: string;
+    body?: string;
+    buttonText?: string;
+    href?: string;
+    onClick?: () => void;
+    className?: string;
+};
+/**
+ * Mini-CTA для правой колонки статей — компактный жёлтый блок,
+ * визуально соразмерный sidebar-айтемам (~300px ширина).
+ */
+declare function CTASectionMini({ heading, body, buttonText, href, onClick, className, }: CTASectionMiniProps): react_jsx_runtime.JSX.Element;
+
+type FormFieldsConfig = {
+    name: boolean;
+    email: boolean;
+    phone: boolean;
+    message: boolean;
+};
+type FormChipsConfig = {
+    enabled: boolean;
+    multi: boolean;
+    label: string;
+};
+type FormConsentLink = {
+    id: string;
+    label: string;
+    url: string;
+};
+type FormConsentConfig = {
+    text: string;
+    links: FormConsentLink[];
+};
+type FormSuccessGift = {
+    kind: "file" | "link";
+    url: string;
+    label: string;
+};
+type FormEntity = {
+    id: string;
+    name: string;
+    scope: "product" | "article" | "both";
+    title: string;
+    description: string;
+    submitButtonText: string;
+    successMessage: string;
+    successGift?: FormSuccessGift | null;
+    fields: FormFieldsConfig;
+    chips: FormChipsConfig;
+    consent: FormConsentConfig;
+};
+type OpenContext = {
+    /** Заголовок одного предвыбранного чипса (например, заголовок карточки услуги). */
+    chipPrefilled?: string;
+    /** Все доступные чипсы для этой страницы (заголовки карточек блока «Услуги»). */
+    availableChips?: string[];
+    /**
+     * Конфиг чипсов из блока «Услуги» страницы (multi/label). Если не передан —
+     * чипсы не рендерятся вообще, даже при наличии `availableChips`.
+     */
+    chipsConfig?: {
+        multi?: boolean;
+        label?: string;
+    };
+};
+type ModalContextValue = {
+    openForm: (formId: string, ctx?: OpenContext) => void;
+};
+declare function useFormModal(): ModalContextValue;
+type SubmitHandler = (form: FormEntity, payload: Record<string, unknown>) => Promise<void> | void;
+declare function ModalProvider({ forms, children, onSubmit, defaultConsentLinks, }: {
+    forms: FormEntity[];
+    children: ReactNode;
+    onSubmit?: SubmitHandler;
+    /**
+     * Дефолтные ссылки на документы для consent-чекбокса (Политика, согласие на
+     * обработку ПД и т.п.). Используются, когда у формы `consent.links` пустой —
+     * то есть админ не задал кастомные ссылки. Передавать relative paths
+     * (`/legal/...`) — они переживают смену домена и base-path.
+     */
+    defaultConsentLinks?: FormConsentLink[];
+}): react_jsx_runtime.JSX.Element;
+declare function DynamicForm({ form, chipPrefilled, availableChips, chipsConfig, defaultConsentLinks, onSubmit, }: {
+    form: FormEntity;
+    chipPrefilled?: string;
+    availableChips?: string[];
+    /**
+     * Конфиг чипсов из контекста открытия (multi/label). Передаётся блоком
+     * «Услуги» страницы — там же админ настраивает single/multi и заголовок.
+     * Если не передан, чипсы не рендерятся.
+     */
+    chipsConfig?: {
+        multi?: boolean;
+        label?: string;
+    };
+    /** Дефолтные ссылки consent — используются если у формы `consent.links` пуст. */
+    defaultConsentLinks?: FormConsentLink[];
+    onSubmit: (payload: Record<string, unknown>) => Promise<void> | void;
+}): react_jsx_runtime.JSX.Element;
 
 type LogoMarqueeItem = {
     alt: string;
@@ -1135,13 +1315,25 @@ type SiteFooterProps = {
 };
 declare function SiteFooter({ basePath, className, children, nav, companyLinks, legalLinks, }: SiteFooterProps): react_jsx_runtime.JSX.Element;
 
+type SiteHeaderCta = {
+    /** Текст кнопки (например, «Оставить заявку»). Если пусто — кнопка не рендерится. */
+    buttonText?: string;
+    /** ID формы, открывается по клику. Если пусто — кнопка не рендерится. */
+    formId?: string;
+};
 type SiteHeaderProps = {
     /** Base path for static assets (logo). Default: "" */
     basePath?: string;
     className?: string;
     /** Navigation tree. Falls back to the hardcoded HEADER_NAV when omitted. */
     nav?: NavSection[];
+    /**
+     * CTA-кнопка справа от меню (на мобиле — слева от бургера). Открывает форму
+     * по `formId` через `ModalProvider`. Если `buttonText` или `formId` пусты —
+     * не рендерится.
+     */
+    cta?: SiteHeaderCta;
 };
-declare function SiteHeader({ basePath, className, nav }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
+declare function SiteHeader({ basePath, className, nav, cta, }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
 
-export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, GlossaryList, type GlossaryListProps, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type LogoMarqueeItem, MobileNav, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants };
+export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardTypeBadgeColor, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, type ArticleTableData, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionMini, type CTASectionMiniProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, DynamicForm, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type FactoidCardData, FactoidGrid, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, type FormChipsConfig, type FormConsentConfig, type FormConsentLink, type FormEntity, type FormFieldsConfig, type FormSuccessGift, GlossaryList, type GlossaryListProps, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type LogoMarqueeItem, MaxIcon, MobileNav, ModalProvider, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderCta, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants, useFormModal };

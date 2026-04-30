@@ -19,6 +19,8 @@ import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-d
 import { ArticleHeroEditor } from "./article-hero-editor";
 import { ArticlePreviewCard } from "./article-preview-card";
 import { ArticleSectionsEditor } from "./article-sections-editor";
+import { CaseCardEditor } from "@/components/page-editor/block-editors/case-card-editor";
+import type { ArticleType, CaseCardBlockData } from "@/lib/types";
 
 interface Props {
   articleId: string;
@@ -177,34 +179,30 @@ function ArticleEditorInner({
                 </div>
               </Section>
 
-              <Section title="Отображение в списке /media">
-                <div className="flex flex-col gap-4">
-                  <ToggleRow
-                    icon={<Pin className="h-4 w-4" strokeWidth={1.5} />}
-                    label="Закрепить"
-                    description="Закреплённые статьи показываются в начале списка на /media."
-                    checked={article.pinned}
-                    onCheckedChange={(v) => {
-                      // Новая закреплённая получает max+1 для начального порядка.
-                      // Точный расчёт уровня store не доступен здесь — задаём
-                      // достаточно большое значение и позволяем UI списка/DnD
-                      // перенормировать при необходимости.
-                      update("pinned", v);
-                      if (v && article.pinnedOrder === 0) {
-                        update("pinnedOrder", Math.floor(Date.now() / 1000));
-                      }
-                    }}
-                  />
-                  <ToggleRow
-                    icon={<LayoutGrid className="h-4 w-4" strokeWidth={1.5} />}
-                    label="2 колонки (широкая карточка)"
-                    description="Карточка занимает 2 колонки из 3 и меняет layout: обложка слева, текст ниже."
-                    checked={article.cardVariant === "wide"}
-                    onCheckedChange={(v) =>
-                      update("cardVariant", v ? "wide" : "default")
+              <Section title="Тип статьи">
+                <ArticleTypeSelector
+                  value={article.type}
+                  onChange={(next) => {
+                    update("type", next);
+                    if (next === "case" && !article.caseCard) {
+                      update("caseCard", emptyCaseCard());
                     }
-                  />
-                </div>
+                    if (next !== "case" && article.featured) {
+                      update("featured", false);
+                    }
+                  }}
+                />
+                {article.type === "case" && (
+                  <div className="mt-4">
+                    <ToggleRow
+                      icon={<Pin className="h-4 w-4" strokeWidth={1.5} />}
+                      label="На всех страницах"
+                      description="Показывать кейс в сквозном блоке «Кейсы» на всём сайте (макс. 5 включая мини-кейсы)."
+                      checked={article.featured === true}
+                      onCheckedChange={(v) => update("featured", v)}
+                    />
+                  </div>
+                )}
               </Section>
 
               <Section title="SEO" grow>
@@ -230,11 +228,56 @@ function ArticleEditorInner({
 
             <aside className="flex flex-col gap-3 lg:w-[380px] lg:shrink-0">
               <ArticlePreviewCard draft={article} />
+
+              {/* Toggles ниже preview — то же расположение, что у продуктовых
+                  страниц (см. editor-shell: «Экспертный продукт» и пр.). */}
+              <ToggleRow
+                icon={<Pin className="h-4 w-4" strokeWidth={1.5} />}
+                label="Закрепить"
+                description="Закреплённые статьи показываются в начале списка на /media."
+                checked={article.pinned}
+                onCheckedChange={(v) => {
+                  // Новая закреплённая получает max+1 для начального порядка.
+                  // Точный расчёт на уровне store не доступен здесь — задаём
+                  // достаточно большое значение и позволяем UI списка/DnD
+                  // перенормировать при необходимости.
+                  update("pinned", v);
+                  if (v && article.pinnedOrder === 0) {
+                    update("pinnedOrder", Math.floor(Date.now() / 1000));
+                  }
+                }}
+              />
+              <ToggleRow
+                icon={<LayoutGrid className="h-4 w-4" strokeWidth={1.5} />}
+                label="2 колонки (широкая карточка)"
+                description="Карточка занимает 2 колонки из 3 и меняет layout: обложка слева, текст ниже."
+                checked={article.cardVariant === "wide"}
+                onCheckedChange={(v) =>
+                  update("cardVariant", v ? "wide" : "default")
+                }
+              />
             </aside>
           </div>
 
           {/* 2. Hero — главный экран */}
           <ArticleHeroEditor draft={article} onChange={update} />
+
+          {/* 2.5 Карточка кейса — только при type=case. Используется в ленте /cases
+                 (как у mini-кейсов) и не выводится в теле статьи. */}
+          {article.type === "case" && (
+            <section>
+              <h2 className="mb-4 font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-14)] uppercase tracking-[0.02em] text-foreground">
+                Карточка кейса (для ленты /cases)
+              </h2>
+              <CaseCardEditor
+                data={(article.caseCard ?? emptyCaseCard()) as unknown as Record<string, unknown>}
+                onUpdate={(patch) => {
+                  const current = (article.caseCard ?? emptyCaseCard());
+                  update("caseCard", { ...current, ...(patch as Partial<CaseCardBlockData>) });
+                }}
+              />
+            </section>
+          )}
 
           {/* 3. Body editor — без внешней рамки/фона: редактор живёт «в ленте» страницы */}
           <section>
@@ -353,5 +396,88 @@ function Field({
       <span className="text-[length:var(--text-12)] text-muted-foreground">{label}</span>
       {children}
     </label>
+  );
+}
+
+function emptyCaseCard(): CaseCardBlockData {
+  return {
+    title: "",
+    description: "",
+    stats: [
+      { value: "", label: "", description: "" },
+      { value: "", label: "", description: "" },
+      { value: "", label: "", description: "" },
+    ],
+    result: "",
+  };
+}
+
+const ARTICLE_TYPE_OPTIONS: ReadonlyArray<{
+  id: ArticleType;
+  label: string;
+  description: string;
+}> = [
+  {
+    id: "default",
+    label: "Обычная",
+    description: "Стандартная статья без бейджа.",
+  },
+  {
+    id: "lesson",
+    label: "Урок",
+    description: "Бирюзовый бейдж «Урок» на карточке. Попадает в фильтр /media/tag/lesson.",
+  },
+  {
+    id: "case",
+    label: "Кейс",
+    description:
+      "Терракотовый бейдж «Кейс». Появляется в ленте /cases и в админке в разделе «Кейсы». Появляется блок «Карточка кейса» ниже.",
+  },
+];
+
+function ArticleTypeSelector({
+  value,
+  onChange,
+}: {
+  value: ArticleType;
+  onChange: (next: ArticleType) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      {ARTICLE_TYPE_OPTIONS.map((opt) => {
+        const active = value === opt.id;
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            className={[
+              "flex items-start gap-3 rounded-sm border p-3 text-left transition-colors",
+              active
+                ? "border-foreground bg-[color:var(--rm-gray-1)]"
+                : "border-border hover:bg-[color:var(--rm-gray-1)]/50",
+            ].join(" ")}
+            aria-pressed={active}
+          >
+            <span
+              className={[
+                "mt-1 h-3.5 w-3.5 shrink-0 rounded-full border",
+                active
+                  ? "border-foreground bg-foreground"
+                  : "border-border bg-transparent",
+              ].join(" ")}
+            />
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-[length:var(--text-14)] font-medium text-foreground">
+                {opt.label}
+              </span>
+              <span className="text-[length:var(--text-12)] text-muted-foreground">
+                {opt.description}
+              </span>
+            </div>
+          </button>
+        );
+      })}
+    </div>
   );
 }

@@ -341,10 +341,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     cardTitle: page.cardTitle, cardDescription: page.cardDescription,
     metaTitle: page.metaTitle, metaDescription: page.metaDescription,
     expertProduct: typeof page.expertProduct === "boolean" ? page.expertProduct : null,
-    caseType: page.caseType === "mini" || page.caseType === "big" ? page.caseType : null,
+    caseType: page.caseType === "mini" ? "mini" : null,
     featured: typeof page.featured === "boolean" ? page.featured : null,
     showInMenu: typeof page.showInMenu === "boolean" ? page.showInMenu : null,
     showInFooter: typeof page.showInFooter === "boolean" ? page.showInFooter : null,
+    formId: typeof page.formId === "string" && page.formId ? page.formId : null,
     order: typeof page.order === "number" ? page.order : null,
     caseCard: enabled(block("caseCard")),
     homeHero: enabled(block("homeHero")),
@@ -369,7 +370,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
       return Object.keys(d).length > 0 ? d : null;
     })(),
     projects: enabled(projectsBlock),
-    pageBottom: enabled(block("pageBottom")),
+    pageBottom: (() => {
+      const b = block("pageBottom");
+      if (!b || b.enabled === false) return false;
+      const d = (b.data ?? {}) as Record<string, unknown>;
+      const ctaId = typeof d.ctaId === "string" ? d.ctaId.trim() : "";
+      return ctaId ? { ctaId } : true;
+    })(),
     customSections: customSections.length > 0 ? customSections : null,
     socialProof: null, duration: null, whyRocketmind: null, expert: null, cases: null, reviews: null,
   };

@@ -28,7 +28,13 @@ export type BlockType =
 
 // ── Case-specific types ─────────────────────────────────────────────────────
 
-export type CaseType = "big" | "mini";
+/**
+ * После миграции «больших кейсов» в Article (`type === "case"`) на SitePage
+ * остался только один тип — `mini` (карточка-кейс без внутренней страницы).
+ * Тип сохранён для обратной совместимости форм/типов; всё, кроме "mini",
+ * считается невалидным значением.
+ */
+export type CaseType = "mini";
 
 export interface CaseCardStat {
   value: string;
@@ -183,6 +189,12 @@ export interface ServiceCard {
   paragraphsTwoCol?: boolean;
 }
 
+export interface ServicesFormChipsConfig {
+  enabled: boolean;
+  multi?: boolean;
+  label?: string;
+}
+
 export interface ServicesBlockData {
   tag?: string;
   title: string;
@@ -192,6 +204,12 @@ export interface ServicesBlockData {
   /** Structured paragraphs under the title. */
   paragraphs?: StyledParagraph[];
   cards: ServiceCard[];
+  /**
+   * Чипсы в форме заявки страницы. Настраивается на блоке «Услуги» в админке
+   * (свитч в шапке + кнопка «Настроить»). Если `enabled = false` — чипсы
+   * не отображаются.
+   */
+  formChips?: ServicesFormChipsConfig;
 }
 
 export interface LogoMarqueeBlockData {
@@ -203,7 +221,7 @@ export interface LogoMarqueeBlockData {
 
 // ── Contacts block ──────────────────────────────────────────────────────────
 
-export type ContactSocialKind = "vk" | "telegram" | "custom";
+export type ContactSocialKind = "vk" | "telegram" | "max" | "custom";
 
 export interface ContactSocial {
   id: string;
@@ -350,6 +368,99 @@ export interface ProcessBlockData {
   participants?: Array<{ role: string; text: string }>;
 }
 
+// ── CTA & Form entities (reusable, edited in /admin/ctas, /admin/forms) ─────
+
+/**
+ * Скоуп сущности — определяет, в каком разделе админки она группируется и
+ * какие правила резолва применяются. На рендер влияет косвенно: на продуктовой
+ * странице `page.formId` всегда перебивает `cta.formId`. В статье — наоборот,
+ * используется `cta.formId`.
+ */
+export type EntityScope = "product" | "article" | "both";
+
+/**
+ * Переиспользуемый CTA-блок. Используется:
+ *  - в `pageBottom`-блоке страницы (в `data.ctaId`)
+ *  - в статьях: `ArticleSection.bottomCtaId` и `ArticleAside { kind: "cta" }`.
+ *
+ * Действие кнопки в текущей итерации — всегда «открыть форму» (модалка).
+ * `formId` опциональный: на продуктовой странице он перебивается page.formId,
+ * в статье — обязателен (UI-валидация в редакторе).
+ */
+export interface CtaEntity {
+  id: string;
+  name: string;
+  scope: EntityScope;
+  heading: string;
+  body: string;
+  buttonText: string;
+  formId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Тоглы стандартных полей формы. */
+export interface FormFieldsConfig {
+  name: boolean;
+  email: boolean;
+  phone: boolean;
+  message: boolean;
+}
+
+/**
+ * Чипсы. Опции при рендере приходят из контекста страницы (заголовки карточек
+ * блока «Услуги»). Если на странице услуг нет — блок чипсов скрыт даже если
+ * `enabled = true`.
+ */
+export interface FormChipsConfig {
+  enabled: boolean;
+  multi: boolean;
+  label: string;
+}
+
+export interface FormConsentLink {
+  id: string;
+  label: string;
+  url: string;
+}
+
+/**
+ * Чекбокс согласия рендерится на всех формах. Текст содержит `{links}` — UI
+ * подставит ссылки из `links` в порядке их следования. На уровне типа просто
+ * хранится строка + список ссылок.
+ */
+export interface FormConsentConfig {
+  text: string;
+  links: FormConsentLink[];
+}
+
+export interface FormSuccessGift {
+  kind: "file" | "link";
+  url: string;
+  label: string;
+}
+
+/**
+ * Переиспользуемая форма-модалка. Привязывается к CTA через `cta.formId` или
+ * к продуктовой странице через `page.formId`.
+ */
+export interface FormEntity {
+  id: string;
+  name: string;
+  scope: EntityScope;
+  title: string;
+  description: string;
+  submitButtonText: string;
+  successMessage: string;
+  /** Необязательный «подарок» — файл или ссылка, показываются на экране успеха. */
+  successGift?: FormSuccessGift | null;
+  fields: FormFieldsConfig;
+  chips: FormChipsConfig;
+  consent: FormConsentConfig;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ── Block ───────────────────────────────────────────────────────────────────
 
 export interface PageBlock {
@@ -376,7 +487,11 @@ export interface SitePage {
   metaDescription: string;
   /** Explicit "expert product" flag. If undefined, legacy behaviour (derived from experts block) applies. */
   expertProduct?: boolean;
-  /** Cases section only. "big" = has internal /cases/[slug] page; "mini" = card-only. */
+  /**
+   * Cases section only. После миграции «больших кейсов» в Article(type=case)
+   * на SitePage поддерживается только `"mini"` (карточка-кейс без отдельной
+   * страницы). Большие кейсы создаются как Article — см. createArticle.
+   */
   caseType?: CaseType;
   /** Cases section only. If true, this case appears in the cross-block CasesSection on all pages. Max 5 site-wide. */
   featured?: boolean;
@@ -390,6 +505,12 @@ export interface SitePage {
    * Показывать в футере. По умолчанию true.
    */
   showInFooter?: boolean;
+  /**
+   * ID формы (FormEntity), привязанной к странице. На продуктовых страницах:
+   * любая «открыть форму» кнопка (CTA в pageBottom, клик по карточке в блоке
+   * «Услуги») открывает именно эту форму. Перебивает `cta.formId` если задан.
+   */
+  formId?: string;
   blocks: PageBlock[];
   createdAt: string;
   updatedAt: string;
@@ -417,6 +538,39 @@ export interface AdminStore {
 // ── Media: tags ─────────────────────────────────────────────────────────────
 
 /**
+ * SEO-поля для landing-страниц тега (`/media/tag/<id>`,
+ * `/media/glossary/tag/<id>`). Все поля опциональны: пусто → используются
+ * дефолты от секции (Медиа/Глоссарий) и `label`.
+ */
+export interface MediaTagSeo {
+  pageTitlePrefix?: string;
+  pageTitleAccent?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  intro?: string;
+}
+
+/**
+ * 8 акцентных DS-палитр (см. `design/design-system.md` §1.4). Используются
+ * как `cardColor` системных тегов «Урок»/«Кейс» — фон бейджа на карточке
+ * статьи в `/media`. Внутри страницы статьи бейдж рисуется как обычный тег,
+ * без `cardColor`.
+ */
+export type DsAccentColor =
+  | "yellow"
+  | "violet"
+  | "sky"
+  | "terracotta"
+  | "pink"
+  | "blue"
+  | "red"
+  | "green";
+
+/** ID системных тегов, неудаляемых в менеджере тегов. */
+export const SYSTEM_MEDIA_TAG_IDS = ["lesson", "case"] as const;
+export type SystemMediaTagId = (typeof SYSTEM_MEDIA_TAG_IDS)[number];
+
+/**
  * Тег медиа-раздела. Справочник тегов редактируется в админке (менеджер тегов),
  * используется при создании/редактировании статей и для фильтрации списка /media.
  */
@@ -432,6 +586,21 @@ export interface MediaTag {
    * статей/терминов — только прячет с фронта.
    */
   disabled?: boolean;
+  /** SEO-overrides для landing-страницы тега. */
+  seo?: MediaTagSeo;
+  /**
+   * Системный тег. Не может быть удалён, на UI заменяет кнопку «Удалить»
+   * на бейдж «Системный». Названия/SEO/цвет редактируются как обычно.
+   * Сейчас системными являются `lesson` и `case`. Фильтр по такому тегу
+   * на /media читает `article.type`, не `article.tagIds`.
+   */
+  system?: boolean;
+  /**
+   * Цвет бейджа на карточке статьи. Применяется только в карточках на
+   * /media — внутри страницы статьи тег с этим цветом рендерится как
+   * обычный тег. Для не-системных тегов поле игнорируется.
+   */
+  cardColor?: DsAccentColor;
 }
 
 // ── Media: article body blocks (inline, stub for next iteration) ────────────
@@ -450,8 +619,27 @@ export type ArticleBodyBlockType =
   | "image"
   | "gallery"
   | "video"
+  | "table"
   | "list"
   | "callout";
+
+/**
+ * Карточка фактоида в `ArticleSection.factoids`. Большая цифра + текст.
+ * `accent: true` — жёлтая подложка (`--rm-yellow-100`) с тёмным текстом.
+ * Сетка фактоидов рендерится section-level в начале секции, не блоком тела.
+ */
+export interface FactoidCardData {
+  id: string;
+  number: string;
+  text: string;
+  accent: boolean;
+  /**
+   * Принудительно начать новый ряд с этой карточки. На рендере реализуется
+   * через `gridColumnStart: 1` — пустые ячейки предыдущего ряда остаются
+   * пустыми (фон gray-3 как разделитель).
+   */
+  newRow?: boolean;
+}
 
 export interface ArticleGalleryItem {
   /** Уникальный ID внутри галереи (локальный, не зависит от slug статьи). */
@@ -523,6 +711,12 @@ export type ArticleAside =
       kind: "logos";
       /** Список логотипов. Рендерятся в колонку, монохром --rm-gray-fg-sub. */
       logos: ArticleLogoAsideItem[];
+    }
+  | {
+      id: string;
+      kind: "cta";
+      /** ID CtaEntity — рендерится как mini-CTA, кнопка открывает форму по `cta.formId`. */
+      ctaId: string;
     };
 
 /**
@@ -569,6 +763,19 @@ export interface ArticleSection {
   navLabel: string;
   /** Inline-блоки внутри секции. Тип "h2" внутри не используется по соглашению. */
   blocks: ArticleBodyBlock[];
+  /**
+   * Сетка фактоидов — section-level, всегда рендерится в начале секции под H2.
+   * Размещение фиксировано (не блок внутри `blocks`), потому что 3-я карточка
+   * визуально уезжает в правую aside-колонку и сдвигает sticky-asides вниз;
+   * детерминированное смещение возможно только когда фактоиды строго в начале.
+   */
+  factoids: FactoidCardData[];
+  /**
+   * Явное число колонок в сетке фактоидов (1/2/3). Если не задано — выводится
+   * автоматически из `factoids.length` (max 3). Позволяет получить layout
+   * 2×2 для 4 карточек вместо 3+1.
+   */
+  factoidCols?: 1 | 2 | 3;
   /** Aside-виджеты правой колонки (sticky в рамках секции на публичной странице). */
   asides: ArticleAside[];
   /**
@@ -581,9 +788,22 @@ export interface ArticleSection {
   asidesTitle: string;
   /** Показывать заголовок над колонкой asides. */
   asidesTitleEnabled: boolean;
+  /**
+   * ID CTA-блока, который рендерится в конце секции (между `blocks` и `quotes`).
+   * В статьях форма берётся из `cta.formId` (page.formId на статьях не используется).
+   */
+  bottomCtaId?: string;
 }
 
 // ── Media: article ──────────────────────────────────────────────────────────
+
+/**
+ * Тип статьи. Управляет тремя вещами на фронте:
+ *  - бейджем на карточке /media (`Урок`/`Кейс` с цветом из системного тега),
+ *  - наличием блока «Карточка кейса» в редакторе и в публичной ленте /cases,
+ *  - источником фильтра `/media/tag/{lesson|case}` (читает `article.type`).
+ */
+export type ArticleType = "default" | "lesson" | "case";
 
 export interface Article {
   /** Uniform с SitePage: `media/{slug}`. */
@@ -591,6 +811,8 @@ export interface Article {
   slug: string;
   status: PageStatus;
   order: number;
+  /** Тип статьи. Default — обычная статья без бейджа и без блока кейса. */
+  type: ArticleType;
 
   // Hero
   title: string;
@@ -610,6 +832,20 @@ export interface Article {
 
   // Body — массив секций (каждая с H2 + свои блоки + navLabel для ToC)
   body: ArticleSection[];
+
+  /**
+   * Карточка кейса. Заполняется и сохраняется только когда `type === "case"`;
+   * для других типов поле игнорируется. На фронте используется в ленте `/cases`
+   * (как у mini-кейсов) и рендерится в редакторе над `body`.
+   */
+  caseCard?: CaseCardBlockData;
+
+  /**
+   * Featured-флаг для сквозного блока CasesSection (max 5 на сайт). Имеет
+   * смысл только при `type === "case"`. Лимит общий: считаются и mini-кейсы
+   * SitePage с `featured`, и Article с `type=case` + `featured=true`.
+   */
+  featured?: boolean;
 
   // Media-list display
   /**
@@ -638,8 +874,8 @@ export interface Article {
 
 /**
  * Термин глоссария. Хранится как `apps/site/content/glossary/{slug}.md` (аналог
- * статьи) — в ближайшей итерации сюда добавится body-редактор, сейчас только
- * метаданные: title, tagIds, metaTitle, metaDescription.
+ * статьи). Тело редактируется тем же `ArticleSectionsEditor`, что и у статей,
+ * и сохраняется в frontmatter поле `body` (массив `ArticleSection`).
  */
 export interface GlossaryTerm {
   /** Uniform с Article: `glossary/{slug}`. */
@@ -648,9 +884,13 @@ export interface GlossaryTerm {
   status: PageStatus;
   order: number;
   title: string;
+  /** Hero-описание термина — короткий лид под заголовком (как Article.description). */
+  description: string;
   tagIds: string[];
   metaTitle: string;
   metaDescription: string;
+  /** Контент термина — те же секции, что у статей. */
+  sections: ArticleSection[];
   createdAt: string;
   updatedAt: string;
 }

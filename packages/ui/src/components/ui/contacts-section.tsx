@@ -11,10 +11,11 @@ import {
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tooltip";
 import { VkIcon } from "../icons/socials/vk";
 import { TelegramIcon } from "../icons/socials/telegram";
+import { MaxIcon } from "../icons/socials/max";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-export type SocialKind = "vk" | "telegram" | "custom";
+export type SocialKind = "vk" | "telegram" | "max" | "custom";
 
 export type ContactSocial = {
   id: string;
@@ -73,6 +74,7 @@ function SocialIcon({
 }) {
   if (kind === "vk") return <VkIcon className={className} />;
   if (kind === "telegram") return <TelegramIcon className={className} />;
+  if (kind === "max") return <MaxIcon className={className} />;
   // Custom — render provided src inside the same 40×40 rounded square with currentColor border.
   if (!iconSrc) return null;
   return (
@@ -90,7 +92,7 @@ function SocialIcon({
 function socialTooltipText(social: ContactSocial | NonNullable<ContactPersonData["social"]>) {
   const username = social.username || "";
   if (!username) return "";
-  if (social.kind === "telegram") {
+  if (social.kind === "telegram" || social.kind === "max") {
     return username.startsWith("@") ? username : `@${username}`;
   }
   if (social.kind === "vk") {
@@ -118,7 +120,7 @@ function SocialsItem({ socials }: { socials: ContactSocial[] }) {
   if (!socials.length) return null;
   return (
     <TooltipProvider delay={150}>
-      <div className="flex flex-wrap items-center gap-2 text-[#0A0A0A]">
+      <div className="flex flex-wrap items-center gap-5 text-[#0A0A0A]">
         {socials.map((s) => {
           const label = socialTooltipText(s);
           const icon = (
@@ -184,38 +186,24 @@ function PersonItem({ person }: { person: ContactPersonData }) {
           </a>
         ) : null}
         {person.social && (person.social.url || person.social.username) ? (
-          <TooltipProvider delay={150}>
-            <div className="mt-1 inline-flex text-[#0A0A0A]">
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    person.social.url ? (
-                      <a
-                        href={person.social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={socialLabel || person.social.username}
-                        className="inline-flex hover:text-[#404040]"
-                      >
-                        <SocialIcon
-                          kind={person.social.kind}
-                          iconSrc={person.social.iconSrc}
-                        />
-                      </a>
-                    ) : (
-                      <span className="inline-flex">
-                        <SocialIcon
-                          kind={person.social.kind}
-                          iconSrc={person.social.iconSrc}
-                        />
-                      </span>
-                    )
-                  }
-                />
-                {socialLabel ? <TooltipContent>{socialLabel}</TooltipContent> : null}
-              </Tooltip>
-            </div>
-          </TooltipProvider>
+          <div className="inline-flex items-center gap-1.5 text-[#0A0A0A]">
+            {person.social.url ? (
+              <a
+                href={person.social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-[length:var(--text-14)] leading-[1.32] hover:text-[#404040]"
+              >
+                <SocialIcon kind={person.social.kind} iconSrc={person.social.iconSrc} className="h-4 w-4" />
+                {socialLabel && <span>{socialLabel}</span>}
+              </a>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-[length:var(--text-14)] leading-[1.32]">
+                <SocialIcon kind={person.social.kind} iconSrc={person.social.iconSrc} className="h-4 w-4" />
+                {socialLabel && <span>{socialLabel}</span>}
+              </span>
+            )}
+          </div>
         ) : null}
       </div>
     </div>

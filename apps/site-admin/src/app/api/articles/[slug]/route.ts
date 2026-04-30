@@ -74,10 +74,13 @@ export async function PUT(
   // 2. Frontmatter — собираем в детерминированном порядке, чистим data-URL из значения
   //    (коверимейдж на сайте резолвится по файлу, не хранится в .md).
   const now = new Date().toISOString();
+  const type =
+    body.type === "lesson" || body.type === "case" ? body.type : "default";
   const fm: Record<string, unknown> = {
     slug,
     status: body.status ?? "published",
     order: typeof body.order === "number" ? body.order : 0,
+    type,
     title: body.title ?? "",
     description: body.description ?? "",
     publishedAt: body.publishedAt ?? "",
@@ -94,6 +97,13 @@ export async function PUT(
     createdAt: body.createdAt ?? now,
     updatedAt: now,
   };
+  // Кейс-специфичные поля — пишем только при type=case.
+  if (type === "case") {
+    fm.featured = body.featured === true;
+    if (body.caseCard && typeof body.caseCard === "object") {
+      fm.caseCard = body.caseCard;
+    }
+  }
   // Уберём undefined (gray-matter.stringify иначе запишет 'undefined').
   for (const k of Object.keys(fm)) if (fm[k] === undefined) delete fm[k];
 

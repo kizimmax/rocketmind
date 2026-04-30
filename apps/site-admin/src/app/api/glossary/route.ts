@@ -28,11 +28,13 @@ export async function GET() {
           status: (data.status as string) || "published",
           order: typeof data.order === "number" ? data.order : 0,
           title: (data.title as string) || "",
+          description: (data.description as string) || "",
           tagIds: Array.isArray(data.tags)
             ? data.tags.filter((t: unknown): t is string => typeof t === "string")
             : [],
           metaTitle: (data.metaTitle as string) || "",
           metaDescription: (data.metaDescription as string) || "",
+          sections: Array.isArray(data.body) ? data.body : [],
           createdAt: (data.createdAt as string) || "",
           updatedAt: (data.updatedAt as string) || "",
         };
@@ -68,9 +70,11 @@ export async function POST(request: Request) {
     status: "hidden",
     order: 0,
     title: title || "",
+    description: "",
     tags: [],
     metaTitle: title ? `${title} | Глоссарий Rocketmind` : "",
     metaDescription: "",
+    body: [],
     createdAt: now,
     updatedAt: now,
   };
@@ -83,9 +87,11 @@ export async function POST(request: Request) {
       status: fm.status,
       order: fm.order,
       title: fm.title,
+      description: "",
       tagIds: [],
       metaTitle: fm.metaTitle,
       metaDescription: "",
+      sections: [],
       createdAt: fm.createdAt,
       updatedAt: fm.updatedAt,
     },

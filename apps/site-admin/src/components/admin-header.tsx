@@ -11,7 +11,8 @@ import {
   Briefcase,
   Sun,
   Moon,
-  Bot,
+  Settings,
+  MousePointerClick,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@rocketmind/ui";
@@ -49,6 +50,7 @@ export function AdminHeader() {
   const isOnExperts = pathname.startsWith("/experts");
   const isOnCases = pathname.startsWith("/cases");
   const isOnTestimonials = pathname.startsWith("/testimonials");
+  const isOnCtaForms = pathname.startsWith("/cta-forms");
   const isOnSystem = pathname.startsWith("/system");
 
   function guardedClick(e: React.MouseEvent, href: string) {
@@ -60,16 +62,17 @@ export function AdminHeader() {
   const linkIdle = "text-muted-foreground hover:text-foreground";
   const linkActive = "bg-foreground/10 text-foreground";
 
+  const truncateLabel = (s: string, max = 10) =>
+    s.length > max ? `${s.slice(0, max - 1)}…` : s;
+
   const tabs = [
     { href: "/pages", label: "Страницы", Icon: FileText, isActive: isOnPages },
     { href: "/media", label: "Медиа", Icon: Newspaper, isActive: isOnMedia },
     { href: "/experts", label: "Эксперты", Icon: Users, isActive: isOnExperts },
     { href: "/cases", label: "Кейсы", Icon: Briefcase, isActive: isOnCases },
     { href: "/testimonials", label: "Отзывы", Icon: MessageSquareQuote, isActive: isOnTestimonials },
-  ];
-
-  const systemTabs = [
-    { href: "/system/robots", label: "robots.txt", Icon: Bot, isActive: isOnSystem },
+    { href: "/cta-forms", label: "CTA и формы", Icon: MousePointerClick, isActive: isOnCtaForms },
+    { href: "/system", label: "Системные", Icon: Settings, isActive: isOnSystem },
   ];
 
   const separator = (
@@ -114,14 +117,18 @@ export function AdminHeader() {
                           guardedClick(e, `/pages?section=${editingSection.id}`)
                         }
                         className={`${linkBase} ${linkIdle}`}
+                        title={editingSection.label}
                       >
-                        {editingSection.label}
+                        {truncateLabel(editingSection.label)}
                       </Link>
                     </>
                   )}
                   {separator}
-                  <span className={`${linkBase} ${linkActive}`}>
-                    {editingPage.menuTitle}
+                  <span
+                    className={`${linkBase} ${linkActive}`}
+                    title={editingPage.menuTitle}
+                  >
+                    {truncateLabel(editingPage.menuTitle)}
                   </span>
                 </div>
               );
@@ -138,23 +145,6 @@ export function AdminHeader() {
               </Link>
             );
           })}
-
-          {/* System section separator */}
-          <span className="mx-2 h-4 w-px shrink-0 bg-border" aria-hidden />
-          <span className="mr-1 text-[length:var(--text-11)] font-medium uppercase tracking-widest text-muted-foreground/50 select-none">
-            Системные
-          </span>
-          {systemTabs.map((tab) => (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              onClick={(e) => guardedClick(e, tab.href)}
-              className={`flex items-center gap-1.5 ${linkBase} ${tab.isActive ? linkActive : linkIdle}`}
-            >
-              <tab.Icon className="h-3.5 w-3.5" />
-              {tab.label}
-            </Link>
-          ))}
         </nav>
       </div>
 

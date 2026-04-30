@@ -297,7 +297,7 @@ export type RoundGlassLensProps = {
   containerFadeInDelay?: number;
 
   /**
-   * Delay before the first html2canvas scene capture (ms). Use this to wait
+   * Delay before the first html2canvas-pro scene capture (ms). Use this to wait
    * for scene-level opacity animations (e.g. hero background fade-in) to
    * complete; capturing too early produces a dark/black texture. Default: 0.
    */
@@ -470,6 +470,11 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
   // canvasReady: container is visible AND webgl is ready → blur cross-fades to 0 over 2s
   // and canvas simultaneously fades in over 2s to reveal the WebGL distortion.
   const [canvasReady, setCanvasReady] = useState(false);
+  // backdropDropped: after the blur cross-fade completes we fully remove
+  // backdrop-filter. Safari treats `blur(0px)` as a non-identity filter and keeps
+  // compositing the WebGL canvas inside a frozen backdrop layer (showing as a
+  // black disc); switching to `none` releases that layer.
+  const [backdropDropped, setBackdropDropped] = useState(false);
   const [activeTab, setActiveTab] = useState<"optical" | "shape" | "style" | "motion">("optical");
 
   // Panel settings — initialized from props, localStorage loaded after mount (SSR-safe)
@@ -500,7 +505,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
 
   // Effective settings: panel takes over when showControls=true, otherwise follow props.
   // useMemo prevents a new object reference on every parent re-render, which would otherwise
-  // cause the settings effect below to fire (and trigger html2canvas) on every re-render.
+  // cause the settings effect below to fire (and trigger html2canvas-pro) on every re-render.
   const effectiveSettings = useMemo<RoundGlassLensSettings>(
     () => (showControls ? panelSettings : resolveSettings(props)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -527,7 +532,12 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
         "backdrop-filter 2s cubic-bezier(0.23, 1, 0.32, 1)",
         "-webkit-backdrop-filter 2s cubic-bezier(0.23, 1, 0.32, 1)",
       );
-      const blurOverride = canvasReady
+      const blurOverride = backdropDropped
+        ? {
+            backdropFilter: "none",
+            WebkitBackdropFilter: "none",
+          }
+        : canvasReady
         ? {
             backdropFilter: "blur(0px) brightness(1)",
             WebkitBackdropFilter: "blur(0px) brightness(1)",
@@ -544,8 +554,18 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       } as unknown as CSSProperties;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [effectiveSettings.gradientAngle, size, externalStyle, containerVisible, canvasReady],
+    [effectiveSettings.gradientAngle, size, externalStyle, containerVisible, canvasReady, backdropDropped],
   );
+
+  // After the blur cross-fade completes, remove backdrop-filter entirely.
+  // In Safari `blur(0px)` is not equivalent to `none` — the compositing layer
+  // stays active and freezes the WebGL canvas content as a black disc. Setting
+  // `none` releases the layer and the WebGL distortion becomes visible again.
+  useEffect(() => {
+    if (!canvasReady || backdropDropped) return;
+    const timer = window.setTimeout(() => setBackdropDropped(true), 2100);
+    return () => window.clearTimeout(timer);
+  }, [canvasReady, backdropDropped]);
 
   // Canvas (distortion) cross-fades in over 2s while the backdrop-filter blur
   // simultaneously transitions to zero — so the glass preview smoothly morphs
@@ -554,6 +574,11 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     () => ({
       opacity: canvasReady ? 1 : 0,
       transition: canvasReady ? "opacity 2s cubic-bezier(0.23, 1, 0.32, 1)" : undefined,
+      // Promote the WebGL canvas to its own compositing layer. Without this,
+      // Safari composites the canvas into the parent's backdrop-filter layer
+      // during the cross-fade and the distortion shows as a black disc.
+      transform: "translateZ(0)",
+      WebkitTransform: "translateZ(0)",
     }),
     [canvasReady],
   );
@@ -576,10 +601,10 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     setMounted(true);
   }, []);
 
-  // Preload html2canvas during browser idle time so the first capture starts
+  // Preload html2canvas-pro during browser idle time so the first capture starts
   // without waiting for the dynamic import to resolve.
   useEffect(() => {
-    const preload = () => { void import("html2canvas"); };
+    const preload = () => { void import("html2canvas-pro"); };
     if (typeof requestIdleCallback !== "undefined") {
       const id = requestIdleCallback(preload, { timeout: 2000 });
       return () => cancelIdleCallback(id);
@@ -741,7 +766,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     let frameId = 0;
     let resizeObserver: ResizeObserver | null = null;
     let disposed = false;
-    let html2canvasModule: null | (typeof import("html2canvas"))["default"] = null;
+    let html2canvasModule: null | (typeof import("html2canvas-pro"))["default"] = null;
     let captureInFlight = false;
     let pendingCapture = false;
     let hasSceneTexture = false;
@@ -877,7 +902,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       captureInFlight = true;
       try {
         // On the first capture, wait for all images in the scene to finish
-        // loading so html2canvas captures the fully-rendered content.
+        // loading so html2canvas-pro captures the fully-rendered content.
         if (!sceneImagesAwaited) {
           sceneImagesAwaited = true;
           const imgs = Array.from(scene.querySelectorAll<HTMLImageElement>("img"));
@@ -896,7 +921,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
           if (disposed) return;
         }
         if (!html2canvasModule) {
-          const imported = await import("html2canvas");
+          const imported = await import("html2canvas-pro");
           html2canvasModule = imported.default;
         }
         // ── Crop the capture to the region the lens actually sees ─────────────
@@ -991,7 +1016,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
     // ── Bootstrap ─────────────────────────────────────────────────────────────
     syncRef.current = syncLayout;
     // First layout without capture — ensures position/size are set but defers
-    // the html2canvas snapshot until the scene is guaranteed fully painted.
+    // the html2canvas-pro snapshot until the scene is guaranteed fully painted.
     syncLayout();
     glass.style.transform = "translate3d(-50%, -50%, 0)";
     scheduleRender();
@@ -1002,7 +1027,7 @@ export function RoundGlassLens(props: RoundGlassLensProps) {
       if (!disposed) setContainerVisible(true);
     }, containerFadeInDelay);
     // Delay the first scene capture so overlapping opacity transitions (e.g.
-    // hero background fade-in) have finished before html2canvas runs. Without
+    // hero background fade-in) have finished before html2canvas-pro runs. Without
     // this, the first snapshot can be black and remain until the next capture
     // is triggered by a pointer move or resize.
     const initialCaptureTimer = window.setTimeout(() => {

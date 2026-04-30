@@ -43,8 +43,18 @@ export type CTASectionYellowProps = {
   body?: string;
   /** Button label */
   buttonText?: string;
-  /** Button href */
+  /** Button href. Игнорируется, если передан `onClick`. */
   href?: string;
+  /** Если задан — кнопка рендерится как `<button>` и вызывает onClick (для открытия модалки). */
+  onClick?: () => void;
+  /**
+   * Варианты вёрстки.
+   * - `"default"` — полноразмерный CTA для конца страницы (с боковыми отступами,
+   *   крупный H1/H2-заголовок, fixed aspect ratio).
+   * - `"article"` — компактный для тела статьи: full-bleed (без боковых px),
+   *   заголовок H3, меньше внутренних отступов.
+   */
+  variant?: "default" | "article";
   className?: string;
 };
 
@@ -61,13 +71,29 @@ export function CTASectionYellow({
   body = "Заполните форму — мы проведём экспресс\u2011оценку ситуации, обозначим возможные сценарии решения и предложим следующий шаг",
   buttonText = "оставить заявку",
   href = "#contact",
+  onClick,
+  variant = "default",
   className,
 }: CTASectionYellowProps) {
+  const isArticle = variant === "article";
+  const buttonClass =
+    "w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-sm transition-opacity hover:opacity-85 active:opacity-70 cursor-pointer";
   return (
-    <section className={cn("px-5 md:px-8 xl:px-14 pb-5 md:pb-8 xl:pb-14", className)}>
-      <div className="mx-auto max-w-[1512px]">
-        <div className="bg-[#FFCC00] relative overflow-hidden rounded-none aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]">
-
+    <section
+      className={cn(
+        isArticle ? "" : "px-5 md:px-8 xl:px-14 pb-5 md:pb-8 xl:pb-14",
+        className,
+      )}
+    >
+      <div className={isArticle ? "" : "mx-auto max-w-[1512px]"}>
+        <div
+          className={cn(
+            "bg-[#FFCC00] relative overflow-hidden rounded-none",
+            isArticle
+              ? "min-h-[200px] md:min-h-[240px]"
+              : "aspect-[353/571] md:aspect-auto md:min-h-[320px] xl:min-h-[400px]",
+          )}
+        >
           {/* Mobile spiral */}
           <div
             className="absolute inset-0 pointer-events-none md:hidden"
@@ -85,23 +111,50 @@ export function CTASectionYellow({
           </div>
 
           {/* Content */}
-          <div className="relative z-10 p-5 md:px-8 md:py-11 xl:px-14">
-            <div className="flex flex-col gap-9 md:max-w-[75%] lg:max-w-[50%]">
+          <div
+            className={cn(
+              "relative z-10",
+              isArticle ? "p-5 md:p-6" : "p-5 md:px-8 md:py-11 xl:px-14",
+            )}
+          >
+            <div
+              className={cn(
+                "flex flex-col",
+                isArticle ? "gap-5 md:max-w-[60%]" : "gap-9 md:max-w-[75%] lg:max-w-[50%]",
+              )}
+            >
               <div className="flex flex-col gap-4">
-                <h2 className="font-heading text-[24px] md:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.2] md:leading-[1.08] tracking-[-0.01em] md:tracking-[-0.02em] text-[#0A0A0A]">
+                <h3
+                  className={cn(
+                    "font-heading font-bold uppercase tracking-[-0.01em] text-[#0A0A0A]",
+                    isArticle
+                      ? "text-[20px] leading-[1.2] md:text-[length:var(--text-24)] md:leading-[1.16]"
+                      : "text-[24px] md:text-[40px] xl:text-[52px] leading-[1.2] md:leading-[1.08] md:tracking-[-0.02em]",
+                  )}
+                >
                   {heading}
-                </h2>
-                <p className="text-[14px] md:text-[15px] xl:text-[18px] leading-[1.32] text-[#0A0A0A]">
+                </h3>
+                <p
+                  className={cn(
+                    "leading-[1.32] text-[#0A0A0A]",
+                    isArticle
+                      ? "text-[14px]"
+                      : "text-[14px] md:text-[15px] xl:text-[18px]",
+                  )}
+                >
                   {body}
                 </p>
               </div>
 
-              <a
-                href={href}
-                className="w-fit flex items-center justify-center bg-[#0A0A0A] text-[#F0F0F0] px-6 py-[14px] font-['Loos_Condensed',sans-serif] text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] rounded-sm transition-opacity hover:opacity-85 active:opacity-70"
-              >
-                {buttonText}
-              </a>
+              {onClick ? (
+                <button type="button" onClick={onClick} className={buttonClass}>
+                  {buttonText}
+                </button>
+              ) : (
+                <a href={href} className={buttonClass}>
+                  {buttonText}
+                </a>
+              )}
             </div>
           </div>
         </div>

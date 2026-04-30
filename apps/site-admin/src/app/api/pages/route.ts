@@ -138,9 +138,7 @@ export async function GET() {
               ? ["hero", "about"]
               : ["hero", "about", "tools", "projects", "process", "experts", "aboutRocketmind", "contacts", "pageBottom"])
           : sectionId === "cases"
-          ? (data.caseType === "mini"
-              ? ["caseCard"]
-              : ["caseCard", "hero", "about", "pageBottom"])
+          ? ["caseCard"]
           : DEFAULT_BLOCK_TYPES;
         const blocks = blockTypesForSection.map((type: string, i: number) => {
           let blockData: Record<string, unknown> = {};
@@ -246,7 +244,14 @@ export async function GET() {
               // Auto-block: enabled by default; only disabled if frontmatter explicitly stores false
               enabled = data.logoMarquee !== false;
               break;
-            case "pageBottom": enabled = !!data.pageBottom; if (data.pageBottom) blockData = data.pageBottom; break;
+            case "pageBottom":
+              // Default-on: блок «Кейсы + CTA» рендерится на сайте всегда,
+              // если фронтматтер не содержит явного `pageBottom: false`.
+              enabled = data.pageBottom !== false;
+              if (data.pageBottom && typeof data.pageBottom === "object") {
+                blockData = data.pageBottom;
+              }
+              break;
             case "homeHero":
               if (data.homeHero && typeof data.homeHero === "object") {
                 blockData = data.homeHero;
@@ -331,10 +336,13 @@ export async function GET() {
           metaTitle: data.metaTitle || "",
           metaDescription: data.metaDescription || "",
           expertProduct: typeof data.expertProduct === "boolean" ? data.expertProduct : undefined,
-          caseType: data.caseType === "mini" || data.caseType === "big" ? data.caseType : undefined,
+          // На SitePage остался единственный валидный caseType — "mini". Любое другое
+          // значение игнорируем (старые big-страницы должны быть пере-созданы как Article).
+          caseType: data.caseType === "mini" ? "mini" : undefined,
           featured: data.featured === true ? true : (data.featured === false ? false : undefined),
           showInMenu: typeof data.showInMenu === "boolean" ? data.showInMenu : undefined,
           showInFooter: typeof data.showInFooter === "boolean" ? data.showInFooter : undefined,
+          formId: typeof data.formId === "string" && data.formId ? data.formId : undefined,
           blocks: finalBlocks,
           createdAt: stat.birthtime.toISOString(),
           updatedAt: stat.mtime.toISOString(),
@@ -354,7 +362,7 @@ export async function POST(request: Request) {
   const { getContentDir } = await import("@/lib/content-paths");
 
   const body = await request.json();
-  const { sectionId, slug, menuTitle, caseType } = body;
+  const { sectionId, slug, menuTitle } = body;
   const dir = getContentDir(sectionId);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   const filePath = path.join(dir, `${slug}.md`);
@@ -367,10 +375,11 @@ export async function POST(request: Request) {
 
   let fm: Record<string, unknown>;
   if (sectionId === "cases") {
-    const isMini = caseType === "mini";
+    // На SitePage поддерживается только mini-кейс. Большие кейсы — это
+    // Article с `type: "case"`, создаются через /api/articles.
     fm = {
       slug, category: "cases",
-      caseType: isMini ? "mini" : "big",
+      caseType: "mini",
       featured: false,
       order: 0,
       menuTitle, menuDescription: "",
@@ -386,9 +395,6 @@ export async function POST(request: Request) {
         ],
         result: "",
       },
-      // Big cases also get a hero/about/pageBottom for the future internal page
-      hero: isMini ? null : { caption: "кейс", title: menuTitle.toUpperCase(), description: "", ctaText: "обсудить проект", factoids: [] },
-      about: null, pageBottom: null,
     };
   } else {
     fm = {
@@ -407,7 +413,7 @@ export async function POST(request: Request) {
     menuTitle, menuDescription: "",
     cardTitle: menuTitle, cardDescription: "",
     metaTitle: `${menuTitle} | Rocketmind`, metaDescription: "",
-    caseType: sectionId === "cases" ? (caseType === "mini" ? "mini" : "big") : undefined,
+    caseType: sectionId === "cases" ? "mini" : undefined,
     featured: sectionId === "cases" ? false : undefined,
     blocks: [],
     createdAt: new Date().toISOString(),

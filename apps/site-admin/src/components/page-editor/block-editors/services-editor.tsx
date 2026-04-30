@@ -1,8 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { GripVertical, Plus, Link2, LayoutGrid, Sparkles, Columns2 } from "lucide-react";
-import { Switch, Input, repackBento, type ServiceCardData } from "@rocketmind/ui";
+import { GripVertical, Plus, Link2, LayoutGrid, Sparkles, Columns2, Settings2 } from "lucide-react";
+import {
+  Switch,
+  Input,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  repackBento,
+  type ServiceCardData,
+} from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
 import { MdText } from "@/components/md-text";
 import { InlineConfirmDelete } from "@/components/inline-confirm";
@@ -137,8 +148,19 @@ export function ServicesEditor({ data, onUpdate }: ServicesEditorProps) {
           </div>
         </div>
 
-        {/* Rearrange button */}
-        <div className="mb-4 flex items-center justify-end">
+        {/* Шапка-тулбар: чипсы в форме (свитч + кнопка «Настроить»),
+            справа — «Перекомпоновать». */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <FormChipsControl
+            value={
+              (data.formChips as ServicesFormChips | undefined) ?? {
+                enabled: false,
+                multi: false,
+                label: "Тема обращения",
+              }
+            }
+            onChange={(formChips) => onUpdate({ formChips })}
+          />
           <button
             type="button"
             onClick={rearrange}
@@ -389,5 +411,120 @@ export function ServicesEditor({ data, onUpdate }: ServicesEditorProps) {
         )}
       </div>
     </div>
+  );
+}
+
+// ── Form chips control (header of services block) ─────────────────────────
+
+type ServicesFormChips = {
+  enabled: boolean;
+  multi?: boolean;
+  label?: string;
+};
+
+function FormChipsControl({
+  value,
+  onChange,
+}: {
+  value: ServicesFormChips;
+  onChange: (next: ServicesFormChips) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftMulti, setDraftMulti] = useState<boolean>(value.multi === true);
+  const [draftLabel, setDraftLabel] = useState<string>(value.label ?? "");
+
+  function openModal() {
+    setDraftMulti(value.multi === true);
+    setDraftLabel(value.label ?? "");
+    setOpen(true);
+  }
+
+  function save() {
+    onChange({ ...value, multi: draftMulti, label: draftLabel });
+    setOpen(false);
+  }
+
+  return (
+    <>
+      <div className="flex items-center gap-3">
+        <label className="flex items-center gap-2 text-[length:var(--text-12)] text-[#F0F0F0]">
+          <Switch
+            checked={value.enabled === true}
+            onCheckedChange={(v) =>
+              onChange({ ...value, enabled: v })
+            }
+            size="sm"
+          />
+          Показывать услуги в форме
+        </label>
+        {value.enabled && (
+          <button
+            type="button"
+            onClick={openModal}
+            className="flex items-center gap-1.5 rounded-sm border border-[#404040] bg-[#121212] px-2.5 py-1 text-[length:var(--text-12)] uppercase tracking-wide text-[#F0F0F0] transition-colors hover:border-[#FFCC00] hover:text-[#FFCC00]"
+          >
+            <Settings2 className="h-3.5 w-3.5" />
+            Настроить
+          </button>
+        )}
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-[440px]">
+          <DialogHeader>
+            <DialogTitle>Чипсы в форме</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
+            <div className="flex flex-col gap-2">
+              <span className="text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
+                Режим выбора
+              </span>
+              <label className="flex items-center gap-2 text-[length:var(--text-13)] text-foreground">
+                <input
+                  type="radio"
+                  name="chips-mode"
+                  checked={!draftMulti}
+                  onChange={() => setDraftMulti(false)}
+                />
+                Один выбор
+              </label>
+              <label className="flex items-center gap-2 text-[length:var(--text-13)] text-foreground">
+                <input
+                  type="radio"
+                  name="chips-mode"
+                  checked={draftMulti}
+                  onChange={() => setDraftMulti(true)}
+                />
+                Мультивыбор
+              </label>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
+                Заголовок блока чипсов
+              </label>
+              <Input
+                size="sm"
+                value={draftLabel}
+                onChange={(e) => setDraftLabel(e.target.value)}
+                placeholder="Например: «Тема обращения»"
+              />
+              <p className="text-[length:var(--text-11)] text-muted-foreground">
+                Пусто → блок чипсов без заголовка.
+              </p>
+            </div>
+            <p className="text-[length:var(--text-11)] text-muted-foreground">
+              Опции чипсов автоматически берутся из заголовков карточек этого
+              блока.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Отмена
+            </Button>
+            <Button onClick={save}>Сохранить</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

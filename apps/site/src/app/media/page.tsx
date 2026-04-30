@@ -3,6 +3,7 @@ import { getAllArticles, getPublicTags, getTagUsage } from "@/lib/articles";
 import { getAllGlossaryTerms } from "@/lib/glossary";
 import { getExpertBySlug } from "@/lib/experts";
 import { MediaListClient } from "@/components/media/media-list-client";
+import { PageBottom } from "@/components/sections/PageBottom";
 
 export const metadata: Metadata = {
   title: "Медиа | Rocketmind",
@@ -22,6 +23,16 @@ function flattenBodyText(sections: Array<{ title: string; blocks: Array<{ type: 
       if (typeof text === "string") parts.push(text);
       const caption = b.data.caption;
       if (typeof caption === "string") parts.push(caption);
+      // factoid-grid: достаём number+text из каждой карточки.
+      if (b.type === "factoid-grid" && Array.isArray(b.data.cards)) {
+        for (const c of b.data.cards) {
+          if (c && typeof c === "object") {
+            const rec = c as Record<string, unknown>;
+            if (typeof rec.number === "string") parts.push(rec.number);
+            if (typeof rec.text === "string") parts.push(rec.text);
+          }
+        }
+      }
     }
   }
   return parts.join(" \n ");
@@ -48,15 +59,18 @@ export default function MediaPage() {
   const glossaryItems = glossary.map((t) => ({
     slug: t.slug,
     title: t.title,
-    href: `${BASE}/media/glossary#${t.slug}`,
+    href: `${BASE}/media/glossary/term/${t.slug}`,
     tagIds: t.tags,
   }));
 
   return (
-    <MediaListClient
-      articles={enriched}
-      tags={visibleTags}
-      glossaryTerms={glossaryItems}
-    />
+    <>
+      <MediaListClient
+        articles={enriched}
+        tags={visibleTags}
+        glossaryTerms={glossaryItems}
+      />
+      <PageBottom />
+    </>
   );
 }

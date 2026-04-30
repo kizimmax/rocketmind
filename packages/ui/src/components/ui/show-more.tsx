@@ -17,6 +17,12 @@ interface ShowMoreProps {
   fade?: boolean
   /** CSS color value for gradient end. Default: var(--background) */
   fadeBg?: string
+  /** Height of the fade gradient above the button (px). Default: 72 */
+  fadeHeight?: number
+  /** Height of the solid background skirt below the button's center line (px).
+   *  Use to hide content sitting visually behind the button when ShowMore is
+   *  pulled up over preceding content via negative margin. Default: 0 */
+  fadeBelow?: number
   className?: string
 }
 
@@ -27,6 +33,8 @@ function ShowMore({
   labelExpanded = "Скрыть",
   fade = false,
   fadeBg = "var(--background)",
+  fadeHeight = 72,
+  fadeBelow = 0,
   className,
 }: ShowMoreProps) {
   const btn = (
@@ -59,23 +67,40 @@ function ShowMore({
 
   return (
     <div style={{ position: "relative" }} className={className}>
-      {/* Gradient that fades the bottom of collapsed content */}
+      {/* Gradient: transparent at top, fully opaque at the button's center line. */}
       <div
         aria-hidden
         style={{
           position: "absolute",
-          top: -72,
+          top: -fadeHeight,
           left: 0,
           right: 0,
-          height: 72,
+          bottom: "50%",
           background: `linear-gradient(to bottom, transparent, ${fadeBg})`,
           opacity: expanded ? 0 : 1,
           transition: `opacity var(--duration-base) var(--ease-standard)`,
           pointerEvents: "none",
-          zIndex: 9,
         }}
       />
-      {btn}
+      {/* Solid skirt: from the center line down, hides content behind the button. */}
+      {fadeBelow > 0 && (
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: 0,
+            right: 0,
+            height: fadeBelow,
+            background: fadeBg,
+            opacity: expanded ? 0 : 1,
+            transition: `opacity var(--duration-base) var(--ease-standard)`,
+            pointerEvents: "none",
+          }}
+        />
+      )}
+      {/* Button must render above gradient/skirt — relative positioning lifts it. */}
+      <div style={{ position: "relative" }}>{btn}</div>
     </div>
   )
 }

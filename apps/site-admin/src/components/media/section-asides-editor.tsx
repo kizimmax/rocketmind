@@ -5,6 +5,7 @@ import {
   FileText,
   Images,
   Link as LinkIcon,
+  MousePointerClick,
   Package,
   Plus,
 } from "lucide-react";
@@ -18,6 +19,7 @@ import {
 } from "@rocketmind/ui";
 import type { ArticleAside } from "@/lib/types";
 import {
+  AsideCtaEditor,
   AsideFileEditor,
   AsideLinkEditor,
   AsideLogosEditor,
@@ -61,6 +63,12 @@ function makeAside(kind: ArticleAside["kind"]): ArticleAside {
       id: newAsideId(),
       kind: "logos",
       logos: [],
+    };
+  if (kind === "cta")
+    return {
+      id: newAsideId(),
+      kind: "cta",
+      ctaId: "",
     };
   return {
     id: newAsideId(),
@@ -172,6 +180,15 @@ export function SectionAsidesEditor({
                   {...common}
                 />
               );
+            if (aside.kind === "cta")
+              return (
+                <AsideCtaEditor
+                  key={aside.id}
+                  aside={aside}
+                  onChange={(next) => updateAside(aside.id, next)}
+                  {...common}
+                />
+              );
             return (
               <AsideProductEditor
                 key={aside.id}
@@ -207,6 +224,9 @@ export function SectionAsidesEditor({
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => addAside("logos")}>
             <Images className="mr-2 h-4 w-4" /> Логотипы
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => addAside("cta")}>
+            <MousePointerClick className="mr-2 h-4 w-4" /> CTA-блок
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -2,6 +2,7 @@
 slug: arkhitektura-strukturirovannyh-ekosistem
 status: published
 order: 0
+type: default
 title: Архитектура структурированных экосистем
 description: >-
   Growth Product Owner в OneTwoTrip — о том, что такое North Star Metric и
@@ -57,6 +58,49 @@ body:
         type: h3
         data:
           text: ''
+      - id: b_mok6uo2w_is92r
+        type: table
+        data:
+          rows:
+            - - Провт
+              - Провт23
+              - Провтвыафв
+              - Аваыволд
+              - ывафвы
+            - - Ваы ваовыолд
+              - '212'
+              - 'Ваы ваов фывавыфав ыфа '
+              - 'ываыва '
+              - выфа фыв авфа вфыафы
+            - - Ваы ваовыолд
+              - '211'
+              - Ваы ваовцв выавыа ыва выа выа выа выа выа ывав ы
+              - вы ваав
+              - фвы авфы авфы афыв афы афвыыфв
+            - - ывафвыаф
+              - ''
+              - выавыа
+              - выа
+              - фвыавфыавыф
+          hasHeader: true
+    factoids:
+      - id: fc_mol3fqrp_1ir3c
+        number: '1'
+        text: выавы
+        accent: false
+      - id: fc_mol3f09g_xwcnm
+        number: '1'
+        text: мил
+        accent: false
+      - id: fc_mol3f6mi_tcuo5
+        number: '1'
+        text: аавы
+        accent: false
+      - id: fc_mol3f82d_bqdp1
+        number: ''
+        text: ''
+        accent: false
+        newRow: true
     asides:
       - id: a_mobc9djl_rgjvh
         kind: logos
@@ -67,6 +111,13 @@ body:
           - id: l_mobchz1u_y4di
             src: /clip-logos/18 1.svg
             widthPx: 160
+      - id: a_mojlqjte_nnjbv
+        kind: product
+        productSlug: ecosystem-strategy
+        productCategory: consulting
+      - id: a_mojjxj6a_xi3xm
+        kind: cta
+        ctaId: s
     quotes:
       - id: q_mocimf1w_il5v
         expertSlug: irina-gurenkova
@@ -131,6 +182,37 @@ body:
         type: paragraph
         data:
           text: вывыа
+    factoids:
+      - id: fc_mok6z69t_ia104
+        number: '44'
+        text: вы ыва ыв ыв ываываы
+        accent: false
+      - id: fc_mok6zgag_ry7a0
+        number: 'авыавы '
+        text: выаыва ыва ыа ыва выа ыва ы
+        accent: false
+      - id: fc_mok7dyla_cvhpc
+        number: ыв
+        text: ывафыв фыв фыв фыаввыф
+        accent: false
+      - id: fc_mokzburb_r5kcp
+        number: fdsf
+        text: dsfsdfsdfsdsfsdfds dsdf sf sdf sdf dsf sdf sdf sd
+        accent: false
+        newRow: true
+      - id: fc_mok7f6mz_tzhl1
+        number: ывавыа
+        text: выа ываывавывааыаы
+        accent: true
+      - id: fc_mol2ipe7_yc7fx
+        number: выавыаыв
+        text: выавыаавыаыва
+        accent: false
+      - id: fc_mol2isiy_up3dh
+        number: '1212'
+        text: выаывавыаываыва
+        accent: false
+        newRow: true
     asides:
       - id: a_mob16pxu_suh3j
         kind: file
@@ -202,6 +284,7 @@ body:
                 /media/uploads/arkhitektura-strukturirovannyh-ekosistem/020eeac4d6e2.mov
               kind: video
               caption: ''
+    factoids: []
     asides:
       - id: a_mob5r32u_c027s
         kind: product
@@ -242,6 +325,7 @@ body:
             выа лдофыв длфовы лдфыожвалд жфыволжа фывоа лджафывлжа дфвоыж выфо
             жл дафыовлжа фвылджоа жфлдывож афывжлдао лвыфдо алжвыфлдж оалдывфо
             алд выфло лжфыо лжфв офыво афыждв
+    factoids: []
     asides:
       - id: a_mob5smwi_lhwr2
         kind: product
@@ -282,6 +366,7 @@ body:
           src: >-
             /media/uploads/arkhitektura-strukturirovannyh-ekosistem/76d3beb57f81.mov
           caption: какое то видео
+    factoids: []
     asides:
       - id: a_mobbx672_jj8y0
         kind: product
@@ -298,6 +383,6 @@ metaDescription: >-
   Как устроены экспертные сети профессионалов и почему North Star Metric —
   главная опора продакта.
 createdAt: ''
-updatedAt: '2026-04-27T12:08:05.124Z'
+updatedAt: '2026-04-30T06:19:18.431Z'
 ---
 

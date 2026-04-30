@@ -20,6 +20,7 @@ import { PartnershipsEditor } from "./partnerships-editor";
 import { LogoMarqueeEditor } from "./logo-marquee-editor";
 import { AboutRocketmindEditor } from "./about-rocketmind-editor";
 import { CaseCardEditor } from "./case-card-editor";
+import { PageBottomEditor } from "./page-bottom-editor";
 import { GenericEditor } from "./generic-editor";
 
 interface BlockEditorProps {
@@ -76,6 +77,8 @@ export function BlockEditor({ block, sectionId, hasExperts, experts, onUpdate }:
       return <AboutRocketmindEditor data={block.data} onUpdate={onUpdate} />;
     case "caseCard":
       return <CaseCardEditor data={block.data} onUpdate={onUpdate} />;
+    case "pageBottom":
+      return <PageBottomEditor block={block} onUpdate={onUpdate} />;
     default:
       return <GenericEditor block={block} />;
   }

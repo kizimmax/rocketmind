@@ -1,10 +1,10 @@
-# ── Stage 1: Build all apps ──
+# ── Stage 1: Build ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 COPY . .
 
-# Firebase config (passed as build args → env for Next.js)
+# Firebase config for R-Plan (build args → env)
 ARG NEXT_PUBLIC_FIREBASE_API_KEY
 ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
 ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID
@@ -28,33 +28,53 @@ RUN npm install --ignore-scripts && npm run postinstall
 # Build UI package
 RUN npm run build --workspace=packages/ui
 
-# Build site (static export for nginx)
-ENV NEXT_STATIC_EXPORT=1
-RUN npm run build --workspace=apps/site
+# Build site (SSR — no NEXT_STATIC_EXPORT)
+# DATABASE_URL not needed at build time — only at runtime
+RUN SKIP_DB=1 npm run build --workspace=apps/site
 
-# Build SaaS (served at /app)
+# Build SaaS (static, /app basePath)
 ENV NEXT_PUBLIC_BASE_PATH=/app
 RUN npm run build --workspace=apps/saas
 
-# Build R-Plan (merged into site root, route = /r-plan)
+# Build R-Plan (static, /r-plan route)
 ENV NEXT_PUBLIC_BASE_PATH=
 RUN npm run build --workspace=apps/internal
 
-# ── Stage 2: Serve via nginx ──
-FROM nginx:alpine
+# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
+FROM node:20-alpine
 
-RUN rm /etc/nginx/conf.d/default.conf
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+# Install PostgreSQL, nginx, supervisord
+RUN apk add --no-cache \
+    postgresql postgresql-client \
+    nginx \
+    supervisor \
+    su-exec
 
-# Site as base
-COPY --from=builder /app/apps/site/out /var/www/site
+WORKDIR /app
 
-# Merge R-Plan into site (routes don't conflict)
-COPY --from=builder /app/apps/internal/out/r-plan /var/www/site/r-plan
-COPY --from=builder /app/apps/internal/out/_next/. /var/www/site/_next/
+# Copy site for SSR runtime (needs node_modules)
+COPY --from=builder /app/apps/site/.next          ./apps/site/.next
+COPY --from=builder /app/apps/site/public         ./apps/site/public
+COPY --from=builder /app/apps/site/package.json   ./apps/site/package.json
+COPY --from=builder /app/apps/site/prisma         ./apps/site/prisma
+COPY --from=builder /app/apps/site/next.config.ts ./apps/site/next.config.ts
+COPY --from=builder /app/node_modules             ./node_modules
+COPY --from=builder /app/package.json             ./package.json
 
-# SaaS separate (has /app basePath)
-COPY --from=builder /app/apps/saas/out /var/www/saas
+# Copy static builds for nginx
+COPY --from=builder /app/apps/saas/out            ./static/saas
+COPY --from=builder /app/apps/internal/out/r-plan ./static/site/r-plan
+COPY --from=builder /app/apps/internal/out/_next/. ./static/site/_next/
+
+# Copy config files
+COPY docker/nginx.conf      /etc/nginx/http.d/default.conf
+COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/entrypoint.sh   /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Persistent volume mount point
+VOLUME ["/data"]
 
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+
+CMD ["/entrypoint.sh"]

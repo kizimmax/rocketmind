@@ -65,7 +65,7 @@ export type ProjectsBlockData = {
   logoGrid: LogoGridCell[];
 };
 
-export type ContactSocialKind = "vk" | "telegram" | "custom";
+export type ContactSocialKind = "vk" | "telegram" | "max" | "custom";
 
 export type ContactSocial = {
   id: string;
@@ -175,7 +175,10 @@ function rid() { return Math.random().toString(36).slice(2, 10); }
 function normaliseSocial(raw: unknown): ContactSocial | null {
   if (!raw || typeof raw !== "object") return null;
   const o = raw as Record<string, unknown>;
-  const kind = o.kind === "vk" || o.kind === "telegram" || o.kind === "custom" ? o.kind : null;
+  const kind =
+    o.kind === "vk" || o.kind === "telegram" || o.kind === "max" || o.kind === "custom"
+      ? o.kind
+      : null;
   if (!kind) return null;
   return {
     id: typeof o.id === "string" ? o.id : rid(),

@@ -78,6 +78,7 @@ const TYPE_LABEL: Record<ArticleBodyBlockType, { label: string; icon: LucideIcon
   image: { label: "Image", icon: Pilcrow },
   gallery: { label: "Gallery", icon: Pilcrow },
   video: { label: "Video", icon: Pilcrow },
+  table: { label: "Table", icon: Pilcrow },
   list: { label: "List", icon: Pilcrow },
   callout: { label: "Callout", icon: Pilcrow },
 };

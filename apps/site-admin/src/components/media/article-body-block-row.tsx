@@ -18,6 +18,7 @@ import type {
   ArticleGalleryItem,
 } from "@/lib/types";
 import { ArticleBodyGalleryEditor } from "./article-body-gallery-editor";
+import { ArticleBodyTableEditor } from "./article-body-table-editor";
 import { ArticleBodyTextarea } from "./article-body-textarea";
 import { BlockTypeMenu } from "./block-type-menu";
 import { detectListMode } from "./list-helpers";
@@ -112,6 +113,7 @@ const TEXT_CLASS: Record<ArticleBodyBlockType, string> = {
   image: "",
   gallery: "",
   video: "",
+  table: "",
   list: "",
   callout: "",
 };
@@ -125,6 +127,7 @@ const PLACEHOLDER: Record<ArticleBodyBlockType, string> = {
   image: "",
   gallery: "",
   video: "",
+  table: "",
   list: "",
   callout: "",
 };
@@ -263,6 +266,16 @@ export function ArticleBodyBlockRow({
             caption={
               typeof block.data?.caption === "string" ? block.data.caption : ""
             }
+            onChange={onChangeData}
+          />
+        ) : block.type === "table" ? (
+          <ArticleBodyTableEditor
+            rows={
+              Array.isArray(block.data?.rows)
+                ? (block.data.rows as string[][])
+                : [["", ""], ["", ""]]
+            }
+            hasHeader={block.data?.hasHeader !== false}
             onChange={onChangeData}
           />
         ) : (

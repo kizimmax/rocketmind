@@ -16,6 +16,7 @@ caseType: null
 featured: null
 showInMenu: null
 showInFooter: null
+formId: dfdfsdf
 order: 0
 caseCard: null
 homeHero: null
@@ -162,7 +163,7 @@ process:
 experts: null
 aboutRocketmind: null
 projects: null
-pageBottom: null
+pageBottom: true
 customSections: null
 socialProof: null
 duration: null

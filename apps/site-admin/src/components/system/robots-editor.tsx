@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { Save, RotateCcw, ExternalLink } from "lucide-react";
 import { Button } from "@rocketmind/ui";
 
-export default function RobotsPage() {
+type Toast = { type: "success" | "error"; message: string };
+
+export function RobotsEditor() {
   const [content, setContent] = useState("");
   const [savedContent, setSavedContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isDirty = content !== savedContent;
@@ -25,7 +27,7 @@ export default function RobotsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  function showToast(type: "success" | "error", message: string) {
+  function showToast(type: Toast["type"], message: string) {
     setToast({ type, message });
     setTimeout(() => setToast(null), 3000);
   }
@@ -55,22 +57,22 @@ export default function RobotsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-[420px] items-center justify-center rounded-lg border border-border bg-background shadow-sm">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-rm-gray-3 border-t-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8">
+    <div className="flex flex-col">
       {/* Header */}
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-[length:var(--text-20)] font-semibold text-foreground">
+          <h2 className="text-[length:var(--text-16)] font-semibold text-foreground">
             robots.txt
-          </h1>
-          <p className="mt-1 text-[length:var(--text-13)] text-muted-foreground">
-            Инструкции для поисковых роботов. Файл доступен по адресу{" "}
+          </h2>
+          <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground">
+            Инструкции для поисковых роботов.{" "}
             <a
               href="/robots.txt"
               target="_blank"
@@ -93,7 +95,7 @@ export default function RobotsPage() {
               className="gap-1.5 text-muted-foreground"
             >
               <RotateCcw className="h-3.5 w-3.5" />
-              Сбросить
+              Отменить
             </Button>
           )}
           <Button
@@ -109,8 +111,7 @@ export default function RobotsPage() {
       </div>
 
       {/* Editor */}
-      <div className="overflow-hidden rounded-lg border border-border bg-background shadow-sm">
-        {/* Toolbar */}
+      <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border bg-background shadow-sm">
         <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2">
           <span className="font-mono text-[length:var(--text-11)] text-muted-foreground">
             robots.txt
@@ -122,25 +123,23 @@ export default function RobotsPage() {
           )}
         </div>
 
-        {/* Textarea */}
         <textarea
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           spellCheck={false}
-          className="w-full resize-none bg-background p-4 font-mono text-[length:var(--text-13)] text-foreground outline-none placeholder:text-muted-foreground"
-          style={{ minHeight: "320px" }}
-          rows={Math.max(16, content.split("\n").length + 2)}
+          className="w-full flex-1 resize-none bg-background p-4 font-mono text-[length:var(--text-13)] text-foreground outline-none placeholder:text-muted-foreground"
+          style={{ minHeight: "420px" }}
+          rows={Math.max(20, content.split("\n").length + 2)}
           placeholder="User-agent: *&#10;Disallow: /admin/&#10;Allow: /&#10;Sitemap: https://example.com/sitemap.xml"
         />
       </div>
 
-      {/* Hint */}
       <p className="mt-3 text-[length:var(--text-12)] text-muted-foreground">
-        Изменения вступят в силу после следующего деплоя, если сайт собирается статически. При серверном рендеринге — немедленно.
+        Изменения вступят в силу после следующего деплоя при статической сборке,
+        при серверном рендеринге — немедленно.
       </p>
 
-      {/* Toast */}
       {toast && (
         <div
           className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-[length:var(--text-13)] shadow-lg transition-all ${

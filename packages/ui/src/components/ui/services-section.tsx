@@ -38,6 +38,12 @@ export interface ServicesSectionProps {
   paragraphs?: StyledParagraph[];
   cards: ServiceCardData[];
   className?: string;
+  /**
+   * Click-handler карточки. Если задан — карточка рендерится как `<button>`
+   * (даже если у неё есть `href`). Используется для открытия формы страницы
+   * с предзаданным чипсом = заголовок карточки.
+   */
+  onCardClick?: (card: ServiceCardData) => void;
 }
 
 // ── Arrow ─────────────────────────────────────────────────────────────────────
@@ -62,7 +68,13 @@ function Arrow({ featured }: { featured?: boolean }) {
 
 // ── Card ──────────────────────────────────────────────────────────────────────
 
-function ServiceCard({ card }: { card: ServiceCardData }) {
+function ServiceCard({
+  card,
+  onClick,
+}: {
+  card: ServiceCardData;
+  onClick?: () => void;
+}) {
   const colSpan = card.colSpan ?? 1;
   const rowSpan = card.rowSpan ?? 1;
   const featured = card.featured === true;
@@ -121,6 +133,17 @@ function ServiceCard({ card }: { card: ServiceCardData }) {
     </>
   );
 
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(rootCn, "text-left cursor-pointer")}
+      >
+        {content}
+      </button>
+    );
+  }
   if (card.href) {
     return (
       <a href={card.href} className={rootCn}>
@@ -141,6 +164,7 @@ export function ServicesSection({
   paragraphs,
   cards,
   className,
+  onCardClick,
 }: ServicesSectionProps) {
   if (!cards || cards.length === 0) return null;
   const resolvedParagraphs = resolveStyledParagraphs(paragraphs, description, {
@@ -175,7 +199,13 @@ export function ServicesSection({
         {/* Bento grid — cards share borders (no gap) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 auto-rows-[minmax(260px,auto)]">
           {cards.map((card, i) => (
-            <ServiceCard key={i} card={card} />
+            <ServiceCard
+              key={i}
+              card={card}
+              onClick={
+                onCardClick ? () => onCardClick(card) : undefined
+              }
+            />
           ))}
         </div>
       </div>

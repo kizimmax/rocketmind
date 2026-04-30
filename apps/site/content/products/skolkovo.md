@@ -7,6 +7,17 @@ cardTitle: Резидент Сколково
 cardDescription: Помощь в получении статуса резидента Сколково.
 metaTitle: Резидент Сколково | Rocketmind
 metaDescription: Помощь в получении статуса резидента Сколково.
+expertProduct: null
+caseType: null
+featured: null
+showInMenu: null
+showInFooter: null
+formId: dfdfsdf
+order: 4
+caseCard: null
+homeHero: null
+methodology: null
+homeSections: null
 hero:
   caption: консалтинг и стратегии
   title: |
@@ -18,6 +29,7 @@ hero:
 logoMarquee: null
 about: null
 audience: null
+contacts: null
 tools: null
 results: null
 services:
@@ -75,9 +87,16 @@ services:
       colSpan: 2
       rowSpan: 1
       paragraphsTwoCol: true
+  formChips:
+    enabled: true
+    multi: false
+    label: Тема обращения Тест
 process: null
 experts: null
 aboutRocketmind: null
+projects: null
+pageBottom: true
+customSections: null
 socialProof: null
 duration: null
 whyRocketmind: null

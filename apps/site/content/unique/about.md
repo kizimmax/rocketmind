@@ -17,6 +17,7 @@ caseType: null
 featured: null
 showInMenu: null
 showInFooter: null
+formId: null
 order: 0
 caseCard: null
 homeHero: null
@@ -89,6 +90,15 @@ contacts:
           paragraph:
             text: Проектирование платформенных бизнес-моделей и партнёрских сетей.
             color: secondary
+        - id: 8hpvv96f
+          kind: person
+          person:
+            expertSlug: alexey-eremin
+            phone: '+79099090909'
+            social:
+              kind: max
+              username: jjf
+              url: ''
     - id: card-growing
       title: Растущие компании
       items:
@@ -97,6 +107,21 @@ contacts:
           paragraph:
             text: 'Экспресс-стратегии, проверка гипотез, поиск новых направлений.'
             color: secondary
+        - id: k81k7jd8
+          kind: socials
+          socials:
+            - id: 3v29h9hw
+              kind: telegram
+              username: na
+              url: ''
+            - id: 1jh8snds
+              kind: vk
+              username: ada
+              url: ''
+            - id: 6gzw4pu5
+              kind: max
+              username: daada
+              url: ''
 tools:
   tag: инструменты и методы
   title: 'ИНСТРУМЕНТЫ, КОТОРЫЕ МЫ ИСПОЛЬЗУЕМ'
@@ -311,7 +336,7 @@ projects:
         src: /images/unique/about/logos/cell-clip-1744800000027.svg
         size: S
         padding: 22
-pageBottom: {}
+pageBottom: true
 customSections: null
 socialProof: null
 duration: null

@@ -9,6 +9,7 @@ import {
   ArticleNav,
   ArticleCard,
   ArticleBody,
+  FactoidGrid,
   VideoPlayer,
   type ArticleBodyBlock,
 } from "@rocketmind/ui"
@@ -326,6 +327,32 @@ export default function ArticlePage() {
                     ],
                   },
                 },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* ═══════════════ 10. FACTOID GRID ═══════════════ */}
+        <SubSection id="article-factoid-grid" title="Factoid grid / Сетка фактоидов (section-level)" />
+        <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+          Section-level компонент — рендерится строго в начале секции, под H2,
+          не как блок тела. Адаптив: 1 / 2 / 3 колонки. На сайте 3-я карточка
+          вылезает в col-4 (negative <code>marginRight</code>) и сдвигает
+          sticky-asides секции вниз на сумму высот рядов с 3-й карточкой.
+          <code>accent: true</code> — жёлтая подложка <code>--rm-yellow-100</code>
+          с тёмным текстом.
+        </p>
+
+        <div className="rounded-lg border border-border p-6 mb-10 bg-rm-gray-1/30">
+          <div className="mx-auto max-w-[1048px]">
+            <FactoidGrid
+              cards={[
+                { id: "fc1", number: "10,1 млн", text: "Писем отправлено в 43 триггерных рассылках", accent: false },
+                { id: "fc2", number: "37%", text: "Открываемость — хотя бы одно письмо открыл каждый третий", accent: false },
+                { id: "fc3", number: "9,38%", text: "Переходов на портал от всех получателей рассылок", accent: false },
+                { id: "fc4", number: "483", text: "Публикации статей в СМИ и соцсетях к 30 ноября 2015", accent: false },
+                { id: "fc5", number: "10 300", text: "Лайков собрали статьи в соцсетях", accent: false },
+                { id: "fc6", number: "+201%", text: "Рост потребления электронных госуслуг по итогам 2015 года", accent: true },
               ]}
             />
           </div>

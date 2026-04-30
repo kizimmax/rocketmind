@@ -105,6 +105,10 @@ export function AboutHero({ description = "", paragraphs, factoids, experts, hea
         <div
           aria-hidden="true"
           className="pointer-events-none absolute right-5 md:right-8 xl:right-14 top-16 bottom-[384px] md:bottom-[224px] xl:bottom-[112px] z-0"
+          style={{
+            opacity: 0,
+            animation: "heroBgFade 900ms ease-out 0ms forwards",
+          }}
         >
           <img
             src="/about/golden-ratio.svg"

@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Pilcrow,
   Quote,
+  Table as TableIcon,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -31,6 +32,7 @@ const ITEMS: {
   { type: "image", label: "Изображение", icon: ImageIcon },
   { type: "gallery", label: "Галерея", icon: GalleryHorizontal },
   { type: "video", label: "Видео", icon: Film },
+  { type: "table", label: "Таблица", icon: TableIcon },
 ];
 
 interface Props {
