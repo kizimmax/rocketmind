@@ -113,7 +113,7 @@ export const SectionAsideProductCard = React.forwardRef<
               ))}
               {extra > 0 && (
                 <span
-                  className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-11)] font-medium text-[color:var(--rm-gray-fg-main)]"
+                  className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]"
                   title={`ещё ${extra}`}
                 >
                   +{extra}
@@ -152,7 +152,7 @@ function Avatar({ name, image }: { name: string; image: string | null }) {
       <img
         src={image}
         alt={name}
-        className="h-8 w-8 rounded-full border-2 border-[#0A0A0A] object-cover"
+        className="h-20 w-20 rounded-full border-2 border-[#0A0A0A] object-cover"
         loading="lazy"
       />
     )
@@ -165,7 +165,7 @@ function Avatar({ name, image }: { name: string; image: string | null }) {
     .join("")
     .toUpperCase()
   return (
-    <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-11)] font-medium text-[color:var(--rm-gray-fg-main)]">
+    <span className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]">
       {initials}
     </span>
   )

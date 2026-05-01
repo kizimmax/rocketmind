@@ -4750,7 +4750,7 @@ var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCar
             extra > 0 && /* @__PURE__ */ jsxs23(
               "span",
               {
-                className: "flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-11)] font-medium text-[color:var(--rm-gray-fg-main)]",
+                className: "flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]",
                 title: `\u0435\u0449\u0451 ${extra}`,
                 children: [
                   "+",
@@ -4788,14 +4788,14 @@ function Avatar2({ name, image }) {
         {
           src: image,
           alt: name,
-          className: "h-8 w-8 rounded-full border-2 border-[#0A0A0A] object-cover",
+          className: "h-20 w-20 rounded-full border-2 border-[#0A0A0A] object-cover",
           loading: "lazy"
         }
       )
     );
   }
   const initials = name.split(/\s+/).map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-  return /* @__PURE__ */ jsx44("span", { className: "flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-11)] font-medium text-[color:var(--rm-gray-fg-main)]", children: initials });
+  return /* @__PURE__ */ jsx44("span", { className: "flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]", children: initials });
 }
 
 // src/components/ui/for-whom-section.tsx
