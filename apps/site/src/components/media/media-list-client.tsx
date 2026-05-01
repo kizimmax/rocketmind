@@ -256,8 +256,11 @@ export function MediaListClient({
 
         <div className="relative z-10 pt-[102px] pb-16 md:pb-24 lg:pt-[144px]">
           <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
-            {/* Breadcrumbs — над двухколоночной раскладкой */}
-            <div className="mb-6" style={stagger(0)}>
+            {/* Breadcrumbs + mobile glossary link (справа на мобильном). */}
+            <div
+              className="mb-6 flex items-start justify-between gap-4"
+              style={stagger(0)}
+            >
               <Breadcrumbs
                 items={
                   breadcrumbs ?? [
@@ -266,41 +269,38 @@ export function MediaListClient({
                   ]
                 }
               />
+              <a
+                href={`${BASE}/media/glossary`}
+                className="group inline-flex shrink-0 items-center gap-2 font-mono text-[12px] font-medium uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:text-[var(--rm-yellow-100)] lg:hidden"
+              >
+                Глоссарий
+                <ArrowUpRight
+                  className="h-4 w-4"
+                  strokeWidth={1.5}
+                  aria-hidden
+                />
+              </a>
             </div>
 
             {/* 2-колоночная сетка: контент слева + глоссарий справа. Глоссарий
                 поднят до уровня H1 (раньше был ниже tag-row). */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_344px] lg:gap-2">
               <div className="flex min-w-0 flex-col gap-10">
-                {/* H1 + mobile-only glossary link */}
-                <div
-                  className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+                {/* H1 */}
+                <h1
+                  className="font-heading text-[28px] font-bold uppercase leading-[1.08] tracking-[-0.02em] lg:text-[80px] lg:font-extrabold"
                   style={stagger(1)}
                 >
-                  <h1 className="font-heading text-[28px] font-bold uppercase leading-[1.08] tracking-[-0.02em] lg:text-[80px] lg:font-extrabold">
-                    {titlePrefix}
-                    {headingAccent && (
-                      <>
-                        {" "}
-                        <span className="text-muted-foreground">
-                          {headingAccent}
-                        </span>
-                      </>
-                    )}
-                  </h1>
-
-                  <a
-                    href={`${BASE}/media/glossary`}
-                    className="group inline-flex items-center gap-2 self-start font-mono text-[12px] font-medium uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:text-[var(--rm-yellow-100)] lg:hidden"
-                  >
-                    Глоссарий
-                    <ArrowUpRight
-                      className="h-4 w-4"
-                      strokeWidth={1.5}
-                      aria-hidden
-                    />
-                  </a>
-                </div>
+                  {titlePrefix}
+                  {headingAccent && (
+                    <>
+                      {" "}
+                      <span className="text-muted-foreground">
+                        {headingAccent}
+                      </span>
+                    </>
+                  )}
+                </h1>
 
                 {intro && (
                   <p

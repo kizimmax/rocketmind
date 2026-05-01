@@ -299,7 +299,7 @@ export function GlossaryTermPageClient({
   if (isWide) {
     return (
       <TooltipProvider delay={200}>
-        <article className="py-16 md:py-20">
+        <article className="pt-[102px] pb-16 md:pb-20 lg:pt-[144px]">
           <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
             <div className="grid grid-cols-4 gap-2">
               {/* Col 1 — ToC, sticky через всю страницу */}
@@ -444,7 +444,7 @@ export function GlossaryTermPageClient({
 
   return (
     <TooltipProvider delay={200}>
-      <article className="py-16 md:py-20">
+      <article className="pt-[102px] pb-16 md:pb-20 lg:pt-[144px]">
         <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
           {/* Breadcrumbs */}
           <div
