@@ -3,6 +3,8 @@ import { Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@rocketmind/ui";
 
+export const dynamic = "force-dynamic";
+
 import { Header } from "@/components/sections/Header";
 import { Footer } from "@/components/sections/Footer";
 import { PageLoader } from "@/components/ui/PageLoader";

@@ -88,10 +88,16 @@ async function seedPages() {
   for (const section of sections) {
     const files = readMdFiles(path.join(SITE_CONTENT, section));
     for (const { slug, frontmatter } of files) {
-      const url = section === "unique" ? `/${slug}` : `/${section}/${slug}`;
+      // category из frontmatter имеет приоритет над именем папки
+      // (consulting-продукты лежат в content/products/, но имеют category: consulting)
+      const category = typeof frontmatter.category === "string" && frontmatter.category
+        ? frontmatter.category
+        : section;
+      const url = section === "unique" ? `/${slug}` : `/${category}/${slug}`;
       await prisma.page.upsert({
         where: { url },
         update: {
+          category,
           name: frontmatter.title || slug,
           content: frontmatter,
           status: frontmatter.status || "published",
@@ -106,7 +112,7 @@ async function seedPages() {
         create: {
           slug,
           url,
-          category: section,
+          category,
           name: frontmatter.title || slug,
           content: frontmatter,
           status: frontmatter.status || "published",
