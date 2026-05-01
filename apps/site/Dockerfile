@@ -27,6 +27,8 @@ COPY --from=builder /app/apps/site/package.json     ./apps/site/package.json
 COPY --from=builder /app/apps/site/next.config.ts   ./apps/site/next.config.ts
 COPY --from=builder /app/apps/site/prisma           ./apps/site/prisma
 COPY --from=builder /app/apps/site/prisma.config.ts ./apps/site/prisma.config.ts
+COPY --from=builder /app/apps/site/content          ./apps/site/content
+COPY --from=builder /app/scripts                    ./scripts
 COPY --from=builder /app/node_modules               ./node_modules
 COPY --from=builder /app/package.json               ./package.json
 
