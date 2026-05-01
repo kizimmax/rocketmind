@@ -81,7 +81,18 @@ jobs:
       - name: Combine outputs
         run: |
           mkdir -p _out/ds _out/app _out/cms
-          cp -r apps/site/out/. _out/
+          # apps/site после миграции на SSR/CMS не делает static export.
+          # Копируем только если каталог out/ есть — иначе ставим заглушку,
+          # ведущую на /ds (там DS Web с актуальной версткой).
+          if [ -d apps/site/out ]; then
+            cp -r apps/site/out/. _out/
+          else
+            cat > _out/index.html <<'HTML'
+          <!doctype html><meta charset="utf-8"><title>Rocketmind preview</title>
+          <meta http-equiv="refresh" content="0;url=./ds/">
+          <p>Site preview временно недоступен (SSR-only после CMS-миграции). <a href="./ds/">→ Design System</a></p>
+          HTML
+          fi
           cp -r apps/design-system/out/. _out/ds/
           cp -r apps/saas/out/. _out/app/
           if [ "${{ steps.build-cms.outcome }}" = "success" ]; then
