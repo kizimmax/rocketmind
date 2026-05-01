@@ -183,12 +183,12 @@ async function pageToProductData(page: {
   const data = (page.content && typeof page.content === "object" ? page.content : {}) as Record<string, unknown>;
 
   const heroRaw = (data.hero && typeof data.hero === "object" ? data.hero : {}) as Record<string, unknown>;
-  const heroImageUrl = typeof heroRaw.heroImageData === "string" && heroRaw.heroImageData.startsWith("http") ? heroRaw.heroImageData : null;
-  const audioUrl = typeof heroRaw.audioData === "string" && heroRaw.audioData.startsWith("http") ? heroRaw.audioData : undefined;
+  const heroImageUrl = typeof heroRaw.heroImageData === "string" && heroRaw.heroImageData ? heroRaw.heroImageData : null;
+  const audioUrl = typeof heroRaw.audioData === "string" && heroRaw.audioData ? heroRaw.audioData : undefined;
   const { heroImageData: _h, audioData: _a, audioFilename: _af, ...heroClean } = heroRaw;
 
   const aboutRaw = data.about && typeof data.about === "object" ? (data.about as Record<string, unknown>) : null;
-  const aboutImageUrl = aboutRaw && typeof aboutRaw.aboutImageData === "string" && aboutRaw.aboutImageData.startsWith("http") ? aboutRaw.aboutImageData : null;
+  const aboutImageUrl = aboutRaw && typeof aboutRaw.aboutImageData === "string" && aboutRaw.aboutImageData ? aboutRaw.aboutImageData : null;
 
   const expertSlugs = Array.isArray(data.experts) ? (data.experts as unknown[]).filter((s): s is string => typeof s === "string") : [];
   const experts = expertSlugs.length > 0 ? await resolveExperts(expertSlugs) : null;

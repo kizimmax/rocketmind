@@ -58,6 +58,44 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
 
+const SITE_PUBLIC = path.join(ROOT, "apps", "site", "public");
+
+// Поиск картинки по convention: вернуть public-URL если файл существует.
+// candidates — массив относительных путей от public/. Берём первый существующий.
+function findImagePath(candidates) {
+  for (const rel of candidates) {
+    const abs = path.join(SITE_PUBLIC, rel);
+    if (fs.existsSync(abs)) return "/" + rel.replace(/^\/+/, "");
+  }
+  return null;
+}
+
+function findExpertPhoto(slug) {
+  return findImagePath([
+    `images/experts/${slug}.jpg`,
+    `images/experts/${slug}.png`,
+    `images/experts/${slug}.webp`,
+  ]);
+}
+
+function findArticleCover(slug) {
+  return findImagePath([
+    `images/media/${slug}.jpg`,
+    `images/media/${slug}.png`,
+    `images/media/${slug}.webp`,
+    `images/media/${slug}.svg`,
+  ]);
+}
+
+function findProductHero(category, slug) {
+  return findImagePath([
+    `images/products/${category}/${slug}/cover.png`,
+    `images/products/${category}/${slug}/cover.svg`,
+    `images/products/${category}/${slug}/cover.jpg`,
+    `images/products/${category}/${slug}/cover.webp`,
+  ]);
+}
+
 // ── seeders ──────────────────────────────────────────────────────────────────
 
 async function seedAdminUser() {
@@ -94,12 +132,21 @@ async function seedPages() {
         ? frontmatter.category
         : section;
       const url = section === "unique" ? `/${slug}` : `/${category}/${slug}`;
+
+      // Подставить hero.heroImageData по convention если в frontmatter не задано
+      const hero = (frontmatter.hero && typeof frontmatter.hero === "object") ? { ...frontmatter.hero } : {};
+      if (!hero.heroImageData) {
+        const found = findProductHero(category, slug);
+        if (found) hero.heroImageData = found;
+      }
+      const enrichedContent = { ...frontmatter, hero };
+
       await prisma.page.upsert({
         where: { url },
         update: {
           category,
           name: frontmatter.title || slug,
-          content: frontmatter,
+          content: enrichedContent,
           status: frontmatter.status || "published",
           sortOrder: frontmatter.sortOrder ?? 0,
           menuTitle: frontmatter.menuTitle || "",
@@ -114,7 +161,7 @@ async function seedPages() {
           url,
           category,
           name: frontmatter.title || slug,
-          content: frontmatter,
+          content: enrichedContent,
           status: frontmatter.status || "published",
           sortOrder: frontmatter.sortOrder ?? 0,
           menuTitle: frontmatter.menuTitle || "",
@@ -143,7 +190,7 @@ async function seedArticles() {
         status: frontmatter.status || "published",
         description: frontmatter.description || "",
         content: { ...frontmatter, body },
-        coverPath: frontmatter.cover || frontmatter.coverPath || null,
+        coverPath: frontmatter.cover || frontmatter.coverPath || findArticleCover(slug),
         expertSlug: frontmatter.expert || frontmatter.expertSlug || null,
         publishedAt: frontmatter.publishedAt || frontmatter.date || "",
         tagIds: frontmatter.tags || frontmatter.tagIds || [],
@@ -161,7 +208,7 @@ async function seedArticles() {
         status: frontmatter.status || "published",
         description: frontmatter.description || "",
         content: { ...frontmatter, body },
-        coverPath: frontmatter.cover || frontmatter.coverPath || null,
+        coverPath: frontmatter.cover || frontmatter.coverPath || findArticleCover(slug),
         expertSlug: frontmatter.expert || frontmatter.expertSlug || null,
         publishedAt: frontmatter.publishedAt || frontmatter.date || "",
         tagIds: frontmatter.tags || frontmatter.tagIds || [],
@@ -213,17 +260,18 @@ async function seedExperts() {
   const files = readMdFiles(path.join(SITE_CONTENT, "experts"));
   let count = 0;
   for (const { slug, frontmatter, body } of files) {
+    const photoPath = frontmatter.photo || frontmatter.photoPath || findExpertPhoto(slug);
     await prisma.expert.upsert({
       where: { slug },
       update: {
         content: { ...frontmatter, body },
-        photoPath: frontmatter.photo || frontmatter.photoPath || null,
+        photoPath,
         sortOrder: frontmatter.sortOrder ?? 0,
       },
       create: {
         slug,
         content: { ...frontmatter, body },
-        photoPath: frontmatter.photo || frontmatter.photoPath || null,
+        photoPath,
         sortOrder: frontmatter.sortOrder ?? 0,
       },
     });
