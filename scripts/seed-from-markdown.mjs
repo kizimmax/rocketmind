@@ -303,7 +303,7 @@ async function seedMediaTags() {
     console.log("✔ MediaTags: 0 (no _tags.json)");
     return;
   }
-  const items = Array.isArray(json) ? json : json.items || [];
+  const items = Array.isArray(json) ? json : json.items || json.tags || [];
   let count = 0;
   for (const t of items) {
     if (!t.id) continue;
@@ -330,12 +330,45 @@ async function seedMediaTags() {
   console.log(`✔ MediaTags: ${count}`);
 }
 
+async function seedSystemConfigs() {
+  const targets = [
+    {
+      key: "partnerships",
+      file: path.join(SITE_CONTENT, "_partnerships.json"),
+    },
+    {
+      key: "about-rocketmind",
+      file: path.join(SITE_CONTENT, "_about-rocketmind.json"),
+    },
+    {
+      key: "product-categories",
+      file: path.join(SITE_CONTENT, "products", "_categories.json"),
+    },
+  ];
+  let count = 0;
+  for (const { key, file } of targets) {
+    const json = readJson(file);
+    if (!json) {
+      console.log(`  · skip ${key} (${file} not found)`);
+      continue;
+    }
+    await prisma.systemConfig.upsert({
+      where: { key },
+      update: { value: json },
+      create: { key, value: json },
+    });
+    count++;
+  }
+  console.log(`✔ SystemConfigs: ${count}`);
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
   console.log("→ Seeding Postgres from apps/site/content/...");
   await seedAdminUser();
   await seedMediaTags();
+  await seedSystemConfigs();
   await seedPages();
   await seedArticles();
   await seedGlossary();
