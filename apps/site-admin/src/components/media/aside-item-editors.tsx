@@ -13,6 +13,7 @@ import {
   Loader2,
   Package,
   Plus,
+  StickyNote,
   Trash2,
   Upload,
   X,
@@ -44,6 +45,7 @@ type LinkAside = Extract<ArticleAside, { kind: "link" }>;
 type ProductAside = Extract<ArticleAside, { kind: "product" }>;
 type LogosAside = Extract<ArticleAside, { kind: "logos" }>;
 type CtaAside = Extract<ArticleAside, { kind: "cta" }>;
+type NoteAside = Extract<ArticleAside, { kind: "note" }>;
 
 // ── Logos: width bounds и шаг zoom (совпадает с клиентским зуммом на сайте) ──
 
@@ -1008,6 +1010,101 @@ export function AsideCtaEditor({
           У выбранного CTA не задана форма — кнопка не откроет модалку.
         </p>
       )}
+    </AsideRowShell>
+  );
+}
+
+// ── Note editor ─────────────────────────────────────────────────────────────
+
+export function AsideNoteEditor({
+  aside,
+  ...shell
+}: AsideItemProps & { aside: NoteAside }) {
+  const paragraphs = aside.paragraphs.length > 0 ? aside.paragraphs : [""];
+
+  function updateParagraph(idx: number, text: string) {
+    const next = [...paragraphs];
+    next[idx] = text;
+    shell.onChange({ ...aside, paragraphs: next });
+  }
+
+  function addParagraph() {
+    shell.onChange({ ...aside, paragraphs: [...paragraphs, ""] });
+  }
+
+  function removeParagraph(idx: number) {
+    const next = paragraphs.filter((_, i) => i !== idx);
+    shell.onChange({ ...aside, paragraphs: next.length > 0 ? next : [""] });
+  }
+
+  function moveParagraph(idx: number, delta: -1 | 1) {
+    const to = idx + delta;
+    if (to < 0 || to >= paragraphs.length) return;
+    const next = [...paragraphs];
+    const [item] = next.splice(idx, 1);
+    next.splice(to, 0, item);
+    shell.onChange({ ...aside, paragraphs: next });
+  }
+
+  return (
+    <AsideRowShell
+      icon={<StickyNote className="h-3 w-3" />}
+      label="Заметка"
+      onRemove={shell.onRemove}
+      onMoveUp={shell.onMoveUp}
+      onMoveDown={shell.onMoveDown}
+      canMoveUp={shell.canMoveUp}
+      canMoveDown={shell.canMoveDown}
+    >
+      <div className="flex flex-col gap-1.5 border-l-2 border-[color:var(--rm-yellow-100)] pl-3">
+        {paragraphs.map((text, idx) => (
+          <div key={idx} className="group/note flex items-start gap-1">
+            <textarea
+              value={text}
+              onChange={(e) => updateParagraph(idx, e.target.value)}
+              placeholder="Текст заметки"
+              rows={2}
+              className="min-h-[44px] w-full resize-none bg-transparent font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase leading-[1.18] tracking-[0.02em] text-muted-foreground outline-none placeholder:opacity-40"
+            />
+            <div className="flex shrink-0 flex-col items-center pt-1 opacity-0 transition-opacity group-hover/note:opacity-100">
+              <button
+                type="button"
+                onClick={() => moveParagraph(idx, -1)}
+                disabled={idx === 0}
+                aria-label="Вверх"
+                className="flex h-5 w-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+              >
+                <ArrowUp className="h-3 w-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => moveParagraph(idx, 1)}
+                disabled={idx === paragraphs.length - 1}
+                aria-label="Вниз"
+                className="flex h-5 w-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-30"
+              >
+                <ArrowDown className="h-3 w-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => removeParagraph(idx)}
+                aria-label="Удалить абзац"
+                className="flex h-5 w-5 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-[#ED4843]"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={addParagraph}
+        className="mt-1.5 flex items-center gap-1 text-[length:var(--text-11)] text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <Plus className="h-3 w-3" />
+        Абзац
+      </button>
     </AsideRowShell>
   );
 }

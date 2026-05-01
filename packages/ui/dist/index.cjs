@@ -238,6 +238,7 @@ __export(index_exports, {
   Input: () => Input,
   InputOTP: () => InputOTP,
   KeyThoughts: () => KeyThoughts,
+  ListCardGrid: () => ListCardGrid,
   MaxIcon: () => MaxIcon,
   MobileNav: () => MobileNav,
   ModalProvider: () => ModalProvider,
@@ -4455,6 +4456,73 @@ function FactoidGrid({
     }
   );
 }
+function ListCardGrid({
+  cards,
+  listType,
+  cols,
+  className
+}) {
+  if (!cards.length) return null;
+  const type = listType ?? "bullet";
+  const effectiveCols = cols ?? Math.min(3, cards.length);
+  return /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+    "div",
+    {
+      "data-list-card-grid": true,
+      className: cn("grid", className),
+      style: { gridTemplateColumns: `repeat(${effectiveCols}, minmax(0, 1fr))`, gap: "32px" },
+      children: cards.map((card, i) => {
+        const visibleItems = card.items.filter((it) => it.text.trim());
+        const breakStyle = i > 0 && card.newRow ? { gridColumnStart: 1 } : void 0;
+        return /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(
+          "div",
+          {
+            "data-list-card": true,
+            style: breakStyle,
+            className: "flex flex-col gap-6",
+            children: [
+              card.title.trim() && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+                "h4",
+                {
+                  className: cn(
+                    "font-[family-name:var(--font-mono-family)] font-medium uppercase",
+                    "text-[length:var(--text-18)] leading-[1.12] tracking-[0.02em]",
+                    "text-[color:var(--rm-gray-fg-main)]"
+                  ),
+                  children: card.title
+                }
+              ),
+              visibleItems.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("ul", { className: "flex flex-col gap-2", children: visibleItems.map((item, idx) => /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("li", { className: "flex items-start gap-5", children: [
+                type === "bullet" ? /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+                  "span",
+                  {
+                    "aria-hidden": true,
+                    className: "mt-2 h-1 w-1 shrink-0 rounded-full bg-[color:var(--rm-gray-fg-sub)]"
+                  }
+                ) : /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(
+                  "span",
+                  {
+                    className: cn(
+                      "shrink-0 font-[family-name:var(--font-mono-family)]",
+                      "text-[length:var(--text-16)] leading-[1.28]",
+                      "text-[color:var(--rm-gray-fg-sub)]"
+                    ),
+                    children: [
+                      idx + 1,
+                      "."
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("span", { className: "text-[length:var(--text-16)] leading-[1.28] text-[color:var(--rm-gray-fg-sub)]", children: item.text })
+              ] }, item.id)) })
+            ]
+          },
+          card.id
+        );
+      })
+    }
+  );
+}
 function Quote({ text, className }) {
   return /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
     "blockquote",
@@ -5048,7 +5116,7 @@ function VkIcon({ className, ...props }) {
     {
       width: "40",
       height: "40",
-      viewBox: "0 0 40 40",
+      viewBox: "-1 -1 42 42",
       fill: "none",
       xmlns: "http://www.w3.org/2000/svg",
       className,
@@ -5058,14 +5126,16 @@ function VkIcon({ className, ...props }) {
           "path",
           {
             d: "M19.2002 0.5H20.7998C25.3394 0.5 28.6944 0.500728 31.2676 0.84668C33.8262 1.19071 35.5375 1.86759 36.835 3.16504C38.1324 4.46248 38.8093 6.17384 39.1533 8.73242C39.4993 11.3056 39.5 14.6606 39.5 19.2002V20.7998C39.5 25.3394 39.4993 28.6944 39.1533 31.2676C38.8093 33.8262 38.1324 35.5375 36.835 36.835C35.5375 38.1324 33.8262 38.8093 31.2676 39.1533C28.6944 39.4993 25.3394 39.5 20.7998 39.5H19.2002C14.6606 39.5 11.3056 39.4993 8.73242 39.1533C6.17384 38.8093 4.46248 38.1324 3.16504 36.835C1.86759 35.5375 1.19071 33.8262 0.84668 31.2676C0.500728 28.6944 0.5 25.3394 0.5 20.7998V19.2002C0.5 14.6606 0.500728 11.3056 0.84668 8.73242C1.19071 6.17384 1.86759 4.46248 3.16504 3.16504C4.46248 1.86759 6.17384 1.19071 8.73242 0.84668C11.3056 0.500728 14.6606 0.5 19.2002 0.5Z",
-            stroke: "currentColor"
+            stroke: "currentColor",
+            vectorEffect: "non-scaling-stroke"
           }
         ),
         /* @__PURE__ */ (0, import_jsx_runtime46.jsx)(
           "path",
           {
             d: "M21.2833 28.817C12.1666 28.817 6.96667 22.567 6.75 12.167H11.3167C11.4667 19.8003 14.8333 23.0336 17.4999 23.7003V12.167H21.8V18.7503C24.4334 18.467 27.1997 15.467 28.1331 12.167H32.4332C31.7165 16.2337 28.7165 19.2336 26.5832 20.467C28.7165 21.467 32.1334 24.0836 33.4334 28.817H28.6999C27.6832 25.6503 25.15 23.2003 21.8 22.867V28.817H21.2833Z",
-            stroke: "currentColor"
+            stroke: "currentColor",
+            vectorEffect: "non-scaling-stroke"
           }
         )
       ]
@@ -5081,7 +5151,7 @@ function TelegramIcon({ className, ...props }) {
     {
       width: "40",
       height: "40",
-      viewBox: "0 0 40 40",
+      viewBox: "-1 -1 42 42",
       fill: "none",
       xmlns: "http://www.w3.org/2000/svg",
       className,
@@ -5090,7 +5160,8 @@ function TelegramIcon({ className, ...props }) {
         "path",
         {
           d: "M20 0.5C30.7699 0.5 39.5 9.23014 39.5 20C39.5 30.7699 30.7699 39.5 20 39.5C9.23014 39.5 0.5 30.7699 0.5 20C0.5 9.23014 9.23014 0.5 20 0.5ZM28.875 11.5C28.4057 11.5086 27.8559 11.6383 26.7607 12.0303C25.6571 12.4253 23.947 13.1074 21.1357 14.2617L21.1338 14.2627C17.188 15.9099 13.2527 17.583 9.3291 19.2822C8.83148 19.4778 8.42024 19.6832 8.11914 19.9043C7.83271 20.1147 7.55796 20.4044 7.50977 20.791C7.4698 21.1055 7.5601 21.3853 7.74609 21.6113C7.91593 21.8175 8.15002 21.9603 8.37598 22.0684C8.81599 22.2787 9.44601 22.4521 10.041 22.6436V22.6445C10.5649 22.8127 11.1835 22.9956 11.7656 23.1396C12.3363 23.2808 12.9114 23.395 13.333 23.4043H13.334C14.1323 23.4205 14.9654 23.0953 15.8193 22.5176C18.5771 20.6786 20.6671 19.2962 22.0889 18.3682C22.6101 18.028 23.0407 17.75 23.3809 17.5332C23.3784 17.5356 23.3765 17.5386 23.374 17.541C22.8752 18.0358 22.2128 18.6626 21.541 19.2891C20.2276 20.5139 18.844 21.7665 18.6641 21.9482L18.5225 22.0898C18.2755 22.3336 17.9636 22.6182 17.7334 22.8584C17.4959 23.1062 17.2533 23.3968 17.1279 23.7314C16.9895 24.1014 17.0053 24.4973 17.2295 24.8887C17.4358 25.2486 17.8031 25.5791 18.3076 25.9072C19.1699 26.4678 19.8519 26.9268 20.543 27.3916C21.2341 27.8565 21.9345 28.3268 22.8281 28.9072L22.8291 28.9082C23.1037 29.0855 23.3623 29.2707 23.6299 29.458C23.8927 29.642 24.1638 29.8279 24.4404 29.9883C24.9969 30.3107 25.6213 30.5562 26.3545 30.4902H26.3555C27.196 30.4127 27.8107 29.6853 28.1279 28.3164L28.1875 28.0332C28.8571 24.4952 30.1808 16.7973 30.4873 13.6074H30.4883V13.5967C30.5102 13.2957 30.4971 12.9923 30.4492 12.6943H30.4482C30.4101 12.4097 30.2834 12.1455 30.085 11.9404L29.9932 11.8545L29.9824 11.8457L29.8271 11.7373C29.6676 11.6432 29.5007 11.5884 29.3623 11.5557C29.1742 11.5112 28.9977 11.4986 28.8779 11.5H28.875Z",
-          stroke: "currentColor"
+          stroke: "currentColor",
+          vectorEffect: "non-scaling-stroke"
         }
       )
     }
@@ -5105,7 +5176,7 @@ function MaxIcon({ className, ...props }) {
     {
       width: "40",
       height: "40",
-      viewBox: "0 0 40 40",
+      viewBox: "-1 -1 42 42",
       fill: "none",
       xmlns: "http://www.w3.org/2000/svg",
       className,
@@ -5114,7 +5185,8 @@ function MaxIcon({ className, ...props }) {
         "path",
         {
           d: "M20.3037 0.603516C31.0319 0.603516 39.4539 9.30376 39.4541 20.0586C39.4541 30.8035 30.7674 39.2949 20.4082 39.2949L19.7324 39.2881C18.2081 39.2577 17.0434 39.1162 15.9678 38.79C14.8948 38.4646 13.8848 37.9478 12.6787 37.1367L12.1484 36.7705L12.0684 36.7188C11.658 36.4837 11.1498 36.5867 10.8438 36.9131C9.79348 38.0331 7.87909 39.016 6.2041 39.3135C5.36573 39.4623 4.6573 39.4265 4.16895 39.2148C3.77899 39.0458 3.50121 38.7564 3.40332 38.2559L3.37305 38.0283C3.36632 35.0912 2.63013 32.6569 1.9209 29.96C1.20695 27.2451 0.500043 24.2009 0.5 19.9492L0.506836 19.4336C0.779096 8.83096 9.43231 0.859812 19.8008 0.609375L20.3037 0.603516ZM20.6387 9.42578C15.1175 9.13646 10.8472 12.9878 9.91406 18.877C9.53095 21.2949 9.67924 23.9607 10.0654 26.0596C10.2585 27.1089 10.5147 28.0362 10.8037 28.7305C10.9476 29.076 11.1069 29.3815 11.2822 29.6191C11.4268 29.815 11.6224 30.0201 11.877 30.1211L11.9893 30.1572C12.2728 30.2295 12.5632 30.1424 12.7734 30.0557C13.005 29.9601 13.2518 29.8166 13.4922 29.6553C13.9715 29.3335 14.4863 28.8995 14.916 28.4951C16.2669 29.3193 17.8236 29.9558 19.5586 30.0469C25.1949 30.3424 30.1915 25.9371 30.4873 20.2891C30.7831 14.6421 26.276 9.72141 20.6387 9.42578Z",
-          stroke: "currentColor"
+          stroke: "currentColor",
+          vectorEffect: "non-scaling-stroke"
         }
       )
     }
@@ -7886,6 +7958,7 @@ function HeaderCtaButton({ cta }) {
   Input,
   InputOTP,
   KeyThoughts,
+  ListCardGrid,
   MaxIcon,
   MobileNav,
   ModalProvider,

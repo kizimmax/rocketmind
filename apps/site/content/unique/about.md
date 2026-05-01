@@ -96,7 +96,7 @@ contacts:
             expertSlug: alexey-eremin
             phone: '+79099090909'
             social:
-              kind: max
+              kind: telegram
               username: jjf
               url: ''
     - id: card-growing

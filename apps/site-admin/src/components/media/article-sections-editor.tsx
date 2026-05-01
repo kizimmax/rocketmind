@@ -49,6 +49,12 @@ function normalizeSections(raw: unknown): ArticleSection[] {
         factoids: Array.isArray(rec.factoids)
           ? (rec.factoids as ArticleSection["factoids"])
           : [],
+        factoidCols: rec.factoidCols as ArticleSection["factoidCols"],
+        listCards: Array.isArray(rec.listCards)
+          ? (rec.listCards as ArticleSection["listCards"])
+          : undefined,
+        listType: rec.listType as ArticleSection["listType"],
+        listCols: rec.listCols as ArticleSection["listCols"],
         asides: Array.isArray(rec.asides)
           ? (rec.asides as ArticleSection["asides"])
           : [],
@@ -63,6 +69,10 @@ function normalizeSections(raw: unknown): ArticleSection[] {
           typeof rec.asidesTitleEnabled === "boolean"
             ? rec.asidesTitleEnabled
             : true,
+        bottomCtaId:
+          typeof rec.bottomCtaId === "string" && rec.bottomCtaId
+            ? rec.bottomCtaId
+            : undefined,
       };
     })
     .filter((s): s is ArticleSection => s !== null);

@@ -285,6 +285,57 @@ body:
               kind: video
               caption: ''
     factoids: []
+    listCards:
+      - id: lc_molo4bn8_1u5cm
+        title: саываыв
+        items:
+          - id: li_molo4bn8_hu4ip
+            text: ывавыа
+          - id: li_molo5olg_8geu0
+            text: выавыавы
+          - id: li_molo5pva_lzvc8
+            text: выавыа
+          - id: li_molo5r4b_2e605
+            text: выавыаыв
+      - id: lc_molo3bye_yk1ju
+        title: 'ваывыадловы '
+        items:
+          - id: li_molo3bye_v7hup
+            text: 'выа довы дловы '
+          - id: li_molo3hvg_5rpn6
+            text: 'выалофывадловы '
+          - id: li_molo3jd9_c17dn
+            text: выфладоавлыдо
+          - id: li_molo3jm4_5phgc
+            text: выалдофвылад
+          - id: li_molo3js2_0ywtn
+            text: вылдоадфлывао
+      - id: lc_molo5vbj_v1le4
+        title: выафвыафвы фыва фыв
+        items:
+          - id: li_molo5vbj_o74xf
+            text: выфавфыа
+          - id: li_molo5zh1_347po
+            text: вфыавфыа
+          - id: li_molo614f_c3bci
+            text: вфаывфыафы
+          - id: li_molo62ma_34qkk
+            text: выфафывавыф
+          - id: li_molo63w1_v5yht
+            text: вфыавфыафыва
+          - id: li_molo657d_t3tft
+            text: фвыавфыафы
+        newRow: true
+      - id: lc_molo6737_m3y64
+        title: фвывыфафвы
+        items:
+          - id: li_molo6737_2yxv2
+            text: фвыавыфавыф
+          - id: li_molo693j_k7c4r
+            text: выфавыфаыфв
+          - id: li_molo6alx_vrnuu
+            text: фвыафвыа
+    listType: bullet
     asides:
       - id: a_mob5r32u_c027s
         kind: product
@@ -297,6 +348,13 @@ body:
         fileName: 57e67bd236a2bae273352744dee33961.jpg
         displayName: Картинка
         showPreview: false
+      - id: a_momes4n6_lonkr
+        kind: note
+        paragraphs:
+          - 'выавыа олвыод а дываовыла олвдыавыдла выдл лдвыао '
+          - >-
+            выфа фыва выф аывф авыф выф оваовфыла офыдлваоывлдао ыдлыва флао
+            длвыаодлфо адфолд
     quotes: []
     asidesTitle: Материалы
     asidesTitleEnabled: true
@@ -383,6 +441,6 @@ metaDescription: >-
   Как устроены экспертные сети профессионалов и почему North Star Metric —
   главная опора продакта.
 createdAt: ''
-updatedAt: '2026-04-30T06:19:18.431Z'
+updatedAt: '2026-05-01T04:24:43.815Z'
 ---
 

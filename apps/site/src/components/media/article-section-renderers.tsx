@@ -4,6 +4,7 @@ import {
   ArticleBody,
   ExpertQuoteStack,
   FactoidGrid,
+  ListCardGrid,
   SectionAsideChip,
   SectionAsideProductCard,
   Tooltip,
@@ -83,6 +84,7 @@ export function SectionBody({
   const title = section.title.trim();
   const hasH2 = title.length > 0;
   const hasFactoids = section.factoids.length > 0;
+  const hasListCards = (section.listCards ?? []).length > 0;
   const hasBlocks = section.blocks.length > 0;
   const quotes = section.quotes
     .map((q) => resolveQuote(q, resolvedQuoteExperts))
@@ -93,19 +95,20 @@ export function SectionBody({
   if (
     !hasH2 &&
     !hasFactoids &&
+    !hasListCards &&
     !hasBlocks &&
     quotes.length === 0 &&
     !bottomCta
   )
     return null;
   // H2 рендерим как одиночный блок ArticleBody (для слого/якоря/scroll-mt).
-  // Дальше — section-level factoids (под заголовком), потом остальные blocks.
+  // Дальше — section-level factoids или listCards (под заголовком), потом остальные blocks.
   const h2Block: ArticleBodyBlock | null = hasH2
     ? { id: `${section.id}_h2`, type: "h2", data: { text: title } }
     : null;
   return (
     <div className="min-w-0">
-      {(hasH2 || hasFactoids || hasBlocks) && (
+      {(hasH2 || hasFactoids || hasListCards || hasBlocks) && (
         <div data-section-body-blocks={section.id}>
           {h2Block && <ArticleBody blocks={[h2Block]} />}
           {hasFactoids && (
@@ -116,8 +119,20 @@ export function SectionBody({
               <FactoidGrid cards={section.factoids} cols={section.factoidCols} />
             </div>
           )}
+          {hasListCards && (
+            <div
+              data-section-listcards={section.id}
+              className={hasH2 ? "mt-[40px]" : ""}
+            >
+              <ListCardGrid
+                cards={section.listCards!}
+                listType={section.listType}
+                cols={section.listCols}
+              />
+            </div>
+          )}
           {hasBlocks && (
-            <div className={hasH2 || hasFactoids ? "mt-[40px]" : ""}>
+            <div className={hasH2 || hasFactoids || hasListCards ? "mt-[40px]" : ""}>
               <ArticleBody blocks={section.blocks} />
             </div>
           )}
@@ -170,6 +185,7 @@ export function SectionMobile({
 }) {
   const blocks = sectionBlocks(section);
   const hasFactoids = section.factoids.length > 0;
+  const hasListCards = (section.listCards ?? []).length > 0;
   const hasAsides = section.asides.length > 0;
   const quotes = section.quotes
     .map((q) => resolveQuote(q, resolvedQuoteExperts))
@@ -193,6 +209,15 @@ export function SectionMobile({
       {hasFactoids && (
         <div className="min-w-0">
           <FactoidGrid cards={section.factoids} cols={section.factoidCols} />
+        </div>
+      )}
+      {hasListCards && (
+        <div className="min-w-0">
+          <ListCardGrid
+            cards={section.listCards!}
+            listType={section.listType}
+            cols={section.listCols}
+          />
         </div>
       )}
       {hasRest && (
@@ -321,6 +346,20 @@ export function AsideItem({
     const cta = resolvedCtas[aside.ctaId];
     if (!cta) return null;
     return <ArticleAsideCta cta={cta} />;
+  }
+  if (aside.kind === "note") {
+    return (
+      <div className="flex flex-col gap-2.5 border-l-2 border-[color:var(--rm-yellow-100)] pl-6">
+        {aside.paragraphs.map((p, i) => (
+          <p
+            key={i}
+            className="font-[family-name:var(--font-mono-family)] font-medium uppercase text-[length:var(--text-16)] leading-[1.12] tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)]"
+          >
+            {p}
+          </p>
+        ))}
+      </div>
+    );
   }
   // product
   const key = `${aside.productCategory}:${aside.productSlug}`;

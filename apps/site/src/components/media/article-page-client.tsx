@@ -337,6 +337,68 @@ export function ArticlePageClient({
             }
           }
         }
+
+        // Аналогичный sync для сетки списков — третья карточка визуально
+        // вылезает в col-4 (как у factoids).
+        const listCardsEl = body.querySelector<HTMLElement>(
+          `[data-section-listcards="${id}"]`,
+        );
+        let listCardOffset = 0;
+        if (listCardsEl) {
+          const grid = listCardsEl.querySelector<HTMLElement>(
+            "[data-list-card-grid]",
+          );
+          if (grid) {
+            const cells = Array.from(
+              grid.querySelectorAll<HTMLElement>("[data-list-card]"),
+            );
+            const tpl = window
+              .getComputedStyle(grid)
+              .getPropertyValue("grid-template-columns")
+              .trim();
+            const cols = tpl ? tpl.split(/\s+/).length : 1;
+
+            const asideCol = document.querySelector<HTMLElement>(
+              "[data-aside-col]",
+            );
+            const asideW = asideCol ? asideCol.offsetWidth : 0;
+            if (cols >= 3 && asideW > 0 && cells.length >= 3) {
+              listCardsEl.style.marginRight = `-${asideW + 8}px`;
+            } else {
+              listCardsEl.style.marginRight = "";
+            }
+
+            if (cols >= 3 && cells.length > 0 && inner) {
+              type RowInfo = { top: number; bottom: number; count: number };
+              const rows: RowInfo[] = [];
+              for (const cell of cells) {
+                const r = cell.getBoundingClientRect();
+                const top = Math.round(r.top);
+                let row = rows.find((x) => Math.abs(x.top - top) < 2);
+                if (!row) {
+                  row = { top, bottom: r.bottom, count: 0 };
+                  rows.push(row);
+                }
+                row.count += 1;
+                if (r.bottom > row.bottom) row.bottom = r.bottom;
+              }
+              let lastConflictBottom = 0;
+              for (const row of rows) {
+                if (row.count >= 3 && row.bottom > lastConflictBottom) {
+                  lastConflictBottom = row.bottom;
+                }
+              }
+              if (lastConflictBottom > 0) {
+                const wrapTop = wrap.getBoundingClientRect().top;
+                listCardOffset = Math.max(0, lastConflictBottom - wrapTop + 24);
+              }
+            }
+          }
+        }
+
+        // Объединённый offset (factoids и listCards в практике взаимоисключающие).
+        const cardsOffset = Math.max(factoidOffset, listCardOffset);
+
         // Применяем offset через spacer внутри aside-zone (перед inner),
         // а НЕ через padding-top на inner. paddingTop сделал бы inner таким
         // же высоким, и при sticky-pinned контент инера оказывался бы на
@@ -347,20 +409,20 @@ export function ArticlePageClient({
           `[data-section-aside-spacer="${id}"]`,
         );
         if (spacer) {
-          spacer.style.height = factoidOffset > 0 ? `${factoidOffset}px` : "";
+          spacer.style.height = cardsOffset > 0 ? `${cardsOffset}px` : "";
         }
         if (inner) {
           // Зачищаем старый paddingTop (от предыдущих версий sync).
           inner.style.paddingTop = "";
         }
         // Пересчитываем zone height, учитывая spacer перед inner.
-        // Без этого zone может оказаться меньше (innerH + factoidOffset), и
+        // Без этого zone может оказаться меньше (innerH + cardsOffset), и
         // sticky inner упрётся в bottom зоны раньше, чем нужно.
-        if (zone && innerH > 0 && factoidOffset > 0) {
+        if (zone && innerH > 0 && cardsOffset > 0) {
           const blocksAndCta = bbH + ctaH;
           const zoneCap =
             quoteLayout === "wide" && blocksAndCta > 0 ? blocksAndCta : bodyH;
-          zone.style.height = `${Math.max(innerH + factoidOffset, zoneCap)}px`;
+          zone.style.height = `${Math.max(innerH + cardsOffset, zoneCap)}px`;
         }
 
         if (quote && quoteLayout) {

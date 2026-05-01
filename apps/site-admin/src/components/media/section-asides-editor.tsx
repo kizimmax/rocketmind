@@ -8,6 +8,7 @@ import {
   MousePointerClick,
   Package,
   Plus,
+  StickyNote,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,6 +24,7 @@ import {
   AsideFileEditor,
   AsideLinkEditor,
   AsideLogosEditor,
+  AsideNoteEditor,
   AsideProductEditor,
 } from "./aside-item-editors";
 
@@ -69,6 +71,12 @@ function makeAside(kind: ArticleAside["kind"]): ArticleAside {
       id: newAsideId(),
       kind: "cta",
       ctaId: "",
+    };
+  if (kind === "note")
+    return {
+      id: newAsideId(),
+      kind: "note",
+      paragraphs: [""],
     };
   return {
     id: newAsideId(),
@@ -189,6 +197,15 @@ export function SectionAsidesEditor({
                   {...common}
                 />
               );
+            if (aside.kind === "note")
+              return (
+                <AsideNoteEditor
+                  key={aside.id}
+                  aside={aside}
+                  onChange={(next) => updateAside(aside.id, next)}
+                  {...common}
+                />
+              );
             return (
               <AsideProductEditor
                 key={aside.id}
@@ -227,6 +244,9 @@ export function SectionAsidesEditor({
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => addAside("cta")}>
             <MousePointerClick className="mr-2 h-4 w-4" /> CTA-блок
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => addAside("note")}>
+            <StickyNote className="mr-2 h-4 w-4" /> Заметка
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

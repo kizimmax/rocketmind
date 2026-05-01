@@ -641,6 +641,25 @@ export interface FactoidCardData {
   newRow?: boolean;
 }
 
+/** Строка в карточке списка. */
+export interface ListItemData {
+  id: string;
+  text: string;
+}
+
+/**
+ * Карточка сетки списков в `ArticleSection.listCards`. Заголовок + неограниченное
+ * количество строк. Тип маркера (буллиты/числа) задаётся на уровне секции
+ * через `listType`.
+ */
+export interface ListCardData {
+  id: string;
+  title: string;
+  items: ListItemData[];
+  /** Принудительно начать новый ряд с этой карточки (gridColumnStart: 1). */
+  newRow?: boolean;
+}
+
 export interface ArticleGalleryItem {
   /** Уникальный ID внутри галереи (локальный, не зависит от slug статьи). */
   id: string;
@@ -717,6 +736,12 @@ export type ArticleAside =
       kind: "cta";
       /** ID CtaEntity — рендерится как mini-CTA, кнопка открывает форму по `cta.formId`. */
       ctaId: string;
+    }
+  | {
+      id: string;
+      kind: "note";
+      /** Абзацы заметки. Рендерятся в Label 16 uppercase (gray-fg-sub) с жёлтой планкой слева. */
+      paragraphs: string[];
     };
 
 /**
@@ -776,6 +801,15 @@ export interface ArticleSection {
    * 2×2 для 4 карточек вместо 3+1.
    */
   factoidCols?: 1 | 2 | 3;
+  /**
+   * Сетка списков — section-level, под H2 (совместно с factoids не используется;
+   * в редакторе доступна выбором «либо сетка фактоидов, либо сетка списков»).
+   */
+  listCards?: ListCardData[];
+  /** Тип маркера для сетки списков. По умолчанию "bullet". */
+  listType?: "bullet" | "numbered";
+  /** Явное число колонок в сетке списков (1/2/3). */
+  listCols?: 1 | 2 | 3;
   /** Aside-виджеты правой колонки (sticky в рамках секции на публичной странице). */
   asides: ArticleAside[];
   /**

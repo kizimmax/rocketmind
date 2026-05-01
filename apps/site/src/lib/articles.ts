@@ -96,6 +96,11 @@ export type ArticleAside =
       id: string;
       kind: "cta";
       ctaId: string;
+    }
+  | {
+      id: string;
+      kind: "note";
+      paragraphs: string[];
     };
 
 export type ArticleLogoAsideItem = {
@@ -133,6 +138,18 @@ export type FactoidCardData = {
   newRow?: boolean;
 };
 
+export type ListItemData = {
+  id: string;
+  text: string;
+};
+
+export type ListCardData = {
+  id: string;
+  title: string;
+  items: ListItemData[];
+  newRow?: boolean;
+};
+
 export type ArticleSection = {
   id: string;
   /** H2 секции. Пустая — без заголовка, не попадает в ToC. */
@@ -149,6 +166,12 @@ export type ArticleSection = {
   factoids: FactoidCardData[];
   /** Явное число колонок (1/2/3). Если не задано — авто из `factoids.length`. */
   factoidCols?: 1 | 2 | 3;
+  /** Сетка карточек-списков (альтернатива factoids). */
+  listCards?: ListCardData[];
+  /** Тип маркера для listCards. По умолчанию "bullet". */
+  listType?: "bullet" | "numbered";
+  /** Явное число колонок в сетке списков (1/2/3). */
+  listCols?: 1 | 2 | 3;
   asides: ArticleAside[];
   /** Цитаты экспертов, привязанные к концу секции. */
   quotes: ArticleSectionQuote[];
@@ -327,6 +350,16 @@ function parseAside(raw: unknown, fallbackId: string): ArticleAside | null {
     if (!ctaId) return null;
     return { id, kind: "cta", ctaId };
   }
+  if (kind === "note") {
+    const rawParagraphs = rec.paragraphs;
+    const paragraphs = Array.isArray(rawParagraphs)
+      ? rawParagraphs
+          .map((p) => (typeof p === "string" ? p : ""))
+          .filter((p) => p.trim().length > 0)
+      : [];
+    if (paragraphs.length === 0) return null;
+    return { id, kind: "note", paragraphs };
+  }
   if (kind === "logos") {
     const rawLogos = rec.logos;
     if (!Array.isArray(rawLogos)) return null;
@@ -447,6 +480,40 @@ export function parseSections(raw: unknown): ArticleSection[] {
         factoidColsRaw === 1 || factoidColsRaw === 2 || factoidColsRaw === 3
           ? (factoidColsRaw as 1 | 2 | 3)
           : undefined;
+      const rawListCards = rec.listCards;
+      const listCards: ListCardData[] = Array.isArray(rawListCards)
+        ? rawListCards
+            .map((c) => {
+              if (!c || typeof c !== "object") return null;
+              const r = c as Record<string, unknown>;
+              const id = typeof r.id === "string" ? r.id : "";
+              if (!id) return null;
+              const title = typeof r.title === "string" ? r.title : "";
+              const rawItems = Array.isArray(r.items) ? r.items : [];
+              const items: ListItemData[] = rawItems
+                .map((it) => {
+                  if (!it || typeof it !== "object") return null;
+                  const ir = it as Record<string, unknown>;
+                  const iid = typeof ir.id === "string" ? ir.id : "";
+                  const text = typeof ir.text === "string" ? ir.text : "";
+                  if (!iid) return null;
+                  return { id: iid, text };
+                })
+                .filter((it): it is ListItemData => it !== null);
+              const card: ListCardData = { id, title, items };
+              if (r.newRow === true) card.newRow = true;
+              return card;
+            })
+            .filter((c): c is ListCardData => c !== null)
+        : [];
+      const listTypeRaw = rec.listType;
+      const listType: "bullet" | "numbered" =
+        listTypeRaw === "numbered" ? "numbered" : "bullet";
+      const listColsRaw = rec.listCols;
+      const listCols =
+        listColsRaw === 1 || listColsRaw === 2 || listColsRaw === 3
+          ? (listColsRaw as 1 | 2 | 3)
+          : undefined;
       return {
         id: sectionId,
         title: typeof rec.title === "string" ? rec.title : "",
@@ -454,6 +521,9 @@ export function parseSections(raw: unknown): ArticleSection[] {
         blocks,
         factoids,
         factoidCols,
+        listCards: listCards.length > 0 ? listCards : undefined,
+        listType: listCards.length > 0 ? listType : undefined,
+        listCols: listCards.length > 0 ? listCols : undefined,
         asides,
         quotes,
         asidesTitle:

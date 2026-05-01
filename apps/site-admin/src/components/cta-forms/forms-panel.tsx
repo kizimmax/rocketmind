@@ -31,7 +31,7 @@ import {
   slugify,
   uniqueSlug,
 } from "./scope-helpers";
-import { NbspInput, NbspTextarea, VisualizedNbsp } from "./nbsp-fields";
+import { NbspInput } from "./nbsp-fields";
 
 export function FormsPanel({
   forms: items,
@@ -270,12 +270,9 @@ function FormCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [name, setName] = useState(form.name);
-  const [title, setTitle] = useState(form.title);
-  const [description, setDescription] = useState(form.description);
   const [submitButtonText, setSubmitButtonText] = useState(
     form.submitButtonText,
   );
-  const [successMessage, setSuccessMessage] = useState(form.successMessage);
   const [giftEnabled, setGiftEnabled] = useState(!!form.successGift?.url);
   const [giftKind, setGiftKind] = useState<"file" | "link">(
     form.successGift?.kind ?? "link",
@@ -290,13 +287,10 @@ function FormCard({
   const [giftUploading, setGiftUploading] = useState(false);
 
   useEffect(() => setName(form.name), [form.name]);
-  useEffect(() => setTitle(form.title), [form.title]);
-  useEffect(() => setDescription(form.description), [form.description]);
   useEffect(
     () => setSubmitButtonText(form.submitButtonText),
     [form.submitButtonText],
   );
-  useEffect(() => setSuccessMessage(form.successMessage), [form.successMessage]);
   useEffect(() => {
     setGiftEnabled(!!form.successGift?.url);
     setGiftKind(form.successGift?.kind ?? "link");
@@ -409,34 +403,27 @@ function FormCard({
       {expanded && (
         <div className="flex flex-col gap-3 px-3 py-3">
           <p className="text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
-            Превью модалки — редактирование инлайн
+            Превью модалки
           </p>
-          {/* Modal preview — стиль повторяет настоящую модалку: тёмный фон,
-              max-w как в DialogContent (560px), inline-edit полей. */}
+          {/* Modal preview */}
           <div className="mx-auto w-full max-w-[560px] rounded-md border border-border bg-background p-6 shadow-sm">
             {/* DialogHeader */}
             <div className="mb-4 flex flex-col gap-1.5">
-              <NbspInput
-                value={title}
-                onChange={setTitle}
-                onBlur={() => title !== form.title && onPatch({ title })}
-                placeholder="Заголовок модалки (DialogTitle)"
-                showPreview={false}
-                className="h-auto border-transparent bg-transparent !pr-12 !text-[18px] font-semibold leading-tight tracking-tight text-foreground shadow-none placeholder:text-muted-foreground/50 focus-visible:border-border"
+              <FieldEditor
+                label="Заголовок модалки"
+                value={form.title}
+                placeholder="Заголовок модалки"
+                onSave={(v) => onPatch({ title: v })}
+                previewClassName="text-[18px] font-semibold leading-tight tracking-tight text-foreground"
               />
-              <VisualizedNbsp value={title} />
-              <NbspTextarea
-                value={description}
-                onChange={setDescription}
-                onBlur={() =>
-                  description !== form.description &&
-                  onPatch({ description })
-                }
+              <FieldEditor
+                label="Описание"
+                value={form.description}
                 placeholder="Описание (DialogDescription)"
-                showPreview={false}
-                className="min-h-[44px] border-transparent bg-transparent !pr-12 text-[14px] leading-[1.4] text-muted-foreground shadow-none placeholder:text-muted-foreground/50 focus-visible:border-border"
+                multiline
+                onSave={(v) => onPatch({ description: v })}
+                previewClassName="text-[14px] leading-[1.4] text-muted-foreground"
               />
-              <VisualizedNbsp value={description} />
             </div>
 
             {/* Поля — превью полей формы с тоглами на каждое */}
@@ -505,21 +492,18 @@ function FormCard({
             </div>
           </div>
 
-          {/* Success message — отдельным блоком ниже превью, потому что в модалке
-              это другой экран (после сабмита). */}
+          {/* Success message — отдельным блоком ниже превью */}
           <div className="rounded-sm border border-border p-3">
-            <div className="mb-1.5 text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
+            <div className="mb-2 text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
               Сообщение об успехе (после отправки)
             </div>
-            <NbspTextarea
-              value={successMessage}
-              onChange={setSuccessMessage}
-              onBlur={() =>
-                successMessage !== form.successMessage &&
-                onPatch({ successMessage })
-              }
+            <FieldEditor
+              label="Сообщение об успехе"
+              value={form.successMessage}
               placeholder="Спасибо! Мы получили заявку…"
-              className="min-h-[40px]"
+              multiline
+              onSave={(v) => onPatch({ successMessage: v })}
+              previewClassName="text-[14px] leading-[1.5] text-foreground"
             />
           </div>
 
@@ -640,20 +624,83 @@ function FormCard({
   );
 }
 
-function Section({
+// ── Field Editor — превью + фиолетовый карандаш → диалог ───────────────────
+
+function FieldEditor({
   label,
-  children,
+  value,
+  placeholder,
+  multiline,
+  onSave,
+  previewClassName,
 }: {
   label: string;
-  children: React.ReactNode;
+  value: string;
+  placeholder: string;
+  multiline?: boolean;
+  onSave: (next: string) => void;
+  previewClassName?: string;
 }) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  function startEdit() {
+    setDraft(value);
+    setOpen(true);
+  }
+
+  function save() {
+    if (draft !== value) onSave(draft);
+    setOpen(false);
+  }
+
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
-        {label}
-      </label>
-      {children}
-    </div>
+    <>
+      <div className="group/fe flex items-start gap-2">
+        <div className={["flex-1 min-w-0", previewClassName].filter(Boolean).join(" ")}>
+          {value || (
+            <span className="opacity-40">{placeholder}</span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={startEdit}
+          className="mt-0.5 shrink-0 rounded-sm p-1 opacity-0 transition-opacity hover:bg-foreground/10 group-hover/fe:opacity-100"
+          style={{ color: "var(--rm-violet-100)" }}
+          aria-label={`Редактировать: ${label}`}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      <Dialog open={open} onOpenChange={(o) => !o && setOpen(false)}>
+        <DialogContent className="max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>{label}</DialogTitle>
+          </DialogHeader>
+          {multiline ? (
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="min-h-[100px]"
+              autoFocus
+            />
+          ) : (
+            <Input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              autoFocus
+            />
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Отмена
+            </Button>
+            <Button onClick={save}>Сохранить</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

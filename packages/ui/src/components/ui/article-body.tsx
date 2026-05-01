@@ -745,6 +745,102 @@ export function FactoidGrid({
   )
 }
 
+// ── ListCardGrid ────────────────────────────────────────────────────────────
+//
+// Сетка карточек-списков под заголовком секции. Каждая карточка: заголовок
+// (Label 18: Loos Condensed Medium, 18px, uppercase, 2% ls) + строки с
+// маркером (буллит 4×4px или номер) и текстом Copy 16 (Roboto 16/128%).
+// Компонент — аналог FactoidGrid, используется когда раздел добавил список.
+
+export interface ListItemData {
+  id: string
+  text: string
+}
+
+export interface ListCardData {
+  id: string
+  title: string
+  items: ListItemData[]
+  newRow?: boolean
+}
+
+export function ListCardGrid({
+  cards,
+  listType,
+  cols,
+  className,
+}: {
+  cards: ListCardData[]
+  listType?: 'bullet' | 'numbered'
+  cols?: 1 | 2 | 3
+  className?: string
+}) {
+  if (!cards.length) return null
+  const type = listType ?? 'bullet'
+  const effectiveCols = cols ?? Math.min(3, cards.length)
+
+  return (
+    <div
+      data-list-card-grid
+      className={cn('grid', className)}
+      style={{ gridTemplateColumns: `repeat(${effectiveCols}, minmax(0, 1fr))`, gap: '32px' }}
+    >
+      {cards.map((card, i) => {
+        const visibleItems = card.items.filter((it) => it.text.trim())
+        const breakStyle: React.CSSProperties | undefined =
+          i > 0 && card.newRow ? { gridColumnStart: 1 } : undefined
+        return (
+          <div
+            key={card.id}
+            data-list-card
+            style={breakStyle}
+            className="flex flex-col gap-6"
+          >
+            {card.title.trim() && (
+              <h4
+                className={cn(
+                  'font-[family-name:var(--font-mono-family)] font-medium uppercase',
+                  'text-[length:var(--text-18)] leading-[1.12] tracking-[0.02em]',
+                  'text-[color:var(--rm-gray-fg-main)]',
+                )}
+              >
+                {card.title}
+              </h4>
+            )}
+            {visibleItems.length > 0 && (
+              <ul className="flex flex-col gap-2">
+                {visibleItems.map((item, idx) => (
+                  <li key={item.id} className="flex items-start gap-5">
+                    {type === 'bullet' ? (
+                      <span
+                        aria-hidden
+                        className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[color:var(--rm-gray-fg-sub)]"
+                      />
+                    ) : (
+                      <span
+                        className={cn(
+                          'shrink-0 font-[family-name:var(--font-mono-family)]',
+                          'text-[length:var(--text-16)] leading-[1.28]',
+                          'text-[color:var(--rm-gray-fg-sub)]',
+                        )}
+                      >
+                        {idx + 1}.
+                      </span>
+                    )}
+                    <span className="text-[length:var(--text-16)] leading-[1.28] text-[color:var(--rm-gray-fg-sub)]">
+                      {item.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function Quote({ text, className }: { text: string; className?: string }) {
   return (
     <blockquote

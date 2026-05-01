@@ -10,6 +10,7 @@ import {
   Plus,
   Sparkles,
   Trash2,
+  X,
 } from "lucide-react";
 import type { FactoidCardData } from "@/lib/types";
 
@@ -316,6 +317,16 @@ export function ArticleBodyFactoidGridEditor({
         <span className="text-muted-foreground">
           {cards.length} {plural(cards.length)} · {cols} в ряд
         </span>
+        {onRemoveAll && (
+          <button
+            type="button"
+            onClick={onRemoveAll}
+            className="ml-auto flex items-center gap-1.5 rounded-sm border border-border bg-background px-2.5 py-1 text-muted-foreground transition-colors hover:border-[#ED4843]/40 hover:text-[#ED4843]"
+          >
+            <X className="h-3.5 w-3.5" />
+            Убрать сетку
+          </button>
+        )}
       </div>
     </div>
   );

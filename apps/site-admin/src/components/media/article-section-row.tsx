@@ -10,10 +10,12 @@ import type {
   ArticleSectionQuote,
   CtaEntity,
   FactoidCardData,
+  ListCardData,
 } from "@/lib/types";
 import { apiFetch } from "@/lib/api-client";
 import { ArticleBodyEditor } from "./article-body-editor";
 import { ArticleBodyFactoidGridEditor } from "./article-body-factoid-grid-editor";
+import { ArticleBodyListGridEditor } from "./article-body-list-grid-editor";
 import { ArticleBodyTextarea } from "./article-body-textarea";
 import { SectionAsidesEditor } from "./section-asides-editor";
 import { SectionQuotesEditor } from "./section-quotes-editor";
@@ -75,12 +77,26 @@ export function ArticleSectionRow({
     onChange({ ...section, factoidCols });
   }
 
+  function updateListCards(listCards: ListCardData[]) {
+    onChange({ ...section, listCards });
+  }
+
+  function updateListType(listType: "bullet" | "numbered") {
+    onChange({ ...section, listType });
+  }
+
+  function updateListCols(listCols: 1 | 2 | 3 | undefined) {
+    onChange({ ...section, listCols });
+  }
+
   const title = section.title ?? "";
   const navLabel = section.navLabel ?? "";
   const blocks = Array.isArray(section.blocks) ? section.blocks : [];
   const asides = Array.isArray(section.asides) ? section.asides : [];
   const quotes = Array.isArray(section.quotes) ? section.quotes : [];
   const factoids = Array.isArray(section.factoids) ? section.factoids : [];
+  const listCards = Array.isArray(section.listCards) ? section.listCards : [];
+  const listType = section.listType ?? "bullet";
   const asidesTitle =
     typeof section.asidesTitle === "string" ? section.asidesTitle : "Материалы";
   const asidesTitleEnabled =
@@ -167,26 +183,48 @@ export function ArticleSectionRow({
               textClassName="font-[family-name:var(--font-heading-family)] font-bold uppercase tracking-[-0.01em] text-[length:var(--text-24)] leading-[1.12]"
             />
           </div>
-          {/* Сетка фактоидов — section-level, всегда сверху под H2.
-              Если карточек нет — показываем кнопку добавления. */}
-          {factoids.length === 0 ? (
-            <button
-              type="button"
-              onClick={() =>
-                updateFactoids([
-                  {
-                    id: `fc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
-                    number: "",
-                    text: "",
-                    accent: false,
-                  },
-                ])
-              }
-              className="mb-4 flex w-full items-center justify-center gap-2 rounded-sm border border-dashed border-border bg-[color:var(--rm-gray-1)]/40 px-3 py-2 text-[length:var(--text-12)] font-medium uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-            >
-              + Добавить сетку фактоидов
-            </button>
-          ) : (
+          {/* Сетка фактоидов или сетка списков — section-level, под H2.
+              Если ни одна не добавлена — показываем две кнопки выбора. */}
+          {factoids.length === 0 && listCards.length === 0 ? (
+            <div className="mb-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  updateFactoids([
+                    {
+                      id: `fc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+                      number: "",
+                      text: "",
+                      accent: false,
+                    },
+                  ])
+                }
+                className="flex flex-1 items-center justify-center gap-2 rounded-sm border border-dashed border-border bg-[color:var(--rm-gray-1)]/40 px-3 py-2 text-[length:var(--text-12)] font-medium uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+              >
+                + Добавить сетку фактоидов
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  updateListCards([
+                    {
+                      id: `lc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+                      title: "",
+                      items: [
+                        {
+                          id: `li_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+                          text: "",
+                        },
+                      ],
+                    },
+                  ])
+                }
+                className="flex flex-1 items-center justify-center gap-2 rounded-sm border border-dashed border-border bg-[color:var(--rm-gray-1)]/40 px-3 py-2 text-[length:var(--text-12)] font-medium uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+              >
+                + Добавить сетку списков
+              </button>
+            </div>
+          ) : factoids.length > 0 ? (
             <div className="mb-4">
               <ArticleBodyFactoidGridEditor
                 cards={factoids}
@@ -196,6 +234,21 @@ export function ArticleSectionRow({
                 onRemoveAll={() => {
                   updateFactoids([]);
                   updateFactoidCols(undefined);
+                }}
+              />
+            </div>
+          ) : (
+            <div className="mb-4">
+              <ArticleBodyListGridEditor
+                cards={listCards}
+                listType={listType}
+                cols={section.listCols}
+                onChange={updateListCards}
+                onTypeChange={updateListType}
+                onColsChange={updateListCols}
+                onRemoveAll={() => {
+                  updateListCards([]);
+                  updateListCols(undefined);
                 }}
               />
             </div>
