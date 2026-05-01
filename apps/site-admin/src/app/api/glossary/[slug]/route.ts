@@ -32,6 +32,9 @@ export async function PUT(
     metaTitle: body.metaTitle ?? "",
     metaDescription: body.metaDescription ?? "",
     body: Array.isArray(body.sections) ? body.sections : [],
+    pinned: body.pinned === true,
+    pinnedOrder:
+      typeof body.pinnedOrder === "number" ? body.pinnedOrder : 0,
     createdAt: body.createdAt ?? now,
     updatedAt: now,
   };

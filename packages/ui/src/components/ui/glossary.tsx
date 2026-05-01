@@ -10,6 +10,12 @@ export type GlossaryTermItem = {
   /** Href куда ведёт ссылка на термин. Обычно `/media/glossary/{slug}`. */
   href: string
   tagIds?: string[]
+  /** Короткое описание (для карточки в горизонтальной ленте). */
+  description?: string
+  /** Закреплён ли в админке — отображается первым в горизонтальной ленте. */
+  pinned?: boolean
+  /** Порядок среди закреплённых (asc). */
+  pinnedOrder?: number
 }
 
 export type GlossaryScript = "cyrillic" | "latin"
@@ -45,9 +51,15 @@ function groupByLetter(items: GlossaryTermItem[]): LetterGroup[] {
     bucket.push(it)
     map.set(letter, bucket)
   }
-  const letters = Array.from(map.keys()).sort((a, b) =>
-    a.localeCompare(b, "ru"),
-  )
+  // Кириллица первой, потом латиница, в конце "#" для не-буквенных.
+  const letters = Array.from(map.keys()).sort((a, b) => {
+    const scriptOf = (l: string): number =>
+      /[А-ЯЁ]/.test(l) ? 0 : /[A-Z]/.test(l) ? 1 : 2
+    const sa = scriptOf(a)
+    const sb = scriptOf(b)
+    if (sa !== sb) return sa - sb
+    return a.localeCompare(b, "ru")
+  })
   return letters.map((letter) => ({
     letter,
     items: (map.get(letter) ?? []).sort((a, b) =>
@@ -227,14 +239,17 @@ function LetterGroupBlock({ group }: { group: LetterGroup }) {
 export interface GlossaryListProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Все термины. */
   items: GlossaryTermItem[]
-  /** Активный скрипт. */
-  script: GlossaryScript
+  /**
+   * Опциональный фильтр по скрипту. Если не задан — рендерится единый
+   * список: сначала кириллические группы, затем латинские.
+   */
+  script?: GlossaryScript
 }
 
 /**
  * GlossaryList — 4-колоночный (multi-column) список терминов для /media/glossary.
- * Принимает уже отфильтрованные по script/tag/query термины и рендерит их
- * сгруппированными по букве с letter-headings.
+ * По умолчанию рендерит общий список (кириллица сверху, латиница ниже);
+ * можно ограничить одним скриптом через `script`.
  */
 export function GlossaryList({
   items,
@@ -243,7 +258,10 @@ export function GlossaryList({
   ...props
 }: GlossaryListProps) {
   const filtered = React.useMemo(
-    () => items.filter((i) => getGlossaryTermScript(i.title) === script),
+    () =>
+      script
+        ? items.filter((i) => getGlossaryTermScript(i.title) === script)
+        : items,
     [items, script],
   )
   const groups = React.useMemo(() => groupByLetter(filtered), [filtered])
@@ -269,6 +287,104 @@ export function GlossaryList({
           <LetterGroupBlock group={g} />
         </div>
       ))}
+    </div>
+  )
+}
+
+// ── GlossaryPopularRow (горизонтальная лента ярких карточек) ───────────────
+
+export interface GlossaryPopularRowProps
+  extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * Список терминов в порядке отображения (сначала закреплённые, далее —
+   * самые часто открываемые). Логика сортировки — на стороне страницы
+   * (там доступен localStorage со счётчиком views).
+   */
+  items: GlossaryTermItem[]
+}
+
+/**
+ * GlossaryPopularRow — горизонтальный скролл карточек терминов глоссария
+ * на месте бывшего переключателя А-Я / A-Z. Справа всегда есть фейд (если
+ * контент уходит за край), слева фейд появляется после начала скролла.
+ */
+export function GlossaryPopularRow({
+  items,
+  className,
+  ...props
+}: GlossaryPopularRowProps) {
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [fade, setFade] = React.useState<{ left: boolean; right: boolean }>({
+    left: false,
+    right: true,
+  })
+
+  const update = React.useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const { scrollLeft, scrollWidth, clientWidth } = el
+    const overflows = scrollWidth - clientWidth > 1
+    const atEnd = scrollLeft + clientWidth >= scrollWidth - 1
+    setFade({
+      left: overflows && scrollLeft > 1,
+      right: overflows && !atEnd,
+    })
+  }, [])
+
+  React.useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [update, items])
+
+  if (items.length === 0) return null
+
+  return (
+    <div className={cn("relative", className)} {...props}>
+      <div
+        ref={scrollRef}
+        onScroll={update}
+        className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        <div className="flex w-max gap-3 pr-10">
+          {items.map((it) => (
+            <a
+              key={it.slug}
+              href={it.href}
+              className={cn(
+                "group/term flex w-[260px] shrink-0 flex-col gap-2 rounded-sm border border-[color:var(--rm-gray-3)] bg-[color:var(--rm-gray-1)] p-4 transition-colors",
+                "hover:border-[color:var(--rm-yellow-100)]",
+              )}
+            >
+              <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold uppercase tracking-[-0.01em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] line-clamp-2">
+                {it.title}
+              </span>
+              {it.description && (
+                <span className="text-[length:var(--text-12)] leading-[1.35] text-[color:var(--rm-gray-fg-sub)] line-clamp-3">
+                  {it.description}
+                </span>
+              )}
+            </a>
+          ))}
+        </div>
+      </div>
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent transition-opacity duration-200",
+          fade.left ? "opacity-100" : "opacity-0",
+        )}
+      />
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent transition-opacity duration-200",
+          fade.right ? "opacity-100" : "opacity-0",
+        )}
+      />
     </div>
   )
 }

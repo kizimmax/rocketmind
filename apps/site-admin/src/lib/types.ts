@@ -925,6 +925,14 @@ export interface GlossaryTerm {
   metaDescription: string;
   /** Контент термина — те же секции, что у статей. */
   sections: ArticleSection[];
+  /**
+   * Закреплён ли термин в горизонтальной ленте /media/glossary.
+   * Закреплённые идут первыми, далее — по `pinnedOrder` (asc); за ними —
+   * самые часто открываемые (счётчик views в localStorage у пользователя).
+   */
+  pinned: boolean;
+  /** Ручной порядок среди закреплённых (asc). Игнорируется при pinned=false. */
+  pinnedOrder: number;
   createdAt: string;
   updatedAt: string;
 }

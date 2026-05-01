@@ -90,6 +90,20 @@ export function GlossaryTermPageClient({
       s.quotes.length > 0,
   );
 
+  // Счётчик «сколько раз заходили в эту карточку» — для горизонтальной
+  // ленты на /media/glossary. Хранится в localStorage у пользователя.
+  useEffect(() => {
+    try {
+      const key = "rm:glossary:views";
+      const raw = window.localStorage.getItem(key);
+      const map = (raw ? JSON.parse(raw) : {}) as Record<string, number>;
+      map[term.slug] = (map[term.slug] ?? 0) + 1;
+      window.localStorage.setItem(key, JSON.stringify(map));
+    } catch {
+      /* noop */
+    }
+  }, [term.slug]);
+
   // Scrollspy: активен тот H2, верх которого уже прошёл линию 92px от верха
   // viewport. Логика 1-в-1 как у article-page-client.
   const [activeId, setActiveId] = useState<string | null>(null);

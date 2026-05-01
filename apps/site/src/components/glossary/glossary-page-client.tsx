@@ -7,9 +7,8 @@ import {
   cn,
   Tag,
   GlossaryList,
-  GlossaryScriptToggle,
+  GlossaryPopularRow,
   type GlossaryTermItem,
-  type GlossaryScript,
 } from "@rocketmind/ui";
 import { ShaderBackground } from "@/components/ui/ShaderBackground";
 import type { MediaTag } from "@/lib/articles";
@@ -72,7 +71,6 @@ export function GlossaryPageClient({
   headingAccent,
   intro,
 }: Props) {
-  const [script, setScript] = useState<GlossaryScript>("cyrillic");
   const filter: string = activeTag ?? "all";
   const [query, setQuery] = useState<string>("");
   const tagHref = (id: string) =>
@@ -112,6 +110,35 @@ export function GlossaryPageClient({
       return t.title.toLowerCase().includes(q);
     });
   }, [terms, filter, query]);
+
+  // ── View counter (localStorage) ──────────────────────────────────────────
+  // Счётчик «сколько раз заходили в карточку термина» хранится в браузере
+  // у пользователя. На странице глоссария читаем его, чтобы определить
+  // самые часто открываемые карточки для горизонтальной ленты.
+  const [views, setViews] = useState<Record<string, number>>({});
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("rm:glossary:views");
+      if (raw) setViews(JSON.parse(raw) as Record<string, number>);
+    } catch {
+      /* noop */
+    }
+  }, []);
+
+  // Закреплённые → часто открываемые (по views desc) → если ничего нет,
+  // показываем первые 12 терминов в алфавитном порядке.
+  const popular = useMemo<GlossaryTermItem[]>(() => {
+    const pinned = terms
+      .filter((t) => t.pinned)
+      .sort((a, b) => (a.pinnedOrder ?? 0) - (b.pinnedOrder ?? 0));
+    const pinnedIds = new Set(pinned.map((t) => t.slug));
+    const byViews = terms
+      .filter((t) => !pinnedIds.has(t.slug) && (views[t.slug] ?? 0) > 0)
+      .sort((a, b) => (views[b.slug] ?? 0) - (views[a.slug] ?? 0));
+    const fallback =
+      pinned.length + byViews.length === 0 ? terms.slice(0, 12) : [];
+    return [...pinned, ...byViews, ...fallback].slice(0, 24);
+  }, [terms, views]);
 
   // ── Tag-row dynamic layout (такая же логика как на /media) ──────────────
   const allTagItems = useMemo<TagItem[]>(
@@ -351,12 +378,17 @@ export function GlossaryPageClient({
           {/* Sentinel для gradient-хвоста sticky-шапки. */}
           <div ref={tagsEndRef} aria-hidden className="h-0 w-full" />
 
-          <div className="mb-10" style={stagger(intro ? 5 : 4)}>
-            <GlossaryScriptToggle value={script} onChange={setScript} />
-          </div>
+          {/* Горизонтальная лента: закреплённые → часто открываемые.
+              Счётчик views хранится в localStorage у пользователя.
+              Скрываем во время поиска — там лента будет дублировать список. */}
+          {!query.trim() && popular.length > 0 && (
+            <div className="mb-10" style={stagger(intro ? 5 : 4)}>
+              <GlossaryPopularRow items={popular} />
+            </div>
+          )}
 
           <div style={stagger(intro ? 5 : 4)}>
-            <GlossaryList items={filtered} script={script} />
+            <GlossaryList items={filtered} />
           </div>
         </div>
       </div>

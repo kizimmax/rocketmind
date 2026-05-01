@@ -131,7 +131,9 @@ function shallowEqualTerm(a: GlossaryTerm, b: GlossaryTerm): boolean {
     a.slug !== b.slug ||
     a.status !== b.status ||
     a.metaTitle !== b.metaTitle ||
-    a.metaDescription !== b.metaDescription
+    a.metaDescription !== b.metaDescription ||
+    a.pinned !== b.pinned ||
+    a.pinnedOrder !== b.pinnedOrder
   ) {
     return false;
   }
@@ -151,6 +153,7 @@ const FIELD_LABELS: Partial<Record<keyof GlossaryTerm, string>> = {
   sections: "Тело термина",
   metaTitle: "SEO Title",
   metaDescription: "SEO Description",
+  pinned: "Закреплён",
 };
 
 function isEqual(a: unknown, b: unknown): boolean {

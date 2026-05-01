@@ -27,6 +27,9 @@ export default function GlossaryPage() {
     title: t.title,
     href: `${BASE}/media/glossary/term/${t.slug}`,
     tagIds: t.tags,
+    description: t.description,
+    pinned: t.pinned,
+    pinnedOrder: t.pinnedOrder,
   }));
 
   return (

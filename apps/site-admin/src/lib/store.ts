@@ -189,6 +189,7 @@ interface StoreContext {
   saveGlossaryTerm(term: GlossaryTerm): void;
   deleteGlossaryTerm(id: string): void;
   setGlossaryTermStatus(id: string, status: PageStatus): void;
+  setGlossaryTermPinned(id: string, value: boolean): void;
 
   // ── Media tags ──
   /** Create or return existing tag (by label). */
@@ -777,6 +778,8 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       metaTitle: `${title} | Глоссарий Rocketmind`,
       metaDescription: "",
       sections: [],
+      pinned: false,
+      pinnedOrder: 0,
       createdAt: now,
       updatedAt: now,
     };
@@ -822,6 +825,34 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       }).catch(() => {});
     }
   }, [glossaryTerms]);
+
+  const setGlossaryTermPinned = useCallback((id: string, value: boolean) => {
+    let target: GlossaryTerm | undefined;
+    setGlossaryTerms((prev) => {
+      const maxOrder = prev
+        .filter((t) => t.pinned && t.id !== id)
+        .reduce((acc, t) => Math.max(acc, t.pinnedOrder), -1);
+      const next = prev.map((t) => {
+        if (t.id !== id) return t;
+        target = {
+          ...t,
+          pinned: value,
+          pinnedOrder: value ? maxOrder + 1 : 0,
+          updatedAt: new Date().toISOString(),
+        };
+        return target;
+      });
+      if (isStaticExport) saveGlossaryToLS(next);
+      return next;
+    });
+    if (!isStaticExport && target) {
+      void apiFetch(`/api/glossary/${encodeURIComponent(target.slug)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(target),
+      }).catch(() => {});
+    }
+  }, []);
 
   const setGlossaryTermStatus = useCallback((id: string, status: PageStatus) => {
     let target: GlossaryTerm | undefined;
@@ -1019,6 +1050,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         saveGlossaryTerm,
         deleteGlossaryTerm,
         setGlossaryTermStatus,
+        setGlossaryTermPinned,
         upsertMediaTag,
         renameMediaTag,
         deleteMediaTag,

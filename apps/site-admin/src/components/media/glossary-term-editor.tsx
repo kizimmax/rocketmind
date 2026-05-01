@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pin, PinOff } from "lucide-react";
 import { Button, Input, Textarea, Tag } from "@rocketmind/ui";
 import { toast } from "sonner";
 import { useAdminStore } from "@/lib/store";
@@ -165,6 +165,21 @@ function Inner({
             /media/glossary#{term.slug}
           </p>
         </div>
+        <Button
+          variant={term.pinned ? "default" : "outline"}
+          size="sm"
+          onClick={() => update("pinned", !term.pinned)}
+        >
+          {term.pinned ? (
+            <>
+              <PinOff className="mr-1 h-4 w-4" /> Открепить
+            </>
+          ) : (
+            <>
+              <Pin className="mr-1 h-4 w-4" /> Закрепить
+            </>
+          )}
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-6">

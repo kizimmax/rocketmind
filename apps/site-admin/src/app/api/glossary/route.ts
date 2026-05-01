@@ -35,6 +35,9 @@ export async function GET() {
           metaTitle: (data.metaTitle as string) || "",
           metaDescription: (data.metaDescription as string) || "",
           sections: Array.isArray(data.body) ? data.body : [],
+          pinned: data.pinned === true,
+          pinnedOrder:
+            typeof data.pinnedOrder === "number" ? data.pinnedOrder : 0,
           createdAt: (data.createdAt as string) || "",
           updatedAt: (data.updatedAt as string) || "",
         };
@@ -75,6 +78,8 @@ export async function POST(request: Request) {
     metaTitle: title ? `${title} | Глоссарий Rocketmind` : "",
     metaDescription: "",
     body: [],
+    pinned: false,
+    pinnedOrder: 0,
     createdAt: now,
     updatedAt: now,
   };
@@ -92,6 +97,8 @@ export async function POST(request: Request) {
       metaTitle: fm.metaTitle,
       metaDescription: "",
       sections: [],
+      pinned: false,
+      pinnedOrder: 0,
       createdAt: fm.createdAt,
       updatedAt: fm.updatedAt,
     },

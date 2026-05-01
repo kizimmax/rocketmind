@@ -127,6 +127,8 @@ export function createSeedGlossaryTerms(): GlossaryTerm[] {
     metaTitle: `${title} | Глоссарий Rocketmind`,
     metaDescription: "",
     sections: [],
+    pinned: false,
+    pinnedOrder: 0,
     createdAt: now,
     updatedAt: now,
   });

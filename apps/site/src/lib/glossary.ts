@@ -24,6 +24,10 @@ export type GlossaryTermEntry = {
   metaTitle: string;
   metaDescription: string;
   sections: ArticleSection[];
+  /** Закреплённые карточки попадают в начало горизонтальной ленты на /media/glossary. */
+  pinned: boolean;
+  /** Ручной порядок среди закреплённых (asc). */
+  pinnedOrder: number;
 };
 
 const GLOSSARY_DIR = path.join(process.cwd(), "content", "glossary");
@@ -63,6 +67,9 @@ function readTerm(filePath: string): GlossaryTermEntry | null {
       metaDescription:
         typeof data.metaDescription === "string" ? data.metaDescription : "",
       sections: parseSections(data.body),
+      pinned: data.pinned === true,
+      pinnedOrder:
+        typeof data.pinnedOrder === "number" ? data.pinnedOrder : 0,
     };
   } catch {
     return null;

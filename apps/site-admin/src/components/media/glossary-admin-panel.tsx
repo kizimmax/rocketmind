@@ -11,6 +11,8 @@ import {
   Trash2,
   Eye,
   EyeOff,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import {
   Button,
@@ -51,6 +53,7 @@ export function GlossaryAdminPanel() {
     mediaTags,
     createGlossaryTerm,
     setGlossaryTermStatus,
+    setGlossaryTermPinned,
     deleteGlossaryTerm,
   } = useAdminStore();
 
@@ -61,7 +64,12 @@ export function GlossaryAdminPanel() {
 
   const sorted = useMemo(
     () =>
-      [...glossaryTerms].sort((a, b) => a.title.localeCompare(b.title, "ru")),
+      [...glossaryTerms].sort((a, b) => {
+        // Закреплённые — первыми (по pinnedOrder asc), далее — по алфавиту.
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+        if (a.pinned && b.pinned) return a.pinnedOrder - b.pinnedOrder;
+        return a.title.localeCompare(b.title, "ru");
+      }),
     [glossaryTerms],
   );
   const active = sorted.filter((t) => t.status !== "archived");
@@ -200,6 +208,7 @@ export function GlossaryAdminPanel() {
               onRestore={() => handleRestore(term.id)}
               onDelete={() => setDeleteTarget(term.id)}
               onTogglePublish={() => handleTogglePublish(term)}
+              onTogglePin={() => setGlossaryTermPinned(term.id, !term.pinned)}
             />
           ))}
         </div>
@@ -227,6 +236,7 @@ export function GlossaryAdminPanel() {
                 onRestore={() => handleRestore(term.id)}
                 onDelete={() => setDeleteTarget(term.id)}
                 onTogglePublish={() => handleTogglePublish(term)}
+                onTogglePin={() => setGlossaryTermPinned(term.id, !term.pinned)}
               />
             ))}
           </div>
@@ -254,6 +264,7 @@ function GlossaryRow({
   onRestore,
   onDelete,
   onTogglePublish,
+  onTogglePin,
 }: {
   term: GlossaryTerm;
   tagLabels: Record<string, string>;
@@ -262,6 +273,7 @@ function GlossaryRow({
   onRestore: () => void;
   onDelete: () => void;
   onTogglePublish: () => void;
+  onTogglePin: () => void;
 }) {
   const badge = STATUS_BADGE[term.status];
   return (
@@ -274,6 +286,14 @@ function GlossaryRow({
         <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-16)] font-bold uppercase tracking-[-0.005em] leading-[1.2] text-foreground">
           {term.title || "Без названия"}
         </span>
+        {term.pinned && (
+          <span
+            className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-[color:var(--rm-yellow-100)] px-1 py-0 font-[family-name:var(--font-mono-family)] text-[length:var(--text-10)] font-medium uppercase tracking-[0.02em] text-[color:var(--rm-yellow-fg)]"
+            title="Закреплён"
+          >
+            <Pin className="h-2.5 w-2.5" strokeWidth={2} />
+          </span>
+        )}
         {badge && (
           <Badge variant={badge.variant} size="sm">
             {badge.label}
@@ -320,6 +340,17 @@ function GlossaryRow({
             ) : (
               <>
                 <Eye className="mr-2 h-4 w-4" /> Опубликовать
+              </>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={onTogglePin}>
+            {term.pinned ? (
+              <>
+                <PinOff className="mr-2 h-4 w-4" /> Открепить
+              </>
+            ) : (
+              <>
+                <Pin className="mr-2 h-4 w-4" /> Закрепить
               </>
             )}
           </DropdownMenuItem>
