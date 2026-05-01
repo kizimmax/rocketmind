@@ -21,13 +21,14 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Only site runtime artifacts + shared node_modules
-COPY --from=builder /app/apps/site/.next          ./apps/site/.next
-COPY --from=builder /app/apps/site/public         ./apps/site/public
-COPY --from=builder /app/apps/site/package.json   ./apps/site/package.json
-COPY --from=builder /app/apps/site/next.config.ts ./apps/site/next.config.ts
-COPY --from=builder /app/apps/site/prisma         ./apps/site/prisma
-COPY --from=builder /app/node_modules             ./node_modules
-COPY --from=builder /app/package.json             ./package.json
+COPY --from=builder /app/apps/site/.next            ./apps/site/.next
+COPY --from=builder /app/apps/site/public           ./apps/site/public
+COPY --from=builder /app/apps/site/package.json     ./apps/site/package.json
+COPY --from=builder /app/apps/site/next.config.ts   ./apps/site/next.config.ts
+COPY --from=builder /app/apps/site/prisma           ./apps/site/prisma
+COPY --from=builder /app/apps/site/prisma.config.ts ./apps/site/prisma.config.ts
+COPY --from=builder /app/node_modules               ./node_modules
+COPY --from=builder /app/package.json               ./package.json
 
 COPY apps/site/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
