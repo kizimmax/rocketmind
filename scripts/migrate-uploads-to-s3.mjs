@@ -17,6 +17,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import pg from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -55,7 +57,11 @@ const s3 = new S3Client({
   credentials: { accessKeyId, secretAccessKey },
   forcePathStyle: true,
 });
-const prisma = new PrismaClient();
+const dbPool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+const prisma = new PrismaClient({ adapter: new PrismaPg(dbPool) });
 
 function* walk(dir) {
   if (!fs.existsSync(dir)) return;
