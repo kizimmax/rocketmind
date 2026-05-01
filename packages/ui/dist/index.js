@@ -445,6 +445,7 @@ function DotGridLens({
 // src/components/ui/dialog.tsx
 import * as React3 from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import { jsx as jsx8, jsxs as jsxs2 } from "react/jsx-runtime";
 var Dialog = DialogPrimitive.Root;
 var DialogTrigger = DialogPrimitive.Trigger;
@@ -456,7 +457,7 @@ var DialogOverlay = React3.forwardRef(({ className, ...props }, ref) => /* @__PU
     ref,
     "data-slot": "dialog-overlay",
     className: cn(
-      "fixed inset-0 z-50 bg-border/80 backdrop-blur-sm",
+      "rm-dialog-overlay fixed inset-0 z-50 bg-border/80 backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-300",
       "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-200",
       className
@@ -465,29 +466,177 @@ var DialogOverlay = React3.forwardRef(({ className, ...props }, ref) => /* @__PU
   }
 ));
 DialogOverlay.displayName = "DialogOverlay";
-var DialogContent = React3.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs2(DialogPortal, { children: [
-  /* @__PURE__ */ jsx8(DialogOverlay, {}),
-  /* @__PURE__ */ jsx8(
-    DialogPrimitive.Content,
-    {
-      ref,
-      "data-slot": "dialog-content",
-      className: cn(
-        "fixed left-1/2 top-1/2 z-50 w-full max-w-[480px] -translate-x-1/2 -translate-y-1/2",
-        "rounded-lg border border-border bg-card p-6",
-        // Open: подъезжает снизу + opacity fade. Easing — easeOutExpo для мягкого
-        // «прибытия» без жёсткого стопа. 500ms — заметно, но не затянуто.
-        "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-8 data-[state=open]:duration-500 data-[state=open]:[animation-timing-function:cubic-bezier(0.16,1,0.3,1)]",
-        // Close: уезжает обратно вниз быстрее (200ms, easeInQuad) — пользователь
-        // уже принял решение, нечего томить.
-        "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=closed]:duration-200 data-[state=closed]:[animation-timing-function:cubic-bezier(0.55,0.085,0.68,0.53)]",
-        className
-      ),
-      ...props,
-      children
+var DialogContent = React3.forwardRef(({ className, children, mobileSheet = true, bodyClassName, ...props }, ref) => {
+  const innerRef = React3.useRef(null);
+  const overlayRef = React3.useRef(null);
+  const setRefs = React3.useCallback(
+    (node) => {
+      innerRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref]
+  );
+  React3.useEffect(() => {
+    if (!mobileSheet) return;
+    if (typeof window === "undefined") return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const TOP_GAP = 16;
+    const apply = () => {
+      const el = innerRef.current;
+      if (!el) return;
+      const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+      if (!isMobile) {
+        el.style.removeProperty("--rm-sheet-h");
+        el.style.removeProperty("--rm-sheet-translate");
+        return;
+      }
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      if (kb > 80) {
+        el.style.setProperty("--rm-sheet-h", `${vv.height - TOP_GAP}px`);
+        el.style.setProperty("--rm-sheet-translate", `-${window.innerHeight - vv.height - vv.offsetTop}px`);
+      } else {
+        el.style.removeProperty("--rm-sheet-h");
+        el.style.removeProperty("--rm-sheet-translate");
+      }
+    };
+    apply();
+    vv.addEventListener("resize", apply);
+    vv.addEventListener("scroll", apply);
+    return () => {
+      vv.removeEventListener("resize", apply);
+      vv.removeEventListener("scroll", apply);
+    };
+  }, [mobileSheet]);
+  const drag = React3.useRef({ startY: 0, dy: 0, active: false, pointerId: 0 });
+  function onHandleDown(e) {
+    if (!mobileSheet) return;
+    drag.current = { startY: e.clientY, dy: 0, active: true, pointerId: e.pointerId };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    if (innerRef.current) innerRef.current.style.transition = "none";
+    if (overlayRef.current) overlayRef.current.style.transition = "none";
+  }
+  function onHandleMove(e) {
+    if (!drag.current.active) return;
+    const dy = Math.max(0, e.clientY - drag.current.startY);
+    drag.current.dy = dy;
+    const el = innerRef.current;
+    if (el) {
+      el.style.transform = `translateY(${dy}px)`;
+      const progress = Math.min(1, dy / Math.max(1, el.offsetHeight));
+      if (overlayRef.current) overlayRef.current.style.opacity = String(1 - progress);
     }
-  )
-] }));
+  }
+  function onHandleEnd(e) {
+    if (!drag.current.active) return;
+    drag.current.active = false;
+    try {
+      ;
+      e.currentTarget.releasePointerCapture(drag.current.pointerId);
+    } catch {
+    }
+    const { dy } = drag.current;
+    const el = innerRef.current;
+    if (!el) return;
+    if (dy > 120) {
+      el.classList.add("rm-sheet-manual-close");
+      el.style.transition = "transform 220ms cubic-bezier(0.32, 0.72, 0, 1)";
+      el.style.transform = "translateY(100%)";
+      if (overlayRef.current) {
+        overlayRef.current.classList.add("rm-sheet-manual-close");
+        overlayRef.current.style.transition = "opacity 220ms cubic-bezier(0.32, 0.72, 0, 1)";
+        overlayRef.current.style.opacity = "0";
+      }
+      const close = () => {
+        el.removeEventListener("transitionend", close);
+        const closeBtn = el.querySelector("[data-radix-dialog-close]");
+        if (closeBtn) closeBtn.click();
+        else props.onOpenChange?.(false);
+      };
+      el.addEventListener("transitionend", close);
+    } else {
+      el.style.transition = "transform 200ms ease-out";
+      el.style.transform = "";
+      if (overlayRef.current) {
+        overlayRef.current.style.transition = "opacity 200ms ease-out";
+        overlayRef.current.style.opacity = "";
+      }
+    }
+  }
+  const dataState = props["data-state"];
+  React3.useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    el.classList.remove("rm-sheet-manual-close");
+    el.style.transition = "";
+    el.style.transform = "";
+    if (overlayRef.current) {
+      overlayRef.current.classList.remove("rm-sheet-manual-close");
+      overlayRef.current.style.transition = "";
+      overlayRef.current.style.opacity = "";
+    }
+  }, [dataState]);
+  return /* @__PURE__ */ jsxs2(DialogPortal, { children: [
+    /* @__PURE__ */ jsx8(DialogOverlay, { ref: overlayRef }),
+    /* @__PURE__ */ jsxs2(
+      DialogPrimitive.Content,
+      {
+        ref: setRefs,
+        "data-slot": "dialog-content",
+        "data-mobile-sheet": mobileSheet ? "true" : "false",
+        className: cn(
+          "rm-dialog fixed z-50 border border-border bg-card",
+          mobileSheet ? [
+            // Mobile sheet base — без padding на самой панели; padding в body-wrapper
+            "rm-sheet max-lg:inset-x-0 max-lg:bottom-0 max-lg:flex max-lg:flex-col",
+            "max-lg:rounded-t-lg max-lg:border-t",
+            "max-lg:max-h-[var(--rm-sheet-h,85dvh)] max-lg:overflow-hidden",
+            "max-lg:data-[state=open]:animate-in max-lg:data-[state=open]:slide-in-from-bottom-full max-lg:data-[state=open]:duration-[260ms] max-lg:data-[state=open]:[animation-timing-function:cubic-bezier(0.32,0.72,0,1)]",
+            "max-lg:data-[state=closed]:animate-out max-lg:data-[state=closed]:slide-out-to-bottom-full max-lg:data-[state=closed]:duration-200",
+            // Desktop center modal
+            "lg:left-1/2 lg:top-1/2 lg:bottom-auto lg:right-auto lg:w-full lg:max-w-[480px] lg:-translate-x-1/2 lg:-translate-y-1/2",
+            "lg:rounded-lg lg:flex lg:flex-col lg:max-h-[85dvh] lg:overflow-hidden",
+            "lg:data-[state=open]:animate-in lg:data-[state=open]:fade-in-0 lg:data-[state=open]:slide-in-from-bottom-8 lg:data-[state=open]:duration-500 lg:data-[state=open]:[animation-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+            "lg:data-[state=closed]:animate-out lg:data-[state=closed]:fade-out-0 lg:data-[state=closed]:slide-out-to-bottom-4 lg:data-[state=closed]:duration-200 lg:data-[state=closed]:[animation-timing-function:cubic-bezier(0.55,0.085,0.68,0.53)]"
+          ] : [
+            // Always center modal
+            "left-1/2 top-1/2 w-[calc(100vw-32px)] max-w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-lg p-6",
+            "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-8 data-[state=open]:duration-500 data-[state=open]:[animation-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=closed]:duration-200 data-[state=closed]:[animation-timing-function:cubic-bezier(0.55,0.085,0.68,0.53)]"
+          ],
+          className
+        ),
+        ...props,
+        children: [
+          mobileSheet && /* @__PURE__ */ jsx8(
+            "div",
+            {
+              onPointerDown: onHandleDown,
+              onPointerMove: onHandleMove,
+              onPointerUp: onHandleEnd,
+              onPointerCancel: onHandleEnd,
+              className: "hidden max-lg:flex h-7 shrink-0 cursor-grab items-center justify-center touch-none",
+              "aria-hidden": true,
+              children: /* @__PURE__ */ jsx8("span", { className: "h-1 w-10 rounded-full bg-foreground/50" })
+            }
+          ),
+          mobileSheet ? /* @__PURE__ */ jsx8(
+            "div",
+            {
+              className: cn(
+                "flex-1 overflow-y-auto overscroll-contain",
+                "p-6 max-lg:pt-0",
+                bodyClassName
+              ),
+              children
+            }
+          ) : children
+        ]
+      }
+    )
+  ] });
+});
 DialogContent.displayName = "DialogContent";
 function DialogHeader({ className, ...props }) {
   return /* @__PURE__ */ jsx8(
@@ -603,7 +752,7 @@ var DropdownMenuLabel = React4.forwardRef(({ className, ...props }, ref) => /* @
 DropdownMenuLabel.displayName = "DropdownMenuLabel";
 
 // src/components/ui/glowing-effect.tsx
-import { memo, useCallback, useEffect as useEffect3, useRef as useRef3 } from "react";
+import { memo, useCallback as useCallback2, useEffect as useEffect4, useRef as useRef4 } from "react";
 import { animate } from "motion/react";
 import { Fragment, jsx as jsx10, jsxs as jsxs3 } from "react/jsx-runtime";
 var GlowingEffect = memo(
@@ -619,10 +768,10 @@ var GlowingEffect = memo(
     borderWidth = 1,
     disabled = true
   }) => {
-    const containerRef = useRef3(null);
-    const lastPosition = useRef3({ x: 0, y: 0 });
-    const animationFrameRef = useRef3(0);
-    const handleMove = useCallback(
+    const containerRef = useRef4(null);
+    const lastPosition = useRef4({ x: 0, y: 0 });
+    const animationFrameRef = useRef4(0);
+    const handleMove = useCallback2(
       (e) => {
         if (!containerRef.current) return;
         if (animationFrameRef.current) {
@@ -665,7 +814,7 @@ var GlowingEffect = memo(
       },
       [inactiveZone, proximity, movementDuration]
     );
-    useEffect3(() => {
+    useEffect4(() => {
       if (disabled) return;
       const handleScroll = () => handleMove();
       const handlePointerMove = (e) => handleMove(e);
@@ -1179,8 +1328,8 @@ var ScrollBar = React9.forwardRef(({ className, orientation = "vertical", ...pro
 ScrollBar.displayName = "ScrollBar";
 
 // src/components/ui/search-combobox.tsx
-import { useEffect as useEffect4, useMemo, useRef as useRef5, useState } from "react";
-import { ChevronDown as ChevronDown2, Clock3, Search, Sparkles, X } from "lucide-react";
+import { useEffect as useEffect5, useMemo, useRef as useRef6, useState } from "react";
+import { ChevronDown as ChevronDown2, Clock3, Search, Sparkles, X as X2 } from "lucide-react";
 import { jsx as jsx17, jsxs as jsxs7 } from "react/jsx-runtime";
 var sizeStyles = {
   xs: "h-7 px-3 text-[length:var(--text-12)]",
@@ -1208,11 +1357,11 @@ function SearchCombobox({
   recentSearches = [],
   size = "md"
 }) {
-  const rootRef = useRef5(null);
+  const rootRef = useRef6(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState(defaultValue);
   const [highlighted, setHighlighted] = useState(0);
-  useEffect4(() => {
+  useEffect5(() => {
     const handlePointerDown = (event) => {
       if (!rootRef.current?.contains(event.target)) {
         setOpen(false);
@@ -1348,7 +1497,7 @@ function SearchCombobox({
                       setHighlighted(0);
                     },
                     type: "button",
-                    children: /* @__PURE__ */ jsx17(X, { className: iconSizes[size], strokeWidth: 2.2 })
+                    children: /* @__PURE__ */ jsx17(X2, { className: iconSizes[size], strokeWidth: 2.2 })
                   }
                 ) : /* @__PURE__ */ jsx17(
                   "button",
@@ -5015,7 +5164,7 @@ function ContactsSection({
 }
 
 // src/components/ui/process-section.tsx
-import { useEffect as useEffect8, useRef as useRef10, useState as useState6, useCallback as useCallback3 } from "react";
+import { useEffect as useEffect9, useRef as useRef11, useState as useState6, useCallback as useCallback4 } from "react";
 import { Fragment as Fragment13, jsx as jsx50, jsxs as jsxs27 } from "react/jsx-runtime";
 function TimelineColumn({
   isActive,
@@ -5144,8 +5293,8 @@ function AcademyStepCard({
 function useStepProgress(stepCount) {
   const [activeIndex, setActiveIndex] = useState6(-1);
   const [fills, setFills] = useState6(() => Array(stepCount).fill(0));
-  const containerRef = useRef10(null);
-  const update = useCallback3(() => {
+  const containerRef = useRef11(null);
+  const update = useCallback4(() => {
     const container = containerRef.current;
     if (!container) return;
     const allStepEls = container.querySelectorAll("[data-step]");
@@ -5171,7 +5320,7 @@ function useStepProgress(stepCount) {
     setActiveIndex(newActive);
     setFills(newFills);
   }, [stepCount]);
-  useEffect8(() => {
+  useEffect9(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -5323,7 +5472,7 @@ function ProcessSection({
 }
 
 // src/components/ui/results-section.tsx
-import { useEffect as useEffect9, useRef as useRef11, useState as useState7, useCallback as useCallback4 } from "react";
+import { useEffect as useEffect10, useRef as useRef12, useState as useState7, useCallback as useCallback5 } from "react";
 import { Fragment as Fragment14, jsx as jsx51, jsxs as jsxs28 } from "react/jsx-runtime";
 var STEP_OFFSET = 88;
 var STAGGER = 0.18;
@@ -5334,8 +5483,8 @@ function useResultsScroll(cardCount) {
     arr[0] = 1;
     return arr;
   });
-  const sectionRef = useRef11(null);
-  const update = useCallback4(() => {
+  const sectionRef = useRef12(null);
+  const update = useCallback5(() => {
     const el = sectionRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -5356,7 +5505,7 @@ function useResultsScroll(cardCount) {
     }
     setProgresses(newProgresses);
   }, [cardCount]);
-  useEffect9(() => {
+  useEffect10(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -5775,7 +5924,7 @@ function ExpertsSection({
 }
 
 // src/components/ui/hero-experts.tsx
-import { useState as useState8, useRef as useRef12, useEffect as useEffect10, useCallback as useCallback5 } from "react";
+import { useState as useState8, useRef as useRef13, useEffect as useEffect11, useCallback as useCallback6 } from "react";
 import { jsx as jsx54, jsxs as jsxs31 } from "react/jsx-runtime";
 var AVATAR_SIZE = 80;
 var AVATAR_OVERLAP = 16;
@@ -5835,8 +5984,8 @@ function MultiExperts({
   quote,
   maxVisible
 }) {
-  const containerRef = useRef12(null);
-  const containerWidthRef = useRef12(0);
+  const containerRef = useRef13(null);
+  const containerWidthRef = useRef13(0);
   const [containerWidth, setContainerWidth] = useState8(0);
   const [dynamicMax, setDynamicMax] = useState8(maxVisible);
   const [activeIndex, setActiveIndex] = useState8(null);
@@ -5844,9 +5993,9 @@ function MultiExperts({
   const [tipLeft, setTipLeft] = useState8(0);
   const [tipFlipped, setTipFlipped] = useState8(false);
   const [tipContent, setTipContent] = useState8(null);
-  const pendingRef = useRef12(null);
-  const timerRef = useRef12(null);
-  useEffect10(() => {
+  const pendingRef = useRef13(null);
+  const timerRef = useRef13(null);
+  useEffect11(() => {
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver(([entry]) => {
@@ -5859,16 +6008,16 @@ function MultiExperts({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  useEffect10(() => () => {
+  useEffect11(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   }, []);
   const effectiveMax = Math.min(dynamicMax, maxVisible);
   const visible = experts.slice(0, effectiveMax);
-  const computeLeft = useCallback5(
+  const computeLeft = useCallback6(
     (i) => i * EFFECTIVE_WIDTH + AVATAR_SIZE / 2,
     []
   );
-  const computeFlipped = useCallback5(
+  const computeFlipped = useCallback6(
     (left) => left > containerWidthRef.current / 2,
     []
   );
@@ -6387,7 +6536,7 @@ function CTASectionMini({
 // src/components/ui/form-modal.tsx
 import {
   createContext,
-  useCallback as useCallback6,
+  useCallback as useCallback7,
   useContext,
   useMemo as useMemo3,
   useState as useState9
@@ -6422,7 +6571,7 @@ function ModalProvider({
     for (const f of forms) m.set(f.id, f);
     return m;
   }, [forms]);
-  const openForm = useCallback6(
+  const openForm = useCallback7(
     (formId, ctx) => {
       if (!formId || !formsById.has(formId)) {
         if (typeof window !== "undefined") {
@@ -6782,7 +6931,7 @@ function InfiniteLogoMarquee({
 }
 
 // src/components/ui/mobile-nav.tsx
-import { useState as useState10, useCallback as useCallback7, useEffect as useEffect11, useRef as useRef13 } from "react";
+import { useState as useState10, useCallback as useCallback8, useEffect as useEffect12, useRef as useRef14 } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import Link4 from "next/link";
@@ -6903,9 +7052,9 @@ function MobileNav({
   const [accordions, setAccordions] = useState10({});
   const [mounted, setMounted] = useState10(false);
   const [origin, setOrigin] = useState10(null);
-  const triggerRef = useRef13(null);
-  useEffect11(() => setMounted(true), []);
-  const open = useCallback7(() => {
+  const triggerRef = useRef14(null);
+  useEffect12(() => setMounted(true), []);
+  const open = useCallback8(() => {
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect();
       setOrigin({
@@ -6918,20 +7067,20 @@ function MobileNav({
     setAccordions({});
     setIsOpen(true);
   }, []);
-  const close = useCallback7(() => {
+  const close = useCallback8(() => {
     setIsOpen(false);
     window.scrollTo(0, 0);
   }, []);
-  const toggleAccordion = useCallback7((label) => {
+  const toggleAccordion = useCallback8((label) => {
     setAccordions((prev) => ({ ...prev, [label]: !prev[label] }));
   }, []);
-  useEffect11(() => {
+  useEffect12(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-  useEffect11(() => {
+  useEffect12(() => {
     if (!isOpen) return;
     const handler = (e) => {
       if (e.key === "Escape") close();
@@ -7188,7 +7337,7 @@ function DropdownSection({
 }
 
 // src/components/ui/wave-animation.tsx
-import { useEffect as useEffect12, useRef as useRef14 } from "react";
+import { useEffect as useEffect13, useRef as useRef15 } from "react";
 import * as THREE from "three";
 import { jsx as jsx64 } from "react/jsx-runtime";
 function WaveAnimation({
@@ -7203,8 +7352,8 @@ function WaveAnimation({
   fadeFar = 200,
   className
 }) {
-  const containerRef = useRef14(null);
-  useEffect12(() => {
+  const containerRef = useRef15(null);
+  useEffect13(() => {
     const container = containerRef.current;
     if (!container) return;
     const fixed = typeof width === "number" && typeof height === "number";
@@ -7451,7 +7600,7 @@ function SiteFooter({
 }
 
 // src/components/ui/site-header.tsx
-import { useEffect as useEffect13, useState as useState11 } from "react";
+import { useEffect as useEffect14, useState as useState11 } from "react";
 import Link7 from "next/link";
 import { usePathname } from "next/navigation";
 import { jsx as jsx66, jsxs as jsxs42 } from "react/jsx-runtime";
@@ -7464,7 +7613,7 @@ function SiteHeader({
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [isVisible, setIsVisible] = useState11(!isHome);
-  useEffect13(() => {
+  useEffect14(() => {
     if (!isHome) {
       setIsVisible(true);
       return;
@@ -7551,6 +7700,7 @@ export {
   DOT_GRID_LENS_DEFAULTS,
   Dialog,
   DialogClose,
+  X as DialogCloseIcon,
   DialogContent,
   DialogDescription,
   DialogFooter,

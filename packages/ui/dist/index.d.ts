@@ -16,6 +16,7 @@ import { ToasterProps } from 'sonner';
 import { Switch as Switch$1 } from '@base-ui/react/switch';
 import { Tabs as Tabs$1 } from '@base-ui/react/tabs';
 import { Tooltip as Tooltip$1 } from '@base-ui/react/tooltip';
+export { X as DialogCloseIcon } from 'lucide-react';
 
 declare function cn(...inputs: ClassValue[]): string;
 
@@ -87,7 +88,16 @@ declare const DialogTrigger: React$1.ForwardRefExoticComponent<DialogPrimitive.D
 declare const DialogClose: React$1.ForwardRefExoticComponent<DialogPrimitive.DialogCloseProps & React$1.RefAttributes<HTMLButtonElement>>;
 declare const DialogPortal: React$1.FC<DialogPrimitive.DialogPortalProps>;
 declare const DialogOverlay: React$1.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogOverlayProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
-declare const DialogContent: React$1.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogContentProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & React$1.RefAttributes<HTMLDivElement>>;
+declare const DialogContent: React$1.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogContentProps & React$1.RefAttributes<HTMLDivElement>, "ref"> & {
+    /**
+     * На мобильном (<lg) модалка открывается как bottom sheet с drag-handle и
+     * свайп-закрытием. На desktop — центральный модал. Отключить можно прокинув
+     * `mobileSheet={false}` (например, для медиа-просмотра, где нужна вся высота).
+     */
+    mobileSheet?: boolean;
+    /** Доп.классы для внутреннего scroll-wrapper. По умолчанию `p-6`. */
+    bodyClassName?: string;
+} & React$1.RefAttributes<HTMLDivElement>>;
 declare function DialogHeader({ className, ...props }: React$1.HTMLAttributes<HTMLDivElement>): react_jsx_runtime.JSX.Element;
 declare function DialogFooter({ className, ...props }: React$1.HTMLAttributes<HTMLDivElement>): react_jsx_runtime.JSX.Element;
 declare const DialogTitle: React$1.ForwardRefExoticComponent<Omit<DialogPrimitive.DialogTitleProps & React$1.RefAttributes<HTMLHeadingElement>, "ref"> & React$1.RefAttributes<HTMLHeadingElement>>;

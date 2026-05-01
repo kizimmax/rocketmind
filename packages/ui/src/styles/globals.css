@@ -1005,3 +1005,14 @@ code {
 @media (prefers-reduced-motion: reduce) {
   .rm-message-rise { animation: none; }
 }
+
+/* ── Mobile bottom-sheet — swipe-down close override ────────────────────
+   Когда юзер закрывает sheet drag-жестом, мы ведём transform/opacity inline
+   и должны выключить keyframe-анимацию Radix data-state=closed, иначе она
+   сыграет вторую анимацию поверх. Используется DialogContent в @rocketmind/ui. */
+.rm-sheet.rm-sheet-manual-close,
+.rm-sheet.rm-sheet-manual-close[data-state="closed"],
+.rm-dialog-overlay.rm-sheet-manual-close,
+.rm-dialog-overlay.rm-sheet-manual-close[data-state="closed"] {
+  animation: none !important;
+}

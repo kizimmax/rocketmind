@@ -133,14 +133,45 @@ export function DialogShowcase() {
         </div>
       </div>
 
+      {/* Adaptive behavior */}
+      <SpecBlock title="Адаптив: desktop ↔ mobile bottom sheet">
+        <div className="grid gap-3 md:grid-cols-2 mb-4">
+          <div className="rounded-md border border-border p-4">
+            <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground mb-2`}>Desktop (lg+)</p>
+            <ul className="space-y-1 text-[length:var(--text-14)] text-muted-foreground">
+              <li>• Центр экрана, max-w-480px, max-h-85dvh</li>
+              <li>• rounded-lg на всех углах</li>
+              <li>• Open: 500ms easeOutExpo (slide-in-from-bottom-8 + fade)</li>
+              <li>• Close: 200ms easeInQuad</li>
+              <li>• Esc / клик на overlay / X</li>
+            </ul>
+          </div>
+          <div className="rounded-md border border-border p-4">
+            <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground mb-2`}>Mobile (&lt;lg) — bottom sheet</p>
+            <ul className="space-y-1 text-[length:var(--text-14)] text-muted-foreground">
+              <li>• Прижат снизу, на всю ширину, max-h-85dvh</li>
+              <li>• rounded-t-lg + drag-handle сверху (h-1 w-10)</li>
+              <li>• Open: 260ms cubic-bezier(0.32, 0.72, 0, 1)</li>
+              <li>• Drag-down ≥ 120px → закрытие; меньше — return</li>
+              <li>• visualViewport: при фокусе input sheet поднимается на верх с отступом 16px, внутри активируется скролл</li>
+            </ul>
+          </div>
+        </div>
+        <p className="text-[length:var(--text-14)] text-muted-foreground">
+          Поведение зашито в <code className={mono}>DialogContent</code> в <code className={mono}>@rocketmind/ui</code>. Опционально: <code className={mono}>mobileSheet=&#123;false&#125;</code> отключает sheet (только center-modal на всех экранах), <code className={mono}>bodyClassName=&quot;p-0&quot;</code> — отключает дефолтный padding scroll-обёртки (для media-viewer&apos;ов).
+        </p>
+      </SpecBlock>
+
       {/* Instructions */}
       <SpecBlock title="Правила">
         <div className="grid gap-3 md:grid-cols-2">
           {[
             "Dialog используется для подтверждения критичных действий (удаление, завершение) или показа информации, требующей фокуса. Оверлей — rm-gray-alpha-600.",
-            "Максимальная ширина панели — 480px. Скругление — rounded-lg, фон — bg-card, бордер — border-border. Padding — 24px (p-6).",
+            "Desktop: max-w-480px, rounded-lg, bg-card, border-border, padding 24px (p-6). Mobile: full-width bottom sheet, rounded-t-lg, drag-handle сверху.",
             "Заголовок — font-heading, uppercase, text-18. Описание — text-14, text-muted-foreground. Footer выровнен вправо с gap-3.",
             "Для деструктивных действий кнопка подтверждения использует bg-destructive. Кнопка отмены всегда Ghost-стиль.",
+            "На mobile drag-handle обязателен — визуальный сигнал «можно потянуть вниз чтобы закрыть».",
+            "Когда внутри sheet есть инпуты — sheet автоматически поднимается над клавиатурой через visualViewport, внутри включается скролл. Не задавать фикс. высоту контенту.",
           ].map((rule) => (
             <p key={rule} className="text-[length:var(--text-14)] text-muted-foreground">
               {rule}

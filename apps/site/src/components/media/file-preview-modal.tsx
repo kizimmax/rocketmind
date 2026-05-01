@@ -44,12 +44,14 @@ export function FilePreviewModal({ file, onClose }: Props) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent
-        // Широкое окно для PDF, рамки как в темной теме Rocketmind
-        className="max-w-[min(1100px,95vw)] gap-0 border-[#404040] bg-[#0A0A0A] p-0 text-[color:var(--rm-gray-fg-main)] [&>button]:hidden"
+        // Широкое окно для PDF, рамки как в темной теме Rocketmind.
+        // bodyClassName=p-0 — отключаем дефолтный padding обёртки, чтобы PDF/изображение шло edge-to-edge.
+        className="lg:max-w-[min(1100px,95vw)] border-[#404040] bg-[#0A0A0A] text-[color:var(--rm-gray-fg-main)] [&>button]:hidden"
+        bodyClassName="p-0"
       >
         <DialogTitle className="sr-only">{title || "Предпросмотр файла"}</DialogTitle>
 
-        <header className="flex items-center justify-between gap-3 border-b border-[#404040] px-5 py-3">
+        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-[#404040] bg-[#0A0A0A] px-5 py-3">
           <h2 className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.02em]">
             {title || "Файл"}
           </h2>

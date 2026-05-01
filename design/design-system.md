@@ -2902,53 +2902,75 @@ Overlay (scrim)
 | Description | `--text-14`, `--muted-foreground` |
 | Z-index | `50` |
 
+#### Адаптив (desktop / mobile)
+
+`Dialog` — единый компонент с двумя режимами; брейкпойнт `lg` (1024px):
+
+| Параметр | Desktop (`lg+`) | Mobile (`<lg`) — bottom sheet |
+|----------|-----------------|--------------------------------|
+| Позиция | Центр экрана | Прижат к нижнему краю, на всю ширину |
+| Размер | `max-w-[480px]`, `max-h-[85dvh]` | `w-full`, `max-h-[85dvh]` (или динамически — см. ниже) |
+| Радиус | `rounded-lg` (все углы) | `rounded-t-lg` (только верхние) |
+| Верхний край | — | Drag-handle: `h-1 w-10 rounded-full bg-foreground/50` |
+| Жест закрытия | Esc / клик по overlay / `X` | + drag-down ≥120px по handle |
+| Скролл контента | Внутренний `overflow-y-auto` | Внутренний `overflow-y-auto` |
+
 #### Анимации
 
-Используются правила из секции 8.5:
+| Состояние | Desktop | Mobile sheet |
+|-----------|---------|--------------|
+| Open | `fade-in 0` + `slide-in-from-bottom-8`, **500ms**, `cubic-bezier(0.16, 1, 0.3, 1)` (easeOutExpo) | `slide-in-from-bottom-full`, **260ms**, `cubic-bezier(0.32, 0.72, 0, 1)` |
+| Close | `fade-out` + `slide-out-to-bottom-4`, **200ms**, `cubic-bezier(0.55, 0.085, 0.68, 0.53)` (easeInQuad) | `slide-out-to-bottom-full`, **200ms**, ease-in |
+| Overlay open | `fade-in`, 300ms | то же |
+| Overlay close | `fade-out`, 200ms | то же |
+| Drag-close (mobile) | — | inline `transform: translateY` + `opacity`, отключает keyframe через класс `.rm-sheet-manual-close` |
 
-```css
-/* Overlay */
-.dialog-overlay {
-  animation: fade-in var(--duration-smooth) var(--ease-enter);
-}
+Внутри форм-модалки контент въезжает stagger-анимацией `formStaggerIn` (см. `packages/ui/src/styles/globals.css`): задержка 180ms (когда модалка почти на месте), шаг 70ms — header → поля сверху-вниз → consent → submit.
 
-/* Panel — desktop: center, mobile: bottom sheet */
-.dialog-content {
-  animation: slide-in-bottom var(--duration-enter) var(--ease-enter);
-}
-```
+#### Поведение при открытой клавиатуре (mobile)
 
-#### Tailwind / структура
+При фокусе на input внутри sheet используется `window.visualViewport`:
+
+- `--rm-sheet-h` = `vv.height − 16px` — sheet ограничивается высотой видимой области с отступом `16px` сверху от viewport.
+- `transform: translateY(−keyboardOffset)` — поднимаем sheet так, чтобы он сидел над клавиатурой.
+- Внутренний скролл (`overflow-y-auto`) активируется автоматически — пользователь может проскроллить к нужному полю и кнопке submit.
+- При закрытии клавиатуры стили снимаются и sheet возвращается к `max-h-[85dvh]`.
+
+Это поведение зашито в `DialogContent` в `@rocketmind/ui` — отдельной настройки не требуется.
+
+#### API компонента
 
 ```tsx
-// Overlay
-className="
-  fixed inset-0 z-50
-  bg-[var(--rm-gray-alpha-600)]
-"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@rocketmind/ui";
 
-// Panel
-className="
-  fixed left-1/2 top-1/2 z-50
-  -translate-x-1/2 -translate-y-1/2
-  w-full max-w-[480px]
-  rounded-lg border border-border bg-card
-  p-6
-"
-
-// Footer
-className="
-  flex justify-end gap-3 pt-4
-"
+<Dialog open={open} onOpenChange={setOpen}>
+  <DialogContent
+    className="lg:max-w-[560px]"     // override desktop ширины
+    bodyClassName="p-0"              // override padding контентного wrapper'а
+    mobileSheet={true}               // default — sheet на mobile, center на desktop
+  >
+    <DialogHeader>
+      <DialogTitle>…</DialogTitle>
+      <DialogDescription>…</DialogDescription>
+    </DialogHeader>
+    {/* контент */}
+    <DialogFooter>…</DialogFooter>
+  </DialogContent>
+</Dialog>
 ```
+
+`mobileSheet={false}` — отключает sheet-поведение полностью (только central-modal на всех брейкпойнтах). Используется редко — например, для full-bleed media-viewer'ов, где sheet не подходит.
 
 #### Правила использования
 
 - Деструктивное действие всегда требует Dialog с явным текстом последствий.
 - Cancel — всегда `ghost`, Confirm — `default` или `destructive` в зависимости от контекста.
-- Закрытие по Escape и клику на overlay — обязательно для `default`, запрещено для `alert`.
+- Закрытие по Escape, клику на overlay и (на mobile) drag-down — обязательно для `default`, запрещено для `alert`.
 - Focus trap внутри модала — обязателен для доступности.
 - Не вкладывать Dialog в Dialog. Если нужна вложенность — пересмотреть UX.
+- На mobile **всегда** должен быть drag-handle (`h-1 w-10 rounded-full bg-foreground/50`) — он визуальный сигнал «эту панель можно потянуть».
+- Внутри sheet поля формы должны быть в `flex flex-col` без фикс. высоты — sheet рассчитан на скролл при появлении клавиатуры.
+- Для длинного контента (PDF, длинный список) использовать `bodyClassName="p-0"` и собственный sticky-header внутри.
 
 ---
 
@@ -3760,21 +3782,39 @@ Motion в Rocketmind — функциональный, не декоративн
 
 #### Модальное окно / Sheet
 
+Полная спецификация поведения, размеров и API — в §6.3.2 Dialog / Modal.
+
+Анимации (CSS-снимок реализации в `@rocketmind/ui` — Radix `data-state` + `tw-animate-css`):
+
 ```css
 /* Overlay */
-.overlay {
-  animation: fade-in var(--duration-smooth) var(--ease-enter);
-}
-/* Panel (bottom sheet на mobile, center modal на desktop) */
-.dialog-content {
-  animation: slide-in-bottom var(--duration-enter) var(--ease-enter);
+.rm-dialog-overlay[data-state="open"]  { animation: fade-in 300ms ease-out; }
+.rm-dialog-overlay[data-state="closed"] { animation: fade-out 200ms ease-in; }
+
+/* Desktop center modal (lg+) */
+@media (min-width: 1024px) {
+  .rm-dialog[data-state="open"] {
+    animation: fade-in 500ms cubic-bezier(0.16, 1, 0.3, 1),
+               slide-in-from-bottom-8 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .rm-dialog[data-state="closed"] {
+    animation: fade-out 200ms cubic-bezier(0.55, 0.085, 0.68, 0.53),
+               slide-out-to-bottom-4 200ms cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  }
 }
 
-@keyframes slide-in-bottom {
-  from { opacity: 0; transform: translateY(16px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+/* Mobile bottom sheet (<lg) */
+@media (max-width: 1023px) {
+  .rm-sheet[data-state="open"]  { animation: slide-in-from-bottom-full 260ms cubic-bezier(0.32, 0.72, 0, 1); }
+  .rm-sheet[data-state="closed"] { animation: slide-out-to-bottom-full 200ms ease-in; }
 }
+
+/* Drag-close override (sheet) — keyframe выключается, движение ведут inline transform/opacity */
+.rm-sheet.rm-sheet-manual-close,
+.rm-dialog-overlay.rm-sheet-manual-close { animation: none !important; }
 ```
+
+Stagger контента внутри формы: keyframe `formStaggerIn` (см. `packages/ui/src/styles/globals.css`) — задержка 180ms, шаг 70ms, easing `cubic-bezier(0.16, 1, 0.3, 1)`.
 
 #### Toast / Notification
 

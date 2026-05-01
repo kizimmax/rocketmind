@@ -206,6 +206,7 @@ __export(index_exports, {
   DOT_GRID_LENS_DEFAULTS: () => DOT_GRID_LENS_DEFAULTS,
   Dialog: () => Dialog,
   DialogClose: () => DialogClose,
+  DialogCloseIcon: () => import_lucide_react2.X,
   DialogContent: () => DialogContent,
   DialogDescription: () => DialogDescription,
   DialogFooter: () => DialogFooter,
@@ -770,6 +771,7 @@ function DotGridLens({
 // src/components/ui/dialog.tsx
 var React3 = __toESM(require("react"), 1);
 var DialogPrimitive = __toESM(require("@radix-ui/react-dialog"), 1);
+var import_lucide_react2 = require("lucide-react");
 init_utils();
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var Dialog = DialogPrimitive.Root;
@@ -782,7 +784,7 @@ var DialogOverlay = React3.forwardRef(({ className, ...props }, ref) => /* @__PU
     ref,
     "data-slot": "dialog-overlay",
     className: cn(
-      "fixed inset-0 z-50 bg-border/80 backdrop-blur-sm",
+      "rm-dialog-overlay fixed inset-0 z-50 bg-border/80 backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:duration-300",
       "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:duration-200",
       className
@@ -791,29 +793,177 @@ var DialogOverlay = React3.forwardRef(({ className, ...props }, ref) => /* @__PU
   }
 ));
 DialogOverlay.displayName = "DialogOverlay";
-var DialogContent = React3.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(DialogPortal, { children: [
-  /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogOverlay, {}),
-  /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-    DialogPrimitive.Content,
-    {
-      ref,
-      "data-slot": "dialog-content",
-      className: cn(
-        "fixed left-1/2 top-1/2 z-50 w-full max-w-[480px] -translate-x-1/2 -translate-y-1/2",
-        "rounded-lg border border-border bg-card p-6",
-        // Open: подъезжает снизу + opacity fade. Easing — easeOutExpo для мягкого
-        // «прибытия» без жёсткого стопа. 500ms — заметно, но не затянуто.
-        "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-8 data-[state=open]:duration-500 data-[state=open]:[animation-timing-function:cubic-bezier(0.16,1,0.3,1)]",
-        // Close: уезжает обратно вниз быстрее (200ms, easeInQuad) — пользователь
-        // уже принял решение, нечего томить.
-        "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=closed]:duration-200 data-[state=closed]:[animation-timing-function:cubic-bezier(0.55,0.085,0.68,0.53)]",
-        className
-      ),
-      ...props,
-      children
+var DialogContent = React3.forwardRef(({ className, children, mobileSheet = true, bodyClassName, ...props }, ref) => {
+  const innerRef = React3.useRef(null);
+  const overlayRef = React3.useRef(null);
+  const setRefs = React3.useCallback(
+    (node) => {
+      innerRef.current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) ref.current = node;
+    },
+    [ref]
+  );
+  React3.useEffect(() => {
+    if (!mobileSheet) return;
+    if (typeof window === "undefined") return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const TOP_GAP = 16;
+    const apply = () => {
+      const el = innerRef.current;
+      if (!el) return;
+      const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+      if (!isMobile) {
+        el.style.removeProperty("--rm-sheet-h");
+        el.style.removeProperty("--rm-sheet-translate");
+        return;
+      }
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      if (kb > 80) {
+        el.style.setProperty("--rm-sheet-h", `${vv.height - TOP_GAP}px`);
+        el.style.setProperty("--rm-sheet-translate", `-${window.innerHeight - vv.height - vv.offsetTop}px`);
+      } else {
+        el.style.removeProperty("--rm-sheet-h");
+        el.style.removeProperty("--rm-sheet-translate");
+      }
+    };
+    apply();
+    vv.addEventListener("resize", apply);
+    vv.addEventListener("scroll", apply);
+    return () => {
+      vv.removeEventListener("resize", apply);
+      vv.removeEventListener("scroll", apply);
+    };
+  }, [mobileSheet]);
+  const drag = React3.useRef({ startY: 0, dy: 0, active: false, pointerId: 0 });
+  function onHandleDown(e) {
+    if (!mobileSheet) return;
+    drag.current = { startY: e.clientY, dy: 0, active: true, pointerId: e.pointerId };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    if (innerRef.current) innerRef.current.style.transition = "none";
+    if (overlayRef.current) overlayRef.current.style.transition = "none";
+  }
+  function onHandleMove(e) {
+    if (!drag.current.active) return;
+    const dy = Math.max(0, e.clientY - drag.current.startY);
+    drag.current.dy = dy;
+    const el = innerRef.current;
+    if (el) {
+      el.style.transform = `translateY(${dy}px)`;
+      const progress = Math.min(1, dy / Math.max(1, el.offsetHeight));
+      if (overlayRef.current) overlayRef.current.style.opacity = String(1 - progress);
     }
-  )
-] }));
+  }
+  function onHandleEnd(e) {
+    if (!drag.current.active) return;
+    drag.current.active = false;
+    try {
+      ;
+      e.currentTarget.releasePointerCapture(drag.current.pointerId);
+    } catch {
+    }
+    const { dy } = drag.current;
+    const el = innerRef.current;
+    if (!el) return;
+    if (dy > 120) {
+      el.classList.add("rm-sheet-manual-close");
+      el.style.transition = "transform 220ms cubic-bezier(0.32, 0.72, 0, 1)";
+      el.style.transform = "translateY(100%)";
+      if (overlayRef.current) {
+        overlayRef.current.classList.add("rm-sheet-manual-close");
+        overlayRef.current.style.transition = "opacity 220ms cubic-bezier(0.32, 0.72, 0, 1)";
+        overlayRef.current.style.opacity = "0";
+      }
+      const close = () => {
+        el.removeEventListener("transitionend", close);
+        const closeBtn = el.querySelector("[data-radix-dialog-close]");
+        if (closeBtn) closeBtn.click();
+        else props.onOpenChange?.(false);
+      };
+      el.addEventListener("transitionend", close);
+    } else {
+      el.style.transition = "transform 200ms ease-out";
+      el.style.transform = "";
+      if (overlayRef.current) {
+        overlayRef.current.style.transition = "opacity 200ms ease-out";
+        overlayRef.current.style.opacity = "";
+      }
+    }
+  }
+  const dataState = props["data-state"];
+  React3.useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    el.classList.remove("rm-sheet-manual-close");
+    el.style.transition = "";
+    el.style.transform = "";
+    if (overlayRef.current) {
+      overlayRef.current.classList.remove("rm-sheet-manual-close");
+      overlayRef.current.style.transition = "";
+      overlayRef.current.style.opacity = "";
+    }
+  }, [dataState]);
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(DialogPortal, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(DialogOverlay, { ref: overlayRef }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+      DialogPrimitive.Content,
+      {
+        ref: setRefs,
+        "data-slot": "dialog-content",
+        "data-mobile-sheet": mobileSheet ? "true" : "false",
+        className: cn(
+          "rm-dialog fixed z-50 border border-border bg-card",
+          mobileSheet ? [
+            // Mobile sheet base — без padding на самой панели; padding в body-wrapper
+            "rm-sheet max-lg:inset-x-0 max-lg:bottom-0 max-lg:flex max-lg:flex-col",
+            "max-lg:rounded-t-lg max-lg:border-t",
+            "max-lg:max-h-[var(--rm-sheet-h,85dvh)] max-lg:overflow-hidden",
+            "max-lg:data-[state=open]:animate-in max-lg:data-[state=open]:slide-in-from-bottom-full max-lg:data-[state=open]:duration-[260ms] max-lg:data-[state=open]:[animation-timing-function:cubic-bezier(0.32,0.72,0,1)]",
+            "max-lg:data-[state=closed]:animate-out max-lg:data-[state=closed]:slide-out-to-bottom-full max-lg:data-[state=closed]:duration-200",
+            // Desktop center modal
+            "lg:left-1/2 lg:top-1/2 lg:bottom-auto lg:right-auto lg:w-full lg:max-w-[480px] lg:-translate-x-1/2 lg:-translate-y-1/2",
+            "lg:rounded-lg lg:flex lg:flex-col lg:max-h-[85dvh] lg:overflow-hidden",
+            "lg:data-[state=open]:animate-in lg:data-[state=open]:fade-in-0 lg:data-[state=open]:slide-in-from-bottom-8 lg:data-[state=open]:duration-500 lg:data-[state=open]:[animation-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+            "lg:data-[state=closed]:animate-out lg:data-[state=closed]:fade-out-0 lg:data-[state=closed]:slide-out-to-bottom-4 lg:data-[state=closed]:duration-200 lg:data-[state=closed]:[animation-timing-function:cubic-bezier(0.55,0.085,0.68,0.53)]"
+          ] : [
+            // Always center modal
+            "left-1/2 top-1/2 w-[calc(100vw-32px)] max-w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-lg p-6",
+            "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-8 data-[state=open]:duration-500 data-[state=open]:[animation-timing-function:cubic-bezier(0.16,1,0.3,1)]",
+            "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-4 data-[state=closed]:duration-200 data-[state=closed]:[animation-timing-function:cubic-bezier(0.55,0.085,0.68,0.53)]"
+          ],
+          className
+        ),
+        ...props,
+        children: [
+          mobileSheet && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "div",
+            {
+              onPointerDown: onHandleDown,
+              onPointerMove: onHandleMove,
+              onPointerUp: onHandleEnd,
+              onPointerCancel: onHandleEnd,
+              className: "hidden max-lg:flex h-7 shrink-0 cursor-grab items-center justify-center touch-none",
+              "aria-hidden": true,
+              children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "h-1 w-10 rounded-full bg-foreground/50" })
+            }
+          ),
+          mobileSheet ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "div",
+            {
+              className: cn(
+                "flex-1 overflow-y-auto overscroll-contain",
+                "p-6 max-lg:pt-0",
+                bodyClassName
+              ),
+              children
+            }
+          ) : children
+        ]
+      }
+    )
+  ] });
+});
 DialogContent.displayName = "DialogContent";
 function DialogHeader({ className, ...props }) {
   return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
@@ -1220,7 +1370,7 @@ InputOTP.displayName = "InputOTP";
 
 // src/components/ui/navigation-menu.tsx
 var React7 = __toESM(require("react"), 1);
-var import_lucide_react2 = require("lucide-react");
+var import_lucide_react3 = require("lucide-react");
 var NavigationMenuPrimitive = __toESM(require("@radix-ui/react-navigation-menu"), 1);
 init_utils();
 var import_jsx_runtime13 = require("react/jsx-runtime");
@@ -1263,7 +1413,7 @@ var NavigationMenuTrigger = React7.forwardRef(({ className, children, ...props }
     children: [
       children,
       /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
-        import_lucide_react2.ChevronDown,
+        import_lucide_react3.ChevronDown,
         {
           className: "relative size-3 transition-transform duration-200 group-data-[state=open]:rotate-180",
           strokeWidth: 1.5,
@@ -1514,7 +1664,7 @@ ScrollBar.displayName = "ScrollBar";
 
 // src/components/ui/search-combobox.tsx
 var import_react4 = require("react");
-var import_lucide_react3 = require("lucide-react");
+var import_lucide_react4 = require("lucide-react");
 init_utils();
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var sizeStyles = {
@@ -1571,14 +1721,14 @@ function SearchCombobox({
       groups.push({
         id: "recent",
         title: "\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u0438\u0441\u043A\u0430",
-        icon: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react3.Clock3, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react4.Clock3, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
         items: recentSearches
       });
     } else {
       groups.push({
         id: "recent-empty",
         title: "\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u0438\u0441\u043A\u0430",
-        icon: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react3.Clock3, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react4.Clock3, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
         items: [],
         emptyText: "\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u043F\u043E\u043A\u0430 \u043F\u0443\u0441\u0442\u0430. \u041D\u0430\u0447\u043D\u0438\u0442\u0435 \u0441 \u043E\u0434\u043D\u043E\u0433\u043E \u0438\u0437 \u0433\u043E\u0442\u043E\u0432\u044B\u0445 \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u0435\u0432 \u043D\u0438\u0436\u0435."
       });
@@ -1587,7 +1737,7 @@ function SearchCombobox({
       groups.push({
         id: "preset",
         title: recentSearches.length > 0 ? "\u0411\u044B\u0441\u0442\u0440\u044B\u0435 \u043F\u043E\u0434\u0441\u043A\u0430\u0437\u043A\u0438" : "\u041F\u043E\u043F\u0443\u043B\u044F\u0440\u043D\u044B\u0435 \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u0438",
-        icon: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react3.Sparkles, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
+        icon: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react4.Sparkles, { className: `${iconSizes[size]} text-muted-foreground`, strokeWidth: 2.2 }),
         items: predefinedSuggestions
       });
     }
@@ -1624,7 +1774,7 @@ function SearchCombobox({
               "aria-haspopup": "listbox",
               "aria-controls": "rm-search-combobox-list",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react3.Search, { className: `${iconSizes[size]} shrink-0 text-muted-foreground`, strokeWidth: 2.2 }),
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react4.Search, { className: `${iconSizes[size]} shrink-0 text-muted-foreground`, strokeWidth: 2.2 }),
                 /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
                   "input",
                   {
@@ -1683,7 +1833,7 @@ function SearchCombobox({
                       setHighlighted(0);
                     },
                     type: "button",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react3.X, { className: iconSizes[size], strokeWidth: 2.2 })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react4.X, { className: iconSizes[size], strokeWidth: 2.2 })
                   }
                 ) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
                   "button",
@@ -1698,7 +1848,7 @@ function SearchCombobox({
                       }
                     },
                     type: "button",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react3.ChevronDown, { className: iconSizes[size], strokeWidth: 2.2 })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react4.ChevronDown, { className: iconSizes[size], strokeWidth: 2.2 })
                   }
                 )
               ]
@@ -1781,7 +1931,7 @@ function Separator2({
 }
 
 // src/components/ui/show-more.tsx
-var import_lucide_react4 = require("lucide-react");
+var import_lucide_react5 = require("lucide-react");
 init_utils();
 var import_jsx_runtime19 = require("react/jsx-runtime");
 function ShowMore({
@@ -1810,7 +1960,7 @@ function ShowMore({
         /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "inline-flex shrink-0 items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-[0.08em] transition-all duration-[var(--duration-fast)] group-hover/show-more:border-muted-foreground/40 group-hover/show-more:bg-[var(--rm-gray-1)]", children: [
           expanded ? labelExpanded : label,
           /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
-            import_lucide_react4.ChevronDown,
+            import_lucide_react5.ChevronDown,
             {
               size: 12,
               strokeWidth: 2.5,
@@ -1908,7 +2058,7 @@ function Skeleton({ className, ...props }) {
 // src/components/ui/sonner.tsx
 var import_next_themes2 = require("next-themes");
 var import_sonner = require("sonner");
-var import_lucide_react5 = require("lucide-react");
+var import_lucide_react6 = require("lucide-react");
 var import_jsx_runtime21 = require("react/jsx-runtime");
 var Toaster = ({ ...props }) => {
   const { theme = "system" } = (0, import_next_themes2.useTheme)();
@@ -1918,11 +2068,11 @@ var Toaster = ({ ...props }) => {
       theme,
       className: "toaster group",
       icons: {
-        success: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react5.CircleCheckIcon, { className: "size-4" }),
-        info: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react5.InfoIcon, { className: "size-4" }),
-        warning: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react5.TriangleAlertIcon, { className: "size-4" }),
-        error: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react5.OctagonXIcon, { className: "size-4" }),
-        loading: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react5.Loader2Icon, { className: "size-4 animate-spin" })
+        success: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react6.CircleCheckIcon, { className: "size-4" }),
+        info: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react6.InfoIcon, { className: "size-4" }),
+        warning: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react6.TriangleAlertIcon, { className: "size-4" }),
+        error: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react6.OctagonXIcon, { className: "size-4" }),
+        loading: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react6.Loader2Icon, { className: "size-4 animate-spin" })
       },
       style: {
         "--normal-bg": "var(--popover)",
@@ -2818,7 +2968,7 @@ function Tag(props) {
 }
 
 // src/components/ui/author.tsx
-var import_lucide_react6 = require("lucide-react");
+var import_lucide_react7 = require("lucide-react");
 init_utils();
 var import_jsx_runtime35 = require("react/jsx-runtime");
 var dateFormatter = new Intl.DateTimeFormat("ru-RU", {
@@ -2859,7 +3009,7 @@ function Author({
           formatted && /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(import_jsx_runtime35.Fragment, { children: [
             /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "mx-1 h-3 w-px shrink-0 bg-[color:var(--rm-gray-3)]", "aria-hidden": true }),
             /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("span", { className: "inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[color:var(--rm-gray-fg-sub)] leading-[1.32] tracking-[0.01em]", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(import_lucide_react6.Calendar, { className: "h-4 w-4", strokeWidth: 1.5, "aria-hidden": true }),
+              /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(import_lucide_react7.Calendar, { className: "h-4 w-4", strokeWidth: 1.5, "aria-hidden": true }),
               formatted
             ] })
           ] })
@@ -2880,7 +3030,7 @@ function Author({
         /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "flex flex-col justify-center gap-1 min-w-0 flex-1", children: [
           /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("span", { className: "font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] truncate", children: name }),
           formatted && /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("span", { className: "inline-flex items-center gap-1 text-[length:var(--text-14)] leading-[1.32] tracking-[0.01em] text-[color:var(--rm-gray-fg-sub)]", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(import_lucide_react6.Calendar, { className: "h-4 w-4", strokeWidth: 1.5, "aria-hidden": true }),
+            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(import_lucide_react7.Calendar, { className: "h-4 w-4", strokeWidth: 1.5, "aria-hidden": true }),
             formatted
           ] })
         ] })
@@ -3202,7 +3352,7 @@ function WideLayout({
 
 // src/components/ui/glossary.tsx
 var React14 = __toESM(require("react"), 1);
-var import_lucide_react7 = require("lucide-react");
+var import_lucide_react8 = require("lucide-react");
 init_utils();
 var import_jsx_runtime39 = require("react/jsx-runtime");
 function getGlossaryTermScript(title) {
@@ -3273,7 +3423,7 @@ function GlossaryWidget({
     ),
     /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("label", { className: "flex items-center gap-2 rounded-sm border border-[color:var(--rm-gray-3)] bg-transparent px-3 py-2 focus-within:border-[color:var(--rm-yellow-100)]", children: [
       /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
-        import_lucide_react7.Search,
+        import_lucide_react8.Search,
         {
           className: "h-4 w-4 shrink-0 text-[color:var(--rm-gray-fg-sub)]",
           strokeWidth: 1.5,
@@ -3419,7 +3569,7 @@ init_utils();
 
 // src/components/ui/video-player.tsx
 var React15 = __toESM(require("react"), 1);
-var import_lucide_react8 = require("lucide-react");
+var import_lucide_react9 = require("lucide-react");
 init_utils();
 var import_jsx_runtime40 = require("react/jsx-runtime");
 function formatTime(seconds) {
@@ -3793,10 +3943,10 @@ function VideoPlayer({
               "transition-transform duration-[var(--duration-fast)] ease-[var(--ease-standard)]",
               "hover:scale-[1.06] active:scale-[0.98]"
             ),
-            children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react8.Play, { className: "h-6 w-6 translate-x-[1px]", fill: "currentColor" })
+            children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react9.Play, { className: "h-6 w-6 translate-x-[1px]", fill: "currentColor" })
           }
         ),
-        isBuffering && !hasError && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react8.Loader2, { className: "h-10 w-10 animate-spin text-[#F0F0F0]/90" }) }),
+        isBuffering && !hasError && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react9.Loader2, { className: "h-10 w-10 animate-spin text-[#F0F0F0]/90" }) }),
         hasError && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("div", { className: "absolute inset-0 flex items-center justify-center bg-black/60 px-6 text-center", children: /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("p", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[#F0F0F0]", children: "\u0412\u0438\u0434\u0435\u043E \u043D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(
           "div",
@@ -3859,7 +4009,7 @@ function VideoPlayer({
                 }
               ),
               /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "pointer-events-auto flex items-center gap-2 md:gap-3", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(ControlButton, { onClick: togglePlay, label: isPlaying ? "\u041F\u0430\u0443\u0437\u0430" : "\u0412\u043E\u0441\u043F\u0440\u043E\u0438\u0437\u0432\u0435\u0441\u0442\u0438", children: isPlaying ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react8.Pause, { className: "h-4 w-4 md:h-5 md:w-5", fill: "currentColor" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react8.Play, { className: "h-4 w-4 translate-x-[1px] md:h-5 md:w-5", fill: "currentColor" }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(ControlButton, { onClick: togglePlay, label: isPlaying ? "\u041F\u0430\u0443\u0437\u0430" : "\u0412\u043E\u0441\u043F\u0440\u043E\u0438\u0437\u0432\u0435\u0441\u0442\u0438", children: isPlaying ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react9.Pause, { className: "h-4 w-4 md:h-5 md:w-5", fill: "currentColor" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react9.Play, { className: "h-4 w-4 translate-x-[1px] md:h-5 md:w-5", fill: "currentColor" }) }),
                 /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-[0.02em] text-[#F0F0F0] md:text-[length:var(--text-12)]", children: [
                   formatTime(currentTime),
                   /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "mx-1 text-[#F0F0F0]/50", children: "/" }),
@@ -3867,7 +4017,7 @@ function VideoPlayer({
                 ] }),
                 /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "ml-auto flex items-center gap-2 md:gap-3", children: [
                   /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)("div", { className: "flex items-center gap-1", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(ControlButton, { onClick: toggleMute, label: isMuted ? "\u0412\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0437\u0432\u0443\u043A" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0437\u0432\u0443\u043A", children: isMuted || volume === 0 ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react8.VolumeX, { className: "h-4 w-4 md:h-5 md:w-5" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react8.Volume2, { className: "h-4 w-4 md:h-5 md:w-5" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(ControlButton, { onClick: toggleMute, label: isMuted ? "\u0412\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0437\u0432\u0443\u043A" : "\u0412\u044B\u043A\u043B\u044E\u0447\u0438\u0442\u044C \u0437\u0432\u0443\u043A", children: isMuted || volume === 0 ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react9.VolumeX, { className: "h-4 w-4 md:h-5 md:w-5" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react9.Volume2, { className: "h-4 w-4 md:h-5 md:w-5" }) }),
                     /* @__PURE__ */ (0, import_jsx_runtime40.jsxs)(
                       "div",
                       {
@@ -3906,7 +4056,7 @@ function VideoPlayer({
                     {
                       onClick: toggleFullscreen,
                       label: isFullscreen ? "\u0421\u0432\u0435\u0440\u043D\u0443\u0442\u044C" : "\u041D\u0430 \u0432\u0435\u0441\u044C \u044D\u043A\u0440\u0430\u043D",
-                      children: isFullscreen ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react8.Minimize, { className: "h-4 w-4 md:h-5 md:w-5" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react8.Maximize, { className: "h-4 w-4 md:h-5 md:w-5" })
+                      children: isFullscreen ? /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react9.Minimize, { className: "h-4 w-4 md:h-5 md:w-5" }) : /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(import_lucide_react9.Maximize, { className: "h-4 w-4 md:h-5 md:w-5" })
                     }
                   )
                 ] })
@@ -4820,7 +4970,7 @@ function ExpertQuoteStack({
 
 // src/components/ui/section-aside-chip.tsx
 var React18 = __toESM(require("react"), 1);
-var import_lucide_react9 = require("lucide-react");
+var import_lucide_react10 = require("lucide-react");
 init_utils();
 var import_jsx_runtime43 = require("react/jsx-runtime");
 var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
@@ -4861,7 +5011,7 @@ var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("span", { className: "line-clamp-1 font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] text-[length:var(--text-14)] leading-[1.2] transition-colors group-hover/chip:text-[color:var(--rm-yellow-100)]", children: title }),
               /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
-                import_lucide_react9.ArrowUpRight,
+                import_lucide_react10.ArrowUpRight,
                 {
                   "aria-hidden": true,
                   className: "h-4 w-4 shrink-0 text-[color:var(--rm-yellow-100)] transition-transform group-hover/chip:translate-x-0.5 group-hover/chip:-translate-y-0.5"
@@ -4887,7 +5037,7 @@ var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
 
 // src/components/ui/section-aside-product-card.tsx
 var React19 = __toESM(require("react"), 1);
-var import_lucide_react10 = require("lucide-react");
+var import_lucide_react11 = require("lucide-react");
 init_utils();
 var import_jsx_runtime44 = require("react/jsx-runtime");
 var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCard2({
@@ -4916,7 +5066,7 @@ var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCar
       ...rest,
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
-          import_lucide_react10.ArrowUpRight,
+          import_lucide_react11.ArrowUpRight,
           {
             "aria-hidden": true,
             className: "absolute right-3 top-3 z-10 h-4 w-4 text-[color:var(--rm-yellow-100)] transition-transform group-hover/product:translate-x-0.5 group-hover/product:-translate-y-0.5"
@@ -6754,7 +6904,7 @@ function CTASectionMini({
 
 // src/components/ui/form-modal.tsx
 var import_react9 = require("react");
-var import_lucide_react11 = require("lucide-react");
+var import_lucide_react12 = require("lucide-react");
 init_utils();
 var import_jsx_runtime60 = require("react/jsx-runtime");
 var ModalContext = (0, import_react9.createContext)(null);
@@ -6840,7 +6990,7 @@ function FormModalBody({
     const gift = form.successGift;
     const hasGift = gift && gift.url.trim();
     return /* @__PURE__ */ (0, import_jsx_runtime60.jsxs)("div", { className: "flex flex-col items-center gap-7 py-8 text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime60.jsx)("div", { className: "flex h-14 w-14 items-center justify-center rounded-full border border-border", children: /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(import_lucide_react11.Check, { className: "h-6 w-6 text-foreground", strokeWidth: 2 }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime60.jsx)("div", { className: "flex h-14 w-14 items-center justify-center rounded-full border border-border", children: /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(import_lucide_react12.Check, { className: "h-6 w-6 text-foreground", strokeWidth: 2 }) }),
       /* @__PURE__ */ (0, import_jsx_runtime60.jsx)("p", { className: "h2 text-foreground", children: form.successMessage || "\u0417\u0430\u044F\u0432\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0430. \u041C\u044B \u0441\u0432\u044F\u0436\u0435\u043C\u0441\u044F \u0441 \u0432\u0430\u043C\u0438 \u0432 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0435 \u0432\u0440\u0435\u043C\u044F." }),
       hasGift && /* @__PURE__ */ (0, import_jsx_runtime60.jsxs)(
         "a",
@@ -6851,7 +7001,7 @@ function FormModalBody({
           rel: gift.kind === "link" ? "noopener noreferrer" : void 0,
           className: "flex w-full items-center justify-center gap-3 rounded-sm border border-border bg-foreground px-6 py-4 text-[15px] font-semibold uppercase tracking-[0.04em] text-background transition-opacity hover:opacity-80",
           children: [
-            gift.kind === "file" ? /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(import_lucide_react11.Download, { className: "h-5 w-5 shrink-0", strokeWidth: 2 }) : /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(import_lucide_react11.ExternalLink, { className: "h-5 w-5 shrink-0", strokeWidth: 2 }),
+            gift.kind === "file" ? /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(import_lucide_react12.Download, { className: "h-5 w-5 shrink-0", strokeWidth: 2 }) : /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(import_lucide_react12.ExternalLink, { className: "h-5 w-5 shrink-0", strokeWidth: 2 }),
             gift.label || (gift.kind === "file" ? "\u0421\u043A\u0430\u0447\u0430\u0442\u044C \u043C\u0430\u0442\u0435\u0440\u0438\u0430\u043B" : "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u043F\u043E \u0441\u0441\u044B\u043B\u043A\u0435")
           ]
         }
@@ -7721,7 +7871,7 @@ init_dotted_surface();
 // src/components/ui/site-footer.tsx
 var import_link5 = __toESM(require("next/link"), 1);
 var import_dynamic = __toESM(require("next/dynamic"), 1);
-var import_lucide_react12 = require("lucide-react");
+var import_lucide_react13 = require("lucide-react");
 var import_jsx_runtime66 = require("react/jsx-runtime");
 var DottedSurface2 = (0, import_dynamic.default)(
   () => Promise.resolve().then(() => (init_dotted_surface(), dotted_surface_exports)).then((m) => m.DottedSurface),
@@ -7790,7 +7940,7 @@ function SiteFooter({
             onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }),
             "aria-label": "\u041D\u0430\u0432\u0435\u0440\u0445",
             className: "inline-flex items-center justify-center w-10 h-10 rounded-sm bg-secondary text-secondary-foreground transition-opacity duration-150 hover:opacity-[0.88] cursor-pointer",
-            children: /* @__PURE__ */ (0, import_jsx_runtime66.jsx)(import_lucide_react12.ChevronUp, { size: 20, strokeWidth: 2 })
+            children: /* @__PURE__ */ (0, import_jsx_runtime66.jsx)(import_lucide_react13.ChevronUp, { size: 20, strokeWidth: 2 })
           }
         )
       ] }),
@@ -7926,6 +8076,7 @@ function HeaderCtaButton({ cta }) {
   DOT_GRID_LENS_DEFAULTS,
   Dialog,
   DialogClose,
+  DialogCloseIcon,
   DialogContent,
   DialogDescription,
   DialogFooter,
