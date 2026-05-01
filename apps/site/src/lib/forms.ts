@@ -1,6 +1,4 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
+import { prisma } from "./prisma";
 import type { EntityScope } from "./ctas";
 
 export type FormFieldsConfig = {
@@ -49,31 +47,18 @@ export type FormEntity = {
   updatedAt: string;
 };
 
-const FORMS_DIR = path.join(process.cwd(), "content", "forms");
-
 function parseScope(value: unknown): EntityScope {
-  return value === "product" || value === "article" || value === "both"
-    ? value
-    : "both";
+  return value === "product" || value === "article" || value === "both" ? value : "both";
 }
 
 function parseFields(raw: unknown): FormFieldsConfig {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
-  return {
-    name: r.name !== false,
-    email: r.email !== false,
-    phone: r.phone === true,
-    message: r.message === true,
-  };
+  return { name: r.name !== false, email: r.email !== false, phone: r.phone === true, message: r.message === true };
 }
 
 function parseChips(raw: unknown): FormChipsConfig {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
-  return {
-    enabled: r.enabled === true,
-    multi: r.multi === true,
-    label: typeof r.label === "string" ? r.label : "",
-  };
+  return { enabled: r.enabled === true, multi: r.multi === true, label: typeof r.label === "string" ? r.label : "" };
 }
 
 function parseConsentLinks(raw: unknown): FormConsentLink[] {
@@ -85,10 +70,14 @@ function parseConsentLinks(raw: unknown): FormConsentLink[] {
       const label = typeof r.label === "string" ? r.label : "";
       const url = typeof r.url === "string" ? r.url : "";
       if (!label || !url) return null;
-      const id = typeof r.id === "string" && r.id ? r.id : `l${i}`;
-      return { id, label, url };
+      return { id: typeof r.id === "string" && r.id ? r.id : `l${i}`, label, url };
     })
     .filter((l): l is FormConsentLink => l !== null);
+}
+
+function parseConsent(raw: unknown): FormConsentConfig {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  return { text: typeof r.text === "string" ? r.text : "", links: parseConsentLinks(r.links) };
 }
 
 function parseSuccessGift(raw: unknown): FormSuccessGift | null {
@@ -96,62 +85,48 @@ function parseSuccessGift(raw: unknown): FormSuccessGift | null {
   const r = raw as Record<string, unknown>;
   const url = typeof r.url === "string" ? r.url.trim() : "";
   if (!url) return null;
+  return { kind: r.kind === "file" ? "file" : "link", url, label: typeof r.label === "string" ? r.label : "" };
+}
+
+function rowToForm(row: { id: string; name: string; content: unknown; createdAt: Date; updatedAt: Date }): FormEntity {
+  const c = (row.content && typeof row.content === "object" ? row.content : {}) as Record<string, unknown>;
+  const slugId = typeof c.id === "string" && c.id ? c.id : row.id;
   return {
-    kind: r.kind === "file" ? "file" : "link",
-    url,
-    label: typeof r.label === "string" ? r.label : "",
+    id: slugId,
+    name: row.name,
+    scope: parseScope(c.scope),
+    title: typeof c.title === "string" ? c.title : "",
+    description: typeof c.description === "string" ? c.description : "",
+    submitButtonText: typeof c.submitButtonText === "string" ? c.submitButtonText : "",
+    successMessage: typeof c.successMessage === "string" ? c.successMessage : "",
+    successGift: parseSuccessGift(c.successGift),
+    fields: parseFields(c.fields),
+    chips: parseChips(c.chips),
+    consent: parseConsent(c.consent),
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
-function parseConsent(raw: unknown): FormConsentConfig {
-  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
-  return {
-    text: typeof r.text === "string" ? r.text : "",
-    links: parseConsentLinks(r.links),
-  };
-}
-
-function readForm(filePath: string): FormEntity | null {
+export async function getAllForms(): Promise<FormEntity[]> {
   try {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const { data } = matter(raw);
-    const id = typeof data.id === "string" && data.id ? data.id : null;
-    if (!id) return null;
-    return {
-      id,
-      name: typeof data.name === "string" ? data.name : "",
-      scope: parseScope(data.scope),
-      title: typeof data.title === "string" ? data.title : "",
-      description: typeof data.description === "string" ? data.description : "",
-      submitButtonText:
-        typeof data.submitButtonText === "string"
-          ? data.submitButtonText
-          : "",
-      successMessage:
-        typeof data.successMessage === "string" ? data.successMessage : "",
-      successGift: parseSuccessGift(data.successGift),
-      fields: parseFields(data.fields),
-      chips: parseChips(data.chips),
-      consent: parseConsent(data.consent),
-      createdAt: typeof data.createdAt === "string" ? data.createdAt : "",
-      updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : "",
-    };
+    const rows = await prisma.formEntity.findMany({ orderBy: { createdAt: "asc" } });
+    return rows.map(rowToForm);
   } catch {
-    return null;
+    return [];
   }
 }
 
-export function getAllForms(): FormEntity[] {
-  if (!fs.existsSync(FORMS_DIR)) return [];
-  return fs
-    .readdirSync(FORMS_DIR)
-    .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
-    .map((f) => readForm(path.join(FORMS_DIR, f)))
-    .filter((f): f is FormEntity => f !== null);
-}
-
-export function getFormById(id: string): FormEntity | null {
-  const file = path.join(FORMS_DIR, `${id}.md`);
-  if (!fs.existsSync(file)) return null;
-  return readForm(file);
+export async function getFormById(id: string): Promise<FormEntity | null> {
+  try {
+    const byContentId = await prisma.formEntity.findFirst({
+      where: { content: { path: ["id"], equals: id } },
+    });
+    if (byContentId) return rowToForm(byContentId);
+    const byDbId = await prisma.formEntity.findUnique({ where: { id } }).catch(() => null);
+    if (byDbId) return rowToForm(byDbId);
+    return null;
+  } catch {
+    return null;
+  }
 }

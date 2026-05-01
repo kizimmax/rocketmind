@@ -18,15 +18,15 @@ import { getAboutPage } from "@/lib/unique";
 import { getAboutRocketmindPhotos } from "@/lib/about-rocketmind";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = getAboutPage();
+  const page = await getAboutPage();
   return {
     title: page?.metaTitle || "О Rocketmind",
     description: page?.metaDescription,
   };
 }
 
-export default function AboutPage() {
-  const page = getAboutPage();
+export default async function AboutPage() {
+  const page = await getAboutPage();
   if (!page) return notFound();
 
   return (
@@ -114,7 +114,7 @@ export default function AboutPage() {
       {page.aboutRocketmindEnabled ? (
         <AboutRocketmindSection
           {...ABOUT_RM_DEFAULTS}
-          {...getAboutRocketmindPhotos()}
+          {...(await getAboutRocketmindPhotos())}
           {...(page.aboutRocketmind ?? {})}
         />
       ) : null}

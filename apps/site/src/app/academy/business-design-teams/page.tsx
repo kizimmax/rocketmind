@@ -3,15 +3,15 @@ import { getProductBySlug } from "@/lib/products";
 import { ServicePageTemplate } from "@/components/templates/ServicePageTemplate";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const product = getProductBySlug("business-design-teams", "academy");
+  const product = await getProductBySlug("business-design-teams", "academy");
   return {
     title: product?.metaTitle || "Бизнес-дизайн для команд | Rocketmind",
     description: product?.metaDescription || "Практикум по бизнес-дизайну для команд.",
   };
 }
 
-export default function BusinessDesignTeamsPage() {
-  const product = getProductBySlug("business-design-teams", "academy");
+export default async function BusinessDesignTeamsPage() {
+  const product = await getProductBySlug("business-design-teams", "academy");
   if (!product) {
     return (
       <ServicePageTemplate

@@ -4,15 +4,15 @@ import { getProductBySlug } from "@/lib/products";
 import { ServicePageTemplate } from "@/components/templates/ServicePageTemplate";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const product = getProductBySlug("ecosystem-strategy");
+  const product = await getProductBySlug("ecosystem-strategy");
   return {
     title: product?.metaTitle ?? "Экосистемная стратегия | Rocketmind",
     description: product?.metaDescription,
   };
 }
 
-export default function EcosystemStrategyPage() {
-  const product = getProductBySlug("ecosystem-strategy");
+export default async function EcosystemStrategyPage() {
+  const product = await getProductBySlug("ecosystem-strategy");
   if (!product) return notFound();
   return <ServicePageTemplate product={product} />;
 }

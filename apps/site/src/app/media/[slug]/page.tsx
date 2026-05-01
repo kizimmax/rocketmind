@@ -18,8 +18,8 @@ import { PageBottom } from "@/components/sections/PageBottom";
 
 const SIMILAR_ARTICLES_LIMIT = 12;
 
-export function generateStaticParams() {
-  return getAllArticles().map((a) => ({ slug: a.slug }));
+export async function generateStaticParams() {
+  return (await getAllArticles()).map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({
@@ -28,7 +28,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
   if (!article) {
     return { title: "Статья не найдена | Rocketmind" };
   }
@@ -44,46 +44,49 @@ export default async function ArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
   if (!article) notFound();
 
-  const expert = article.expertSlug ? getExpertBySlug(article.expertSlug) : null;
-  const tags = getPublicTags();
+  const expert = article.expertSlug ? await getExpertBySlug(article.expertSlug) : null;
+  const tags = await getPublicTags();
   const tagLabelById: Record<string, string> = {};
   for (const t of tags) tagLabelById[t.id] = t.label;
 
-  const resolvedProducts = collectResolvedProductAsides(article);
-  const resolvedQuoteExperts = collectResolvedQuoteExperts(article);
-  const resolvedCtas = collectResolvedCtas(article);
+  const resolvedProducts = await collectResolvedProductAsides(article);
+  const resolvedQuoteExperts = await collectResolvedQuoteExperts(article);
+  const resolvedCtas = await collectResolvedCtas(article);
 
   // Похожие статьи: общий хотя бы один тег с текущей, исключая саму статью.
   // Сортировка — по `publishedAt` desc (свежие выше). Лимит — 12.
   const currentTagSet = new Set(article.tags);
+  const allArticles = await getAllArticles();
   const similarArticles: SimilarArticleCard[] =
     currentTagSet.size === 0
       ? []
-      : getAllArticles()
-          .filter(
-            (a) =>
-              a.slug !== article.slug && a.tags.some((t) => currentTagSet.has(t)),
-          )
-          .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
-          .slice(0, SIMILAR_ARTICLES_LIMIT)
-          .map((a) => {
-            const exp = a.expertSlug ? getExpertBySlug(a.expertSlug) : null;
-            return {
-              slug: a.slug,
-              title: a.title,
-              description: a.description,
-              publishedAt: a.publishedAt,
-              coverUrl: a.coverUrl,
-              tags: a.tags
-                .map((id) => tagLabelById[id])
-                .filter((label): label is string => Boolean(label)),
-              expertName: exp?.name ?? null,
-              expertAvatarUrl: exp?.image ?? null,
-            };
-          });
+      : await Promise.all(
+          allArticles
+            .filter(
+              (a) =>
+                a.slug !== article.slug && a.tags.some((t) => currentTagSet.has(t)),
+            )
+            .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
+            .slice(0, SIMILAR_ARTICLES_LIMIT)
+            .map(async (a) => {
+              const exp = a.expertSlug ? await getExpertBySlug(a.expertSlug) : null;
+              return {
+                slug: a.slug,
+                title: a.title,
+                description: a.description,
+                publishedAt: a.publishedAt,
+                coverUrl: a.coverUrl,
+                tags: a.tags
+                  .map((id) => tagLabelById[id])
+                  .filter((label): label is string => Boolean(label)),
+                expertName: exp?.name ?? null,
+                expertAvatarUrl: exp?.image ?? null,
+              };
+            }),
+        );
 
   return (
     <>

@@ -27,15 +27,15 @@ export const metadata: Metadata = {
     "Помогаем командам искать, проверять и усиливать бизнес-модели, связывать стратегию с операционными действиями.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const forms = getAllForms();
+  const forms = await getAllForms();
   // Дефолтные ссылки для consent-чекбокса в формах берутся из футера —
   // одна точка правды на весь сайт. Relative paths переживают смену домена.
-  const defaultConsentLinks = getSiteNav().legalLinks.map((l, i) => ({
+  const defaultConsentLinks = (await getSiteNav()).legalLinks.map((l, i) => ({
     id: `legal-${i}`,
     label: l.label,
     url: l.href,

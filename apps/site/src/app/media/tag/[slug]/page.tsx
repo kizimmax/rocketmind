@@ -42,9 +42,9 @@ function flattenBodyText(
 }
 
 /** SSG: только используемые публичные теги. */
-export function generateStaticParams() {
-  const usage = getTagUsage();
-  return getPublicTags()
+export async function generateStaticParams() {
+  const usage = await getTagUsage();
+  return (await getPublicTags())
     .filter((t) => (usage[t.id] ?? 0) > 0)
     .map((t) => ({ slug: t.id }));
 }
@@ -55,7 +55,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const tag = getTagById(slug);
+  const tag = await getTagById(slug);
   if (!tag || tag.disabled) return {};
 
   const accent = tag.seo?.pageTitleAccent ?? tag.label;
@@ -78,27 +78,27 @@ export default async function MediaTagPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tag = getTagById(slug);
+  const tag = await getTagById(slug);
   if (!tag || tag.disabled) return notFound();
 
-  const articles = getAllArticles();
-  const tags = getPublicTags();
-  const usage = getTagUsage();
-  const glossary = getAllGlossaryTerms();
+  const articles = await getAllArticles();
+  const tags = await getPublicTags();
+  const usage = await getTagUsage();
+  const glossary = await getAllGlossaryTerms();
 
   // Доступ к "удалённой" странице (тег без статей) — 404, иначе SEO-индексация
   // пустых разделов.
   if ((usage[slug] ?? 0) === 0) return notFound();
 
-  const enriched = articles.map((a) => {
-    const expert = a.expertSlug ? getExpertBySlug(a.expertSlug) : null;
+  const enriched = await Promise.all(articles.map(async (a) => {
+    const expert = a.expertSlug ? await getExpertBySlug(a.expertSlug) : null;
     return {
       ...a,
       expertName: expert?.name ?? null,
       expertAvatarUrl: expert?.image ?? null,
       bodyText: flattenBodyText(a.sections),
     };
-  });
+  }));
 
   const visibleTags = tags.filter((t) => (usage[t.id] ?? 0) > 0);
 

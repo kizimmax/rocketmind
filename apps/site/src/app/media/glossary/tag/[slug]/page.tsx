@@ -8,11 +8,11 @@ import { PageBottom } from "@/components/sections/PageBottom";
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 /** SSG: только теги, у которых есть хоть один термин. */
-export function generateStaticParams() {
-  const terms = getAllGlossaryTerms();
+export async function generateStaticParams() {
+  const terms = await getAllGlossaryTerms();
   const used = new Set<string>();
   for (const t of terms) for (const tag of t.tags) used.add(tag);
-  return getPublicTags()
+  return (await getPublicTags())
     .filter((t) => used.has(t.id))
     .map((t) => ({ slug: t.id }));
 }
@@ -23,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const tag = getTagById(slug);
+  const tag = await getTagById(slug);
   if (!tag || tag.disabled) return {};
 
   const accent = tag.seo?.pageTitleAccent ?? tag.label;
@@ -46,11 +46,11 @@ export default async function GlossaryTagPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const tag = getTagById(slug);
+  const tag = await getTagById(slug);
   if (!tag || tag.disabled) return notFound();
 
-  const terms = getAllGlossaryTerms();
-  const allTags = getPublicTags();
+  const terms = await getAllGlossaryTerms();
+  const allTags = await getPublicTags();
 
   const termsWithThisTag = terms.filter((t) => t.tags.includes(slug));
   if (termsWithThisTag.length === 0) return notFound();

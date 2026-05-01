@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readConfig, writeConfig } from "@/lib/storage";
+import { prisma } from "@/lib/prisma";
 
 const VALID_IDS = ["consulting", "academy", "expert", "ai-products"] as const;
 type CategoryId = (typeof VALID_IDS)[number];
@@ -65,6 +66,7 @@ export async function PUT(request: Request) {
   }
   const categories = VALID_IDS.map((id) => byId.get(id) ?? { id });
   writeConfig("product-categories.json", { categories });
+  await prisma.systemConfig.upsert({ where: { key: "product-categories" }, update: { value: { categories } as never }, create: { key: "product-categories", value: { categories } as never } }).catch(() => {});
 
   return NextResponse.json({ ok: true, categories });
 }

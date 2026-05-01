@@ -3,15 +3,15 @@ import { getProductBySlug } from "@/lib/products";
 import { ServicePageTemplate } from "@/components/templates/ServicePageTemplate";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const product = getProductBySlug("smart-analytics");
+  const product = await getProductBySlug("smart-analytics");
   return {
     title: product?.metaTitle || "Умная аналитика для развития бизнеса | Rocketmind",
     description: product?.metaDescription || "Связываем управленческие гипотезы с данными и ритмом решений.",
   };
 }
 
-export default function SmartAnalyticsPage() {
-  const product = getProductBySlug("smart-analytics");
+export default async function SmartAnalyticsPage() {
+  const product = await getProductBySlug("smart-analytics");
   if (!product) {
     return <ServicePageTemplate title="Умная аналитика для развития бизнеса" subtitle="Связываем управленческие гипотезы с данными и ритмом решений." />;
   }

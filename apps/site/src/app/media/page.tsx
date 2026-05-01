@@ -38,21 +38,21 @@ function flattenBodyText(sections: Array<{ title: string; blocks: Array<{ type: 
   return parts.join(" \n ");
 }
 
-export default function MediaPage() {
-  const articles = getAllArticles();
-  const tags = getPublicTags();
-  const usage = getTagUsage();
-  const glossary = getAllGlossaryTerms();
+export default async function MediaPage() {
+  const articles = await getAllArticles();
+  const tags = await getPublicTags();
+  const usage = await getTagUsage();
+  const glossary = await getAllGlossaryTerms();
 
-  const enriched = articles.map((a) => {
-    const expert = a.expertSlug ? getExpertBySlug(a.expertSlug) : null;
+  const enriched = await Promise.all(articles.map(async (a) => {
+    const expert = a.expertSlug ? await getExpertBySlug(a.expertSlug) : null;
     return {
       ...a,
       expertName: expert?.name ?? null,
       expertAvatarUrl: expert?.image ?? null,
       bodyText: flattenBodyText(a.sections),
     };
-  });
+  }));
 
   const visibleTags = tags.filter((t) => (usage[t.id] ?? 0) > 0);
 

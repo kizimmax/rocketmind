@@ -13,8 +13,7 @@ export async function CasesSection() {
     // logos directory not found — render without logos
   }
 
-  const cases = getFeaturedCases();
-  const testimonials = getTestimonials();
+  const [cases, testimonials] = await Promise.all([getFeaturedCases(), getTestimonials()]);
 
   if (cases.length === 0) return null;
 

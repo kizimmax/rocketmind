@@ -103,7 +103,10 @@ export async function PUT(
       const url = savePageAsset("about", "shared", "canvas-image", canvasPhotoData);
       if (url) { shared.canvasPhoto = url; cleanAboutRm.canvasPhotoData = url; }
     }
-    if (alexPhotoData || canvasPhotoData) writeConfig("about-rocketmind.json", shared);
+    if (alexPhotoData || canvasPhotoData) {
+      writeConfig("about-rocketmind.json", shared);
+      await prisma.systemConfig.upsert({ where: { key: "about-rocketmind" }, update: { value: shared as never }, create: { key: "about-rocketmind", value: shared as never } }).catch(() => {});
+    }
     aboutRmBlock.data = cleanAboutRm;
   }
 

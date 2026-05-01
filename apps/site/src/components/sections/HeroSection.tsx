@@ -6,8 +6,8 @@ import { HeroSectionClient } from "./HeroSectionClient";
 
 export async function HeroSection() {
     const logos = await getPartnerLogos();
-    const home = getHomePage();
-    const { nav } = getSiteNav();
+    const home = await getHomePage();
+    const { nav } = await getSiteNav();
 
     return (
       <HeroSectionClient

@@ -1,6 +1,4 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
+import { prisma } from "./prisma";
 
 export type EntityScope = "product" | "article" | "both";
 
@@ -16,50 +14,45 @@ export type CtaEntity = {
   updatedAt: string;
 };
 
-const CTAS_DIR = path.join(process.cwd(), "content", "ctas");
-
 function parseScope(value: unknown): EntityScope {
-  return value === "product" || value === "article" || value === "both"
-    ? value
-    : "both";
+  return value === "product" || value === "article" || value === "both" ? value : "both";
 }
 
-function readCta(filePath: string): CtaEntity | null {
+function rowToCta(row: { id: string; name: string; content: unknown; createdAt: Date; updatedAt: Date }): CtaEntity {
+  const c = (row.content && typeof row.content === "object" ? row.content : {}) as Record<string, unknown>;
+  const slugId = typeof c.id === "string" && c.id ? c.id : row.id;
+  return {
+    id: slugId,
+    name: row.name,
+    scope: parseScope(c.scope),
+    heading: typeof c.heading === "string" ? c.heading : "",
+    body: typeof c.body === "string" ? c.body : "",
+    buttonText: typeof c.buttonText === "string" ? c.buttonText : "",
+    formId: typeof c.formId === "string" && c.formId ? c.formId : undefined,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export async function getAllCtas(): Promise<CtaEntity[]> {
   try {
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const { data } = matter(raw);
-    const id = typeof data.id === "string" && data.id ? data.id : null;
-    if (!id) return null;
-    return {
-      id,
-      name: typeof data.name === "string" ? data.name : "",
-      scope: parseScope(data.scope),
-      heading: typeof data.heading === "string" ? data.heading : "",
-      body: typeof data.body === "string" ? data.body : "",
-      buttonText: typeof data.buttonText === "string" ? data.buttonText : "",
-      formId:
-        typeof data.formId === "string" && data.formId
-          ? data.formId
-          : undefined,
-      createdAt: typeof data.createdAt === "string" ? data.createdAt : "",
-      updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : "",
-    };
+    const rows = await prisma.ctaEntity.findMany({ orderBy: { createdAt: "asc" } });
+    return rows.map(rowToCta);
   } catch {
-    return null;
+    return [];
   }
 }
 
-export function getAllCtas(): CtaEntity[] {
-  if (!fs.existsSync(CTAS_DIR)) return [];
-  return fs
-    .readdirSync(CTAS_DIR)
-    .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
-    .map((f) => readCta(path.join(CTAS_DIR, f)))
-    .filter((c): c is CtaEntity => c !== null);
-}
-
-export function getCtaById(id: string): CtaEntity | null {
-  const file = path.join(CTAS_DIR, `${id}.md`);
-  if (!fs.existsSync(file)) return null;
-  return readCta(file);
+export async function getCtaById(id: string): Promise<CtaEntity | null> {
+  try {
+    const byContentId = await prisma.ctaEntity.findFirst({
+      where: { content: { path: ["id"], equals: id } },
+    });
+    if (byContentId) return rowToCta(byContentId);
+    const byDbId = await prisma.ctaEntity.findUnique({ where: { id } }).catch(() => null);
+    if (byDbId) return rowToCta(byDbId);
+    return null;
+  } catch {
+    return null;
+  }
 }

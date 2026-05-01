@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { parseDataUrl, saveBuffer, deleteFilesWithBase, readConfig, writeConfig } from "@/lib/storage";
+import { prisma } from "@/lib/prisma";
 
 const IMAGE_EXTS = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif"];
 
@@ -61,6 +62,7 @@ export async function PUT(request: Request) {
     photos,
   };
   writeConfig("partnerships.json", data);
+  await prisma.systemConfig.upsert({ where: { key: "partnerships" }, update: { value: data as never }, create: { key: "partnerships", value: data as never } }).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

@@ -47,8 +47,8 @@ function buildHref(category: string, slug: string): string {
   return `/${category}/${slug}`;
 }
 
-export function buildCatalogSections(): CatalogSection[] {
-  const allProducts = getAllCatalogProducts();
+export async function buildCatalogSections(): Promise<CatalogSection[]> {
+  const allProducts = await getAllCatalogProducts();
   return CATEGORY_ORDER.map((cat) => {
     const meta = SECTION_META[cat];
     const cards: CatalogCard[] = allProducts

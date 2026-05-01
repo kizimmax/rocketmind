@@ -20,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const category = getProductCategoryBySlug(slug);
+  const category = await getProductCategoryBySlug(slug);
   if (!category) return {};
 
   const accent = category.seo?.pageTitleAccent ?? category.label;
@@ -44,11 +44,11 @@ export default async function ProductsCategoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const category = getProductCategoryBySlug(slug);
+  const category = await getProductCategoryBySlug(slug);
   if (!category) return notFound();
 
-  const sections = buildCatalogSections();
-  const partnerships = getPartnershipsData();
+  const sections = await buildCatalogSections();
+  const partnerships = await getPartnershipsData();
 
   return (
     <>

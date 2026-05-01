@@ -14,9 +14,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/products" },
 };
 
-export default function ProductsPage() {
-  const sections = buildCatalogSections();
-  const partnerships = getPartnershipsData();
+export default async function ProductsPage() {
+  const sections = await buildCatalogSections();
+  const partnerships = await getPartnershipsData();
 
   return (
     <>

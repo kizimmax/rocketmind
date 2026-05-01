@@ -12,19 +12,19 @@ import { getCasesIndexPage } from "@/lib/unique";
 import { getAboutRocketmindPhotos } from "@/lib/about-rocketmind";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = getCasesIndexPage();
+  const page = await getCasesIndexPage();
   return {
     title: page?.metaTitle || "Кейсы | Rocketmind",
     description: page?.metaDescription,
   };
 }
 
-export default function CasesPage() {
-  const page = getCasesIndexPage();
+export default async function CasesPage() {
+  const page = await getCasesIndexPage();
   if (!page) return notFound();
 
-  const cases = getAllCases();
-  const testimonials = getTestimonials();
+  const cases = await getAllCases();
+  const testimonials = await getTestimonials();
 
   return (
     <div className="flex flex-col">
@@ -55,7 +55,7 @@ export default function CasesPage() {
       <CasesPageBlock cases={cases} testimonials={testimonials} />
 
       {/* 3. О Rocketmind — стандартный блок из шаблонной продуктовой страницы */}
-      <AboutRocketmindSection {...ABOUT_RM_DEFAULTS} {...getAboutRocketmindPhotos()} />
+      <AboutRocketmindSection {...ABOUT_RM_DEFAULTS} {...(await getAboutRocketmindPhotos())} />
 
 
       {/* 4. CTA */}

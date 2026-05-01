@@ -67,12 +67,17 @@ type ServicePageTemplateProps =
 export async function ServicePageTemplate(props: ServicePageTemplateProps) {
   const hasProduct = "product" in props;
   const isAcademy = hasProduct && props.product.category === "academy";
-  const partnerships = isAcademy ? getPartnershipsData() : null;
-  const aboutRmPhotos = getAboutRocketmindPhotos();
+  const partnerships = isAcademy ? await getPartnershipsData() : null;
+  const aboutRmPhotos = await getAboutRocketmindPhotos();
   const customSections: CustomSectionData[] = hasProduct ? props.product.customSections : [];
+  const defaultCta = hasProduct ? await getCtaById("default") : null;
   const pageFormId = hasProduct
-    ? props.product.formId ?? getCtaById("default")?.formId ?? null
+    ? props.product.formId ?? defaultCta?.formId ?? null
     : null;
+  const pageBottomCta =
+    hasProduct && props.product.pageBottomCtaId
+      ? await getCtaById(props.product.pageBottomCtaId)
+      : null;
 
   const heroAvailableChips =
     hasProduct && props.product.services?.formChips?.enabled
@@ -287,17 +292,12 @@ export async function ServicePageTemplate(props: ServicePageTemplateProps) {
       {/* 12–14. Кейсы + отзывы + логотипы + CTA */}
       {(!hasProduct || props.product.pageBottomEnabled) && (
         <PageBottom
-          cta={(() => {
-            if (!hasProduct || !props.product.pageBottomCtaId) return null;
-            const cta = getCtaById(props.product.pageBottomCtaId);
-            if (!cta) return null;
-            return {
-              heading: cta.heading,
-              body: cta.body,
-              buttonText: cta.buttonText,
-              formId: cta.formId,
-            };
-          })()}
+          cta={pageBottomCta ? {
+            heading: pageBottomCta.heading,
+            body: pageBottomCta.body,
+            buttonText: pageBottomCta.buttonText,
+            formId: pageBottomCta.formId,
+          } : null}
           pageFormId={pageFormId}
           availableChips={
             hasProduct &&

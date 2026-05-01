@@ -23,7 +23,7 @@ export type PageBottomProps = {
   chipsConfig?: { multi?: boolean; label?: string };
 };
 
-export function PageBottom({
+export async function PageBottom({
   cta,
   pageFormId,
   availableChips,
@@ -32,7 +32,7 @@ export function PageBottom({
   // Если страница не задаёт свой CTA — подтягиваем «default» из админки.
   let resolved = cta;
   if (!resolved) {
-    const defaultCta = getCtaById("default");
+    const defaultCta = await getCtaById("default");
     if (defaultCta) {
       resolved = {
         heading: defaultCta.heading,

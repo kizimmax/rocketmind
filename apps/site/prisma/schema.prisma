@@ -160,6 +160,16 @@ model FormEntity {
   @@map("forms")
 }
 
+// ── System config (shared mutable settings: partnerships, product-categories, about-rocketmind) ─
+
+model SystemConfig {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("system_configs")
+}
+
 // ── Assets (centralized file registry) ────────────────────────────────────────
 
 model Asset {

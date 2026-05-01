@@ -1,33 +1,20 @@
-import fs from "fs";
-import {
-  generateSitemapXml,
-  getSitemapOverridePath,
-} from "@/lib/sitemap";
+import { generateSitemapXml } from "@/lib/sitemap";
+import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
-/**
- * `/sitemap.xml`. Если в `content/_sitemap-override.xml` есть ручная правка,
- * отдаём её как есть. Иначе — генерим из текущего контента (страницы, продукты,
- * статьи, глоссарий, legal). С `output: "export"` пре-рендерится в `out/sitemap.xml`.
- */
 export async function GET() {
   let xml: string;
   try {
-    const overridePath = getSitemapOverridePath();
-    if (fs.existsSync(overridePath)) {
-      const content = fs.readFileSync(overridePath, "utf-8").trim();
-      xml = content || generateSitemapXml();
-    } else {
-      xml = generateSitemapXml();
-    }
+    const override = await prisma.systemConfig.findUnique({ where: { key: "sitemap-override" } }).catch(() => null);
+    const overrideXml = typeof (override?.value as Record<string, unknown> | null)?.xml === "string"
+      ? ((override!.value as Record<string, unknown>).xml as string).trim()
+      : "";
+    xml = overrideXml || await generateSitemapXml();
   } catch {
-    xml = generateSitemapXml();
+    xml = await generateSitemapXml();
   }
   return new Response(xml, {
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600",
-    },
+    headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" },
   });
 }

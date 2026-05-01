@@ -1,6 +1,4 @@
-import fs from "fs";
-import path from "path";
-import matter from "gray-matter";
+import { prisma } from "./prisma";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -13,28 +11,8 @@ export type ExpertData = {
   image: string | null;
 };
 
-// ── Paths ──────────────────────────────────────────────────────────────────────
+// ── Synthetic editorial author ─────────────────────────────────────────────────
 
-const EXPERTS_DIR = path.join(process.cwd(), "content", "experts");
-const PUBLIC_DIR = path.join(process.cwd(), "public");
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
-function resolveExpertImage(slug: string): string | null {
-  const base = `/images/experts/${slug}`;
-  for (const ext of [".jpg", ".png", ".webp", ".svg"]) {
-    if (fs.existsSync(path.join(PUBLIC_DIR, base + ext))) {
-      return BASE_PATH + base + ext;
-    }
-  }
-  return null;
-}
-
-// ── API ────────────────────────────────────────────────────────────────────────
-
-/**
- * Synthetic «редакционный» автор. Используется как дефолт для статей без
- * персонального эксперта. Не имеет .md-файла и не попадает в getAllExperts.
- */
 export const EDITORIAL_EXPERT_SLUG = "r-editorial";
 const EDITORIAL_EXPERT: ExpertData = {
   slug: EDITORIAL_EXPERT_SLUG,
@@ -45,41 +23,52 @@ const EDITORIAL_EXPERT: ExpertData = {
   image: null,
 };
 
-export function getExpertBySlug(slug: string): ExpertData | null {
-  if (slug === EDITORIAL_EXPERT_SLUG) return EDITORIAL_EXPERT;
-
-  const filePath = path.join(EXPERTS_DIR, `${slug}.md`);
-  if (!fs.existsSync(filePath)) return null;
-
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { data } = matter(raw);
-
+function rowToExpert(row: { slug: string; content: unknown; photoPath: string | null }): ExpertData {
+  const c = (row.content && typeof row.content === "object" ? row.content : {}) as Record<string, unknown>;
   return {
-    slug: data.slug || slug,
-    name: data.name || "",
-    tag: data.tag || "Эксперт продукта",
-    shortBio: data.shortBio || "",
-    bio: data.bio || "",
-    image: resolveExpertImage(data.slug || slug),
+    slug: row.slug,
+    name: typeof c.name === "string" ? c.name : "",
+    tag: typeof c.tag === "string" ? c.tag : "Эксперт продукта",
+    shortBio: typeof c.shortBio === "string" ? c.shortBio : "",
+    bio: typeof c.bio === "string" ? c.bio : "",
+    image: row.photoPath ?? null,
   };
 }
 
-export function getAllExperts(): ExpertData[] {
-  if (!fs.existsSync(EXPERTS_DIR)) return [];
+// ── API ────────────────────────────────────────────────────────────────────────
 
-  return fs
-    .readdirSync(EXPERTS_DIR)
-    .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
-    .map((f) => getExpertBySlug(f.replace(/\.md$/, "")))
-    .filter(Boolean) as ExpertData[];
+export async function getExpertBySlug(slug: string): Promise<ExpertData | null> {
+  if (slug === EDITORIAL_EXPERT_SLUG) return EDITORIAL_EXPERT;
+  try {
+    const row = await prisma.expert.findUnique({ where: { slug } });
+    if (!row) return null;
+    return rowToExpert(row);
+  } catch {
+    return null;
+  }
 }
 
-/**
- * Resolve an array of expert slugs to full ExpertData objects.
- * Skips slugs that don't have a matching .md file.
- */
-export function resolveExperts(slugs: string[]): ExpertData[] {
-  return slugs
-    .map((slug) => getExpertBySlug(slug))
-    .filter(Boolean) as ExpertData[];
+export async function getAllExperts(): Promise<ExpertData[]> {
+  try {
+    const rows = await prisma.expert.findMany({ orderBy: { sortOrder: "asc" } });
+    return rows.map(rowToExpert);
+  } catch {
+    return [];
+  }
+}
+
+export async function resolveExperts(slugs: string[]): Promise<ExpertData[]> {
+  if (slugs.length === 0) return [];
+  const unique = [...new Set(slugs)];
+  const editorial = unique.includes(EDITORIAL_EXPERT_SLUG) ? [EDITORIAL_EXPERT] : [];
+  const dbSlugs = unique.filter((s) => s !== EDITORIAL_EXPERT_SLUG);
+  if (dbSlugs.length === 0) return editorial;
+  try {
+    const rows = await prisma.expert.findMany({ where: { slug: { in: dbSlugs } } });
+    const bySlug = new Map(rows.map((r) => [r.slug, rowToExpert(r)]));
+    const dbExperts = dbSlugs.map((s) => bySlug.get(s)).filter((e): e is ExpertData => e !== undefined);
+    return [...editorial, ...dbExperts];
+  } catch {
+    return editorial;
+  }
 }

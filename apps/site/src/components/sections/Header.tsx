@@ -4,9 +4,9 @@ import { getCtaById } from "@/lib/ctas";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-export function Header() {
-  const { nav } = getSiteNav();
-  const headerCta = getCtaById("header");
+export async function Header() {
+  const { nav } = await getSiteNav();
+  const headerCta = await getCtaById("header");
   return (
     <SiteHeader
       basePath={BASE_PATH}

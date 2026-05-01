@@ -1,31 +1,22 @@
-import fs from "fs";
-import path from "path";
+import { prisma } from "./prisma";
 
 export type AboutRocketmindPhotos = {
   alexPhoto: string;
   canvasPhoto: string;
 };
 
-const CONTENT_DIR = path.resolve(process.cwd(), "content");
-const JSON_PATH = path.join(CONTENT_DIR, "_about-rocketmind.json");
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
 const DEFAULT_ALEX = "/images/about/alexey-eremin.png";
 const DEFAULT_CANVAS = "/images/about/canvas-image.png";
 
-function withBase(src: string): string {
-  return src.startsWith("/") ? `${BASE_PATH}${src}` : src;
-}
-
-export function getAboutRocketmindPhotos(): AboutRocketmindPhotos {
-  let alex = DEFAULT_ALEX;
-  let canvas = DEFAULT_CANVAS;
-  if (fs.existsSync(JSON_PATH)) {
-    try {
-      const raw = JSON.parse(fs.readFileSync(JSON_PATH, "utf-8"));
-      if (typeof raw.alexPhoto === "string" && raw.alexPhoto) alex = raw.alexPhoto;
-      if (typeof raw.canvasPhoto === "string" && raw.canvasPhoto) canvas = raw.canvasPhoto;
-    } catch { /* fall through to defaults */ }
-  }
-  return { alexPhoto: withBase(alex), canvasPhoto: withBase(canvas) };
+export async function getAboutRocketmindPhotos(): Promise<AboutRocketmindPhotos> {
+  try {
+    const row = await prisma.systemConfig.findUnique({ where: { key: "about-rocketmind" } });
+    if (row) {
+      const raw = row.value as Record<string, unknown>;
+      const alex = typeof raw.alexPhoto === "string" && raw.alexPhoto ? raw.alexPhoto : DEFAULT_ALEX;
+      const canvas = typeof raw.canvasPhoto === "string" && raw.canvasPhoto ? raw.canvasPhoto : DEFAULT_CANVAS;
+      return { alexPhoto: alex, canvasPhoto: canvas };
+    }
+  } catch { /* fall through */ }
+  return { alexPhoto: DEFAULT_ALEX, canvasPhoto: DEFAULT_CANVAS };
 }

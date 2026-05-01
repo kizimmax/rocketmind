@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-export default function GlossaryPage() {
-  const terms = getAllGlossaryTerms();
-  const allTags = getPublicTags();
+export default async function GlossaryPage() {
+  const terms = await getAllGlossaryTerms();
+  const allTags = await getPublicTags();
 
   // Показываем только теги, которые встречаются хотя бы в одном термине —
   // у них есть статическая landing-страница `/media/glossary/tag/<id>`.

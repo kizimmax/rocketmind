@@ -19,10 +19,10 @@ function cardsFromProducts(
     .map(makeCard);
 }
 
-export function ServicesGrid() {
-  const allProducts = getAllCatalogProducts();
+export async function ServicesGrid() {
+  const allProducts = await getAllCatalogProducts();
 
-  const home = getHomePage();
+  const home = await getHomePage();
   const overrides: HomeSectionItem[] = home.sections?.sections ?? [];
   const overrideByKey = new Map(overrides.map((s) => [s.filterKey, s]));
 

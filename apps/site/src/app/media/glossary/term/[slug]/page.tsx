@@ -11,8 +11,8 @@ import { getPublicTags } from "@/lib/articles";
 import { GlossaryTermPageClient } from "@/components/glossary/term-page-client";
 import { PageBottom } from "@/components/sections/PageBottom";
 
-export function generateStaticParams() {
-  return getAllGlossaryTerms().map((t) => ({ slug: t.slug }));
+export async function generateStaticParams() {
+  return (await getAllGlossaryTerms()).map((t) => ({ slug: t.slug }));
 }
 
 export async function generateMetadata({
@@ -21,7 +21,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const term = getGlossaryTermBySlug(slug);
+  const term = await getGlossaryTermBySlug(slug);
   if (!term) return { title: "Термин не найден | Rocketmind" };
   return {
     title: term.metaTitle || `${term.title} | Глоссарий Rocketmind`,
@@ -36,10 +36,10 @@ export default async function GlossaryTermPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const term = getGlossaryTermBySlug(slug);
+  const term = await getGlossaryTermBySlug(slug);
   if (!term || term.status !== "published") notFound();
 
-  const tags = getPublicTags();
+  const tags = await getPublicTags();
   const tagLabelById: Record<string, string> = {};
   for (const t of tags) tagLabelById[t.id] = t.label;
   const tagItems = term.tags
@@ -49,9 +49,9 @@ export default async function GlossaryTermPage({
     })
     .filter((t): t is { id: string; label: string } => t !== null);
 
-  const resolvedProducts = collectTermResolvedProductAsides(term);
-  const resolvedQuoteExperts = collectTermResolvedQuoteExperts(term);
-  const resolvedCtas = collectTermResolvedCtas(term);
+  const resolvedProducts = await collectTermResolvedProductAsides(term);
+  const resolvedQuoteExperts = await collectTermResolvedQuoteExperts(term);
+  const resolvedCtas = await collectTermResolvedCtas(term);
 
   return (
     <>
