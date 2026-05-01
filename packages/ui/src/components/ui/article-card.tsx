@@ -168,14 +168,27 @@ export function ArticleCard({
       )}
 
       {variant === "wide" ? (
-        <WideLayout
-          coverUrl={coverUrl}
-          visibleTags={visibleTags}
-          typeBadge={typeBadge}
-          authorName={authorName}
-          authorAvatarUrl={authorAvatarUrl}
-          date={date}
-        />
+        <>
+          {/* На мобильном wide-карточки рендерятся как обычные default —
+              в одну колонку, чтобы не сжимать обложку и теги. */}
+          <div className="sm:hidden">
+            <DefaultLayout
+              coverUrl={coverUrl}
+              visibleTags={visibleTags}
+              typeBadge={typeBadge}
+            />
+          </div>
+          <div className="hidden sm:block">
+            <WideLayout
+              coverUrl={coverUrl}
+              visibleTags={visibleTags}
+              typeBadge={typeBadge}
+              authorName={authorName}
+              authorAvatarUrl={authorAvatarUrl}
+              date={date}
+            />
+          </div>
+        </>
       ) : (
         <DefaultLayout
           coverUrl={coverUrl}
@@ -215,14 +228,19 @@ export function ArticleCard({
           )}
         </div>
 
-        {variant === "default" && authorName && (
+        {authorName && (
           <Author
             variant="short"
             name={authorName}
             avatarUrl={authorAvatarUrl}
             date={date}
             showAvatarFallback={false}
-            className="mt-auto"
+            className={cn(
+              "mt-auto",
+              // Default — всегда снизу. Wide — только на мобильном (на sm+
+              // автор уже отрисован внутри WideLayout справа).
+              variant === "wide" && "sm:hidden",
+            )}
           />
         )}
       </div>
