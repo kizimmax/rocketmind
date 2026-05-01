@@ -31,6 +31,10 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm install --legacy-peer-deps --ignore-scripts
+      - name: Generate Prisma Client (site)
+        # --ignore-scripts выше пропускает Prisma postinstall — генерируем явно.
+        # Удалить когда соседняя ветка с миграцией Dockerfile/БД будет смержена.
+        run: npx --workspace=apps/site prisma generate
       - name: Build UI package
         run: npm run ui:build
       - name: Build Site
