@@ -381,7 +381,7 @@ export function GlossaryPageClient({
           {/* Горизонтальная лента: закреплённые → часто открываемые.
               Счётчик views хранится в localStorage у пользователя.
               Скрываем во время поиска — там лента будет дублировать список. */}
-          {!query.trim() && popular.length > 0 && (
+          {filter === "all" && !query.trim() && popular.length > 0 && (
             <div className="mb-10" style={stagger(intro ? 5 : 4)}>
               <GlossaryPopularRow items={popular} />
             </div>
