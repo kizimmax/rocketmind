@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import path from "path";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const isStatic = process.env.NEXT_PUBLIC_STATIC === "1";
-const SITE_ROOT = path.resolve(process.cwd(), "..", "site");
-const MEDIA_DIR = path.join(SITE_ROOT, "content", "media");
-const TAGS_FILE = path.join(MEDIA_DIR, "_tags.json");
+type DsAccentColor = "yellow" | "violet" | "sky" | "terracotta" | "pink" | "blue" | "red" | "green";
+
+const DS_ACCENT_COLORS: ReadonlyArray<DsAccentColor> = [
+  "yellow", "violet", "sky", "terracotta", "pink", "blue", "red", "green",
+];
 
 interface MediaTagSeo {
   pageTitlePrefix?: string;
@@ -13,16 +15,6 @@ interface MediaTagSeo {
   metaDescription?: string;
   intro?: string;
 }
-
-type DsAccentColor =
-  | "yellow"
-  | "violet"
-  | "sky"
-  | "terracotta"
-  | "pink"
-  | "blue"
-  | "red"
-  | "green";
 
 interface MediaTag {
   id: string;
@@ -34,30 +26,8 @@ interface MediaTag {
   cardColor?: DsAccentColor;
 }
 
-const SEO_KEYS = [
-  "pageTitlePrefix",
-  "pageTitleAccent",
-  "metaTitle",
-  "metaDescription",
-  "intro",
-] as const;
+const SEO_KEYS = ["pageTitlePrefix", "pageTitleAccent", "metaTitle", "metaDescription", "intro"] as const;
 
-const DS_ACCENT_COLORS: ReadonlyArray<DsAccentColor> = [
-  "yellow",
-  "violet",
-  "sky",
-  "terracotta",
-  "pink",
-  "blue",
-  "red",
-  "green",
-];
-
-/**
- * Системные теги. Не могут быть удалены — даже если PUT не содержит их в массиве,
- * сервер дописывает их обратно с дефолтами (или мерджит с пользовательскими
- * правками label/SEO/cardColor, если они присланы).
- */
 const SYSTEM_TAG_DEFAULTS: ReadonlyArray<MediaTag> = [
   { id: "lesson", label: "Урок", system: true, cardColor: "sky" },
   { id: "case", label: "Кейс", system: true, cardColor: "terracotta" },
@@ -74,54 +44,9 @@ function sanitizeSeo(raw: unknown): MediaTagSeo | undefined {
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-function readTags(fs: typeof import("fs")): MediaTag[] {
-  if (!fs.existsSync(TAGS_FILE)) return [];
-  try {
-    const raw = fs.readFileSync(TAGS_FILE, "utf-8");
-    const json = JSON.parse(raw) as { tags?: MediaTag[] };
-    return Array.isArray(json.tags) ? json.tags : [];
-  } catch {
-    return [];
-  }
-}
-
-function sanitize(tags: unknown): MediaTag[] {
-  if (!Array.isArray(tags)) return [];
-  return tags
-    .map((t): MediaTag | null => {
-      if (!t || typeof t !== "object") return null;
-      const r = t as Record<string, unknown>;
-      const id = typeof r.id === "string" ? r.id.trim() : "";
-      const label = typeof r.label === "string" ? r.label.trim() : "";
-      if (!id || !label) return null;
-      const createdAt =
-        typeof r.createdAt === "string" ? r.createdAt : undefined;
-      const disabled = r.disabled === true ? true : undefined;
-      const seo = sanitizeSeo(r.seo);
-      const cardColor =
-        typeof r.cardColor === "string" &&
-        (DS_ACCENT_COLORS as readonly string[]).includes(r.cardColor)
-          ? (r.cardColor as DsAccentColor)
-          : undefined;
-      const tag: MediaTag = createdAt ? { id, label, createdAt } : { id, label };
-      if (disabled) tag.disabled = true;
-      if (seo) tag.seo = seo;
-      if (cardColor) tag.cardColor = cardColor;
-      // `system` ставится сервером в `withSystemTags`, не доверяем клиенту.
-      return tag;
-    })
-    .filter((t): t is MediaTag => t !== null);
-}
-
-/**
- * Гарантирует, что результат содержит все системные теги, даже если клиент
- * прислал массив без них. Пользовательские правки label/SEO/cardColor у
- * системных тегов сохраняются. Системные теги не могут быть удалены.
- */
 function withSystemTags(tags: MediaTag[]): MediaTag[] {
   const byId = new Map(tags.map((t) => [t.id, t]));
   const merged: MediaTag[] = [];
-
   for (const def of SYSTEM_TAG_DEFAULTS) {
     const user = byId.get(def.id);
     byId.delete(def.id);
@@ -136,47 +61,95 @@ function withSystemTags(tags: MediaTag[]): MediaTag[] {
     if (!user?.createdAt) next.createdAt = new Date().toISOString();
     merged.push(next);
   }
-
   for (const t of tags) {
     if (!byId.has(t.id)) continue;
-    // не системный — пробрасываем без флага `system`.
     const { system: _ignored, ...rest } = t;
     void _ignored;
     merged.push(rest);
   }
-
   return merged;
 }
 
-/** GET /api/media-tags — вернуть массив тегов из _tags.json (+ системные). */
-export async function GET() {
-  if (isStatic) {
-    return NextResponse.json({ tags: withSystemTags([]) });
+function dbToTag(row: {
+  id: string;
+  label: string;
+  disabled: boolean;
+  system: boolean;
+  cardColor: string | null;
+  seo: unknown;
+  createdAt: Date;
+}): MediaTag {
+  const tag: MediaTag = {
+    id: row.id,
+    label: row.label,
+    createdAt: row.createdAt.toISOString(),
+  };
+  if (row.disabled) tag.disabled = true;
+  if (row.system) tag.system = true;
+  if (row.cardColor && (DS_ACCENT_COLORS as readonly string[]).includes(row.cardColor)) {
+    tag.cardColor = row.cardColor as DsAccentColor;
   }
-  const fs = await import("fs");
-  return NextResponse.json({ tags: withSystemTags(readTags(fs)) });
+  const seo = sanitizeSeo(row.seo);
+  if (seo) tag.seo = seo;
+  return tag;
 }
 
-/**
- * PUT /api/media-tags — заменить весь список тегов в _tags.json.
- *
- * Store на клиенте — источник истины во время сессии: считает next-state
- * локально (upsert/rename/delete), дергает PUT с новым массивом. Для single-
- * admin-юзкейса этого достаточно; конкурентные правки не предполагаются.
- */
-export async function PUT(request: Request) {
-  if (isStatic) return NextResponse.json(null, { status: 501 });
-  const fs = await import("fs");
+export async function GET() {
+  const rows = await prisma.mediaTag.findMany({ orderBy: { createdAt: "asc" } });
+  const tags = withSystemTags(rows.map(dbToTag));
+  return NextResponse.json({ tags });
+}
 
-  const body = (await request.json().catch(() => null)) as
-    | { tags?: unknown }
-    | null;
+export async function PUT(request: Request) {
+  const body = (await request.json().catch(() => null)) as { tags?: unknown } | null;
   if (!body) return NextResponse.json({ error: "invalid json" }, { status: 400 });
 
-  const tags = withSystemTags(sanitize(body.tags));
+  if (!Array.isArray(body.tags)) {
+    return NextResponse.json({ error: "tags must be array" }, { status: 400 });
+  }
 
-  if (!fs.existsSync(MEDIA_DIR)) fs.mkdirSync(MEDIA_DIR, { recursive: true });
-  fs.writeFileSync(TAGS_FILE, JSON.stringify({ tags }, null, 2) + "\n", "utf-8");
+  const incoming = (body.tags as unknown[])
+    .map((t): MediaTag | null => {
+      if (!t || typeof t !== "object") return null;
+      const r = t as Record<string, unknown>;
+      const id = typeof r.id === "string" ? r.id.trim() : "";
+      const label = typeof r.label === "string" ? r.label.trim() : "";
+      if (!id || !label) return null;
+      const tag: MediaTag = { id, label };
+      if (r.disabled === true) tag.disabled = true;
+      const seo = sanitizeSeo(r.seo);
+      if (seo) tag.seo = seo;
+      if (typeof r.cardColor === "string" && (DS_ACCENT_COLORS as readonly string[]).includes(r.cardColor)) {
+        tag.cardColor = r.cardColor as DsAccentColor;
+      }
+      return tag;
+    })
+    .filter((t): t is MediaTag => t !== null);
 
-  return NextResponse.json({ ok: true, tags });
+  const final = withSystemTags(incoming);
+
+  await prisma.$transaction(
+    final.map((tag) =>
+      prisma.mediaTag.upsert({
+        where: { id: tag.id },
+        update: {
+          label: tag.label,
+          disabled: tag.disabled ?? false,
+          system: tag.system ?? false,
+          cardColor: tag.cardColor ?? null,
+          seo: tag.seo ? (tag.seo as Prisma.InputJsonValue) : Prisma.JsonNull,
+        },
+        create: {
+          id: tag.id,
+          label: tag.label,
+          disabled: tag.disabled ?? false,
+          system: tag.system ?? false,
+          cardColor: tag.cardColor ?? null,
+          seo: tag.seo ? (tag.seo as Prisma.InputJsonValue) : Prisma.JsonNull,
+        },
+      }),
+    ),
+  );
+
+  return NextResponse.json({ ok: true, tags: final });
 }

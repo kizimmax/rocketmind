@@ -154,6 +154,18 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/Maxi/.local/bin/uv run --directory /Users/Maxi/GitHub/Obsidian_Brain python hooks/user-prompt-submit.py",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }

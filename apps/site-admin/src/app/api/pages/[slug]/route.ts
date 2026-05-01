@@ -1,288 +1,135 @@
 import { NextResponse } from "next/server";
-
-const isStatic = process.env.NEXT_PUBLIC_STATIC === "1";
-
-// ── File helpers ─────────────────────────────────────────────────────────────
-
-const MIME_TO_EXT: Record<string, string> = {
-  "image/png": ".png", "image/jpeg": ".jpg", "image/jpg": ".jpg",
-  "image/webp": ".webp", "image/svg+xml": ".svg", "image/gif": ".gif",
-  "audio/mpeg": ".mp3", "audio/mp3": ".mp3", "audio/wav": ".wav",
-  "audio/ogg": ".ogg", "audio/mp4": ".m4a", "audio/x-m4a": ".m4a",
-  "audio/webm": ".webm",
-};
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { parseDataUrl, saveBuffer, deleteFilesWithBase, writeConfig, readConfig } from "@/lib/storage";
 
 const IMAGE_EXTS = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif"];
 const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".m4a", ".webm"];
 
-function parseDataUrl(dataUrl: string): { ext: string; buffer: Buffer } | null {
-  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-  if (!match) return null;
-  const ext = MIME_TO_EXT[match[1]] || null;
-  if (!ext) return null;
-  return { ext, buffer: Buffer.from(match[2], "base64") };
-}
+type Block = { id: string; type: string; enabled: boolean; order?: number; data: Record<string, unknown> };
 
-/**
- * Delete all files matching `{basePath}{ext}` for given extensions.
- */
-function deleteExisting(
-  fs: typeof import("fs"),
-  basePath: string,
-  extensions: string[],
-) {
-  for (const ext of extensions) {
-    const fp = basePath + ext;
-    if (fs.existsSync(fp)) fs.unlinkSync(fp);
-  }
-}
-
-/** Public-URL base for page assets. Unique pages live under /images/unique/<slug>/, everything else under /images/products/<category>/<slug>/. */
-function assetUrlBase(category: string, slug: string): string {
-  if (category === "unique") return `/images/unique/${slug}`;
-  return `/images/products/${category}/${slug}`;
-}
-
-function assetDir(
-  path: typeof import("path"),
-  sitePublicDir: string,
-  category: string,
-  slug: string,
-): string {
-  if (category === "unique") return path.join(sitePublicDir, "images", "unique", slug);
-  return path.join(sitePublicDir, "images", "products", category, slug);
-}
-
-/**
- * Save a base64 data URL as a file. Returns the public URL path.
- * Deletes any previous file for the same role (cover, about, audio).
- */
-function saveAsset(
-  fs: typeof import("fs"),
-  path: typeof import("path"),
-  sitePublicDir: string,
-  category: string,
-  slug: string,
-  role: string,
-  dataUrl: string,
-): string | null {
+function savePageAsset(category: string, slug: string, role: string, dataUrl: string): string | null {
   const parsed = parseDataUrl(dataUrl);
   if (!parsed) return null;
-
-  const dir = assetDir(path, sitePublicDir, category, slug);
-  fs.mkdirSync(dir, { recursive: true });
-
-  const basePath = path.join(dir, role);
+  const dir = `pages/${category}/${slug}`;
   const exts = AUDIO_EXTS.some((e) => e === parsed.ext) ? AUDIO_EXTS : IMAGE_EXTS;
-  deleteExisting(fs, basePath, exts);
-
-  fs.writeFileSync(basePath + parsed.ext, parsed.buffer);
-  return `${assetUrlBase(category, slug)}/${role}${parsed.ext}`;
+  deleteFilesWithBase(dir, role, exts);
+  const { publicUrl } = saveBuffer(dir, `${role}${parsed.ext}`, parsed.buffer);
+  return publicUrl;
 }
 
-/**
- * Save a logo-grid cell image (role = "logos/cell-<id>"). Deletes previous file with same base name.
- */
-function saveLogoCell(
-  fs: typeof import("fs"),
-  path: typeof import("path"),
-  sitePublicDir: string,
-  category: string,
-  slug: string,
-  cellId: string,
-  dataUrl: string,
-): string | null {
+function saveLogoCell(category: string, slug: string, cellId: string, dataUrl: string): string | null {
   const parsed = parseDataUrl(dataUrl);
   if (!parsed) return null;
-
-  const logosDir = path.join(assetDir(path, sitePublicDir, category, slug), "logos");
-  fs.mkdirSync(logosDir, { recursive: true });
-
-  const basePath = path.join(logosDir, `cell-${cellId}`);
-  deleteExisting(fs, basePath, IMAGE_EXTS);
-
-  fs.writeFileSync(basePath + parsed.ext, parsed.buffer);
-  return `${assetUrlBase(category, slug)}/logos/cell-${cellId}${parsed.ext}`;
+  const dir = `pages/${category}/${slug}/logos`;
+  deleteFilesWithBase(dir, `cell-${cellId}`, IMAGE_EXTS);
+  const { publicUrl } = saveBuffer(dir, `cell-${cellId}${parsed.ext}`, parsed.buffer);
+  return publicUrl;
 }
 
-// ── PUT ──────────────────────────────────────────────────────────────────────
-
-export async function PUT(request: Request, { params }: { params: Promise<{ slug: string }> }) {
-  if (isStatic) return NextResponse.json(null, { status: 501 });
-
-  const fs = await import("fs");
-  const path = await import("path");
-  const matter = (await import("gray-matter")).default;
-  const { getAllContentDirs } = await import("@/lib/content-paths");
-
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
   const { slug: rawSlug } = await params;
   const pageId = decodeURIComponent(rawSlug);
+  const url = pageId.startsWith("/") ? pageId : `/${pageId}`;
+
+  const existing = await prisma.page.findUnique({ where: { url } });
+  if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
+
   const page = await request.json();
-
-  const parts = pageId.split("/");
-  if (parts.length < 2) return NextResponse.json({ error: "bad id" }, { status: 400 });
-  const [sectionId, ...rest] = parts;
-  const slug = rest.join("/");
-
-  let filePath: string | null = null;
-  for (const { sectionId: sid, dir } of getAllContentDirs()) {
-    if (sid !== sectionId) continue;
-    const fp = path.join(dir, `${slug}.md`);
-    if (fs.existsSync(fp)) { filePath = fp; break; }
-  }
-  if (!filePath) return NextResponse.json({ error: "not found" }, { status: 404 });
-
-  // Site public dir for saving assets
-  const sitePublicDir = path.resolve(process.cwd(), "..", "site", "public");
-
-  type Block = { id: string; type: string; enabled: boolean; order?: number; data: Record<string, unknown> };
   const blocks: Block[] = page.blocks ?? [];
   const block = (t: string) => blocks.find((b) => b.type === t);
-  // Switch alone determines persistence: enabled → data (object as-is, even if partially filled), disabled → null.
   const enabled = (b: Block | undefined) => b?.enabled ? (b.data ?? {}) : null;
-
-  // ── Extract custom sections and compute their position ──────────────────────
-  // Each custom section's `insertAfter` = type of the nearest preceding built-in block
-  // (null if it comes before any built-in). Relative order is preserved via array index.
-  const sortedBlocks = [...blocks].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  const customSections: Array<{ id: string; insertAfter: string | null; enabled: boolean; data: Record<string, unknown> }> = [];
-  {
-    let lastBuiltinType: string | null = null;
-    for (const b of sortedBlocks) {
-      if (b.type === "customSection") {
-        customSections.push({
-          id: b.id,
-          insertAfter: lastBuiltinType,
-          enabled: b.enabled !== false,
-          data: b.data ?? {},
-        });
-      } else {
-        lastBuiltinType = b.type;
-      }
-    }
-  }
 
   const category = page.sectionId as string;
   const pageSlug = page.slug as string;
 
-  // ── Extract and save binary assets ──────────────────────────────────────────
+  // ── Extract custom sections ───��─────────────────────────────────────────��────
+  const sortedBlocks = [...blocks].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const customSections: Array<{ id: string; insertAfter: string | null; enabled: boolean; data: Record<string, unknown> }> = [];
+  let lastBuiltinType: string | null = null;
+  for (const b of sortedBlocks) {
+    if (b.type === "customSection") {
+      customSections.push({ id: b.id, insertAfter: lastBuiltinType, enabled: b.enabled !== false, data: b.data ?? {} });
+    } else {
+      lastBuiltinType = b.type;
+    }
+  }
 
+  // ── Process hero images ──────────────────────────────────────────────────────
   const heroBlock = block("hero");
   if (heroBlock?.enabled && heroBlock.data) {
-    const { heroImageData, audioData, audioFilename, ...cleanHero } = heroBlock.data as Record<string, unknown>;
-
+    const { heroImageData, audioData, ...cleanHero } = heroBlock.data;
     if (typeof heroImageData === "string" && heroImageData.startsWith("data:")) {
-      saveAsset(fs, path, sitePublicDir, category, pageSlug, "cover", heroImageData);
+      const url = savePageAsset(category, pageSlug, "cover", heroImageData);
+      if (url) cleanHero.heroImageData = url;
+    } else if (typeof heroImageData === "string") {
+      cleanHero.heroImageData = heroImageData;
     }
-
     if (typeof audioData === "string" && audioData.startsWith("data:")) {
-      saveAsset(fs, path, sitePublicDir, category, pageSlug, "audio", audioData);
+      const url = savePageAsset(category, pageSlug, "audio", audioData);
+      if (url) cleanHero.audioData = url;
+    } else if (typeof audioData === "string") {
+      cleanHero.audioData = audioData;
     }
-
     heroBlock.data = cleanHero;
   }
 
   const aboutBlock = block("about");
   if (aboutBlock?.enabled && aboutBlock.data) {
-    const { aboutImageData, ...cleanAbout } = aboutBlock.data as Record<string, unknown>;
-
+    const { aboutImageData, ...cleanAbout } = aboutBlock.data;
     if (typeof aboutImageData === "string" && aboutImageData.startsWith("data:")) {
-      saveAsset(fs, path, sitePublicDir, category, pageSlug, "about", aboutImageData);
+      const url = savePageAsset(category, pageSlug, "about", aboutImageData);
+      if (url) cleanAbout.aboutImageData = url;
+    } else if (typeof aboutImageData === "string") {
+      cleanAbout.aboutImageData = aboutImageData;
     }
-
     aboutBlock.data = cleanAbout;
   }
 
-  // ── About Rocketmind shared photos (global across all pages) ────────────────
+  // ── aboutRocketmind shared photos ───────────────────────────────────────────
   const aboutRmBlock = block("aboutRocketmind");
   if (aboutRmBlock?.data) {
-    const d = aboutRmBlock.data as Record<string, unknown>;
-    const alexData = typeof d.alexPhotoData === "string" ? d.alexPhotoData : null;
-    const canvasData = typeof d.canvasPhotoData === "string" ? d.canvasPhotoData : null;
-
-    const aboutDir = path.join(sitePublicDir, "images", "about");
-    const jsonPath = path.join(path.resolve(process.cwd(), "..", "site", "content"), "_about-rocketmind.json");
-    let shared: { alexPhoto?: string; canvasPhoto?: string } = {};
-    if (fs.existsSync(jsonPath)) {
-      try { shared = JSON.parse(fs.readFileSync(jsonPath, "utf-8")); } catch { /* ignore */ }
+    const d = aboutRmBlock.data;
+    const { alexPhotoData, canvasPhotoData, ...cleanAboutRm } = d;
+    const shared = readConfig<{ alexPhoto?: string; canvasPhoto?: string }>("about-rocketmind.json") ?? {};
+    if (typeof alexPhotoData === "string" && alexPhotoData.startsWith("data:")) {
+      const url = savePageAsset("about", "shared", "alexey-eremin", alexPhotoData);
+      if (url) { shared.alexPhoto = url; cleanAboutRm.alexPhotoData = url; }
     }
-
-    function saveAboutPhoto(role: string, dataUrl: string): string | null {
-      const parsed = parseDataUrl(dataUrl);
-      if (!parsed) return null;
-      fs.mkdirSync(aboutDir, { recursive: true });
-      // Delete any previous `role.<ext>` files
-      for (const ext of IMAGE_EXTS) {
-        const fp = path.join(aboutDir, role + ext);
-        if (fs.existsSync(fp)) fs.unlinkSync(fp);
-      }
-      fs.writeFileSync(path.join(aboutDir, role + parsed.ext), parsed.buffer);
-      return `/images/about/${role}${parsed.ext}`;
+    if (typeof canvasPhotoData === "string" && canvasPhotoData.startsWith("data:")) {
+      const url = savePageAsset("about", "shared", "canvas-image", canvasPhotoData);
+      if (url) { shared.canvasPhoto = url; cleanAboutRm.canvasPhotoData = url; }
     }
-
-    if (alexData && alexData.startsWith("data:")) {
-      const url = saveAboutPhoto("alexey-eremin", alexData);
-      if (url) shared.alexPhoto = url;
-    }
-    if (canvasData && canvasData.startsWith("data:")) {
-      const url = saveAboutPhoto("canvas-image", canvasData);
-      if (url) shared.canvasPhoto = url;
-    }
-    if (alexData || canvasData) {
-      fs.writeFileSync(
-        jsonPath,
-        JSON.stringify(
-          {
-            alexPhoto: shared.alexPhoto || "/images/about/alexey-eremin.png",
-            canvasPhoto: shared.canvasPhoto || "/images/about/canvas-image.png",
-          },
-          null,
-          2,
-        ),
-        "utf-8",
-      );
-    }
-
-    // Strip transient data-URL fields from block data before persisting to frontmatter
-    const { alexPhotoData: _a, canvasPhotoData: _c, ...cleanAboutRm } = d;
-    void _a; void _c;
+    if (alexPhotoData || canvasPhotoData) writeConfig("about-rocketmind.json", shared);
     aboutRmBlock.data = cleanAboutRm;
   }
 
-  // ── Projects block (about-clone with logoGrid; used on unique /about page) ──
+  // ── Projects logoGrid cells ──────────────────────────────────────────────────
   const projectsBlock = block("projects");
   if (projectsBlock?.enabled && projectsBlock.data) {
-    const cleanProjects = { ...projectsBlock.data } as Record<string, unknown>;
-    const logoGrid = cleanProjects.logoGrid as { cells?: Array<{ id: string; src: string; alt?: string; size?: string }> } | undefined;
+    const clean = { ...projectsBlock.data };
+    const logoGrid = clean.logoGrid as { cells?: Array<{ id: string; src: string; alt?: string; size?: string }> } | undefined;
     if (logoGrid && Array.isArray(logoGrid.cells)) {
-      const persistedCells = logoGrid.cells.map((cell) => {
-        if (cell.src && cell.src.startsWith("data:")) {
-          const url = saveLogoCell(fs, path, sitePublicDir, category, pageSlug, cell.id, cell.src);
-          if (url) return { ...cell, src: url };
-        }
-        return cell;
-      });
-      cleanProjects.logoGrid = { cells: persistedCells };
+      clean.logoGrid = {
+        cells: logoGrid.cells.map((cell) => {
+          if (cell.src && cell.src.startsWith("data:")) {
+            const url = saveLogoCell(category, pageSlug, cell.id, cell.src);
+            if (url) return { ...cell, src: url };
+          }
+          return cell;
+        }),
+      };
     }
-    projectsBlock.data = cleanProjects;
+    projectsBlock.data = clean;
   }
 
-  // ── Build frontmatter ───────────────────────────────────────────────────────
-
-  const expertsBlock = block("experts");
-  // Switch authoritative: enabled → array (possibly empty); disabled → null.
-  const expertsValue = expertsBlock?.enabled
-    ? (Array.isArray(expertsBlock.data?.experts) ? expertsBlock.data.experts : [])
-    : null;
-
-  // ── Save shared partnerships block (if changed) ────────────────────────────
+  // ── Partnerships block → save to config ─────────────────────────────────────
   const partnershipsBlock = block("partnerships");
   if (partnershipsBlock?.enabled && partnershipsBlock.data) {
     const pData = partnershipsBlock.data;
-    const partnershipsDir = path.join(sitePublicDir, "images", "partnerships");
-    fs.mkdirSync(partnershipsDir, { recursive: true });
-
-    // Save logo images
     const logos: Array<{ src: string; alt: string }> = [];
     const rawLogos = (pData.logos as Array<{ src: string; alt: string }>) || [];
     for (let i = 0; i < rawLogos.length; i++) {
@@ -290,20 +137,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
       if (logo.src && logo.src.startsWith("data:")) {
         const parsed = parseDataUrl(logo.src);
         if (parsed) {
-          const filename = `logo-${i}${parsed.ext}`;
-          for (const ext of IMAGE_EXTS) {
-            const old = path.join(partnershipsDir, `logo-${i}${ext}`);
-            if (fs.existsSync(old)) fs.unlinkSync(old);
-          }
-          fs.writeFileSync(path.join(partnershipsDir, filename), parsed.buffer);
-          logos.push({ src: `/images/partnerships/${filename}`, alt: logo.alt || "" });
+          deleteFilesWithBase("partnerships", `logo-${i}`, IMAGE_EXTS);
+          const { publicUrl } = saveBuffer("partnerships", `logo-${i}${parsed.ext}`, parsed.buffer);
+          logos.push({ src: publicUrl, alt: logo.alt || "" });
         }
       } else {
         logos.push({ src: logo.src, alt: logo.alt || "" });
       }
     }
-
-    // Save photo images
     const photos: Array<{ src: string; alt: string }> = [];
     const rawPhotos = (pData.photos as Array<{ src: string; alt?: string }>) || [];
     for (let i = 0; i < rawPhotos.length; i++) {
@@ -311,35 +152,25 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
       if (photo.src && photo.src.startsWith("data:")) {
         const parsed = parseDataUrl(photo.src);
         if (parsed) {
-          const filename = `photo-${i + 1}${parsed.ext}`;
-          for (const ext of IMAGE_EXTS) {
-            const old = path.join(partnershipsDir, `photo-${i + 1}${ext}`);
-            if (fs.existsSync(old)) fs.unlinkSync(old);
-          }
-          fs.writeFileSync(path.join(partnershipsDir, filename), parsed.buffer);
-          photos.push({ src: `/images/partnerships/${filename}`, alt: photo.alt || "" });
+          deleteFilesWithBase("partnerships", `photo-${i + 1}`, IMAGE_EXTS);
+          const { publicUrl } = saveBuffer("partnerships", `photo-${i + 1}${parsed.ext}`, parsed.buffer);
+          photos.push({ src: publicUrl, alt: photo.alt || "" });
         }
       } else {
         photos.push({ src: photo.src, alt: photo.alt || "" });
       }
     }
-
-    const sharedData = {
-      caption: pData.caption || "",
-      title: pData.title || "",
-      description: pData.description || "",
-      logos,
-      photos,
-    };
-    const pJsonPath = path.join(path.resolve(process.cwd(), "..", "site", "content"), "_partnerships.json");
-    fs.writeFileSync(pJsonPath, JSON.stringify(sharedData, null, 2), "utf-8");
+    writeConfig("partnerships.json", { caption: pData.caption || "", title: pData.title || "", description: pData.description || "", logos, photos });
   }
 
-  const fm: Record<string, unknown> = {
+  // ── Build content object (mirrors old frontmatter structure) ─────────────────
+  const expertsBlock = block("experts");
+  const expertsValue = expertsBlock?.enabled
+    ? (Array.isArray(expertsBlock.data?.experts) ? expertsBlock.data.experts : [])
+    : null;
+
+  const content: Record<string, unknown> = {
     slug: pageSlug, category,
-    menuTitle: page.menuTitle, menuDescription: page.menuDescription,
-    cardTitle: page.cardTitle, cardDescription: page.cardDescription,
-    metaTitle: page.metaTitle, metaDescription: page.metaDescription,
     expertProduct: typeof page.expertProduct === "boolean" ? page.expertProduct : null,
     caseType: page.caseType === "mini" ? "mini" : null,
     featured: typeof page.featured === "boolean" ? page.featured : null,
@@ -352,7 +183,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     methodology: enabled(block("methodology")),
     homeSections: enabled(block("homeSections")),
     hero: enabled(heroBlock),
-    // logoMarquee is auto-enabled by default; persist `false` only if disabled, otherwise omit (null)
     logoMarquee: block("logoMarquee")?.enabled === false ? false : null,
     about: enabled(aboutBlock),
     audience: enabled(block("audience")),
@@ -362,7 +192,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
     services: enabled(block("services")),
     process: enabled(block("process")),
     experts: expertsValue,
-    // Enabled-by-default: store `false` to hide; otherwise object (custom data) or null (use defaults)
     aboutRocketmind: (() => {
       const b = block("aboutRocketmind");
       if (b?.enabled === false) return false;
@@ -378,59 +207,43 @@ export async function PUT(request: Request, { params }: { params: Promise<{ slug
       return ctaId ? { ctaId } : true;
     })(),
     customSections: customSections.length > 0 ? customSections : null,
-    socialProof: null, duration: null, whyRocketmind: null, expert: null, cases: null, reviews: null,
   };
 
-  const newPath = path.join(path.dirname(filePath), `${pageSlug}.md`);
-  if (newPath !== filePath) fs.unlinkSync(filePath);
-  fs.writeFileSync(newPath, matter.stringify("", fm), "utf-8");
+  const newUrl = category === "unique" ? `/${pageSlug}` : `/${category}/${pageSlug}`;
+  await prisma.page.update({
+    where: { id: existing.id },
+    data: {
+      slug: pageSlug,
+      url: newUrl,
+      name: page.menuTitle || pageSlug,
+      status: page.status || "published",
+      sortOrder: typeof page.order === "number" ? page.order : existing.sortOrder,
+      menuTitle: page.menuTitle ?? "",
+      menuDescription: page.menuDescription ?? "",
+      cardTitle: page.cardTitle ?? "",
+      cardDescription: page.cardDescription ?? "",
+      metaTitle: page.metaTitle ?? "",
+      metaDescription: page.metaDescription ?? "",
+      content: content as Prisma.InputJsonValue,
+    },
+  });
+
   return NextResponse.json({ ok: true });
 }
 
-// ── DELETE ───────────────────────────────────────────────────────────────────
-
-export async function DELETE(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
-  if (isStatic) return NextResponse.json(null, { status: 501 });
-
-  const fs = await import("fs");
-  const path = await import("path");
-  const { getAllContentDirs } = await import("@/lib/content-paths");
-
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
   const { slug: rawSlug } = await params;
   const pageId = decodeURIComponent(rawSlug);
-  const parts = pageId.split("/");
-  if (parts.length < 2) return NextResponse.json({ error: "bad id" }, { status: 400 });
-  const [sectionId, ...rest] = parts;
-  const slug = rest.join("/");
+  const url = pageId.startsWith("/") ? pageId : `/${pageId}`;
 
-  const siteRoot = path.resolve(process.cwd(), "..", "site");
-  const archiveDir = path.join(siteRoot, "content", ".archive");
+  const page = await prisma.page.findUnique({ where: { url } });
+  if (!page) return NextResponse.json({ error: "not found" }, { status: 404 });
 
-  for (const { sectionId: sid, dir } of getAllContentDirs()) {
-    if (sid !== sectionId) continue;
-    const fp = path.join(dir, `${slug}.md`);
-    if (fs.existsSync(fp)) {
-      // Archive markdown
-      const dest = path.join(archiveDir, sectionId, slug);
-      fs.mkdirSync(dest, { recursive: true });
-      fs.renameSync(fp, path.join(dest, `${slug}.md`));
-
-      // Archive assets
-      const sitePublicDir = path.join(siteRoot, "public");
-      const assetDir = path.join(sitePublicDir, "images", "products", sectionId, slug);
-      if (fs.existsSync(assetDir)) {
-        const assetDest = path.join(dest, "assets");
-        fs.mkdirSync(assetDest, { recursive: true });
-        for (const f of fs.readdirSync(assetDir)) {
-          fs.renameSync(path.join(assetDir, f), path.join(assetDest, f));
-        }
-        fs.rmSync(assetDir, { recursive: true, force: true });
-      }
-
-      return NextResponse.json({ ok: true });
-    }
-  }
-  return NextResponse.json({ error: "not found" }, { status: 404 });
+  await prisma.page.delete({ where: { id: page.id } });
+  return NextResponse.json({ ok: true });
 }
 
 export function generateStaticParams() {

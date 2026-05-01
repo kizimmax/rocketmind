@@ -231,6 +231,7 @@ __export(index_exports, {
   FactoidGrid: () => FactoidGrid,
   ForWhomSection: () => ForWhomSection,
   GlossaryList: () => GlossaryList,
+  GlossaryPopularRow: () => GlossaryPopularRow,
   GlossaryScriptToggle: () => GlossaryScriptToggle,
   GlossaryWidget: () => GlossaryWidget,
   GlowingEffect: () => GlowingEffect,
@@ -3196,17 +3197,27 @@ function ArticleCard({
             }
           )
         ] }),
-        variant === "wide" ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
-          WideLayout,
-          {
-            coverUrl,
-            visibleTags,
-            typeBadge,
-            authorName,
-            authorAvatarUrl,
-            date
-          }
-        ) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+        variant === "wide" ? /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "sm:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+            DefaultLayout,
+            {
+              coverUrl,
+              visibleTags,
+              typeBadge
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("div", { className: "hidden sm:block", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+            WideLayout,
+            {
+              coverUrl,
+              visibleTags,
+              typeBadge,
+              authorName,
+              authorAvatarUrl,
+              date
+            }
+          ) })
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
           DefaultLayout,
           {
             coverUrl,
@@ -3244,7 +3255,7 @@ function ArticleCard({
               }
             )
           ] }),
-          variant === "default" && authorName && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
+          authorName && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(
             Author,
             {
               variant: "short",
@@ -3252,7 +3263,12 @@ function ArticleCard({
               avatarUrl: authorAvatarUrl,
               date,
               showAvatarFallback: false,
-              className: "mt-auto"
+              className: cn(
+                "mt-auto",
+                // Default — всегда снизу. Wide — только на мобильном (на sm+
+                // автор уже отрисован внутри WideLayout справа).
+                variant === "wide" && "sm:hidden"
+              )
             }
           )
         ] })
@@ -3373,9 +3389,13 @@ function groupByLetter(items) {
     bucket.push(it);
     map.set(letter, bucket);
   }
-  const letters = Array.from(map.keys()).sort(
-    (a, b) => a.localeCompare(b, "ru")
-  );
+  const letters = Array.from(map.keys()).sort((a, b) => {
+    const scriptOf = (l) => /[А-ЯЁ]/.test(l) ? 0 : /[A-Z]/.test(l) ? 1 : 2;
+    const sa = scriptOf(a);
+    const sb = scriptOf(b);
+    if (sa !== sb) return sa - sb;
+    return a.localeCompare(b, "ru");
+  });
   return letters.map((letter) => ({
     letter,
     items: (map.get(letter) ?? []).sort(
@@ -3498,7 +3518,7 @@ function GlossaryList({
   ...props
 }) {
   const filtered = React14.useMemo(
-    () => items.filter((i) => getGlossaryTermScript(i.title) === script),
+    () => script ? items.filter((i) => getGlossaryTermScript(i.title) === script) : items,
     [items, script]
   );
   const groups = React14.useMemo(() => groupByLetter(filtered), [filtered]);
@@ -3516,6 +3536,82 @@ function GlossaryList({
       children: groups.map((g) => /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "mb-10 break-inside-avoid", children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(LetterGroupBlock, { group: g }) }, g.letter))
     }
   );
+}
+function GlossaryPopularRow({
+  items,
+  className,
+  ...props
+}) {
+  const scrollRef = React14.useRef(null);
+  const [fade, setFade] = React14.useState({
+    left: false,
+    right: true
+  });
+  const update = React14.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    const overflows = scrollWidth - clientWidth > 1;
+    const atEnd = scrollLeft + clientWidth >= scrollWidth - 1;
+    setFade({
+      left: overflows && scrollLeft > 1,
+      right: overflows && !atEnd
+    });
+  }, []);
+  React14.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [update, items]);
+  if (items.length === 0) return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)("div", { className: cn("relative", className), ...props, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+      "div",
+      {
+        ref: scrollRef,
+        onScroll: update,
+        className: "overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("div", { className: "flex w-max gap-3 pr-10", children: items.map((it) => /* @__PURE__ */ (0, import_jsx_runtime39.jsxs)(
+          "a",
+          {
+            href: it.href,
+            className: cn(
+              "group/term flex w-[260px] shrink-0 flex-col gap-2 rounded-sm border border-[color:var(--rm-gray-3)] bg-[color:var(--rm-gray-1)] p-4 transition-colors",
+              "hover:border-[color:var(--rm-yellow-100)]"
+            ),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold uppercase tracking-[-0.01em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] line-clamp-2", children: it.title }),
+              it.description && /* @__PURE__ */ (0, import_jsx_runtime39.jsx)("span", { className: "text-[length:var(--text-12)] leading-[1.35] text-[color:var(--rm-gray-fg-sub)] line-clamp-3", children: it.description })
+            ]
+          },
+          it.slug
+        )) })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+      "div",
+      {
+        "aria-hidden": true,
+        className: cn(
+          "pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent transition-opacity duration-200",
+          fade.left ? "opacity-100" : "opacity-0"
+        )
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
+      "div",
+      {
+        "aria-hidden": true,
+        className: cn(
+          "pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent transition-opacity duration-200",
+          fade.right ? "opacity-100" : "opacity-0"
+        )
+      }
+    )
+  ] });
 }
 function GlossaryScriptToggle({
   value,
@@ -5108,7 +5204,7 @@ var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCar
             extra > 0 && /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(
               "span",
               {
-                className: "flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]",
+                className: "flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]",
                 title: `\u0435\u0449\u0451 ${extra}`,
                 children: [
                   "+",
@@ -5146,14 +5242,14 @@ function Avatar2({ name, image }) {
         {
           src: image,
           alt: name,
-          className: "h-20 w-20 rounded-full border-2 border-[#0A0A0A] object-cover",
+          className: "h-14 w-14 rounded-full border-2 border-[#0A0A0A] object-cover",
           loading: "lazy"
         }
       )
     );
   }
   const initials = name.split(/\s+/).map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-  return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("span", { className: "flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]", children: initials });
+  return /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("span", { className: "flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]", children: initials });
 }
 
 // src/components/ui/for-whom-section.tsx
@@ -8101,6 +8197,7 @@ function HeaderCtaButton({ cta }) {
   FactoidGrid,
   ForWhomSection,
   GlossaryList,
+  GlossaryPopularRow,
   GlossaryScriptToggle,
   GlossaryWidget,
   GlowingEffect,

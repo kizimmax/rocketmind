@@ -2836,17 +2836,27 @@ function ArticleCard({
             }
           )
         ] }),
-        variant === "wide" ? /* @__PURE__ */ jsx38(
-          WideLayout,
-          {
-            coverUrl,
-            visibleTags,
-            typeBadge,
-            authorName,
-            authorAvatarUrl,
-            date
-          }
-        ) : /* @__PURE__ */ jsx38(
+        variant === "wide" ? /* @__PURE__ */ jsxs17(Fragment5, { children: [
+          /* @__PURE__ */ jsx38("div", { className: "sm:hidden", children: /* @__PURE__ */ jsx38(
+            DefaultLayout,
+            {
+              coverUrl,
+              visibleTags,
+              typeBadge
+            }
+          ) }),
+          /* @__PURE__ */ jsx38("div", { className: "hidden sm:block", children: /* @__PURE__ */ jsx38(
+            WideLayout,
+            {
+              coverUrl,
+              visibleTags,
+              typeBadge,
+              authorName,
+              authorAvatarUrl,
+              date
+            }
+          ) })
+        ] }) : /* @__PURE__ */ jsx38(
           DefaultLayout,
           {
             coverUrl,
@@ -2884,7 +2894,7 @@ function ArticleCard({
               }
             )
           ] }),
-          variant === "default" && authorName && /* @__PURE__ */ jsx38(
+          authorName && /* @__PURE__ */ jsx38(
             Author,
             {
               variant: "short",
@@ -2892,7 +2902,12 @@ function ArticleCard({
               avatarUrl: authorAvatarUrl,
               date,
               showAvatarFallback: false,
-              className: "mt-auto"
+              className: cn(
+                "mt-auto",
+                // Default — всегда снизу. Wide — только на мобильном (на sm+
+                // автор уже отрисован внутри WideLayout справа).
+                variant === "wide" && "sm:hidden"
+              )
             }
           )
         ] })
@@ -3012,9 +3027,13 @@ function groupByLetter(items) {
     bucket.push(it);
     map.set(letter, bucket);
   }
-  const letters = Array.from(map.keys()).sort(
-    (a, b) => a.localeCompare(b, "ru")
-  );
+  const letters = Array.from(map.keys()).sort((a, b) => {
+    const scriptOf = (l) => /[А-ЯЁ]/.test(l) ? 0 : /[A-Z]/.test(l) ? 1 : 2;
+    const sa = scriptOf(a);
+    const sb = scriptOf(b);
+    if (sa !== sb) return sa - sb;
+    return a.localeCompare(b, "ru");
+  });
   return letters.map((letter) => ({
     letter,
     items: (map.get(letter) ?? []).sort(
@@ -3137,7 +3156,7 @@ function GlossaryList({
   ...props
 }) {
   const filtered = React14.useMemo(
-    () => items.filter((i) => getGlossaryTermScript(i.title) === script),
+    () => script ? items.filter((i) => getGlossaryTermScript(i.title) === script) : items,
     [items, script]
   );
   const groups = React14.useMemo(() => groupByLetter(filtered), [filtered]);
@@ -3155,6 +3174,82 @@ function GlossaryList({
       children: groups.map((g) => /* @__PURE__ */ jsx39("div", { className: "mb-10 break-inside-avoid", children: /* @__PURE__ */ jsx39(LetterGroupBlock, { group: g }) }, g.letter))
     }
   );
+}
+function GlossaryPopularRow({
+  items,
+  className,
+  ...props
+}) {
+  const scrollRef = React14.useRef(null);
+  const [fade, setFade] = React14.useState({
+    left: false,
+    right: true
+  });
+  const update = React14.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    const overflows = scrollWidth - clientWidth > 1;
+    const atEnd = scrollLeft + clientWidth >= scrollWidth - 1;
+    setFade({
+      left: overflows && scrollLeft > 1,
+      right: overflows && !atEnd
+    });
+  }, []);
+  React14.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [update, items]);
+  if (items.length === 0) return null;
+  return /* @__PURE__ */ jsxs18("div", { className: cn("relative", className), ...props, children: [
+    /* @__PURE__ */ jsx39(
+      "div",
+      {
+        ref: scrollRef,
+        onScroll: update,
+        className: "overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        children: /* @__PURE__ */ jsx39("div", { className: "flex w-max gap-3 pr-10", children: items.map((it) => /* @__PURE__ */ jsxs18(
+          "a",
+          {
+            href: it.href,
+            className: cn(
+              "group/term flex w-[260px] shrink-0 flex-col gap-2 rounded-sm border border-[color:var(--rm-gray-3)] bg-[color:var(--rm-gray-1)] p-4 transition-colors",
+              "hover:border-[color:var(--rm-yellow-100)]"
+            ),
+            children: [
+              /* @__PURE__ */ jsx39("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold uppercase tracking-[-0.01em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] line-clamp-2", children: it.title }),
+              it.description && /* @__PURE__ */ jsx39("span", { className: "text-[length:var(--text-12)] leading-[1.35] text-[color:var(--rm-gray-fg-sub)] line-clamp-3", children: it.description })
+            ]
+          },
+          it.slug
+        )) })
+      }
+    ),
+    /* @__PURE__ */ jsx39(
+      "div",
+      {
+        "aria-hidden": true,
+        className: cn(
+          "pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background to-transparent transition-opacity duration-200",
+          fade.left ? "opacity-100" : "opacity-0"
+        )
+      }
+    ),
+    /* @__PURE__ */ jsx39(
+      "div",
+      {
+        "aria-hidden": true,
+        className: cn(
+          "pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background to-transparent transition-opacity duration-200",
+          fade.right ? "opacity-100" : "opacity-0"
+        )
+      }
+    )
+  ] });
 }
 function GlossaryScriptToggle({
   value,
@@ -4750,7 +4845,7 @@ var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCar
             extra > 0 && /* @__PURE__ */ jsxs23(
               "span",
               {
-                className: "flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]",
+                className: "flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#222222] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]",
                 title: `\u0435\u0449\u0451 ${extra}`,
                 children: [
                   "+",
@@ -4788,14 +4883,14 @@ function Avatar2({ name, image }) {
         {
           src: image,
           alt: name,
-          className: "h-20 w-20 rounded-full border-2 border-[#0A0A0A] object-cover",
+          className: "h-14 w-14 rounded-full border-2 border-[#0A0A0A] object-cover",
           loading: "lazy"
         }
       )
     );
   }
   const initials = name.split(/\s+/).map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-  return /* @__PURE__ */ jsx44("span", { className: "flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]", children: initials });
+  return /* @__PURE__ */ jsx44("span", { className: "flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#0A0A0A] bg-[#333333] text-[length:var(--text-18)] font-medium text-[color:var(--rm-gray-fg-main)]", children: initials });
 }
 
 // src/components/ui/for-whom-section.tsx
@@ -5164,7 +5259,7 @@ function ContactsSection({
 }
 
 // src/components/ui/process-section.tsx
-import { useEffect as useEffect9, useRef as useRef11, useState as useState6, useCallback as useCallback4 } from "react";
+import { useEffect as useEffect10, useRef as useRef12, useState as useState6, useCallback as useCallback5 } from "react";
 import { Fragment as Fragment13, jsx as jsx50, jsxs as jsxs27 } from "react/jsx-runtime";
 function TimelineColumn({
   isActive,
@@ -5293,8 +5388,8 @@ function AcademyStepCard({
 function useStepProgress(stepCount) {
   const [activeIndex, setActiveIndex] = useState6(-1);
   const [fills, setFills] = useState6(() => Array(stepCount).fill(0));
-  const containerRef = useRef11(null);
-  const update = useCallback4(() => {
+  const containerRef = useRef12(null);
+  const update = useCallback5(() => {
     const container = containerRef.current;
     if (!container) return;
     const allStepEls = container.querySelectorAll("[data-step]");
@@ -5320,7 +5415,7 @@ function useStepProgress(stepCount) {
     setActiveIndex(newActive);
     setFills(newFills);
   }, [stepCount]);
-  useEffect9(() => {
+  useEffect10(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -5472,7 +5567,7 @@ function ProcessSection({
 }
 
 // src/components/ui/results-section.tsx
-import { useEffect as useEffect10, useRef as useRef12, useState as useState7, useCallback as useCallback5 } from "react";
+import { useEffect as useEffect11, useRef as useRef13, useState as useState7, useCallback as useCallback6 } from "react";
 import { Fragment as Fragment14, jsx as jsx51, jsxs as jsxs28 } from "react/jsx-runtime";
 var STEP_OFFSET = 88;
 var STAGGER = 0.18;
@@ -5483,8 +5578,8 @@ function useResultsScroll(cardCount) {
     arr[0] = 1;
     return arr;
   });
-  const sectionRef = useRef12(null);
-  const update = useCallback5(() => {
+  const sectionRef = useRef13(null);
+  const update = useCallback6(() => {
     const el = sectionRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -5505,7 +5600,7 @@ function useResultsScroll(cardCount) {
     }
     setProgresses(newProgresses);
   }, [cardCount]);
-  useEffect10(() => {
+  useEffect11(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
@@ -5924,7 +6019,7 @@ function ExpertsSection({
 }
 
 // src/components/ui/hero-experts.tsx
-import { useState as useState8, useRef as useRef13, useEffect as useEffect11, useCallback as useCallback6 } from "react";
+import { useState as useState8, useRef as useRef14, useEffect as useEffect12, useCallback as useCallback7 } from "react";
 import { jsx as jsx54, jsxs as jsxs31 } from "react/jsx-runtime";
 var AVATAR_SIZE = 80;
 var AVATAR_OVERLAP = 16;
@@ -5984,8 +6079,8 @@ function MultiExperts({
   quote,
   maxVisible
 }) {
-  const containerRef = useRef13(null);
-  const containerWidthRef = useRef13(0);
+  const containerRef = useRef14(null);
+  const containerWidthRef = useRef14(0);
   const [containerWidth, setContainerWidth] = useState8(0);
   const [dynamicMax, setDynamicMax] = useState8(maxVisible);
   const [activeIndex, setActiveIndex] = useState8(null);
@@ -5993,9 +6088,9 @@ function MultiExperts({
   const [tipLeft, setTipLeft] = useState8(0);
   const [tipFlipped, setTipFlipped] = useState8(false);
   const [tipContent, setTipContent] = useState8(null);
-  const pendingRef = useRef13(null);
-  const timerRef = useRef13(null);
-  useEffect11(() => {
+  const pendingRef = useRef14(null);
+  const timerRef = useRef14(null);
+  useEffect12(() => {
     const el = containerRef.current;
     if (!el) return;
     const observer = new ResizeObserver(([entry]) => {
@@ -6008,16 +6103,16 @@ function MultiExperts({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  useEffect11(() => () => {
+  useEffect12(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   }, []);
   const effectiveMax = Math.min(dynamicMax, maxVisible);
   const visible = experts.slice(0, effectiveMax);
-  const computeLeft = useCallback6(
+  const computeLeft = useCallback7(
     (i) => i * EFFECTIVE_WIDTH + AVATAR_SIZE / 2,
     []
   );
-  const computeFlipped = useCallback6(
+  const computeFlipped = useCallback7(
     (left) => left > containerWidthRef.current / 2,
     []
   );
@@ -6536,7 +6631,7 @@ function CTASectionMini({
 // src/components/ui/form-modal.tsx
 import {
   createContext,
-  useCallback as useCallback7,
+  useCallback as useCallback8,
   useContext,
   useMemo as useMemo3,
   useState as useState9
@@ -6571,7 +6666,7 @@ function ModalProvider({
     for (const f of forms) m.set(f.id, f);
     return m;
   }, [forms]);
-  const openForm = useCallback7(
+  const openForm = useCallback8(
     (formId, ctx) => {
       if (!formId || !formsById.has(formId)) {
         if (typeof window !== "undefined") {
@@ -6931,7 +7026,7 @@ function InfiniteLogoMarquee({
 }
 
 // src/components/ui/mobile-nav.tsx
-import { useState as useState10, useCallback as useCallback8, useEffect as useEffect12, useRef as useRef14 } from "react";
+import { useState as useState10, useCallback as useCallback9, useEffect as useEffect13, useRef as useRef15 } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import Link4 from "next/link";
@@ -7052,9 +7147,9 @@ function MobileNav({
   const [accordions, setAccordions] = useState10({});
   const [mounted, setMounted] = useState10(false);
   const [origin, setOrigin] = useState10(null);
-  const triggerRef = useRef14(null);
-  useEffect12(() => setMounted(true), []);
-  const open = useCallback8(() => {
+  const triggerRef = useRef15(null);
+  useEffect13(() => setMounted(true), []);
+  const open = useCallback9(() => {
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect();
       setOrigin({
@@ -7067,20 +7162,20 @@ function MobileNav({
     setAccordions({});
     setIsOpen(true);
   }, []);
-  const close = useCallback8(() => {
+  const close = useCallback9(() => {
     setIsOpen(false);
     window.scrollTo(0, 0);
   }, []);
-  const toggleAccordion = useCallback8((label) => {
+  const toggleAccordion = useCallback9((label) => {
     setAccordions((prev) => ({ ...prev, [label]: !prev[label] }));
   }, []);
-  useEffect12(() => {
+  useEffect13(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
-  useEffect12(() => {
+  useEffect13(() => {
     if (!isOpen) return;
     const handler = (e) => {
       if (e.key === "Escape") close();
@@ -7337,7 +7432,7 @@ function DropdownSection({
 }
 
 // src/components/ui/wave-animation.tsx
-import { useEffect as useEffect13, useRef as useRef15 } from "react";
+import { useEffect as useEffect14, useRef as useRef16 } from "react";
 import * as THREE from "three";
 import { jsx as jsx64 } from "react/jsx-runtime";
 function WaveAnimation({
@@ -7352,8 +7447,8 @@ function WaveAnimation({
   fadeFar = 200,
   className
 }) {
-  const containerRef = useRef15(null);
-  useEffect13(() => {
+  const containerRef = useRef16(null);
+  useEffect14(() => {
     const container = containerRef.current;
     if (!container) return;
     const fixed = typeof width === "number" && typeof height === "number";
@@ -7600,7 +7695,7 @@ function SiteFooter({
 }
 
 // src/components/ui/site-header.tsx
-import { useEffect as useEffect14, useState as useState11 } from "react";
+import { useEffect as useEffect15, useState as useState11 } from "react";
 import Link7 from "next/link";
 import { usePathname } from "next/navigation";
 import { jsx as jsx66, jsxs as jsxs42 } from "react/jsx-runtime";
@@ -7613,7 +7708,7 @@ function SiteHeader({
   const pathname = usePathname();
   const isHome = pathname === "/";
   const [isVisible, setIsVisible] = useState11(!isHome);
-  useEffect14(() => {
+  useEffect15(() => {
     if (!isHome) {
       setIsVisible(true);
       return;
@@ -7725,6 +7820,7 @@ export {
   FactoidGrid,
   ForWhomSection,
   GlossaryList,
+  GlossaryPopularRow,
   GlossaryScriptToggle,
   GlossaryWidget,
   GlowingEffect,

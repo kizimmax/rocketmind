@@ -12,14 +12,12 @@ import {
 interface AuthState {
   isAuthed: boolean;
   isLoading: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
-
-const AUTH_KEY = "rm_admin_auth";
-const PASSWORD = "2345";
+const TOKEN_KEY = "rm_admin_token";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthed, setIsAuthed] = useState(false);
@@ -27,28 +25,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(AUTH_KEY);
-      if (stored === "true") {
-        setIsAuthed(true);
-      }
-    } catch {
-      // ignore
-    }
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token) setIsAuthed(true);
+    } catch { /* ignore */ }
     setIsLoading(false);
   }, []);
 
-  const login = useCallback((password: string): boolean => {
-    if (password === PASSWORD) {
+  const login = useCallback(async (password: string): Promise<boolean> => {
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login: "admin", password }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json() as { token?: string };
+      if (!data.token) return false;
+      localStorage.setItem(TOKEN_KEY, data.token);
       setIsAuthed(true);
-      localStorage.setItem(AUTH_KEY, "true");
       return true;
+    } catch {
+      return false;
     }
-    return false;
   }, []);
 
   const logout = useCallback(() => {
     setIsAuthed(false);
-    localStorage.removeItem(AUTH_KEY);
+    try { localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
   }, []);
 
   return (

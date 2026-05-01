@@ -11,11 +11,11 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!password.trim()) return;
 
-    const success = login(password);
+    const success = await login(password);
     if (success) {
       router.replace("/pages");
     } else {

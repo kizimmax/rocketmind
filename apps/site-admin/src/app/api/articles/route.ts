@@ -1,182 +1,83 @@
 import { NextResponse } from "next/server";
-import path from "path";
+import { prisma } from "@/lib/prisma";
 
-const isStatic = process.env.NEXT_PUBLIC_STATIC === "1";
-const SITE_ROOT = path.resolve(process.cwd(), "..", "site");
-const MEDIA_DIR = path.join(SITE_ROOT, "content", "media");
-const PUBLIC_DIR = path.join(SITE_ROOT, "public");
+type ArticleContent = { body?: unknown; keyThoughts?: unknown[]; caseCard?: unknown; sortOrder?: number; order?: number; [key: string]: unknown };
 
-const IMAGE_EXTS = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif"];
-const MIME: Record<string, string> = {
-  ".svg": "image/svg+xml",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".webp": "image/webp",
-  ".gif": "image/gif",
-  ".avif": "image/avif",
-};
-
-function resolveCoverAsDataUrl(
-  fs: typeof import("fs"),
-  slug: string,
-): string | null {
-  for (const ext of IMAGE_EXTS) {
-    const fp = path.join(PUBLIC_DIR, "images", "media", `${slug}${ext}`);
-    if (fs.existsSync(fp)) {
-      const buf = fs.readFileSync(fp);
-      const mime = MIME[ext] || "application/octet-stream";
-      return `data:${mime};base64,${buf.toString("base64")}`;
-    }
-  }
-  return null;
-}
-
-/** GET /api/articles — list all articles (frontmatter + body + cover as data URL) */
-export async function GET() {
-  if (isStatic) return NextResponse.json([]);
-
-  const fs = await import("fs");
-  const matter = (await import("gray-matter")).default;
-
-  if (!fs.existsSync(MEDIA_DIR)) return NextResponse.json([]);
-
-  const articles = fs
-    .readdirSync(MEDIA_DIR)
-    .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
-    .map((file) => {
-      try {
-        const raw = fs.readFileSync(path.join(MEDIA_DIR, file), "utf-8");
-        const { data } = matter(raw);
-        const slug = (data.slug as string) || file.replace(/\.md$/, "");
-        const type = data.type === "lesson" || data.type === "case" ? data.type : "default";
-        const caseCard =
-          type === "case" && data.caseCard && typeof data.caseCard === "object"
-            ? data.caseCard
-            : undefined;
-        return {
-          id: `media/${slug}`,
-          slug,
-          status: (data.status as string) || "published",
-          order: typeof data.order === "number" ? data.order : 0,
-          type,
-          title: (data.title as string) || "",
-          description: (data.description as string) || "",
-          coverImageData: resolveCoverAsDataUrl(fs, slug) ?? undefined,
-          publishedAt: (data.publishedAt as string) || "",
-          expertSlug: (data.expertSlug as string) || undefined,
-          tagIds: Array.isArray(data.tags)
-            ? data.tags.filter((t: unknown): t is string => typeof t === "string")
-            : [],
-          keyThoughts: Array.isArray(data.keyThoughts)
-            ? data.keyThoughts.filter((t: unknown): t is string => typeof t === "string")
-            : [],
-          body: Array.isArray(data.body) ? data.body : [],
-          caseCard,
-          featured: type === "case" && data.featured === true ? true : undefined,
-          cardVariant: data.cardVariant === "wide" ? "wide" : "default",
-          pinned: data.pinned === true,
-          pinnedOrder:
-            typeof data.pinnedOrder === "number" ? data.pinnedOrder : 0,
-          metaTitle: (data.metaTitle as string) || "",
-          metaDescription: (data.metaDescription as string) || "",
-          createdAt: (data.createdAt as string) || "",
-          updatedAt: (data.updatedAt as string) || "",
-        };
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
-
-  return NextResponse.json(articles);
-}
-
-/** POST /api/articles — create a new article (empty body, hidden by default). */
-export async function POST(request: Request) {
-  if (isStatic) return NextResponse.json(null, { status: 501 });
-
-  const fs = await import("fs");
-  const matter = (await import("gray-matter")).default;
-
-  const body = await request.json();
-  const { slug, title, type: rawType } = body as {
-    slug?: string;
-    title?: string;
-    type?: string;
-  };
-  if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
-  const type =
-    rawType === "lesson" || rawType === "case" ? rawType : "default";
-
-  if (!fs.existsSync(MEDIA_DIR)) fs.mkdirSync(MEDIA_DIR, { recursive: true });
-
-  const filePath = path.join(MEDIA_DIR, `${slug}.md`);
-  if (fs.existsSync(filePath))
-    return NextResponse.json({ error: "exists" }, { status: 409 });
-
-  const now = new Date().toISOString();
-  const emptyCaseCard = {
-    title: "",
-    description: "",
-    stats: [
-      { value: "", label: "", description: "" },
-      { value: "", label: "", description: "" },
-      { value: "", label: "", description: "" },
-    ],
-    result: "",
-  };
-  const fm: Record<string, unknown> = {
-    slug,
-    status: "hidden",
-    order: 0,
+function toDto(a: {
+  id: string; slug: string; type: string; status: string; title: string; description: string;
+  content: unknown; coverPath: string | null; expertSlug: string | null; publishedAt: string;
+  tagIds: string[]; pinned: boolean; pinnedOrder: number; featured: boolean; cardVariant: string;
+  metaTitle: string; metaDescription: string; createdAt: Date; updatedAt: Date;
+}) {
+  const c = (a.content ?? {}) as ArticleContent;
+  const body = Array.isArray(c.body) ? c.body : [];
+  const order = typeof c.sortOrder === "number" ? c.sortOrder : (typeof c.order === "number" ? c.order : 0);
+  const type = a.type === "lesson" || a.type === "case" ? a.type : "default";
+  return {
+    id: `media/${a.slug}`,
+    slug: a.slug,
+    status: a.status,
+    order,
     type,
-    title: title || "",
-    description: "",
-    publishedAt: now.slice(0, 10),
-    expertSlug: "r-editorial",
-    tags: [],
-    keyThoughts: [],
-    body: [],
-    cardVariant: "default",
-    pinned: false,
-    pinnedOrder: 0,
-    metaTitle: title ? `${title} — Rocketmind` : "",
-    metaDescription: "",
-    createdAt: now,
-    updatedAt: now,
+    title: a.title,
+    description: a.description,
+    coverImageData: a.coverPath || undefined,
+    publishedAt: a.publishedAt,
+    expertSlug: a.expertSlug || undefined,
+    tagIds: a.tagIds,
+    keyThoughts: Array.isArray(c.keyThoughts) ? c.keyThoughts.filter((t): t is string => typeof t === "string") : [],
+    body,
+    caseCard: type === "case" ? (c.caseCard ?? undefined) : undefined,
+    featured: type === "case" ? a.featured : undefined,
+    cardVariant: a.cardVariant === "wide" ? "wide" : "default",
+    pinned: a.pinned,
+    pinnedOrder: a.pinnedOrder,
+    metaTitle: a.metaTitle,
+    metaDescription: a.metaDescription,
+    createdAt: a.createdAt.toISOString(),
+    updatedAt: a.updatedAt.toISOString(),
   };
-  if (type === "case") {
-    fm.featured = false;
-    fm.caseCard = emptyCaseCard;
-  }
-  fs.writeFileSync(filePath, matter.stringify("", fm), "utf-8");
+}
 
-  return NextResponse.json(
-    {
-      id: `media/${slug}`,
+export async function GET() {
+  const articles = await prisma.article.findMany({ orderBy: { createdAt: "desc" } });
+  return NextResponse.json(articles.map(toDto));
+}
+
+export async function POST(request: Request) {
+  const body = await request.json();
+  const { slug, title, type: rawType } = body as { slug?: string; title?: string; type?: string };
+  if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
+  const type = rawType === "lesson" || rawType === "case" ? rawType : "default";
+
+  const existing = await prisma.article.findUnique({ where: { slug } });
+  if (existing) return NextResponse.json({ error: "exists" }, { status: 409 });
+
+  const emptyCaseCard = { title: "", description: "", stats: [{ value: "", label: "", description: "" }, { value: "", label: "", description: "" }, { value: "", label: "", description: "" }], result: "" };
+  const article = await prisma.article.create({
+    data: {
       slug,
-      status: fm.status,
-      order: fm.order,
       type,
-      title: fm.title,
+      status: "hidden",
+      title: title || "",
       description: "",
-      coverImageData: undefined,
-      publishedAt: fm.publishedAt,
+      content: {
+        body: [],
+        keyThoughts: [],
+        ...(type === "case" ? { caseCard: emptyCaseCard } : {}),
+        sortOrder: 0,
+      },
+      coverPath: null,
       expertSlug: "r-editorial",
+      publishedAt: new Date().toISOString().slice(0, 10),
       tagIds: [],
-      keyThoughts: [],
-      body: [],
-      caseCard: type === "case" ? emptyCaseCard : undefined,
-      featured: type === "case" ? false : undefined,
-      cardVariant: "default",
       pinned: false,
       pinnedOrder: 0,
-      metaTitle: fm.metaTitle,
+      featured: false,
+      cardVariant: "default",
+      metaTitle: title ? `${title} — Rocketmind` : "",
       metaDescription: "",
-      createdAt: fm.createdAt,
-      updatedAt: fm.updatedAt,
     },
-    { status: 201 },
-  );
+  });
+  return NextResponse.json(toDto(article), { status: 201 });
 }

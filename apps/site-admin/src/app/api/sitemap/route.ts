@@ -1,30 +1,10 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
-import {
-  generateSitemapXml,
-  SITEMAP_OVERRIDE_PATH,
-} from "@/lib/sitemap-generator";
+import { generateSitemapXml } from "@/lib/sitemap-generator";
+import { readConfigRaw, writeConfigRaw, deleteConfigFile } from "@/lib/storage";
 
-const isStatic = process.env.NEXT_PUBLIC_STATIC === "1";
+const OVERRIDE_FILE = "sitemap-override.xml";
 
-/**
- * GET — отдаёт текущий эффективный sitemap.xml (override или авто).
- *   ?source=auto    — игнорирует override, возвращает свежесгенерированный XML
- *                     (используется для кнопки «сгенерировать заново»).
- * Заголовок `X-Sitemap-Source` равен `override` или `auto`.
- */
 export async function GET(request: Request) {
-  if (isStatic) {
-    return new NextResponse("", {
-      status: 200,
-      headers: {
-        "Content-Type": "application/xml; charset=utf-8",
-        "X-Sitemap-Source": "auto",
-      },
-    });
-  }
-
   try {
     const url = new URL(request.url);
     const source = url.searchParams.get("source");
@@ -32,11 +12,12 @@ export async function GET(request: Request) {
     let xml: string;
     let actualSource: "override" | "auto";
 
-    if (source !== "auto" && fs.existsSync(SITEMAP_OVERRIDE_PATH)) {
-      xml = fs.readFileSync(SITEMAP_OVERRIDE_PATH, "utf-8");
+    const override = readConfigRaw(OVERRIDE_FILE);
+    if (source !== "auto" && override) {
+      xml = override;
       actualSource = "override";
     } else {
-      xml = generateSitemapXml();
+      xml = await generateSitemapXml();
       actualSource = "auto";
     }
 
@@ -52,39 +33,21 @@ export async function GET(request: Request) {
   }
 }
 
-/** PUT — сохранить ручную правку (override). Body: `{ content: string }`. */
 export async function PUT(request: Request) {
-  if (isStatic)
-    return NextResponse.json({ error: "static" }, { status: 501 });
-
   try {
     const body = await request.json();
-    const content: string =
-      typeof body.content === "string" ? body.content : "";
-    if (!content.trim()) {
-      return NextResponse.json(
-        { error: "empty content" },
-        { status: 400 },
-      );
-    }
-    const dir = path.dirname(SITEMAP_OVERRIDE_PATH);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(SITEMAP_OVERRIDE_PATH, content, "utf-8");
+    const content: string = typeof body.content === "string" ? body.content : "";
+    if (!content.trim()) return NextResponse.json({ error: "empty content" }, { status: 400 });
+    writeConfigRaw(OVERRIDE_FILE, content);
     return NextResponse.json({ ok: true, source: "override" });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
 
-/** DELETE — снять ручную правку, вернуться к автогенерации. */
 export async function DELETE() {
-  if (isStatic)
-    return NextResponse.json({ error: "static" }, { status: 501 });
-
   try {
-    if (fs.existsSync(SITEMAP_OVERRIDE_PATH)) {
-      fs.unlinkSync(SITEMAP_OVERRIDE_PATH);
-    }
+    deleteConfigFile(OVERRIDE_FILE);
     return NextResponse.json({ ok: true, source: "auto" });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });

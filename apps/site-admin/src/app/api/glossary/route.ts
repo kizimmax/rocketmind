@@ -1,107 +1,73 @@
 import { NextResponse } from "next/server";
-import path from "path";
+import { prisma } from "@/lib/prisma";
 
-const isStatic = process.env.NEXT_PUBLIC_STATIC === "1";
-const SITE_ROOT = path.resolve(process.cwd(), "..", "site");
-const GLOSSARY_DIR = path.join(SITE_ROOT, "content", "glossary");
+type GlossaryContent = {
+  order?: number;
+  body?: unknown[];
+  sections?: unknown[];
+  pinned?: boolean;
+  pinnedOrder?: number;
+  [key: string]: unknown;
+};
 
-/** GET /api/glossary — вернуть все термины из apps/site/content/glossary/*.md. */
-export async function GET() {
-  if (isStatic) return NextResponse.json([]);
-
-  const fs = await import("fs");
-  const matter = (await import("gray-matter")).default;
-
-  if (!fs.existsSync(GLOSSARY_DIR)) return NextResponse.json([]);
-
-  const terms = fs
-    .readdirSync(GLOSSARY_DIR)
-    .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
-    .map((file) => {
-      try {
-        const raw = fs.readFileSync(path.join(GLOSSARY_DIR, file), "utf-8");
-        const { data } = matter(raw);
-        const slug = (data.slug as string) || file.replace(/\.md$/, "");
-        return {
-          id: `glossary/${slug}`,
-          slug,
-          status: (data.status as string) || "published",
-          order: typeof data.order === "number" ? data.order : 0,
-          title: (data.title as string) || "",
-          description: (data.description as string) || "",
-          tagIds: Array.isArray(data.tags)
-            ? data.tags.filter((t: unknown): t is string => typeof t === "string")
-            : [],
-          metaTitle: (data.metaTitle as string) || "",
-          metaDescription: (data.metaDescription as string) || "",
-          sections: Array.isArray(data.body) ? data.body : [],
-          pinned: data.pinned === true,
-          pinnedOrder:
-            typeof data.pinnedOrder === "number" ? data.pinnedOrder : 0,
-          createdAt: (data.createdAt as string) || "",
-          updatedAt: (data.updatedAt as string) || "",
-        };
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
-
-  return NextResponse.json(terms);
+function toDto(t: {
+  id: string;
+  slug: string;
+  status: string;
+  title: string;
+  description: string;
+  content: unknown;
+  tagIds: string[];
+  metaTitle: string;
+  metaDescription: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  const c = (t.content ?? {}) as GlossaryContent;
+  const sections = Array.isArray(c.sections) ? c.sections : Array.isArray(c.body) ? c.body : [];
+  return {
+    id: `glossary/${t.slug}`,
+    slug: t.slug,
+    status: t.status,
+    order: typeof c.order === "number" ? c.order : 0,
+    title: t.title,
+    description: t.description,
+    tagIds: t.tagIds,
+    metaTitle: t.metaTitle,
+    metaDescription: t.metaDescription,
+    sections,
+    pinned: c.pinned === true,
+    pinnedOrder: typeof c.pinnedOrder === "number" ? c.pinnedOrder : 0,
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt.toISOString(),
+  };
 }
 
-/** POST /api/glossary — создать термин. Body: { slug, title }. */
+export async function GET() {
+  const terms = await prisma.glossaryTerm.findMany({ orderBy: { createdAt: "asc" } });
+  return NextResponse.json(terms.map(toDto));
+}
+
 export async function POST(request: Request) {
-  if (isStatic) return NextResponse.json(null, { status: 501 });
-
-  const fs = await import("fs");
-  const matter = (await import("gray-matter")).default;
-
   const body = await request.json();
   const { slug, title } = body as { slug?: string; title?: string };
   if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
 
-  if (!fs.existsSync(GLOSSARY_DIR)) fs.mkdirSync(GLOSSARY_DIR, { recursive: true });
-
-  const filePath = path.join(GLOSSARY_DIR, `${slug}.md`);
-  if (fs.existsSync(filePath))
-    return NextResponse.json({ error: "exists" }, { status: 409 });
+  const existing = await prisma.glossaryTerm.findUnique({ where: { slug } });
+  if (existing) return NextResponse.json({ error: "exists" }, { status: 409 });
 
   const now = new Date().toISOString();
-  const fm: Record<string, unknown> = {
-    slug,
-    status: "hidden",
-    order: 0,
-    title: title || "",
-    description: "",
-    tags: [],
-    metaTitle: title ? `${title} | Глоссарий Rocketmind` : "",
-    metaDescription: "",
-    body: [],
-    pinned: false,
-    pinnedOrder: 0,
-    createdAt: now,
-    updatedAt: now,
-  };
-  fs.writeFileSync(filePath, matter.stringify("", fm), "utf-8");
-
-  return NextResponse.json(
-    {
-      id: `glossary/${slug}`,
+  const term = await prisma.glossaryTerm.create({
+    data: {
       slug,
-      status: fm.status,
-      order: fm.order,
-      title: fm.title,
+      title: title || "",
+      status: "hidden",
       description: "",
+      content: { order: 0, sections: [], pinned: false, pinnedOrder: 0 },
       tagIds: [],
-      metaTitle: fm.metaTitle,
+      metaTitle: title ? `${title} | Глоссарий Rocketmind` : "",
       metaDescription: "",
-      sections: [],
-      pinned: false,
-      pinnedOrder: 0,
-      createdAt: fm.createdAt,
-      updatedAt: fm.updatedAt,
     },
-    { status: 201 },
-  );
+  });
+  return NextResponse.json(toDto(term), { status: 201 });
 }

@@ -564,6 +564,12 @@ type GlossaryTermItem = {
     /** Href куда ведёт ссылка на термин. Обычно `/media/glossary/{slug}`. */
     href: string;
     tagIds?: string[];
+    /** Короткое описание (для карточки в горизонтальной ленте). */
+    description?: string;
+    /** Закреплён ли в админке — отображается первым в горизонтальной ленте. */
+    pinned?: boolean;
+    /** Порядок среди закреплённых (asc). */
+    pinnedOrder?: number;
 };
 type GlossaryScript = "cyrillic" | "latin";
 /**
@@ -605,15 +611,32 @@ declare function GlossaryWidget({ items, fullPageHref, heading, searchPlaceholde
 interface GlossaryListProps extends React$1.HTMLAttributes<HTMLDivElement> {
     /** Все термины. */
     items: GlossaryTermItem[];
-    /** Активный скрипт. */
-    script: GlossaryScript;
+    /**
+     * Опциональный фильтр по скрипту. Если не задан — рендерится единый
+     * список: сначала кириллические группы, затем латинские.
+     */
+    script?: GlossaryScript;
 }
 /**
  * GlossaryList — 4-колоночный (multi-column) список терминов для /media/glossary.
- * Принимает уже отфильтрованные по script/tag/query термины и рендерит их
- * сгруппированными по букве с letter-headings.
+ * По умолчанию рендерит общий список (кириллица сверху, латиница ниже);
+ * можно ограничить одним скриптом через `script`.
  */
 declare function GlossaryList({ items, script, className, ...props }: GlossaryListProps): react_jsx_runtime.JSX.Element;
+interface GlossaryPopularRowProps extends React$1.HTMLAttributes<HTMLDivElement> {
+    /**
+     * Список терминов в порядке отображения (сначала закреплённые, далее —
+     * самые часто открываемые). Логика сортировки — на стороне страницы
+     * (там доступен localStorage со счётчиком views).
+     */
+    items: GlossaryTermItem[];
+}
+/**
+ * GlossaryPopularRow — горизонтальный скролл карточек терминов глоссария
+ * на месте бывшего переключателя А-Я / A-Z. Справа всегда есть фейд (если
+ * контент уходит за край), слева фейд появляется после начала скролла.
+ */
+declare function GlossaryPopularRow({ items, className, ...props }: GlossaryPopularRowProps): react_jsx_runtime.JSX.Element | null;
 /**
  * ScriptToggle — переключатель А-Я / A-Z для страницы глоссария.
  */
@@ -1362,4 +1385,4 @@ type SiteHeaderProps = {
 };
 declare function SiteHeader({ basePath, className, nav, cta, }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
 
-export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardTypeBadgeColor, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, type ArticleTableData, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionMini, type CTASectionMiniProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, DynamicForm, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type FactoidCardData, FactoidGrid, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, type FormChipsConfig, type FormConsentConfig, type FormConsentLink, type FormEntity, type FormFieldsConfig, type FormSuccessGift, GlossaryList, type GlossaryListProps, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type ListCardData, ListCardGrid, type ListItemData, type LogoMarqueeItem, MaxIcon, MobileNav, ModalProvider, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderCta, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants, useFormModal };
+export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardTypeBadgeColor, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, type ArticleTableData, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionMini, type CTASectionMiniProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, DynamicForm, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type FactoidCardData, FactoidGrid, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, type FormChipsConfig, type FormConsentConfig, type FormConsentLink, type FormEntity, type FormFieldsConfig, type FormSuccessGift, GlossaryList, type GlossaryListProps, GlossaryPopularRow, type GlossaryPopularRowProps, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type ListCardData, ListCardGrid, type ListItemData, type LogoMarqueeItem, MaxIcon, MobileNav, ModalProvider, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderCta, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants, useFormModal };
