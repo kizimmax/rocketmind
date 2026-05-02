@@ -33,7 +33,7 @@ import { RocketmindMenu } from "./RocketmindMenu";
 const HERO_ROTATION_INTERVAL_MS = 2800;
 const HERO_ROTATION_TRANSITION_MS = 640;
 const HERO_ROTATION_ENTRY_DELAY_MS = 220;
-const HERO_CTA_EXTRA_DELAY_MS = 0;
+const HERO_CTA_EXTRA_DELAY_MS = 50;
 const LENS_STORAGE_KEY = "rocketmind:lens-controls:v2";
 const SHOW_LENS_CONTROLS = false;
 
@@ -838,19 +838,14 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav
                       key={`cta-${safeActiveIndex}`}
                       className="absolute top-0 left-0"
                       initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -16 }}
-                      transition={{
-                        delay: (HERO_ROTATION_ENTRY_DELAY_MS + HERO_CTA_EXTRA_DELAY_MS) / 1000,
-                        duration: HERO_ROTATION_TRANSITION_MS / 1000,
-                        ease: [0.23, 1, 0.32, 1],
-                      }}
+                      animate={{ opacity: 1, y: 0, transition: { delay: (HERO_ROTATION_ENTRY_DELAY_MS + HERO_CTA_EXTRA_DELAY_MS) / 1000, duration: HERO_ROTATION_TRANSITION_MS / 1000, ease: [0.23, 1, 0.32, 1] } }}
+                      exit={{ opacity: 0, y: -16, transition: { delay: 0.03, duration: HERO_ROTATION_TRANSITION_MS / 1000, ease: [0.23, 1, 0.32, 1] } }}
                     >
                       {activeLine.formId ? (
                         <button
                           type="button"
                           onClick={() => openForm(activeLine.formId!)}
-                          className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
+                          className="h4 inline-flex items-center gap-3 whitespace-nowrap text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
                         >
                           {activeLine.ctaLabel || "Обсудить стратегию"}
                           <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
@@ -858,7 +853,7 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav
                       ) : (
                         <Link
                           href={activeLine.ctaHref || "#contact"}
-                          className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
+                          className="h4 inline-flex items-center gap-3 whitespace-nowrap text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
                         >
                           {activeLine.ctaLabel || "Обсудить стратегию"}
                           <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
