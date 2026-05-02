@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { Checkbox } from '@rocketmind/ui';
 
 export function ContactForm() {
     return (
@@ -52,7 +53,7 @@ export function ContactForm() {
 
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pt-4 border-t border-border mt-2">
                                 <label className="flex items-start gap-3 cursor-pointer group">
-                                    <input type="checkbox" className="mt-1 w-4 h-4 rounded border-border text-[var(--rm-yellow-100)] focus:ring-[var(--rm-yellow-100)]/50" defaultChecked />
+                                    <Checkbox defaultChecked className="mt-0.5" />
                                     <span className="font-body text-[length:var(--text-14)] text-muted-foreground group-hover:text-foreground transition-colors max-w-[250px] leading-[1.618]">
                                         Cогласен на обработку персональных данных
                                     </span>

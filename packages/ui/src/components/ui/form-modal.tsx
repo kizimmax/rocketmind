@@ -20,6 +20,7 @@ import {
 import { Input } from "./input";
 import { Textarea } from "./textarea";
 import { Button } from "./button";
+import { Checkbox } from "./checkbox";
 import { cn } from "../../lib/utils";
 
 // ── Types (mirrors @rocketmind/site Form/Cta entities) ─────────────────────
@@ -469,11 +470,10 @@ function ConsentCheckbox({
     config.links.length > 0 ? config.links : defaultLinks ?? [];
   return (
     <label className="flex items-start gap-2 text-[12px] leading-[1.4] text-muted-foreground">
-      <input
-        type="checkbox"
+      <Checkbox
         checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 shrink-0"
+        onChange={(e) => onChange(e.currentTarget.checked)}
+        className="mt-0.5"
         required
       />
       <span>{renderConsentText(text, links)}</span>

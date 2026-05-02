@@ -1,5 +1,6 @@
 "use client";
 
+import { Tabs, TabsList, TabsTrigger } from "@rocketmind/ui";
 import type { EntityScope } from "@/lib/types";
 
 export const SCOPE_OPTIONS: { value: EntityScope; label: string }[] = [
@@ -61,22 +62,15 @@ export function ScopeFilter({
     { v: "article", label: "Статьи" },
   ];
   return (
-    <div className="flex items-center gap-1 rounded-sm border border-border p-0.5">
-      {opts.map((o) => (
-        <button
-          key={o.v}
-          type="button"
-          onClick={() => onChange(o.v)}
-          className={`rounded-sm px-2 py-0.5 text-[length:var(--text-12)] transition-colors ${
-            value === o.v
-              ? "bg-foreground/10 text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
+    <Tabs value={value} onValueChange={(v) => onChange(v as EntityScope | "all")}>
+      <TabsList size="sm">
+        {opts.map((o) => (
+          <TabsTrigger key={o.v} value={o.v}>
+            {o.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   );
 }
 
@@ -84,10 +78,12 @@ export function ScopeSelect({
   value,
   onChange,
   size,
+  className,
 }: {
   value: EntityScope;
   onChange: (v: EntityScope) => void;
   size?: "sm";
+  className?: string;
 }) {
   return (
     <select
@@ -95,7 +91,7 @@ export function ScopeSelect({
       onChange={(e) => onChange(e.target.value as EntityScope)}
       className={`rounded-sm border border-border bg-background px-2 text-[length:var(--text-12)] text-foreground ${
         size === "sm" ? "h-8" : "h-9"
-      }`}
+      } ${className ?? ""}`}
     >
       {SCOPE_OPTIONS.map((o) => (
         <option key={o.value} value={o.value}>

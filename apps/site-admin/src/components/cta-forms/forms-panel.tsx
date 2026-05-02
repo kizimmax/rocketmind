@@ -13,8 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
+  Switch,
+  Tabs,
+  TabsList,
+  TabsTrigger,
   Textarea,
 } from "@rocketmind/ui";
+import { InlineEdit } from "@/components/inline-edit";
 import { LEGAL_LINKS } from "@rocketmind/ui/content";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -382,14 +387,15 @@ function FormCard({
           onBlur={() => name !== form.name && onPatch({ name })}
           className="max-w-[200px] border-0 bg-transparent shadow-none focus-visible:ring-1"
         />
+        <span className="font-mono text-[length:var(--text-11)] text-[#666]">
+          id: {form.id}
+        </span>
         <ScopeSelect
           value={form.scope}
           onChange={(scope) => onPatch({ scope })}
           size="sm"
+          className="ml-auto"
         />
-        <span className="ml-auto font-mono text-[length:var(--text-11)] text-[#666]">
-          id: {form.id}
-        </span>
         <button
           type="button"
           onClick={onDelete}
@@ -409,21 +415,29 @@ function FormCard({
           <div className="mx-auto w-full max-w-[560px] rounded-md border border-border bg-background p-6 shadow-sm">
             {/* DialogHeader */}
             <div className="mb-4 flex flex-col gap-1.5">
-              <FieldEditor
-                label="Заголовок модалки"
+              <InlineEdit
                 value={form.title}
-                placeholder="Заголовок модалки"
                 onSave={(v) => onPatch({ title: v })}
-                previewClassName="text-[18px] font-semibold leading-tight tracking-tight text-foreground"
-              />
-              <FieldEditor
-                label="Описание"
+                placeholder="Заголовок модалки"
+              >
+                <span className="block text-[18px] font-semibold leading-tight tracking-tight text-foreground">
+                  {form.title || (
+                    <span className="opacity-40">Заголовок модалки</span>
+                  )}
+                </span>
+              </InlineEdit>
+              <InlineEdit
                 value={form.description}
-                placeholder="Описание (DialogDescription)"
-                multiline
                 onSave={(v) => onPatch({ description: v })}
-                previewClassName="text-[14px] leading-[1.4] text-muted-foreground"
-              />
+                multiline
+                placeholder="Описание (DialogDescription)"
+              >
+                <span className="block text-[14px] leading-[1.4] text-muted-foreground">
+                  {form.description || (
+                    <span className="opacity-40">Описание (DialogDescription)</span>
+                  )}
+                </span>
+              </InlineEdit>
             </div>
 
             {/* Поля — превью полей формы с тоглами на каждое */}
@@ -492,76 +506,98 @@ function FormCard({
             </div>
           </div>
 
-          {/* Success message — отдельным блоком ниже превью */}
-          <div className="rounded-sm border border-border p-3">
-            <div className="mb-2 text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
-              Сообщение об успехе (после отправки)
-            </div>
-            <FieldEditor
-              label="Сообщение об успехе"
-              value={form.successMessage}
-              placeholder="Спасибо! Мы получили заявку…"
-              multiline
-              onSave={(v) => onPatch({ successMessage: v })}
-              previewClassName="text-[14px] leading-[1.5] text-foreground"
-            />
-          </div>
-
-          {/* Gift — файл/ссылка на экране успеха */}
-          <div className="rounded-sm border border-border p-3 flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <div className="text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
-                Подарок после отправки
+          {/* Success — общий бордер, как у превью модалки */}
+          <div className="mx-auto w-full max-w-[560px] rounded-md border border-border bg-background p-6 shadow-sm flex flex-col gap-5">
+            <div>
+              <div className="mb-2 text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
+                Сообщение об успехе (после отправки)
               </div>
-              <label className="flex cursor-pointer select-none items-center gap-1.5 text-[length:var(--text-11)] text-muted-foreground">
-                <input
-                  type="checkbox"
+              <InlineEdit
+                value={form.successMessage}
+                onSave={(v) => onPatch({ successMessage: v })}
+                multiline
+                placeholder="Спасибо! Мы получили заявку…"
+              >
+                <span className="block text-[14px] leading-[1.5] text-foreground">
+                  {form.successMessage || (
+                    <span className="opacity-40">Спасибо! Мы получили заявку…</span>
+                  )}
+                </span>
+              </InlineEdit>
+            </div>
+
+            {/* Gift — файл/ссылка на экране успеха */}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2">
+                <Switch
+                  size="sm"
                   checked={giftEnabled}
-                  onChange={(e) => {
-                    const v = e.target.checked;
+                  onCheckedChange={(v) => {
                     setGiftEnabled(v);
                     if (!v) onPatch({ successGift: null });
                   }}
+                  aria-label="Включить подарок после отправки"
                 />
-                Включить
-              </label>
-            </div>
+                <div className="text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
+                  Подарок после отправки
+                </div>
+              </div>
 
             {giftEnabled && (
               <div className="flex flex-col gap-2">
-                {/* Kind pills */}
-                <div className="flex gap-1.5">
-                  {(["link", "file"] as const).map((k) => (
-                    <button
-                      key={k}
-                      type="button"
-                      onClick={() => {
+                {/* Kind switch + URL/file picker — одна строка, единая высота h-8 */}
+                <div className="flex items-stretch gap-2">
+                  <Tabs
+                    value={giftKind}
+                    onValueChange={(v) => {
+                      const k = v as "link" | "file";
+                      if (k !== giftKind) {
                         setGiftKind(k);
-                        if (k !== giftKind) {
-                          setGiftUrl("");
-                          setGiftFileName("");
-                        }
-                      }}
-                      className={[
-                        "rounded-sm border px-2.5 py-1 text-[length:var(--text-11)] uppercase tracking-wide transition-colors",
-                        giftKind === k
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border text-muted-foreground hover:border-foreground/50",
-                      ].join(" ")}
-                    >
-                      {k === "link" ? "Ссылка" : "Файл (скачать)"}
-                    </button>
-                  ))}
-                </div>
+                        setGiftUrl("");
+                        setGiftFileName("");
+                      }
+                    }}
+                  >
+                    <TabsList size="sm">
+                      <TabsTrigger value="link">Ссылка</TabsTrigger>
+                      <TabsTrigger value="file">Файл</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
 
-                {giftKind === "file" ? (
-                  <>
-                    {/* Uploaded file row */}
-                    {giftUrl && (
-                      <div className="flex items-center gap-2 rounded-sm border border-border bg-[#0F0F0F] px-3 py-2">
-                        <span className="flex-1 truncate font-mono text-[length:var(--text-11)] text-muted-foreground">
-                          {giftFileName || giftUrl.split("/").pop()}
+                  {giftKind === "link" ? (
+                    <Input
+                      size="sm"
+                      placeholder="URL страницы"
+                      value={giftUrl}
+                      onChange={(e) => setGiftUrl(e.target.value)}
+                      onBlur={saveGift}
+                      className="flex-1"
+                    />
+                  ) : (
+                    <div className="flex flex-1 items-stretch gap-1">
+                      <label
+                        className={[
+                          "flex h-8 flex-1 min-w-0 cursor-pointer items-center gap-2 rounded-sm border border-dashed border-border px-3 text-[length:var(--text-12)] text-muted-foreground transition-colors hover:border-foreground/50 hover:text-foreground",
+                          giftUploading ? "pointer-events-none opacity-50" : "",
+                        ].join(" ")}
+                      >
+                        <Upload className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">
+                          {giftUploading
+                            ? "Загрузка…"
+                            : giftUrl
+                              ? giftFileName || giftUrl.split("/").pop()
+                              : "Выбрать файл (pdf, doc, zip…)"}
                         </span>
+                        <input
+                          type="file"
+                          className="sr-only"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.jpg,.jpeg,.png,.webp"
+                          onChange={handleFileUpload}
+                          disabled={giftUploading}
+                        />
+                      </label>
+                      {giftUrl && !giftUploading && (
                         <button
                           type="button"
                           onClick={() => {
@@ -569,44 +605,15 @@ function FormCard({
                             setGiftFileName("");
                             onPatch({ successGift: null });
                           }}
-                          className="shrink-0 text-muted-foreground hover:text-foreground"
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-foreground/50 hover:text-foreground"
                           aria-label="Удалить файл"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
-                      </div>
-                    )}
-                    {/* File picker */}
-                    <label
-                      className={[
-                        "flex cursor-pointer items-center justify-center gap-2 rounded-sm border border-dashed border-border px-4 py-3 text-[length:var(--text-12)] text-muted-foreground transition-colors hover:border-foreground/50 hover:text-foreground",
-                        giftUploading ? "pointer-events-none opacity-50" : "",
-                      ].join(" ")}
-                    >
-                      <Upload className="h-4 w-4 shrink-0" />
-                      {giftUploading
-                        ? "Загрузка…"
-                        : giftUrl
-                          ? "Заменить файл"
-                          : "Выбрать файл (pdf, doc, zip…)"}
-                      <input
-                        type="file"
-                        className="sr-only"
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.jpg,.jpeg,.png,.webp"
-                        onChange={handleFileUpload}
-                        disabled={giftUploading}
-                      />
-                    </label>
-                  </>
-                ) : (
-                  <Input
-                    size="sm"
-                    placeholder="URL страницы"
-                    value={giftUrl}
-                    onChange={(e) => setGiftUrl(e.target.value)}
-                    onBlur={saveGift}
-                  />
-                )}
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 <Input
                   size="sm"
@@ -617,90 +624,11 @@ function FormCard({
                 />
               </div>
             )}
+            </div>
           </div>
         </div>
       )}
     </div>
-  );
-}
-
-// ── Field Editor — превью + фиолетовый карандаш → диалог ───────────────────
-
-function FieldEditor({
-  label,
-  value,
-  placeholder,
-  multiline,
-  onSave,
-  previewClassName,
-}: {
-  label: string;
-  value: string;
-  placeholder: string;
-  multiline?: boolean;
-  onSave: (next: string) => void;
-  previewClassName?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState(value);
-
-  function startEdit() {
-    setDraft(value);
-    setOpen(true);
-  }
-
-  function save() {
-    if (draft !== value) onSave(draft);
-    setOpen(false);
-  }
-
-  return (
-    <>
-      <div className="group/fe flex items-start gap-2">
-        <div className={["flex-1 min-w-0", previewClassName].filter(Boolean).join(" ")}>
-          {value || (
-            <span className="opacity-40">{placeholder}</span>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={startEdit}
-          className="mt-0.5 shrink-0 rounded-sm p-1 opacity-0 transition-opacity hover:bg-foreground/10 group-hover/fe:opacity-100"
-          style={{ color: "var(--rm-violet-100)" }}
-          aria-label={`Редактировать: ${label}`}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-      </div>
-
-      <Dialog open={open} onOpenChange={(o) => !o && setOpen(false)}>
-        <DialogContent className="max-w-[480px]">
-          <DialogHeader>
-            <DialogTitle>{label}</DialogTitle>
-          </DialogHeader>
-          {multiline ? (
-            <Textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              className="min-h-[100px]"
-              autoFocus
-            />
-          ) : (
-            <Input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              autoFocus
-            />
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Отмена
-            </Button>
-            <Button onClick={save}>Сохранить</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
   );
 }
 
@@ -740,13 +668,12 @@ function FieldPreviewRow({
         <div className={`${previewClass} h-10`}>{placeholder}</div>
       )}
       <label
-        className="flex shrink-0 items-center gap-2 rounded-sm border border-border bg-muted/30 px-2 text-[length:var(--text-11)] text-muted-foreground"
+        className="flex shrink-0 cursor-pointer items-center gap-2 rounded-sm border border-border bg-muted/30 px-2 text-[length:var(--text-11)] text-muted-foreground"
         title={`${enabled ? "Отключить" : "Включить"} поле «${label}»`}
       >
-        <input
-          type="checkbox"
+        <Checkbox
           checked={enabled}
-          onChange={(e) => onToggle(e.target.checked)}
+          onChange={(e) => onToggle(e.currentTarget.checked)}
         />
         {label}
       </label>
@@ -796,11 +723,7 @@ function ConsentPreview({ consent }: { consent: FormConsentConfig }) {
 
   return (
     <label className="flex items-start gap-2 text-[length:var(--text-12)] leading-[1.4] text-muted-foreground">
-      <input
-        type="checkbox"
-        disabled
-        className="mt-0.5 shrink-0 cursor-not-allowed"
-      />
+      <Checkbox disabled className="mt-0.5" />
       <span>{body}</span>
     </label>
   );

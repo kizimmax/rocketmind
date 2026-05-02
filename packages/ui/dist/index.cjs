@@ -7283,12 +7283,11 @@ function ConsentCheckbox({
   const links = config.links.length > 0 ? config.links : defaultLinks ?? [];
   return /* @__PURE__ */ (0, import_jsx_runtime60.jsxs)("label", { className: "flex items-start gap-2 text-[12px] leading-[1.4] text-muted-foreground", children: [
     /* @__PURE__ */ (0, import_jsx_runtime60.jsx)(
-      "input",
+      Checkbox,
       {
-        type: "checkbox",
         checked,
-        onChange: (e) => onChange(e.target.checked),
-        className: "mt-0.5 shrink-0",
+        onChange: (e) => onChange(e.currentTarget.checked),
+        className: "mt-0.5",
         required: true
       }
     ),

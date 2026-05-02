@@ -2,8 +2,8 @@
 
 import { apiFetch } from "@/lib/api-client";
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Trash2 } from "lucide-react";
-import { Button, Input } from "@rocketmind/ui";
+import { Plus, Trash2, ChevronDown, ChevronRight } from "lucide-react";
+import { Badge, Button, Input } from "@rocketmind/ui";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { CtaEntity, FormEntity, EntityScope } from "@/lib/types";
@@ -234,13 +234,26 @@ function CtaCard({
   onDelete: () => void;
 }) {
   const [name, setName] = useState(cta.name);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => setName(cta.name), [cta.name]);
 
   return (
     <div className="group relative flex flex-col rounded-sm border border-[#404040] bg-[#0A0A0A]">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-[#404040] px-3 py-2">
+      <div className={`flex items-center gap-2 px-3 py-2 ${expanded ? "border-b border-[#404040]" : ""}`}>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="rounded-sm p-1 text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+          aria-label={expanded ? "Свернуть" : "Развернуть"}
+        >
+          {expanded ? (
+            <ChevronDown className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5" />
+          )}
+        </button>
         <Input
           size="sm"
           placeholder="Название (для админки)"
@@ -249,20 +262,21 @@ function CtaCard({
           onBlur={() => name !== cta.name && onPatch({ name })}
           className="max-w-[200px] border-0 bg-transparent shadow-none focus-visible:ring-1"
         />
+        <span className="font-mono text-[length:var(--text-11)] text-[#666]">
+          id: {cta.id}
+        </span>
         {cta.id === "header" ? (
-          <span className="rounded-sm bg-[var(--rm-yellow-100)]/15 px-2 py-0.5 text-[length:var(--text-11)] uppercase tracking-wide text-[var(--rm-yellow-100)]">
+          <Badge variant="yellow-subtle" size="sm" className="ml-auto">
             В шапке сайта
-          </span>
+          </Badge>
         ) : (
           <ScopeSelect
             value={cta.scope}
             onChange={(scope) => onPatch({ scope })}
             size="sm"
+            className="ml-auto"
           />
         )}
-        <span className="ml-auto font-mono text-[length:var(--text-11)] text-[#666]">
-          id: {cta.id}
-        </span>
         {cta.id !== "header" && (
           <button
             type="button"
@@ -275,6 +289,8 @@ function CtaCard({
         )}
       </div>
 
+      {expanded && (
+      <>
       {cta.id === "header" ? (
         /* Header CTA — компактный preview жёлтой кнопки в шапке + только text */
         <div className="flex flex-col gap-3 px-3 py-4">
@@ -376,6 +392,8 @@ function CtaCard({
           </p>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }
