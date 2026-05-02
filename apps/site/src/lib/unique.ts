@@ -64,7 +64,7 @@ export type AboutPageData = {
 
 // ── Home page types ────────────────────────────────────────────────────────────
 
-export type HomeHeroRotatingLine = { text: string; ctaLabel: string; ctaHref: string };
+export type HomeHeroRotatingLine = { text: string; ctaLabel: string; ctaHref: string; formId?: string };
 export type HomeHeroData = { title: string; pikCaption: string; rotatingLines: HomeHeroRotatingLine[] };
 export type HomeMethodologyCell = { label: string; title: string; description: string };
 export type HomeMethodologyData = { cells: HomeMethodologyCell[] };
@@ -288,7 +288,7 @@ export async function getHomePage(): Promise<HomePageData> {
       title: typeof heroRaw.title === "string" ? heroRaw.title : HOME_HERO_DEFAULTS.title,
       pikCaption: typeof heroRaw.pikCaption === "string" ? heroRaw.pikCaption : HOME_HERO_DEFAULTS.pikCaption,
       rotatingLines: Array.isArray(heroRaw.rotatingLines)
-        ? (heroRaw.rotatingLines as Array<Record<string, unknown>>).map((l): HomeHeroRotatingLine => ({ text: typeof l.text === "string" ? l.text : "", ctaLabel: typeof l.ctaLabel === "string" ? l.ctaLabel : "", ctaHref: typeof l.ctaHref === "string" ? l.ctaHref : "" })).filter((l) => l.text.length > 0)
+        ? (heroRaw.rotatingLines as Array<Record<string, unknown>>).map((l): HomeHeroRotatingLine => ({ text: typeof l.text === "string" ? l.text : "", ctaLabel: typeof l.ctaLabel === "string" ? l.ctaLabel : "", ctaHref: typeof l.ctaHref === "string" ? l.ctaHref : "", ...(typeof l.formId === "string" && l.formId ? { formId: l.formId } : {}) })).filter((l) => l.text.length > 0)
         : HOME_HERO_DEFAULTS.rotatingLines,
     } : HOME_HERO_DEFAULTS;
 

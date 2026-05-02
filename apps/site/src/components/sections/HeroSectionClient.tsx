@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { ArrowRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { useFormModal } from "@rocketmind/ui";
 import {
   useEffect,
   useMemo,
@@ -303,6 +304,7 @@ function ControlSlider({
 }
 
 export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav }: HeroSectionClientProps) {
+  const { openForm } = useFormModal();
   const heroRef = useRef<HTMLElement | null>(null);
   const wordmarkRef = useRef<HTMLDivElement | null>(null);
   const staticGlassRef = useRef<HTMLDivElement | null>(null);
@@ -828,29 +830,47 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav
                 </span>
               </h1>
 
-              {activeLine && (
-                <Link
-                  key={safeActiveIndex}
-                  href={activeLine.ctaHref || "#contact"}
-                  className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88"
-                >
-                  <AnimatePresence initial={false} mode="wait">
-                    <motion.span
-                      key={activeLine.ctaLabel}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{
-                        duration: HERO_ROTATION_TRANSITION_MS / 1000,
-                        ease: [0.23, 1, 0.32, 1],
-                      }}
-                    >
-                      {activeLine.ctaLabel || "Обсудить стратегию"}
-                    </motion.span>
-                  </AnimatePresence>
-                  <ArrowRight size={20} strokeWidth={2.1} className="text-primary" />
-                </Link>
-              )}
+              {activeLine && (() => {
+                const ctaInner = (
+                  <>
+                    <AnimatePresence initial={false} mode="wait">
+                      <motion.span
+                        key={activeLine.ctaLabel}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{
+                          duration: HERO_ROTATION_TRANSITION_MS / 1000,
+                          ease: [0.23, 1, 0.32, 1],
+                        }}
+                      >
+                        {activeLine.ctaLabel || "Обсудить стратегию"}
+                      </motion.span>
+                    </AnimatePresence>
+                    <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
+                  </>
+                );
+                const ctaClass =
+                  "h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer";
+                return activeLine.formId ? (
+                  <button
+                    key={safeActiveIndex}
+                    type="button"
+                    onClick={() => openForm(activeLine.formId!)}
+                    className={ctaClass}
+                  >
+                    {ctaInner}
+                  </button>
+                ) : (
+                  <Link
+                    key={safeActiveIndex}
+                    href={activeLine.ctaHref || "#contact"}
+                    className={ctaClass}
+                  >
+                    {ctaInner}
+                  </Link>
+                );
+              })()}
             </motion.div>
 
             <motion.div className="flex flex-row items-center gap-4 self-end lg:flex-col lg:items-end lg:gap-5" {...heroFadeUp(heroReady, 0.38)}>

@@ -1,20 +1,32 @@
 "use client";
 
-import { GripVertical, Plus, Trash2, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { GripVertical, Plus, Trash2, ArrowUpRight } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
 import { ItemMoveButtons } from "@/components/item-move-buttons";
 import { useItemDnd } from "@/lib/use-item-dnd";
+import { apiFetch } from "@/lib/api-client";
+import type { FormEntity } from "@/lib/types";
 
-type RotatingLine = { text: string; ctaLabel: string; ctaHref: string };
+type RotatingLine = { text: string; ctaLabel: string; ctaHref: string; formId?: string };
 
 interface HomeHeroEditorProps {
   data: Record<string, unknown>;
   onUpdate: (data: Record<string, unknown>) => void;
 }
 
-const EMPTY_LINE: RotatingLine = { text: "", ctaLabel: "", ctaHref: "" };
+const EMPTY_LINE: RotatingLine = { text: "", ctaLabel: "", ctaHref: "", formId: "" };
 
 export function HomeHeroEditor({ data, onUpdate }: HomeHeroEditorProps) {
+  const [forms, setForms] = useState<FormEntity[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    apiFetch("/api/forms")
+      .then((r) => r.json() as Promise<FormEntity[]>)
+      .then((all) => { if (!cancelled) setForms(all.filter((f) => f.scope !== "article")); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
   const title = (data.title as string) || "";
   const pikCaption = (data.pikCaption as string) || "";
   const rotatingLines = Array.isArray(data.rotatingLines)
@@ -95,7 +107,7 @@ export function HomeHeroEditor({ data, onUpdate }: HomeHeroEditorProps) {
                   onDragOver={onDragOver}
                   onDrop={onDrop}
                   onDragEnd={onDragEnd}
-                  className={`group/line relative grid grid-cols-[1fr_auto_260px_220px] items-center gap-4 border-b border-r border-[#404040] p-5 transition-all ${
+                  className={`group/line relative grid grid-cols-[1fr_auto_220px_220px_220px] items-center gap-4 border-b border-r border-[#404040] p-5 transition-all ${
                     isDragging ? "opacity-60" : ""
                   }`}
                 >
@@ -110,7 +122,7 @@ export function HomeHeroEditor({ data, onUpdate }: HomeHeroEditorProps) {
                     </span>
                   </InlineEdit>
 
-                  <ArrowRight className="h-4 w-4 shrink-0 text-[#5C5C5C]" />
+                  <ArrowUpRight className="h-4 w-4 shrink-0 text-[#5C5C5C]" />
 
                   {/* CTA label */}
                   <div className="flex flex-col gap-1">
@@ -131,7 +143,7 @@ export function HomeHeroEditor({ data, onUpdate }: HomeHeroEditorProps) {
                   {/* CTA href */}
                   <div className="flex flex-col gap-1">
                     <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-10)] uppercase tracking-[0.06em] text-[#5C5C5C]">
-                      Ссылка
+                      Ссылка (если без формы)
                     </span>
                     <InlineEdit
                       value={line.ctaHref}
@@ -142,6 +154,25 @@ export function HomeHeroEditor({ data, onUpdate }: HomeHeroEditorProps) {
                         {line.ctaHref || "—"}
                       </span>
                     </InlineEdit>
+                  </div>
+
+                  {/* Форма (перебивает ссылку) */}
+                  <div className="flex flex-col gap-1">
+                    <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-10)] uppercase tracking-[0.06em] text-[#5C5C5C]">
+                      Форма (перебивает ссылку)
+                    </span>
+                    <select
+                      value={line.formId ?? ""}
+                      onChange={(e) => updateLine(index, "formId", e.target.value)}
+                      className="h-8 rounded-sm border border-[#404040] bg-[#0A0A0A] px-2 text-[length:var(--text-12)] text-[#F0F0F0]"
+                    >
+                      <option value="">— без формы (открывать ссылку) —</option>
+                      {forms.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name || f.id}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Ручки */}
