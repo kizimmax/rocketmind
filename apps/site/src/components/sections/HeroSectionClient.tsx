@@ -837,9 +837,9 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav
                     <motion.div
                       key={`cta-${safeActiveIndex}`}
                       className="absolute top-0 left-0"
-                      initial={{ opacity: 0, y: 16 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0, transition: { delay: (HERO_ROTATION_ENTRY_DELAY_MS + HERO_CTA_EXTRA_DELAY_MS) / 1000, duration: HERO_ROTATION_TRANSITION_MS / 1000, ease: [0.23, 1, 0.32, 1] } }}
-                      exit={{ opacity: 0, y: -16, transition: { delay: 0.03, duration: HERO_ROTATION_TRANSITION_MS / 1000, ease: [0.23, 1, 0.32, 1] } }}
+                      exit={{ opacity: 0, y: -8, transition: { delay: 0.03, duration: HERO_ROTATION_TRANSITION_MS / 1000, ease: [0.23, 1, 0.32, 1] } }}
                     >
                       {activeLine.formId ? (
                         <button
