@@ -167,7 +167,7 @@ export function SimilarArticlesCarousel({
                     authorName={a.expertName ?? undefined}
                     authorAvatarUrl={a.expertAvatarUrl}
                     date={a.publishedAt}
-                    className="h-full rounded-none [&_h3]:text-[length:var(--text-20)]"
+                    className="h-full rounded-none p-5 [&_h3]:text-[length:var(--text-20)]"
                   />
                 </div>
               ))}
