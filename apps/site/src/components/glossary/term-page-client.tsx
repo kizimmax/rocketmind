@@ -453,7 +453,7 @@ export function GlossaryTermPageClient({
         <div className="mx-auto max-w-[1512px] px-5 md:px-8 xl:px-14">
           {/* Breadcrumbs */}
           <div
-            className="mb-8 pt-2 md:mb-10 md:pt-0"
+            className="mb-8 md:mb-10"
             style={stagger(0)}
           >
             {breadcrumbs}
