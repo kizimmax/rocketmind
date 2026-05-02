@@ -236,28 +236,25 @@ export function ProductsCatalog({
           {/* Mobile hero (< lg) */}
           <div className="lg:hidden px-5 pt-[102px] pb-6" style={heroFade(0)}>
             <div className="flex flex-col gap-6">
-              {/* Row: title LEFT + animated search RIGHT */}
-              <div className="flex items-end justify-between gap-3">
+              {/* Row: title LEFT (multi-line) + search RIGHT (icon → expanded input) */}
+              <div className="flex items-start justify-between gap-3">
                 <h1
-                  className="font-heading text-[28px] font-bold uppercase leading-[1.16] tracking-[-0.01em] shrink-0 transition-opacity duration-300"
+                  className="font-heading text-[28px] font-bold uppercase leading-[1.16] tracking-[-0.01em] min-w-0 break-words transition-opacity duration-300"
                   style={{ opacity: searchOpen ? 0 : 1, width: searchOpen ? 0 : "auto", overflow: "hidden" }}
                 >
-                  {titlePrefix}
+                  <span className="block">{titlePrefix}</span>
                   {headingAccent && (
-                    <>
-                      {" "}
-                      <span className="text-muted-foreground">{headingAccent}</span>
-                    </>
+                    <span className="block text-muted-foreground">{headingAccent}</span>
                   )}
                 </h1>
-                {/* Search: chip → full-width input with smooth expand/collapse */}
+                {/* Search: icon-only button → full-width input with smooth expand/collapse */}
                 <div
-                  className="relative h-8 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ml-auto"
+                  className="relative h-10 overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ml-auto shrink-0"
                   style={{ width: searchOpen ? "100%" : undefined, flexShrink: searchOpen ? 1 : 0 }}
                 >
                   {searchOpen ? (
                     <>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-[5px] top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 z-[1] text-muted-foreground pointer-events-none"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                       <input
                         ref={mobileInputRef}
                         type="text"
@@ -265,12 +262,12 @@ export function ProductsCatalog({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onBlur={() => { if (!searchQuery) setSearchOpen(false); }}
-                        className="h-[42px] w-[133%] origin-top-left scale-75 pl-7 pr-8 bg-[#1A1A1A] border border-border rounded-[5px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring"
+                        className="h-10 w-full pl-9 pr-9 bg-[#1A1A1A] border border-border rounded-[4px] font-mono text-[16px] uppercase tracking-[0.02em] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:border-ring"
                       />
                       {searchQuery && (
                         <button
                           onMouseDown={(e) => { e.preventDefault(); setSearchQuery(""); }}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 z-[1] flex items-center justify-center w-5 h-5 text-muted-foreground cursor-pointer"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 z-[1] flex items-center justify-center w-6 h-6 text-muted-foreground cursor-pointer"
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
                         </button>
@@ -278,26 +275,28 @@ export function ProductsCatalog({
                     </>
                   ) : (
                     <button
+                      aria-label="Найти продукт"
                       onClick={() => { setSearchOpen(true); requestAnimationFrame(() => mobileInputRef.current?.focus()); }}
-                      className="inline-flex items-center gap-2 h-8 px-2 border border-border rounded-[4px] bg-[#1A1A1A] text-muted-foreground font-mono text-[12px] uppercase tracking-[0.02em] cursor-pointer whitespace-nowrap"
+                      className="inline-flex items-center justify-center h-10 w-10 border border-border rounded-[4px] bg-[#1A1A1A] text-muted-foreground cursor-pointer"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                      <span>Найти продукт</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                     </button>
                   )}
                 </div>
               </div>
 
-              {/* Description */}
-              <p className="text-[16px] md:text-[18px] leading-[1.2] text-foreground">
-                {intro ?? (
-                  <>
-                    Единый маркетплейс решений для трансформации вашего бизнеса.
-                    {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
-                    {" "}и цифровых продуктов.
-                  </>
-                )}
-              </p>
+              {/* Description — только на «Все продукты» */}
+              {activeFilter === "all" && (
+                <p className="text-[16px] md:text-[18px] leading-[1.2] text-foreground">
+                  {intro ?? (
+                    <>
+                      Единый маркетплейс решений для трансформации вашего бизнеса.
+                      {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
+                      {" "}и цифровых продуктов.
+                    </>
+                  )}
+                </p>
+              )}
             </div>
           </div>
 
