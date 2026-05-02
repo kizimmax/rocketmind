@@ -273,7 +273,7 @@ async function main() {
         publishedAt: new Date().toISOString(),
         expertSlug: null,
         tagIds: [],
-        coverUrl: null,
+        coverPath: null,
         metaTitle: "",
         metaDescription: "",
         content: {},
