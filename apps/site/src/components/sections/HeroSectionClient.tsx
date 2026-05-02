@@ -832,38 +832,41 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav
               </h1>
 
               {activeLine && (
-                <AnimatePresence initial={false}>
-                  <motion.div
-                    key={`cta-${safeActiveIndex}`}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -16 }}
-                    transition={{
-                      delay: (HERO_ROTATION_ENTRY_DELAY_MS + HERO_CTA_EXTRA_DELAY_MS) / 1000,
-                      duration: HERO_ROTATION_TRANSITION_MS / 1000,
-                      ease: [0.23, 1, 0.32, 1],
-                    }}
-                  >
-                    {activeLine.formId ? (
-                      <button
-                        type="button"
-                        onClick={() => openForm(activeLine.formId!)}
-                        className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
-                      >
-                        {activeLine.ctaLabel || "Обсудить стратегию"}
-                        <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
-                      </button>
-                    ) : (
-                      <Link
-                        href={activeLine.ctaHref || "#contact"}
-                        className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
-                      >
-                        {activeLine.ctaLabel || "Обсудить стратегию"}
-                        <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
-                      </Link>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
+                <div className="hero-cta-viewport relative">
+                  <AnimatePresence initial={false}>
+                    <motion.div
+                      key={`cta-${safeActiveIndex}`}
+                      className="absolute top-0 left-0"
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -16 }}
+                      transition={{
+                        delay: (HERO_ROTATION_ENTRY_DELAY_MS + HERO_CTA_EXTRA_DELAY_MS) / 1000,
+                        duration: HERO_ROTATION_TRANSITION_MS / 1000,
+                        ease: [0.23, 1, 0.32, 1],
+                      }}
+                    >
+                      {activeLine.formId ? (
+                        <button
+                          type="button"
+                          onClick={() => openForm(activeLine.formId!)}
+                          className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
+                        >
+                          {activeLine.ctaLabel || "Обсудить стратегию"}
+                          <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
+                        </button>
+                      ) : (
+                        <Link
+                          href={activeLine.ctaHref || "#contact"}
+                          className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
+                        >
+                          {activeLine.ctaLabel || "Обсудить стратегию"}
+                          <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
+                        </Link>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
               )}
             </motion.div>
 

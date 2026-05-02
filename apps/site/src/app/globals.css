@@ -364,6 +364,11 @@ body:has(.is-404-page) [data-floating-mascot] { display: none; }
   }
 }
 
+/* ── Hero CTA — viewport height (h4: 24px × 1.2lh) ── */
+.hero-cta-viewport {
+  height: calc(var(--text-24) * 1.2);
+}
+
 /* ── Mascot Carousel — blinking cursor ── */
 @keyframes blink {
   0%, 100% { opacity: 1; }
