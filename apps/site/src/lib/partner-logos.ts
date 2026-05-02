@@ -40,9 +40,11 @@ function formatLogoAlt(filename: string) {
     .join(" ");
 }
 
-export async function resolveHeroLogosDirectory() {
+export async function resolveHeroLogosDirectory(): Promise<string | null> {
   const candidateDirectories = [
     path.resolve(process.cwd(), "public", "clip-logos"),
+    path.resolve(process.cwd(), "apps", "site", "public", "clip-logos"),
+    "/app/apps/site/public/clip-logos",
     path.resolve(process.cwd(), "assets", "clip-logos"),
     path.resolve(process.cwd(), "..", "assets", "clip-logos"),
     path.resolve(process.cwd(), "..", "..", "assets", "clip-logos"),
@@ -57,7 +59,7 @@ export async function resolveHeroLogosDirectory() {
     }
   }
 
-  throw new Error("Unable to locate the shared hero logos directory.");
+  return null;
 }
 
 export async function getHeroLogoFilePath(filename: string) {
@@ -68,6 +70,7 @@ export async function getHeroLogoFilePath(filename: string) {
   }
 
   const directory = await resolveHeroLogosDirectory();
+  if (!directory) return null;
   const filePath = path.join(directory, safeFilename);
   const extension = path.extname(safeFilename).toLowerCase();
 
@@ -108,6 +111,10 @@ export async function getPartnerLogos(): Promise<PartnerLogo[]> {
   if (cachedLogos) return cachedLogos;
 
   const directory = await resolveHeroLogosDirectory();
+  if (!directory) {
+    cachedLogos = [];
+    return cachedLogos;
+  }
   const entries = await fs.readdir(directory, { withFileTypes: true });
 
   const filenames = entries
