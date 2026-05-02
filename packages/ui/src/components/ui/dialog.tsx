@@ -79,12 +79,13 @@ const DialogContent = React.forwardRef<
       // Высота клавиатуры = window.innerHeight - vv.height - vv.offsetTop
       const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
       if (kb > 80) {
-        // клавиатура открыта — поднимаемся к верху
+        // клавиатура открыта — поднимаем sheet над ней через `bottom`
+        // (transform не используем, чтобы не конфликтовать с drag-to-close).
         el.style.setProperty("--rm-sheet-h", `${vv.height - TOP_GAP}px`)
-        el.style.setProperty("--rm-sheet-translate", `-${window.innerHeight - vv.height - vv.offsetTop}px`)
+        el.style.bottom = `${kb}px`
       } else {
         el.style.removeProperty("--rm-sheet-h")
-        el.style.removeProperty("--rm-sheet-translate")
+        el.style.removeProperty("bottom")
       }
     }
     apply()
@@ -163,6 +164,8 @@ const DialogContent = React.forwardRef<
     el.classList.remove("rm-sheet-manual-close")
     el.style.transition = ""
     el.style.transform = ""
+    el.style.removeProperty("bottom")
+    el.style.removeProperty("--rm-sheet-h")
     if (overlayRef.current) {
       overlayRef.current.classList.remove("rm-sheet-manual-close")
       overlayRef.current.style.transition = ""
