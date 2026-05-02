@@ -517,6 +517,7 @@ DialogOverlay.displayName = "DialogOverlay";
 var DialogContent = React3.forwardRef(({ className, children, mobileSheet = true, bodyClassName, ...props }, ref) => {
   const innerRef = React3.useRef(null);
   const overlayRef = React3.useRef(null);
+  const closeBtnRef = React3.useRef(null);
   const setRefs = React3.useCallback(
     (node) => {
       innerRef.current = node;
@@ -598,9 +599,7 @@ var DialogContent = React3.forwardRef(({ className, children, mobileSheet = true
       }
       const close = () => {
         el.removeEventListener("transitionend", close);
-        const closeBtn = el.querySelector("[data-radix-dialog-close]");
-        if (closeBtn) closeBtn.click();
-        else props.onOpenChange?.(false);
+        closeBtnRef.current?.click();
       };
       el.addEventListener("transitionend", close);
     } else {
@@ -659,6 +658,15 @@ var DialogContent = React3.forwardRef(({ className, children, mobileSheet = true
         ),
         ...props,
         children: [
+          /* @__PURE__ */ jsx8(
+            DialogPrimitive.Close,
+            {
+              ref: closeBtnRef,
+              "aria-hidden": true,
+              tabIndex: -1,
+              className: "sr-only"
+            }
+          ),
           mobileSheet && /* @__PURE__ */ jsx8(
             "div",
             {
@@ -976,7 +984,7 @@ import * as React5 from "react";
 import { cva as cva4 } from "class-variance-authority";
 import { jsx as jsx11 } from "react/jsx-runtime";
 var inputVariants = cva4(
-  "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive",
+  "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive max-md:!text-[16px]",
   {
     variants: {
       size: {
@@ -2025,7 +2033,7 @@ import * as React11 from "react";
 import { cva as cva7 } from "class-variance-authority";
 import { jsx as jsx25 } from "react/jsx-runtime";
 var textareaVariants = cva7(
-  "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive",
+  "flex w-full rounded-sm border border-border bg-rm-gray-1 text-foreground placeholder:text-muted-foreground transition-all duration-150 outline-none focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:border-destructive max-md:!text-[16px]",
   {
     variants: {
       variant: {
