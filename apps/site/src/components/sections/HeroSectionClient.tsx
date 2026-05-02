@@ -33,7 +33,7 @@ import { RocketmindMenu } from "./RocketmindMenu";
 const HERO_ROTATION_INTERVAL_MS = 2800;
 const HERO_ROTATION_TRANSITION_MS = 640;
 const HERO_ROTATION_ENTRY_DELAY_MS = 220;
-const HERO_CTA_EXTRA_DELAY_MS = 1;
+const HERO_CTA_EXTRA_DELAY_MS = 0;
 const LENS_STORAGE_KEY = "rocketmind:lens-controls:v2";
 const SHOW_LENS_CONTROLS = false;
 
@@ -832,7 +832,7 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav
               </h1>
 
               {activeLine && (
-                <AnimatePresence initial={false} mode="wait">
+                <AnimatePresence initial={false}>
                   <motion.div
                     key={`cta-${safeActiveIndex}`}
                     initial={{ opacity: 0, y: 16 }}
