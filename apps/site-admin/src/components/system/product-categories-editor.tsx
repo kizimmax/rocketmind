@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { Button, Input, Textarea } from "@rocketmind/ui";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-dialog";
@@ -198,40 +198,14 @@ export function ProductCategoriesEditor() {
 
   return (
     <div className="flex flex-col">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-[length:var(--text-16)] font-semibold text-foreground">
-            Категории каталога
-          </h2>
-          <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground">
-            SEO-настройки для tag-страниц <code className="font-mono">/products/&lt;slug&gt;</code>.
-            Пустые поля = дефолты («Продукты» + название категории).
-          </p>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          {isDirty && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              disabled={saving}
-              className="gap-1.5 text-muted-foreground"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              Отменить
-            </Button>
-          )}
-          <Button
-            size="sm"
-            onClick={() => void handleSave()}
-            disabled={saving || !isDirty}
-            className="gap-1.5"
-          >
-            <Save className="h-3.5 w-3.5" />
-            {saving ? "Сохранение…" : "Сохранить"}
-          </Button>
-        </div>
+      <div className="mb-4">
+        <h2 className="text-[length:var(--text-16)] font-semibold text-foreground">
+          Категории каталога
+        </h2>
+        <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground">
+          SEO-настройки для tag-страниц <code className="font-mono">/products/&lt;slug&gt;</code>.
+          Пустые поля = дефолты («Продукты» + название категории).
+        </p>
       </div>
 
       <div className="flex flex-col gap-6 rounded-lg border border-border bg-background p-5 shadow-sm">
@@ -311,9 +285,30 @@ export function ProductCategoriesEditor() {
         })}
       </div>
 
+      {/* Floating bottom-right action panel */}
+      <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-sm border border-border bg-background px-4 py-3 shadow-lg">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={handleReset}
+          disabled={saving || !isDirty}
+          title="Отменить все изменения"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+        <div className="h-6 w-px bg-border" />
+        <Button
+          onClick={() => void handleSave()}
+          disabled={saving || !isDirty}
+          className="bg-[var(--rm-yellow-100)] text-[var(--rm-yellow-fg)] hover:bg-[var(--rm-yellow-700)]"
+        >
+          {saving ? "Сохранение…" : "Сохранить изменения"}
+        </Button>
+      </div>
+
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-[length:var(--text-13)] shadow-lg transition-all ${
+          className={`fixed bottom-24 right-6 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-[length:var(--text-13)] shadow-lg transition-all ${
             toast.type === "success"
               ? "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
               : "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400"
