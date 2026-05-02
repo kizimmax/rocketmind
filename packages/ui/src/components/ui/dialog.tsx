@@ -46,6 +46,7 @@ const DialogContent = React.forwardRef<
 >(({ className, children, mobileSheet = true, bodyClassName, ...props }, ref) => {
   const innerRef = React.useRef<HTMLDivElement | null>(null)
   const overlayRef = React.useRef<HTMLDivElement | null>(null)
+  const closeBtnRef = React.useRef<HTMLButtonElement | null>(null)
 
   // Связываем внешний ref с внутренним
   const setRefs = React.useCallback(
@@ -140,10 +141,8 @@ const DialogContent = React.forwardRef<
       }
       const close = () => {
         el.removeEventListener("transitionend", close)
-        // Эмулируем клик на оверлей чтобы Radix корректно закрыл диалог
-        const closeBtn = el.querySelector<HTMLButtonElement>("[data-radix-dialog-close]")
-        if (closeBtn) closeBtn.click()
-        else (props as { onOpenChange?: (o: boolean) => void }).onOpenChange?.(false)
+        // Через скрытый DialogClose, чтобы Radix корректно снял scroll-lock
+        closeBtnRef.current?.click()
       }
       el.addEventListener("transitionend", close)
     } else {
@@ -206,6 +205,12 @@ const DialogContent = React.forwardRef<
         )}
         {...props}
       >
+        <DialogPrimitive.Close
+          ref={closeBtnRef}
+          aria-hidden
+          tabIndex={-1}
+          className="sr-only"
+        />
         {mobileSheet && (
           <div
             onPointerDown={onHandleDown}
