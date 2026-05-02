@@ -310,11 +310,6 @@ export function GlossaryTermPageClient({
                     activeId={activeId}
                     onNavigate={scrollToSection}
                   />
-                  {navItems.length === 0 && (
-                    <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-3)]">
-                      Навигация появится после добавления заголовков
-                    </p>
-                  )}
                 </div>
               </aside>
 
@@ -542,11 +537,6 @@ export function GlossaryTermPageClient({
                         activeId={activeId}
                         onNavigate={scrollToSection}
                       />
-                      {navItems.length === 0 && (
-                        <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-3)]">
-                          Навигация появится после добавления заголовков
-                        </p>
-                      )}
                     </div>
                   </aside>
 

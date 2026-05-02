@@ -216,124 +216,124 @@ projects:
     cells:
       - id: clip-1744800000000
         alt: 18 1
-        src: /images/unique/about/logos/cell-clip-1744800000000.svg
+        src: /clip-logos/18 1.svg
         size: S
       - id: clip-1744800000001
         alt: 2gis
-        src: /images/unique/about/logos/cell-clip-1744800000001.svg
+        src: /clip-logos/2gis.svg
         size: S
         padding: 24
       - id: clip-1744800000002
         alt: alfa 1
-        src: /images/unique/about/logos/cell-clip-1744800000002.svg
+        src: /clip-logos/alfa 1.svg
         size: S
       - id: clip-1744800000003
         alt: bilaine
-        src: /images/unique/about/logos/cell-clip-1744800000003.svg
+        src: /clip-logos/bilaine.svg
         size: S
       - id: clip-1744800000004
         alt: gazprombank
-        src: /images/unique/about/logos/cell-clip-1744800000004.svg
+        src: /clip-logos/gazprombank.svg
         size: S
       - id: clip-1744800000005
         alt: gazpromneft 1
-        src: /images/unique/about/logos/cell-clip-1744800000005.svg
+        src: /clip-logos/gazpromneft 1.svg
         size: S
       - id: clip-1744800000006
         alt: gdrive 1
-        src: /images/unique/about/logos/cell-clip-1744800000006.svg
+        src: /clip-logos/gdrive 1.svg
         size: S
         padding: 22
       - id: clip-1744800000007
         alt: gosuslugy
-        src: /images/unique/about/logos/cell-clip-1744800000007.png
+        src: /clip-logos/gosuslugy.png
         size: S
       - id: clip-1744800000008
         alt: mail 1
-        src: /images/unique/about/logos/cell-clip-1744800000008.svg
+        src: /clip-logos/mail 1.svg
         size: S
         padding: 22
       - id: clip-1744800000009
         alt: megafon 1
-        src: /images/unique/about/logos/cell-clip-1744800000009.svg
+        src: /clip-logos/megafon 1.svg
         size: S
       - id: clip-1744800000010
         alt: mincifr
-        src: /images/unique/about/logos/cell-clip-1744800000010.svg
+        src: /clip-logos/mincifr.svg
         size: S
       - id: clip-1744800000011
         alt: mtc
-        src: /images/unique/about/logos/cell-clip-1744800000011.svg
+        src: /clip-logos/mtc.svg
         size: S
         padding: 26
       - id: clip-1744800000012
         alt: pochta ross
-        src: /images/unique/about/logos/cell-clip-1744800000012.svg
+        src: /clip-logos/pochta ross.svg
         size: S
         padding: 20
       - id: clip-1744800000013
         alt: rambler
-        src: /images/unique/about/logos/cell-clip-1744800000013.svg
+        src: /clip-logos/rambler.svg
         size: S
         padding: 14
       - id: clip-1744800000014
         alt: rbk
-        src: /images/unique/about/logos/cell-clip-1744800000014.svg
+        src: /clip-logos/rbk.svg
         size: S
         padding: 24
       - id: clip-1744800000015
         alt: red kvadr
-        src: /images/unique/about/logos/cell-clip-1744800000015.svg
+        src: /clip-logos/red kvadr.svg
         size: S
       - id: clip-1744800000016
         alt: ros-export-centr
-        src: /images/unique/about/logos/cell-clip-1744800000016.svg
+        src: /clip-logos/ros-export-centr.svg
         size: S
       - id: clip-1744800000017
         alt: rosatom
-        src: /images/unique/about/logos/cell-clip-1744800000017.svg
+        src: /clip-logos/rosatom.svg
         size: S
       - id: clip-1744800000018
         alt: rosgosbiblio 1
-        src: /images/unique/about/logos/cell-clip-1744800000018.png
+        src: /clip-logos/rosgosbiblio 1.png
         size: S
       - id: clip-1744800000019
         alt: rostel 1
-        src: /images/unique/about/logos/cell-clip-1744800000019.svg
+        src: /clip-logos/rostel 1.svg
         size: S
       - id: clip-1744800000020
         alt: ruslan
-        src: /images/unique/about/logos/cell-clip-1744800000020.svg
+        src: /clip-logos/ruslan.svg
         size: S
       - id: clip-1744800000021
         alt: sberuniver 1
-        src: /images/unique/about/logos/cell-clip-1744800000021.svg
+        src: /clip-logos/sberuniver 1.svg
         size: S
       - id: clip-1744800000022
         alt: seiko 1
-        src: /images/unique/about/logos/cell-clip-1744800000022.svg
+        src: /clip-logos/seiko 1.svg
         size: S
       - id: clip-1744800000023
         alt: sk moscow school
-        src: /images/unique/about/logos/cell-clip-1744800000023.png
+        src: /clip-logos/sk moscow school.png
         size: S
       - id: clip-1744800000024
         alt: tbank
-        src: /images/unique/about/logos/cell-clip-1744800000024.svg
+        src: /clip-logos/tbank.svg
         size: S
       - id: clip-1744800000025
         alt: vk
-        src: /images/unique/about/logos/cell-clip-1744800000025.svg
+        src: /clip-logos/vk.svg
         size: S
         padding: 18
       - id: clip-1744800000026
         alt: vtb
-        src: /images/unique/about/logos/cell-clip-1744800000026.svg
+        src: /clip-logos/vtb.svg
         size: S
         padding: 24
       - id: clip-1744800000027
         alt: x5
-        src: /images/unique/about/logos/cell-clip-1744800000027.svg
+        src: /clip-logos/x5.svg
         size: S
         padding: 22
 pageBottom: true
