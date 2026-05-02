@@ -201,6 +201,13 @@ function Inner({
                 </div>
               </Section>
 
+              <Section title="Синонимы и формы">
+                <AliasesEditor
+                  value={term.aliases ?? []}
+                  onChange={(next) => update("aliases", next)}
+                />
+              </Section>
+
               <Section title="Теги">
                 {mediaTags.length === 0 ? (
                   <p className="text-[length:var(--text-14)] text-muted-foreground">
@@ -344,5 +351,72 @@ function Field({
         </span>
       )}
     </label>
+  );
+}
+
+/**
+ * AliasesEditor — список альтернативных форм названия термина (синонимы,
+ * падежи, аббревиатуры). Вводимая форма добавляется по Enter или запятой.
+ * Используется для авто-подсветки термина в теле статей: помимо `title`
+ * подсвечиваются все формы из `aliases`.
+ */
+function AliasesEditor({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [draft, setDraft] = useState("");
+
+  function commit(raw: string) {
+    const cleaned = raw
+      .split(/[,\n]/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !value.includes(s));
+    if (cleaned.length === 0) return;
+    onChange([...value, ...cleaned]);
+    setDraft("");
+  }
+
+  function remove(idx: number) {
+    onChange(value.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {value.map((alias, i) => (
+            <Tag
+              key={`${alias}-${i}`}
+              size="m"
+              state="active"
+              as="button"
+              onClick={() => remove(i)}
+              title="Удалить"
+            >
+              {alias} ×
+            </Tag>
+          ))}
+        </div>
+      )}
+      <Input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            commit(draft);
+          }
+        }}
+        onBlur={() => draft && commit(draft)}
+        placeholder="Падеж/синоним и Enter (или через запятую)"
+      />
+      <p className="text-[length:var(--text-11)] text-muted-foreground">
+        Эти формы будут автоматически подсвечиваться в теле статей наряду
+        с названием термина.
+      </p>
+    </div>
   );
 }

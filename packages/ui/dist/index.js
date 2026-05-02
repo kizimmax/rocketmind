@@ -4,6 +4,54 @@ import {
   cn
 } from "./chunk-EE3AAV6C.js";
 
+// src/lib/glossary-link.ts
+function buildGlossaryRegex(index, excludeSlug) {
+  const phrases = [];
+  const lookup = /* @__PURE__ */ new Map();
+  for (const entry of index) {
+    if (excludeSlug && entry.slug === excludeSlug) continue;
+    const terms = [entry.title, ...entry.aliases].map((s) => s.trim()).filter((s) => s.length > 0);
+    for (const phrase of terms) {
+      phrases.push({ phrase, slug: entry.slug, entry });
+      lookup.set(phrase.toLocaleLowerCase("ru-RU"), entry);
+    }
+  }
+  if (phrases.length === 0) return null;
+  phrases.sort((a, b) => b.phrase.length - a.phrase.length);
+  const escaped = phrases.map((p) => escapeRegex(p.phrase)).join("|");
+  const re = new RegExp(
+    `(?<![\\p{L}\\p{N}_])(${escaped})(?![\\p{L}\\p{N}_])`,
+    "giu"
+  );
+  return { re, lookup };
+}
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+function applyGlossaryLinks(text, compiled, used, makeNode, keyPrefix) {
+  const nodes = [];
+  let last = 0;
+  let match;
+  const re = new RegExp(compiled.re.source, compiled.re.flags);
+  while ((match = re.exec(text)) !== null) {
+    const matched = match[1];
+    const entry = compiled.lookup.get(matched.toLocaleLowerCase("ru-RU"));
+    if (!entry || used.has(entry.slug)) {
+      continue;
+    }
+    used.add(entry.slug);
+    if (match.index > last) {
+      nodes.push(text.slice(last, match.index));
+    }
+    nodes.push(makeNode(entry, matched, `${keyPrefix}-${match.index}`));
+    last = match.index + matched.length;
+  }
+  if (last < text.length) {
+    nodes.push(text.slice(last));
+  }
+  return nodes;
+}
+
 // src/components/theme-provider.tsx
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { jsx } from "react/jsx-runtime";
@@ -495,10 +543,10 @@ var DialogContent = React3.forwardRef(({ className, children, mobileSheet = true
       const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
       if (kb > 80) {
         el.style.setProperty("--rm-sheet-h", `${vv.height - TOP_GAP}px`);
-        el.style.setProperty("--rm-sheet-translate", `-${window.innerHeight - vv.height - vv.offsetTop}px`);
+        el.style.bottom = `${kb}px`;
       } else {
         el.style.removeProperty("--rm-sheet-h");
-        el.style.removeProperty("--rm-sheet-translate");
+        el.style.removeProperty("bottom");
       }
     };
     apply();
@@ -571,6 +619,8 @@ var DialogContent = React3.forwardRef(({ className, children, mobileSheet = true
     el.classList.remove("rm-sheet-manual-close");
     el.style.transition = "";
     el.style.transform = "";
+    el.style.removeProperty("bottom");
+    el.style.removeProperty("--rm-sheet-h");
     if (overlayRef.current) {
       overlayRef.current.classList.remove("rm-sheet-manual-close");
       overlayRef.current.style.transition = "";
@@ -3890,14 +3940,15 @@ function marginTopClass(prev, curr) {
   return "mt-[16px]";
 }
 var LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
-function renderInline(text) {
+function renderInline(text, glossary) {
+  const used = /* @__PURE__ */ new Set();
   const nodes = [];
   let last = 0;
   let match;
   const re = new RegExp(LINK_RE.source, "g");
   while ((match = re.exec(text)) !== null) {
     if (match.index > last) {
-      nodes.push(renderLineBreaks(text.slice(last, match.index), `t-${last}`));
+      pushPlain(nodes, text.slice(last, match.index), `t-${last}`, glossary, used);
     }
     nodes.push(
       /* @__PURE__ */ jsx41(
@@ -3913,9 +3964,62 @@ function renderInline(text) {
     last = match.index + match[0].length;
   }
   if (last < text.length) {
-    nodes.push(renderLineBreaks(text.slice(last), `t-${last}`));
+    pushPlain(nodes, text.slice(last), `t-${last}`, glossary, used);
   }
   return nodes;
+}
+function pushPlain(nodes, text, keyPrefix, glossary, used) {
+  if (!glossary) {
+    nodes.push(renderLineBreaks(text, keyPrefix));
+    return;
+  }
+  const parts = applyGlossaryLinks(
+    text,
+    glossary,
+    used,
+    (entry, matched, key) => /* @__PURE__ */ jsx41(GlossaryLink, { entry, matched }, key),
+    keyPrefix
+  );
+  parts.forEach((part, i) => {
+    if (typeof part === "string") {
+      nodes.push(renderLineBreaks(part, `${keyPrefix}-p${i}`));
+    } else {
+      nodes.push(part);
+    }
+  });
+}
+function GlossaryLink({
+  entry,
+  matched
+}) {
+  return /* @__PURE__ */ jsxs20(Tooltip, { children: [
+    /* @__PURE__ */ jsx41(
+      TooltipTrigger,
+      {
+        render: /* @__PURE__ */ jsx41(
+          "a",
+          {
+            href: `/media/glossary/term/${entry.slug}`,
+            className: "border-b border-dashed border-[color:var(--rm-yellow-100)]/60 transition-colors hover:border-solid hover:border-[color:var(--rm-yellow-100)] hover:text-[color:var(--rm-yellow-100)]",
+            children: matched
+          }
+        )
+      }
+    ),
+    /* @__PURE__ */ jsxs20(
+      TooltipContent,
+      {
+        side: "top",
+        sideOffset: 6,
+        className: "max-w-sm flex-col items-start gap-1 px-4 py-3 text-[length:var(--text-13)] leading-[1.4] normal-case",
+        children: [
+          /* @__PURE__ */ jsx41("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-[0.04em] opacity-70", children: entry.title }),
+          entry.description && /* @__PURE__ */ jsx41("span", { className: "text-[length:var(--text-13)]", children: entry.description }),
+          /* @__PURE__ */ jsx41("span", { className: "mt-1 text-[length:var(--text-11)] underline underline-offset-2 opacity-80", children: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0432 \u0433\u043B\u043E\u0441\u0441\u0430\u0440\u0438\u0438 \u2192" })
+        ]
+      }
+    )
+  ] });
 }
 function renderLineBreaks(text, keyPrefix) {
   const parts = text.split("\n");
@@ -3972,7 +4076,11 @@ function H4({ text, className }) {
     }
   );
 }
-function Paragraph({ text, className }) {
+function Paragraph({
+  text,
+  className,
+  glossary
+}) {
   return /* @__PURE__ */ jsx41(
     "p",
     {
@@ -3980,7 +4088,7 @@ function Paragraph({ text, className }) {
         "text-[length:var(--text-18)] leading-[1.2] text-[color:var(--rm-gray-fg-main)]",
         className
       ),
-      children: renderInline(text)
+      children: renderInline(text, glossary)
     }
   );
 }
@@ -4430,8 +4538,17 @@ function Quote({ text, className }) {
     }
   );
 }
-function ArticleBody({ blocks, className, ...props }) {
+function ArticleBody({
+  blocks,
+  className,
+  glossary,
+  ...props
+}) {
   if (!blocks?.length) return null;
+  const compiledGlossary = React16.useMemo(
+    () => glossary && glossary.index.length > 0 ? buildGlossaryRegex(glossary.index, glossary.excludeSlug) : null,
+    [glossary]
+  );
   return /* @__PURE__ */ jsx41("div", { className: cn("flex flex-col items-stretch", className), ...props, children: blocks.map((block, i) => {
     const prev = i === 0 ? null : blocks[i - 1].type;
     const mt = marginTopClass(prev, block.type);
@@ -4509,7 +4626,15 @@ function ArticleBody({ blocks, className, ...props }) {
       case "h4":
         return /* @__PURE__ */ jsx41(H4, { text, className: mt }, block.id);
       case "paragraph":
-        return /* @__PURE__ */ jsx41(Paragraph, { text, className: mt }, block.id);
+        return /* @__PURE__ */ jsx41(
+          Paragraph,
+          {
+            text,
+            className: mt,
+            glossary: compiledGlossary
+          },
+          block.id
+        );
       case "quote":
         return /* @__PURE__ */ jsx41(Quote, { text, className: mt }, block.id);
       default:
@@ -6633,7 +6758,7 @@ import {
   createContext,
   useCallback as useCallback8,
   useContext,
-  useMemo as useMemo3,
+  useMemo as useMemo4,
   useState as useState9
 } from "react";
 import { Check as Check2, Download, ExternalLink } from "lucide-react";
@@ -6661,7 +6786,7 @@ function ModalProvider({
   const [open, setOpen] = useState9(false);
   const [activeFormId, setActiveFormId] = useState9(null);
   const [openCtx, setOpenCtx] = useState9({});
-  const formsById = useMemo3(() => {
+  const formsById = useMemo4(() => {
     const m = /* @__PURE__ */ new Map();
     for (const f of forms) m.set(f.id, f);
     return m;
@@ -6680,7 +6805,7 @@ function ModalProvider({
     },
     [formsById]
   );
-  const value = useMemo3(() => ({ openForm }), [openForm]);
+  const value = useMemo4(() => ({ openForm }), [openForm]);
   const activeForm = activeFormId ? formsById.get(activeFormId) : null;
   return /* @__PURE__ */ jsxs37(ModalContext.Provider, { value, children: [
     children,
@@ -7891,8 +8016,10 @@ export {
   VideoPlayer,
   VkIcon,
   WaveAnimation,
+  applyGlossaryLinks,
   avatarVariants,
   badgeVariants,
+  buildGlossaryRegex,
   buttonVariants,
   checkboxBaseClassName,
   cn,

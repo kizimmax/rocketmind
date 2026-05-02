@@ -1,7 +1,7 @@
 import { ClassValue } from 'clsx';
-import * as react_jsx_runtime from 'react/jsx-runtime';
 import * as React$1 from 'react';
 import React__default, { ReactNode } from 'react';
+import * as react_jsx_runtime from 'react/jsx-runtime';
 import { ThemeProvider as ThemeProvider$1 } from 'next-themes';
 import * as class_variance_authority_types from 'class-variance-authority/types';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
@@ -19,6 +19,49 @@ import { Tooltip as Tooltip$1 } from '@base-ui/react/tooltip';
 export { X as DialogCloseIcon } from 'lucide-react';
 
 declare function cn(...inputs: ClassValue[]): string;
+
+/**
+ * Утилиты автоматической подсветки терминов глоссария в plain-string абзацах.
+ *
+ * Использование: `applyGlossaryLinks(text, index, excludeSlug, used, makeNode)` —
+ * передаём один и тот же `used: Set<string>` на абзац, чтобы каждый slug
+ * подсвечивался только в первом своём вхождении в этом абзаце.
+ */
+
+type GlossaryIndexEntry = {
+    slug: string;
+    title: string;
+    description: string;
+    aliases: string[];
+};
+type GlossaryIndex = GlossaryIndexEntry[];
+/**
+ * Собирает один регексп из всех phrase'ов всех терминов с word-boundary,
+ * учитывающим Unicode-буквы (русский, латиница). Длинные фразы идут раньше
+ * коротких — `replaceAll` за один проход найдёт «продакт-менеджер» вместо
+ * того, чтобы матчить «менеджер» внутри.
+ *
+ * Возвращает `null`, если в индексе нет ни одной phrase'ы (после excludeSlug).
+ */
+declare function buildGlossaryRegex(index: GlossaryIndex, excludeSlug?: string): {
+    re: RegExp;
+    lookup: Map<string, GlossaryIndexEntry>;
+} | null;
+/**
+ * Прогон одного plain-string сегмента через глоссарный регексп.
+ * Заменяет совпадения на узлы из `makeNode(entry, matchedText)`.
+ *
+ * `used: Set<string>` — общий на абзац: если slug уже использовался в этом
+ * абзаце, дальнейшие вхождения остаются plain-text. Это правило «первое
+ * вхождение в абзаце».
+ *
+ * Передавай готовый `compiled` (`buildGlossaryRegex`) — мы не пересобираем
+ * regex для каждого вызова.
+ */
+declare function applyGlossaryLinks(text: string, compiled: {
+    re: RegExp;
+    lookup: Map<string, GlossaryIndexEntry>;
+}, used: Set<string>, makeNode: (entry: GlossaryIndexEntry, matched: string, key: string) => ReactNode, keyPrefix: string): ReactNode[];
 
 declare function ThemeProvider({ children, ...props }: React$1.ComponentProps<typeof ThemeProvider$1>): react_jsx_runtime.JSX.Element;
 
@@ -687,8 +730,20 @@ interface ArticleBodyBlock {
         text?: string;
     } & Record<string, unknown>;
 }
+/**
+ * Конфиг автоматической подсветки терминов глоссария в абзацах. Если задан —
+ * `Paragraph` прогоняет текст через regex и заменяет совпадения на ссылки
+ * с tooltip'ом (description термина + кнопка перехода). Совпадение «термин-в-
+ * себя» исключается через `excludeSlug` (страница самого термина).
+ */
+interface GlossaryRenderConfig {
+    index: GlossaryIndex;
+    /** Slug, который не нужно линковать (страница самого термина). */
+    excludeSlug?: string;
+}
 interface ArticleBodyProps extends React$1.HTMLAttributes<HTMLDivElement> {
     blocks: ArticleBodyBlock[];
+    glossary?: GlossaryRenderConfig;
 }
 declare function slugify(input: string): string;
 /**
@@ -735,7 +790,7 @@ declare function ListCardGrid({ cards, listType, cols, className, }: {
  * H2 получают id = slugify(text) — используются ArticleNav scrollspy-ом и
  * якорными ссылками.
  */
-declare function ArticleBody({ blocks, className, ...props }: ArticleBodyProps): react_jsx_runtime.JSX.Element | null;
+declare function ArticleBody({ blocks, className, glossary, ...props }: ArticleBodyProps): react_jsx_runtime.JSX.Element | null;
 
 interface VideoPlayerProps extends Omit<React$1.VideoHTMLAttributes<HTMLVideoElement>, "controls" | "onError"> {
     /** URL исходного видеофайла. Обязательный. */
@@ -1385,4 +1440,4 @@ type SiteHeaderProps = {
 };
 declare function SiteHeader({ basePath, className, nav, cta, }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
 
-export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardTypeBadgeColor, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, type ArticleTableData, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionMini, type CTASectionMiniProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, DynamicForm, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type FactoidCardData, FactoidGrid, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, type FormChipsConfig, type FormConsentConfig, type FormConsentLink, type FormEntity, type FormFieldsConfig, type FormSuccessGift, GlossaryList, type GlossaryListProps, GlossaryPopularRow, type GlossaryPopularRowProps, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type ListCardData, ListCardGrid, type ListItemData, type LogoMarqueeItem, MaxIcon, MobileNav, ModalProvider, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderCta, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, avatarVariants, badgeVariants, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants, useFormModal };
+export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardTypeBadgeColor, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, type ArticleTableData, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionMini, type CTASectionMiniProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, DynamicForm, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type FactoidCardData, FactoidGrid, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, type FormChipsConfig, type FormConsentConfig, type FormConsentLink, type FormEntity, type FormFieldsConfig, type FormSuccessGift, type GlossaryIndex, type GlossaryIndexEntry, GlossaryList, type GlossaryListProps, GlossaryPopularRow, type GlossaryPopularRowProps, type GlossaryRenderConfig, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type ListCardData, ListCardGrid, type ListItemData, type LogoMarqueeItem, MaxIcon, MobileNav, ModalProvider, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderCta, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, applyGlossaryLinks, avatarVariants, badgeVariants, buildGlossaryRegex, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants, useFormModal };

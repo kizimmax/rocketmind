@@ -5,6 +5,7 @@ import {
   collectTermResolvedProductAsides,
   collectTermResolvedQuoteExperts,
   getAllGlossaryTerms,
+  getGlossaryIndex,
   getGlossaryTermBySlug,
 } from "@/lib/glossary";
 import { getPublicTags } from "@/lib/articles";
@@ -52,6 +53,7 @@ export default async function GlossaryTermPage({
   const resolvedProducts = await collectTermResolvedProductAsides(term);
   const resolvedQuoteExperts = await collectTermResolvedQuoteExperts(term);
   const resolvedCtas = await collectTermResolvedCtas(term);
+  const glossaryIndex = await getGlossaryIndex();
 
   return (
     <>
@@ -61,6 +63,7 @@ export default async function GlossaryTermPage({
         resolvedProducts={resolvedProducts}
         resolvedQuoteExperts={resolvedQuoteExperts}
         resolvedCtas={resolvedCtas}
+        glossaryIndex={glossaryIndex}
       />
       <PageBottom />
     </>

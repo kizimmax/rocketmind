@@ -7,6 +7,7 @@ type GlossaryContent = {
   sections?: unknown[];
   pinned?: boolean;
   pinnedOrder?: number;
+  aliases?: unknown[];
   [key: string]: unknown;
 };
 
@@ -25,6 +26,11 @@ function toDto(t: {
 }) {
   const c = (t.content ?? {}) as GlossaryContent;
   const sections = Array.isArray(c.sections) ? c.sections : Array.isArray(c.body) ? c.body : [];
+  const aliases = Array.isArray(c.aliases)
+    ? c.aliases
+        .map((v) => (typeof v === "string" ? v.trim() : ""))
+        .filter((v) => v.length > 0)
+    : [];
   return {
     id: `glossary/${t.slug}`,
     slug: t.slug,
@@ -36,6 +42,7 @@ function toDto(t: {
     metaTitle: t.metaTitle,
     metaDescription: t.metaDescription,
     sections,
+    aliases,
     pinned: c.pinned === true,
     pinnedOrder: typeof c.pinnedOrder === "number" ? c.pinnedOrder : 0,
     createdAt: t.createdAt.toISOString(),
@@ -63,7 +70,7 @@ export async function POST(request: Request) {
       title: title || "",
       status: "hidden",
       description: "",
-      content: { order: 0, sections: [], pinned: false, pinnedOrder: 0 },
+      content: { order: 0, sections: [], pinned: false, pinnedOrder: 0, aliases: [] },
       tagIds: [],
       metaTitle: title ? `${title} | Глоссарий Rocketmind` : "",
       metaDescription: "",

@@ -24,6 +24,23 @@ export type GlossaryTermEntry = {
   sections: ArticleSection[];
   pinned: boolean;
   pinnedOrder: number;
+  /**
+   * Альтернативные формы названия (синонимы, падежи, аббревиатуры) для
+   * автоматической подсветки термина в теле статей. См. `getGlossaryIndex()`.
+   */
+  aliases: string[];
+};
+
+/**
+ * Облегчённая запись термина для авто-линковки в теле статьи —
+ * без `sections` и SEO-полей. Используется в SSR-страницах статьи и термина,
+ * чтобы прокинуть в `ArticleBody` без лишних данных.
+ */
+export type GlossaryIndexEntry = {
+  slug: string;
+  title: string;
+  description: string;
+  aliases: string[];
 };
 
 const VALID_STATUSES = new Set(["published", "hidden", "archived"]);
@@ -48,13 +65,47 @@ function rowToEntry(row: {
     sections: parseSections(Array.isArray(c.sections) ? c.sections : []),
     pinned: c.pinned === true,
     pinnedOrder: typeof c.pinnedOrder === "number" ? c.pinnedOrder : 0,
+    aliases: parseAliases(c.aliases),
   };
+}
+
+function parseAliases(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter((v) => v.length > 0);
 }
 
 export async function getAllGlossaryTerms(): Promise<GlossaryTermEntry[]> {
   try {
     const rows = await prisma.glossaryTerm.findMany({ where: { status: "published" } });
     return rows.map(rowToEntry).sort((a, b) => a.title.localeCompare(b.title, "ru"));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Лёгкий снимок всех опубликованных терминов для авто-линковки в теле статьи.
+ * Без `sections` — только то, что нужно подсветить и показать в tooltip.
+ */
+export async function getGlossaryIndex(): Promise<GlossaryIndexEntry[]> {
+  try {
+    const rows = await prisma.glossaryTerm.findMany({
+      where: { status: "published" },
+      select: { slug: true, title: true, description: true, content: true },
+    });
+    return rows.map((row) => {
+      const c = (row.content && typeof row.content === "object"
+        ? row.content
+        : {}) as Record<string, unknown>;
+      return {
+        slug: row.slug,
+        title: row.title,
+        description: row.description,
+        aliases: parseAliases(c.aliases),
+      };
+    });
   } catch {
     return [];
   }

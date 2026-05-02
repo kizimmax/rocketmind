@@ -3,6 +3,13 @@
 import * as React from "react"
 import { cn } from "../../lib/utils"
 import { VideoPlayer } from "./video-player"
+import {
+  applyGlossaryLinks,
+  buildGlossaryRegex,
+  type GlossaryIndex,
+  type GlossaryIndexEntry,
+} from "../../lib/glossary-link"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -59,8 +66,21 @@ export interface ArticleBodyBlock {
   data: { text?: string } & Record<string, unknown>
 }
 
+/**
+ * Конфиг автоматической подсветки терминов глоссария в абзацах. Если задан —
+ * `Paragraph` прогоняет текст через regex и заменяет совпадения на ссылки
+ * с tooltip'ом (description термина + кнопка перехода). Совпадение «термин-в-
+ * себя» исключается через `excludeSlug` (страница самого термина).
+ */
+export interface GlossaryRenderConfig {
+  index: GlossaryIndex
+  /** Slug, который не нужно линковать (страница самого термина). */
+  excludeSlug?: string
+}
+
 export interface ArticleBodyProps extends React.HTMLAttributes<HTMLDivElement> {
   blocks: ArticleBodyBlock[]
+  glossary?: GlossaryRenderConfig
 }
 
 // ── Slugify (Cyrillic-aware, same map as site-admin/store.ts) ───────────────
@@ -115,14 +135,22 @@ function marginTopClass(
 
 const LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g
 
-function renderInline(text: string): React.ReactNode[] {
+type CompiledGlossary = ReturnType<typeof buildGlossaryRegex>
+
+function renderInline(
+  text: string,
+  glossary: CompiledGlossary,
+): React.ReactNode[] {
+  // Per-paragraph used-set: slug подсвечивается только в первом своём
+  // вхождении в этом абзаце.
+  const used = new Set<string>()
   const nodes: React.ReactNode[] = []
   let last = 0
   let match: RegExpExecArray | null
   const re = new RegExp(LINK_RE.source, "g")
   while ((match = re.exec(text)) !== null) {
     if (match.index > last) {
-      nodes.push(renderLineBreaks(text.slice(last, match.index), `t-${last}`))
+      pushPlain(nodes, text.slice(last, match.index), `t-${last}`, glossary, used)
     }
     nodes.push(
       <a
@@ -136,9 +164,89 @@ function renderInline(text: string): React.ReactNode[] {
     last = match.index + match[0].length
   }
   if (last < text.length) {
-    nodes.push(renderLineBreaks(text.slice(last), `t-${last}`))
+    pushPlain(nodes, text.slice(last), `t-${last}`, glossary, used)
   }
   return nodes
+}
+
+/**
+ * Подкладывает plain-сегмент (вне markdown-ссылок) с обработкой переносов
+ * строк и автоподсветкой глоссарных терминов (если конфиг передан).
+ */
+function pushPlain(
+  nodes: React.ReactNode[],
+  text: string,
+  keyPrefix: string,
+  glossary: CompiledGlossary,
+  used: Set<string>,
+): void {
+  if (!glossary) {
+    nodes.push(renderLineBreaks(text, keyPrefix))
+    return
+  }
+  const parts = applyGlossaryLinks(
+    text,
+    glossary,
+    used,
+    (entry, matched, key) => (
+      <GlossaryLink key={key} entry={entry} matched={matched} />
+    ),
+    keyPrefix,
+  )
+  // Вставляем по частям: для каждой строковой части прогоняем перевод строк.
+  parts.forEach((part, i) => {
+    if (typeof part === "string") {
+      nodes.push(renderLineBreaks(part, `${keyPrefix}-p${i}`))
+    } else {
+      nodes.push(part)
+    }
+  })
+}
+
+/**
+ * GlossaryLink — подсвеченный термин в теле абзаца. Tooltip с tail-описанием
+ * термина и ссылкой на полную страницу глоссария.
+ *
+ * Стиль подсветки — пунктирный нижний бордер `border-b border-dashed`,
+ * жёлтый акцент при ховере. Для DS-проверки см. чат с пользователем
+ * (паттерн утверждён вместе с фичей).
+ */
+function GlossaryLink({
+  entry,
+  matched,
+}: {
+  entry: GlossaryIndexEntry
+  matched: string
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <a
+            href={`/media/glossary/term/${entry.slug}`}
+            className="border-b border-dashed border-[color:var(--rm-yellow-100)]/60 transition-colors hover:border-solid hover:border-[color:var(--rm-yellow-100)] hover:text-[color:var(--rm-yellow-100)]"
+          >
+            {matched}
+          </a>
+        }
+      />
+      <TooltipContent
+        side="top"
+        sideOffset={6}
+        className="max-w-sm flex-col items-start gap-1 px-4 py-3 text-[length:var(--text-13)] leading-[1.4] normal-case"
+      >
+        <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-[0.04em] opacity-70">
+          {entry.title}
+        </span>
+        {entry.description && (
+          <span className="text-[length:var(--text-13)]">{entry.description}</span>
+        )}
+        <span className="mt-1 text-[length:var(--text-11)] underline underline-offset-2 opacity-80">
+          Открыть в глоссарии →
+        </span>
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 function renderLineBreaks(text: string, keyPrefix: string): React.ReactNode {
@@ -208,7 +316,15 @@ function H4({ text, className }: { text: string; className?: string }) {
   )
 }
 
-function Paragraph({ text, className }: { text: string; className?: string }) {
+function Paragraph({
+  text,
+  className,
+  glossary,
+}: {
+  text: string
+  className?: string
+  glossary: CompiledGlossary
+}) {
   return (
     <p
       className={cn(
@@ -216,7 +332,7 @@ function Paragraph({ text, className }: { text: string; className?: string }) {
         className,
       )}
     >
-      {renderInline(text)}
+      {renderInline(text, glossary)}
     </p>
   )
 }
@@ -869,8 +985,24 @@ function Quote({ text, className }: { text: string; className?: string }) {
  * H2 получают id = slugify(text) — используются ArticleNav scrollspy-ом и
  * якорными ссылками.
  */
-export function ArticleBody({ blocks, className, ...props }: ArticleBodyProps) {
+export function ArticleBody({
+  blocks,
+  className,
+  glossary,
+  ...props
+}: ArticleBodyProps) {
   if (!blocks?.length) return null
+
+  // Компилим regex один раз на рендер. `null` если индекс пуст (нет терминов
+  // или единственный — excludeSlug). В этом случае Paragraph рендерится как
+  // раньше, без overhead'а на парсинг.
+  const compiledGlossary = React.useMemo(
+    () =>
+      glossary && glossary.index.length > 0
+        ? buildGlossaryRegex(glossary.index, glossary.excludeSlug)
+        : null,
+    [glossary],
+  )
 
   return (
     <div className={cn("flex flex-col items-stretch", className)} {...props}>
@@ -969,7 +1101,14 @@ export function ArticleBody({ blocks, className, ...props }: ArticleBodyProps) {
           case "h4":
             return <H4 key={block.id} text={text} className={mt} />
           case "paragraph":
-            return <Paragraph key={block.id} text={text} className={mt} />
+            return (
+              <Paragraph
+                key={block.id}
+                text={text}
+                className={mt}
+                glossary={compiledGlossary}
+              />
+            )
           case "quote":
             return <Quote key={block.id} text={text} className={mt} />
           default:

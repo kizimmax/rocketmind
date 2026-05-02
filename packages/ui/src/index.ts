@@ -1,5 +1,13 @@
 // Utils
 export { cn } from './lib/utils';
+export {
+  buildGlossaryRegex,
+  applyGlossaryLinks,
+} from './lib/glossary-link';
+export type {
+  GlossaryIndex,
+  GlossaryIndexEntry,
+} from './lib/glossary-link';
 
 // Theme
 export { ThemeProvider } from './components/theme-provider';

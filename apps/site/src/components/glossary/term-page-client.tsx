@@ -22,7 +22,7 @@ import type {
   ResolvedQuoteExpert,
 } from "@/lib/articles";
 import type { CtaEntity } from "@/lib/ctas";
-import type { GlossaryTermEntry } from "@/lib/glossary";
+import type { GlossaryIndexEntry, GlossaryTermEntry } from "@/lib/glossary";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -49,6 +49,8 @@ interface Props {
   resolvedProducts: Record<string, ResolvedProductAside>;
   resolvedQuoteExperts: Record<string, ResolvedQuoteExpert>;
   resolvedCtas: Record<string, CtaEntity>;
+  /** Индекс всех опубликованных терминов (для cross-link между терминами). */
+  glossaryIndex: GlossaryIndexEntry[];
 }
 
 /**
@@ -67,8 +69,15 @@ export function GlossaryTermPageClient({
   resolvedProducts,
   resolvedQuoteExperts,
   resolvedCtas,
+  glossaryIndex,
 }: Props) {
   const [previewFile, setPreviewFile] = useState<FilePreviewFile | null>(null);
+
+  // Cross-link: подсвечиваем все опубликованные термины кроме самого текущего.
+  const glossaryConfig = useMemo(
+    () => ({ index: glossaryIndex, excludeSlug: term.slug }),
+    [glossaryIndex, term.slug],
+  );
 
   // ToC: items из section.title (пропускаем секции без заголовка).
   const navItems = useMemo(
@@ -351,6 +360,7 @@ export function GlossaryTermPageClient({
                           section={section}
                           resolvedQuoteExperts={resolvedQuoteExperts}
                           resolvedCtas={resolvedCtas}
+                          glossary={glossaryConfig}
                         />
                       </div>
                     ))}
@@ -524,6 +534,7 @@ export function GlossaryTermPageClient({
                       resolvedQuoteExperts={resolvedQuoteExperts}
                       resolvedCtas={resolvedCtas}
                       onPreviewFile={setPreviewFile}
+                      glossary={glossaryConfig}
                     />
                   ))}
                 </div>
@@ -548,6 +559,7 @@ export function GlossaryTermPageClient({
                           section={section}
                           resolvedQuoteExperts={resolvedQuoteExperts}
                           resolvedCtas={resolvedCtas}
+                          glossary={glossaryConfig}
                         />
                       </div>
                     ))}

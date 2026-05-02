@@ -16,6 +16,7 @@ import type {
   ResolvedQuoteExpert,
 } from "@/lib/articles";
 import type { CtaEntity } from "@/lib/ctas";
+import type { GlossaryIndexEntry } from "@/lib/glossary";
 import {
   FilePreviewModal,
   type FilePreviewFile,
@@ -37,6 +38,8 @@ interface Props {
   resolvedQuoteExperts: Record<string, ResolvedQuoteExpert>;
   /** Резолвенные CTA-блоки (ключ — id CTA). Используются в bottomCtaId секции и cta-aside. */
   resolvedCtas: Record<string, CtaEntity>;
+  /** Индекс терминов для авто-подсветки в теле статьи. */
+  glossaryIndex: GlossaryIndexEntry[];
 }
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -66,7 +69,14 @@ export function ArticlePageClient({
   tagItems,
   resolvedProducts,
   resolvedCtas,
+  glossaryIndex,
 }: Props) {
+  // Конфиг авто-подсветки терминов глоссария в теле статьи. На странице
+  // статьи excludeSlug не нужен — линкуются все опубликованные термины.
+  const glossaryConfig = useMemo(
+    () => ({ index: glossaryIndex }),
+    [glossaryIndex],
+  );
   // ── ToC: items из section.title/navLabel (пропускаем секции без заголовка) ──
   const navItems = useMemo(
     () =>
@@ -666,6 +676,7 @@ export function ArticlePageClient({
                           section={section}
                           resolvedQuoteExperts={resolvedQuoteExperts}
                           resolvedCtas={resolvedCtas}
+                          glossary={glossaryConfig}
                         />
                       </div>
                     ))}
@@ -918,6 +929,7 @@ export function ArticlePageClient({
                     resolvedQuoteExperts={resolvedQuoteExperts}
                     resolvedCtas={resolvedCtas}
                     onPreviewFile={setPreviewFile}
+                    glossary={glossaryConfig}
                   />
                 ))}
               </div>
@@ -943,6 +955,7 @@ export function ArticlePageClient({
                         section={section}
                         resolvedQuoteExperts={resolvedQuoteExperts}
                         resolvedCtas={resolvedCtas}
+                        glossary={glossaryConfig}
                       />
                     </div>
                   ))}

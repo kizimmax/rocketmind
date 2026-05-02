@@ -778,6 +778,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       metaTitle: `${title} | Глоссарий Rocketmind`,
       metaDescription: "",
       sections: [],
+      aliases: [],
       pinned: false,
       pinnedOrder: 0,
       createdAt: now,

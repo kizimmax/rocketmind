@@ -24,6 +24,11 @@ export async function PUT(
         sections: Array.isArray(body.sections) ? body.sections : [],
         pinned: body.pinned === true,
         pinnedOrder: typeof body.pinnedOrder === "number" ? body.pinnedOrder : 0,
+        aliases: Array.isArray(body.aliases)
+          ? body.aliases
+              .map((v: unknown) => (typeof v === "string" ? v.trim() : ""))
+              .filter((v: string) => v.length > 0)
+          : [],
       },
     },
   });

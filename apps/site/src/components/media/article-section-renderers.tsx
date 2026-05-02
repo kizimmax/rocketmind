@@ -15,6 +15,7 @@ import {
   useFormModal,
   type ArticleBodyBlock,
   type ExpertQuoteItem,
+  type GlossaryRenderConfig,
 } from "@rocketmind/ui";
 import type {
   ArticleAside,
@@ -76,10 +77,12 @@ export function SectionBody({
   section,
   resolvedQuoteExperts,
   resolvedCtas,
+  glossary,
 }: {
   section: ArticleSection;
   resolvedQuoteExperts: Record<string, ResolvedQuoteExpert>;
   resolvedCtas: Record<string, CtaEntity>;
+  glossary?: GlossaryRenderConfig;
 }) {
   const title = section.title.trim();
   const hasH2 = title.length > 0;
@@ -110,7 +113,7 @@ export function SectionBody({
     <div className="min-w-0">
       {(hasH2 || hasFactoids || hasListCards || hasBlocks) && (
         <div data-section-body-blocks={section.id}>
-          {h2Block && <ArticleBody blocks={[h2Block]} />}
+          {h2Block && <ArticleBody blocks={[h2Block]} glossary={glossary} />}
           {hasFactoids && (
             <div
               data-section-factoids={section.id}
@@ -133,7 +136,7 @@ export function SectionBody({
           )}
           {hasBlocks && (
             <div className={hasH2 || hasFactoids || hasListCards ? "mt-[40px]" : ""}>
-              <ArticleBody blocks={section.blocks} />
+              <ArticleBody blocks={section.blocks} glossary={glossary} />
             </div>
           )}
         </div>
@@ -176,12 +179,14 @@ export function SectionMobile({
   resolvedQuoteExperts,
   resolvedCtas,
   onPreviewFile,
+  glossary,
 }: {
   section: ArticleSection;
   resolvedProducts: Record<string, ResolvedProductAside>;
   resolvedQuoteExperts: Record<string, ResolvedQuoteExpert>;
   resolvedCtas: Record<string, CtaEntity>;
   onPreviewFile: (file: FilePreviewFile) => void;
+  glossary?: GlossaryRenderConfig;
 }) {
   const blocks = sectionBlocks(section);
   const hasFactoids = section.factoids.length > 0;
@@ -203,7 +208,7 @@ export function SectionMobile({
     <section className="flex flex-col gap-8">
       {h2Block && (
         <div className="min-w-0">
-          <ArticleBody blocks={[h2Block]} />
+          <ArticleBody blocks={[h2Block]} glossary={glossary} />
         </div>
       )}
       {hasFactoids && (
@@ -222,7 +227,7 @@ export function SectionMobile({
       )}
       {hasRest && (
         <div className="min-w-0">
-          <ArticleBody blocks={restBlocks} />
+          <ArticleBody blocks={restBlocks} glossary={glossary} />
         </div>
       )}
       {bottomCta && (

@@ -9,6 +9,7 @@ import {
   getPublicTags,
 } from "@/lib/articles";
 import { getExpertBySlug } from "@/lib/experts";
+import { getGlossaryIndex } from "@/lib/glossary";
 import { ArticlePageClient } from "@/components/media/article-page-client";
 import {
   SimilarArticlesCarousel,
@@ -55,6 +56,7 @@ export default async function ArticlePage({
   const resolvedProducts = await collectResolvedProductAsides(article);
   const resolvedQuoteExperts = await collectResolvedQuoteExperts(article);
   const resolvedCtas = await collectResolvedCtas(article);
+  const glossaryIndex = await getGlossaryIndex();
 
   // Похожие статьи: общий хотя бы один тег с текущей, исключая саму статью.
   // Сортировка — по `publishedAt` desc (свежие выше). Лимит — 12.
@@ -116,6 +118,7 @@ export default async function ArticlePage({
         resolvedProducts={resolvedProducts}
         resolvedQuoteExperts={resolvedQuoteExperts}
         resolvedCtas={resolvedCtas}
+        glossaryIndex={glossaryIndex}
       />
       {similarArticles.length > 0 && (
         <SimilarArticlesCarousel articles={similarArticles} />

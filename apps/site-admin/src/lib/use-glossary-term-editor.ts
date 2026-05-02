@@ -140,6 +140,8 @@ function shallowEqualTerm(a: GlossaryTerm, b: GlossaryTerm): boolean {
   if (JSON.stringify(a.tagIds) !== JSON.stringify(b.tagIds)) return false;
   if (JSON.stringify(a.sections ?? []) !== JSON.stringify(b.sections ?? []))
     return false;
+  if (JSON.stringify(a.aliases ?? []) !== JSON.stringify(b.aliases ?? []))
+    return false;
   return true;
 }
 
@@ -154,6 +156,7 @@ const FIELD_LABELS: Partial<Record<keyof GlossaryTerm, string>> = {
   metaTitle: "SEO Title",
   metaDescription: "SEO Description",
   pinned: "Закреплён",
+  aliases: "Синонимы / падежи",
 };
 
 function isEqual(a: unknown, b: unknown): boolean {
