@@ -19,6 +19,7 @@ import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-d
 import { ArticleHeroEditor } from "./article-hero-editor";
 import { ArticlePreviewCard } from "./article-preview-card";
 import { ArticleSectionsEditor } from "./article-sections-editor";
+import { SlugRedirects } from "./slug-redirects";
 import { CaseCardEditor } from "@/components/page-editor/block-editors/case-card-editor";
 import type { ArticleType, CaseCardBlockData } from "@/lib/types";
 
@@ -176,6 +177,7 @@ function ArticleEditorInner({
                   <p className="text-[length:var(--text-11)] text-muted-foreground">
                     Адрес статьи: <code>/media/{article.slug}</code>
                   </p>
+                  <SlugRedirects currentUrl={`/media/${article.id.replace(/^media\//, "")}`} />
                 </div>
               </Section>
 

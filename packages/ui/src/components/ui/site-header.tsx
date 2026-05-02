@@ -58,6 +58,16 @@ export function SiteHeader({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
 
+  // Expose header offset as a CSS var so overlays (chat panel и др.) могут
+  // подстраивать свой верхний край под видимый/скрытый хедер.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--rm-header-offset", isVisible ? "64px" : "0px");
+    return () => {
+      root.style.removeProperty("--rm-header-offset");
+    };
+  }, [isVisible]);
+
   return (
     <header
       className={cn(

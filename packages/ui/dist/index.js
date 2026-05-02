@@ -7853,6 +7853,13 @@ function SiteHeader({
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
+  useEffect15(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--rm-header-offset", isVisible ? "64px" : "0px");
+    return () => {
+      root.style.removeProperty("--rm-header-offset");
+    };
+  }, [isVisible]);
   return /* @__PURE__ */ jsx66(
     "header",
     {

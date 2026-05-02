@@ -10,24 +10,9 @@ import {
 import Image from "next/image";
 import type { ChatMessage } from "@/lib/use-consultant-chat";
 import { useConsultantChat } from "@/lib/use-consultant-chat";
+import { CONSULTANT_SUGGESTIONS } from "@/lib/consultant-suggestions";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
-/* ── Suggested situations ── */
-const SUGGESTIONS = [
-  "Запустить бизнес",
-  "Протестировать идею",
-  "Найти бизнес-модель",
-  "Построить стратегию",
-  "Масштабировать продукт",
-  "Перейти на платформу",
-  "Оценить рынок",
-  "Собрать команду",
-  "Привлечь инвестиции",
-  "Оптимизировать процессы",
-  "Создать экосистему",
-  "Выйти на новый рынок",
-];
 
 /* ── AiConsultant handle ── */
 export interface AiConsultantHandle {
@@ -77,14 +62,17 @@ export const AiConsultant = forwardRef<AiConsultantHandle>(
 );
 
 /* ── Messages Area ── */
-function MessagesArea({
+export function MessagesArea({
   messages,
   isSending,
   streamingMsgId,
+  compact = false,
 }: {
   messages: ChatMessage[];
   isSending: boolean;
   streamingMsgId: string | null;
+  /** Compact — без боковых отступов под маскота (для боковой панели) */
+  compact?: boolean;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollUp, setCanScrollUp] = useState(false);
@@ -130,7 +118,7 @@ function MessagesArea({
     <div className="relative min-h-0 flex-1">
       {/* Top fade */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 transition-opacity duration-200 md:mx-[108px]"
+        className={`pointer-events-none absolute inset-x-0 top-0 z-10 h-10 transition-opacity duration-200 ${compact ? "" : "md:mx-[108px]"}`}
         style={{
           opacity: canScrollUp ? 1 : 0,
           background:
@@ -139,7 +127,7 @@ function MessagesArea({
       />
       {/* Bottom fade */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 transition-opacity duration-200 md:mx-[108px]"
+        className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 transition-opacity duration-200 ${compact ? "" : "md:mx-[108px]"}`}
         style={{
           opacity: canScrollDown ? 1 : 0,
           background:
@@ -148,7 +136,7 @@ function MessagesArea({
       />
       <div
         ref={scrollRef}
-        className="h-full space-y-3 overflow-y-auto pb-4 md:px-[108px]"
+        className={`h-full space-y-3 overflow-y-auto overscroll-contain pb-4 ${compact ? "" : "md:px-[108px]"}`}
         style={{ scrollbarWidth: "none" }}
       >
         {messages.map((msg) => (
@@ -242,12 +230,19 @@ function TypingIndicator() {
 }
 
 /* ── Suggestion Chips ── */
-function SuggestionChips({ onSelect }: { onSelect: (text: string) => void }) {
+export function SuggestionChips({
+  onSelect,
+  layout = "horizontal",
+}: {
+  onSelect: (text: string) => void;
+  layout?: "horizontal" | "vertical";
+}) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
+    if (layout !== "horizontal") return;
     const el = scrollRef.current;
     if (!el) return;
     function check() {
@@ -258,7 +253,24 @@ function SuggestionChips({ onSelect }: { onSelect: (text: string) => void }) {
     check();
     el.addEventListener("scroll", check, { passive: true });
     return () => el.removeEventListener("scroll", check);
-  }, []);
+  }, [layout]);
+
+  if (layout === "vertical") {
+    return (
+      <div className="flex flex-col gap-2">
+        {CONSULTANT_SUGGESTIONS.map((text) => (
+          <button
+            key={text}
+            type="button"
+            onClick={() => onSelect(text)}
+            className="cursor-pointer rounded-sm border border-border bg-background px-3 py-2.5 text-left font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] font-medium uppercase leading-[1.16] tracking-[0.02em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+          >
+            {text}
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="relative mb-2">
@@ -267,7 +279,7 @@ function SuggestionChips({ onSelect }: { onSelect: (text: string) => void }) {
         className="flex gap-2 overflow-x-auto md:px-[108px]"
         style={{ scrollbarWidth: "none" }}
       >
-        {SUGGESTIONS.map((text) => (
+        {CONSULTANT_SUGGESTIONS.map((text) => (
           <button
             key={text}
             type="button"
@@ -302,12 +314,15 @@ function SuggestionChips({ onSelect }: { onSelect: (text: string) => void }) {
 }
 
 /* ── Consultant Input ── */
-function ConsultantInput({
+export function ConsultantInput({
   onSend,
   disabled,
+  compact = false,
 }: {
   onSend: (message: string) => void;
   disabled?: boolean;
+  /** Compact variant — без большого десктопного маскота и крупного текста (для узких контейнеров типа боковой панели) */
+  compact?: boolean;
 }) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -344,20 +359,34 @@ function ConsultantInput({
       style={{ background: "rgba(18, 18, 18, 0.01)" }}
     >
       {/* Mascot (left side — desktop) */}
-      <div className="hidden w-[108px] shrink-0 items-center justify-center md:flex">
-        <Image
-          src={`${BASE_PATH}/ai-mascots/alex/alex_base.png`}
-          alt="Алекс"
-          width={108}
-          height={108}
-          className="h-[100px] w-[100px] object-contain"
-        />
-      </div>
+      {!compact && (
+        <div className="hidden w-[108px] shrink-0 items-center justify-center md:flex">
+          <Image
+            src={`${BASE_PATH}/ai-mascots/alex/alex_base.png`}
+            alt="Алекс"
+            width={108}
+            height={108}
+            className="h-[100px] w-[100px] object-contain"
+          />
+        </div>
+      )}
 
       {/* Input area */}
-      <div className="flex flex-1 items-center gap-2 px-2 py-2 md:gap-6 md:px-4 md:pr-[30px] md:pl-4">
-        {/* Mobile mascot (small) */}
-        <div className="relative flex h-[48px] w-[48px] shrink-0 items-center justify-center overflow-hidden md:hidden">
+      <div
+        className={
+          compact
+            ? "flex flex-1 items-center gap-2 px-2 py-2"
+            : "flex flex-1 items-center gap-2 px-2 py-2 md:gap-6 md:px-4 md:pr-[24px] md:pl-4"
+        }
+      >
+        {/* Mobile mascot (small) — скрыт в compact (маскот уже в хедере панели) */}
+        <div
+          className={
+            compact
+              ? "hidden"
+              : "relative flex h-[48px] w-[48px] shrink-0 items-center justify-center overflow-hidden md:hidden"
+          }
+        >
           <Image
             src={`${BASE_PATH}/ai-mascots/alex/alex_base.png`}
             alt="Алекс"
@@ -384,7 +413,11 @@ function ConsultantInput({
           placeholder="Расскажите, какой у вас запрос..."
           disabled={disabled}
           rows={1}
-          className="flex-1 resize-none self-center bg-transparent text-[length:var(--text-16)] text-foreground placeholder:text-rm-gray-4 focus:outline-none md:text-[length:var(--text-24)]"
+          className={
+            compact
+              ? "flex-1 resize-none bg-transparent pl-1 text-[length:var(--text-16)] text-foreground placeholder:text-rm-gray-4 focus:outline-none"
+              : "flex-1 resize-none bg-transparent text-[length:var(--text-16)] text-foreground placeholder:text-rm-gray-4 focus:outline-none md:text-[length:var(--text-24)]"
+          }
           style={{ lineHeight: 1.16, letterSpacing: "0.02em", height: "auto" }}
         />
 
@@ -392,7 +425,7 @@ function ConsultantInput({
           type="button"
           onClick={handleSubmit}
           disabled={!hasValue || disabled}
-          className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-border transition-colors md:h-14 md:w-14 ${
+          className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-border transition-colors ${compact ? "self-end mb-[2px]" : "md:h-14 md:w-14 md:self-end md:mb-[16px]"} ${
             hasValue
               ? "bg-primary text-primary-foreground border-primary"
               : "bg-card text-muted-foreground"
@@ -403,7 +436,7 @@ function ConsultantInput({
             height="24"
             viewBox="0 0 24 24"
             fill="none"
-            className="h-4 w-4 md:h-6 md:w-6"
+            className={compact ? "h-4 w-4" : "h-4 w-4 md:h-6 md:w-6"}
           >
             <path
               d="M12.0468 4.58813L5 11.6131M12.0468 4.58813L12.0468 19.4117M12.0468 4.58813L19 11.6131"

@@ -656,11 +656,25 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
 
     if (isStaticExport) return;
 
-    void apiFetch(`/api/articles/${encodeURIComponent(article.slug)}`, {
+    // Use original slug from id (id = "media/{originalSlug}") so the API can
+    // look up the DB record even when the user has changed the slug field.
+    const originalSlug = article.id.replace(/^media\//, "");
+    void apiFetch(`/api/articles/${encodeURIComponent(originalSlug)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
-    }).catch(() => {});
+    }).then((r) => r.json() as Promise<{ ok: boolean; slug?: string }>)
+      .then((data) => {
+        const newSlug = data.slug;
+        if (newSlug && newSlug !== originalSlug) {
+          // Server confirmed slug change — update local id so future saves use new slug
+          setArticles((prev) =>
+            prev.map((a) =>
+              a.id === article.id ? { ...a, id: `media/${newSlug}`, slug: newSlug } : a
+            )
+          );
+        }
+      }).catch(() => {});
   }, []);
 
   const deleteArticle = useCallback((id: string) => {
@@ -806,11 +820,23 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       return next;
     });
     if (isStaticExport) return;
-    void apiFetch(`/api/glossary/${encodeURIComponent(term.slug)}`, {
+    // Use original slug from id (id = "glossary/{originalSlug}") for the API URL
+    const originalSlug = term.id.replace(/^glossary\//, "");
+    void apiFetch(`/api/glossary/${encodeURIComponent(originalSlug)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
-    }).catch(() => {});
+    }).then((r) => r.json() as Promise<{ ok: boolean; slug?: string }>)
+      .then((data) => {
+        const newSlug = data.slug;
+        if (newSlug && newSlug !== originalSlug) {
+          setGlossaryTerms((prev) =>
+            prev.map((t) =>
+              t.id === term.id ? { ...t, id: `glossary/${newSlug}`, slug: newSlug } : t
+            )
+          );
+        }
+      }).catch(() => {});
   }, []);
 
   const deleteGlossaryTerm = useCallback((id: string) => {

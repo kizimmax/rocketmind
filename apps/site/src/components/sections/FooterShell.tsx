@@ -4,7 +4,11 @@ import { useRef, useState, useEffect } from "react";
 import { SiteFooter } from "@rocketmind/ui";
 import type { NavSection } from "@rocketmind/ui/content";
 import { FloatingMascot } from "@/components/blocks/FloatingMascot";
-import { AiConsultant, type AiConsultantHandle } from "./AiConsultant";
+import {
+  ConsultantPanel,
+  type ConsultantPanelHandle,
+} from "@/components/blocks/ConsultantPanel";
+import { AiConsultant } from "./AiConsultant";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -19,9 +23,10 @@ export function FooterShell({
   companyLinks: Link[];
   legalLinks: Link[];
 }) {
-  const chatRef = useRef<AiConsultantHandle>(null);
+  const panelRef = useRef<ConsultantPanelHandle>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [sectionVisible, setSectionVisible] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -37,9 +42,11 @@ export function FooterShell({
   return (
     <>
       <FloatingMascot
-        onScrollToChat={() => chatRef.current?.scrollIntoView()}
+        onOpenChat={() => panelRef.current?.open()}
         hidden={sectionVisible}
+        flyUp={panelOpen}
       />
+      <ConsultantPanel ref={panelRef} onOpenChange={setPanelOpen} />
       <div ref={sentinelRef}>
         <SiteFooter
           basePath={BASE_PATH}
@@ -47,7 +54,7 @@ export function FooterShell({
           companyLinks={companyLinks}
           legalLinks={legalLinks}
         >
-          <AiConsultant ref={chatRef} />
+          <AiConsultant />
         </SiteFooter>
       </div>
     </>

@@ -333,8 +333,8 @@ export function ProductsCatalog({
             <div className="mx-auto w-full max-w-[1512px] px-5 md:px-8 xl:px-14 pt-[144px] pb-12">
               <div className="flex flex-col gap-10 mt-10">
                 {/* Title + description */}
-                <div className="grid grid-cols-2">
-                  <div className="pr-10" style={heroFade(0)}>
+                <div className={activeFilter === "all" ? "grid grid-cols-2" : ""}>
+                  <div className={activeFilter === "all" ? "pr-10" : ""} style={heroFade(0)}>
                     <h1 className="font-heading text-[80px] font-extrabold uppercase leading-[1.08] tracking-[-0.02em]">
                       {titlePrefix}
                       {headingAccent && (
@@ -345,17 +345,19 @@ export function ProductsCatalog({
                       )}
                     </h1>
                   </div>
-                  <div className="flex items-center" style={heroFade(1)}>
-                    <p className="text-[18px] leading-[1.2] text-foreground pt-2">
-                      {intro ?? (
-                        <>
-                          Единый маркетплейс решений для трансформации вашего бизнеса.
-                          {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
-                          {" "}и цифровых продуктов.
-                        </>
-                      )}
-                    </p>
-                  </div>
+                  {activeFilter === "all" && (
+                    <div className="flex items-center" style={heroFade(1)}>
+                      <p className="text-[18px] leading-[1.2] text-foreground pt-2">
+                        {intro ?? (
+                          <>
+                            Единый маркетплейс решений для трансформации вашего бизнеса.
+                            {" "}От бизнес-моделирования и консалтинга до корпоративного обучения
+                            {" "}и цифровых продуктов.
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Search + filters */}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { parseDataUrl, saveBuffer, deleteFilesWithBase, writeConfig, readConfig } from "@/lib/storage";
+import { createAutoRedirect } from "@/lib/redirects";
 
 const IMAGE_EXTS = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif"];
 const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".m4a", ".webm"];
@@ -213,6 +214,8 @@ export async function PUT(
   };
 
   const newUrl = category === "unique" ? `/${pageSlug}` : `/${category}/${pageSlug}`;
+  const urlChanged = existing.url !== newUrl;
+
   await prisma.page.update({
     where: { id: existing.id },
     data: {
@@ -230,6 +233,10 @@ export async function PUT(
       content: content as Prisma.InputJsonValue,
     },
   });
+
+  if (urlChanged) {
+    await createAutoRedirect(existing.url, newUrl, "page", existing.id);
+  }
 
   return NextResponse.json({ ok: true });
 }

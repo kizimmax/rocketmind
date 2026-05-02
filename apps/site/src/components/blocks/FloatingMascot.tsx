@@ -24,11 +24,14 @@ function setDismissedCookie() {
 }
 
 interface FloatingMascotProps {
-  onScrollToChat: () => void;
+  onOpenChat: () => void;
+  /** Тихо скрыть (фейд) — используется когда виден футер с маскотом */
   hidden?: boolean;
+  /** Улететь вверх с фейдом — иллюзия, что маскот ушёл в шапку открытой панели */
+  flyUp?: boolean;
 }
 
-export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) {
+export function FloatingMascot({ onOpenChat, hidden, flyUp }: FloatingMascotProps) {
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -84,8 +87,8 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
   }, [isTyping]);
 
   const handleClick = useCallback(() => {
-    onScrollToChat();
-  }, [onScrollToChat]);
+    onOpenChat();
+  }, [onOpenChat]);
 
   const handleDismiss = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -106,10 +109,11 @@ export function FloatingMascot({ onScrollToChat, hidden }: FloatingMascotProps) 
   return (
     <div
       data-floating-mascot
-      className="fixed bottom-0 right-0 z-50 h-[102px] w-[311px] transition-opacity duration-500"
+      className="fixed bottom-0 right-0 z-50 h-[102px] w-[311px] transition-[opacity,transform] duration-500 ease-out"
       style={{
-        opacity: hidden ? 0 : 1,
-        pointerEvents: hidden ? "none" : "auto",
+        opacity: hidden || flyUp ? 0 : 1,
+        pointerEvents: hidden || flyUp ? "none" : "auto",
+        transform: flyUp ? "translateY(-80px)" : "translateY(0)",
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => { setIsHovered(false); if (!isDismissedRecently()) setDismissed(false); }}

@@ -13,6 +13,7 @@ import {
   Moon,
   Settings,
   MousePointerClick,
+  ArrowLeftRight,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@rocketmind/ui";
@@ -52,6 +53,7 @@ export function AdminHeader() {
   const isOnTestimonials = pathname.startsWith("/testimonials");
   const isOnCtaForms = pathname.startsWith("/cta-forms");
   const isOnSystem = pathname.startsWith("/system");
+  const isOnRedirects = pathname.startsWith("/redirects");
 
   function guardedClick(e: React.MouseEvent, href: string) {
     if (!tryNavigate(href)) e.preventDefault();
@@ -73,6 +75,7 @@ export function AdminHeader() {
     { href: "/testimonials", label: "Отзывы", Icon: MessageSquareQuote, isActive: isOnTestimonials },
     { href: "/cta-forms", label: "CTA и формы", Icon: MousePointerClick, isActive: isOnCtaForms },
     { href: "/system", label: "Системные", Icon: Settings, isActive: isOnSystem },
+    { href: "/redirects", label: "Редиректы", Icon: ArrowLeftRight, isActive: isOnRedirects },
   ];
 
   const separator = (

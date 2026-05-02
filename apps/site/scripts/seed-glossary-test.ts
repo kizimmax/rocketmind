@@ -270,7 +270,7 @@ async function main() {
           "Демонстрационная статья, где термины глоссария подсвечиваются " +
           "автоматически. Используется для ручной проверки фичи.",
         type: "lesson",
-        publishedAt: new Date(),
+        publishedAt: new Date().toISOString(),
         expertSlug: null,
         tagIds: [],
         coverUrl: null,

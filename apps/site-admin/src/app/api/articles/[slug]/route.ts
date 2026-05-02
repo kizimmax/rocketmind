@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseDataUrl, saveBuffer, deleteFilesWithBase } from "@/lib/storage";
+import { createAutoRedirect } from "@/lib/redirects";
 
 const COVER_EXTS = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif"];
 
@@ -18,14 +19,22 @@ export async function PUT(
 
   const body = await request.json();
   const type = body.type === "lesson" || body.type === "case" ? body.type : "default";
+  const newSlug: string = typeof body.slug === "string" && body.slug.trim() ? body.slug.trim() : slug;
+  const slugChanged = newSlug !== slug;
+
+  if (slugChanged) {
+    const conflict = await prisma.article.findUnique({ where: { slug: newSlug } });
+    if (conflict) return NextResponse.json({ error: "slug_taken" }, { status: 409 });
+  }
 
   let coverPath = existing.coverPath;
   const coverImageData = body.coverImageData as string | null | undefined;
+  const coverSlug = slugChanged ? newSlug : slug;
   if (typeof coverImageData === "string" && coverImageData.startsWith("data:")) {
     const parsed = parseDataUrl(coverImageData);
     if (parsed) {
       deleteCover(slug);
-      const { publicUrl } = saveBuffer("articles", `${slug}${parsed.ext}`, parsed.buffer);
+      const { publicUrl } = saveBuffer("articles", `${coverSlug}${parsed.ext}`, parsed.buffer);
       coverPath = publicUrl;
     }
   } else if (coverImageData === null) {
@@ -36,6 +45,7 @@ export async function PUT(
   const article = await prisma.article.update({
     where: { slug },
     data: {
+      slug: newSlug,
       type,
       status: body.status ?? "published",
       title: body.title ?? "",
@@ -59,7 +69,11 @@ export async function PUT(
     },
   });
 
-  return NextResponse.json({ ok: true, slug, updatedAt: article.updatedAt.toISOString() });
+  if (slugChanged) {
+    await createAutoRedirect(`/media/${slug}`, `/media/${newSlug}`, "article", existing.id);
+  }
+
+  return NextResponse.json({ ok: true, slug: newSlug, updatedAt: article.updatedAt.toISOString() });
 }
 
 export async function DELETE(

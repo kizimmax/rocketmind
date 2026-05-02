@@ -32,7 +32,7 @@ const MOCK_RESPONSES: Record<string, string> = {
     "Экосистемная архитектура — это следующий уровень после платформы:\n\n- **Ядро** — основной продукт\n- **Партнёры** — кто создаёт дополнительную ценность\n- **API/SDK** — как интегрироваться\n\nРасскажите о вашем продукте, и я предложу экосистемную стратегию.",
 };
 
-function generateMockResponse(userMessage: string): string {
+export function generateMockResponse(userMessage: string): string {
   const lower = userMessage.toLowerCase();
   for (const [key, response] of Object.entries(MOCK_RESPONSES)) {
     if (lower.includes(key)) return response;

@@ -100,7 +100,7 @@ export async function ServicesGrid() {
         catalogLabel: "Все курсы",
         showImages: true,
         partnerBlock: {
-          title: "Программы с ведущими бизнес-школами",
+          title: "Программы с ведущими\nбизнес-школами",
           description:
             "Обучаем топ-менеджеров крупных компаний, помогаем трансформировать бизнес с помощью бизнес-дизайна",
           logos: [

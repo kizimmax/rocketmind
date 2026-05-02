@@ -359,7 +359,7 @@ export function ServicesGridClient({ sections }: ServicesGridClientProps) {
                     <div className="bg-[#FFCC00] mx-5 md:mx-0 p-5 md:p-8">
                       <div className="flex flex-col gap-8 md:flex-row md:justify-between">
                         <div className="flex flex-col gap-4 md:max-w-[665px]">
-                          <h3 className="font-heading text-[28px] md:text-[32px] font-bold uppercase leading-[1.12] tracking-[-0.01em] text-[#0A0A0A]">
+                          <h3 className="font-heading text-[28px] md:text-[32px] font-bold uppercase leading-[1.12] tracking-[-0.01em] text-[#0A0A0A] whitespace-pre-line">
                             {section.partnerBlock.title}
                           </h3>
                           <p className="font-['Loos_Condensed',sans-serif] text-[14px] md:text-[18px] font-medium uppercase tracking-[0.02em] leading-[1.12] text-[#0A0A0A]">

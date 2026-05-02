@@ -18,6 +18,7 @@ import { useAdminStore } from "@/lib/store";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { InlineEdit } from "@/components/inline-edit";
 import { EditorToolbar } from "./editor-toolbar";
+import { SlugRedirects } from "@/components/media/slug-redirects";
 import { BlockList } from "./block-list";
 import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 
@@ -553,6 +554,7 @@ export function EditorShell({ initialPage }: EditorShellProps) {
                 onChange={(e) => updateMeta("slug", e.target.value)}
                 className="font-mono"
               />
+              <SlugRedirects currentUrl={page.id.startsWith("/") ? page.id : `/${page.id}`} />
             </div>
 
             <div className="space-y-1.5">

@@ -170,6 +170,23 @@ model SystemConfig {
   @@map("system_configs")
 }
 
+// ── Redirects ─────────────────────────────────────────────────────────────────
+
+model Redirect {
+  id         String   @id @default(uuid())
+  fromUrl    String   @unique
+  toUrl      String
+  statusCode Int      @default(301)
+  kind       String   @default("manual") // "auto" | "manual"
+  isActive   Boolean  @default(true)
+  entityType String?  // "article" | "glossary" | "page"
+  entityId   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("redirects")
+}
+
 // ── Assets (centralized file registry) ────────────────────────────────────────
 
 model Asset {

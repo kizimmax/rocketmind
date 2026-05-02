@@ -8231,6 +8231,13 @@ function SiteHeader({
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isHome]);
+  (0, import_react14.useEffect)(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--rm-header-offset", isVisible ? "64px" : "0px");
+    return () => {
+      root.style.removeProperty("--rm-header-offset");
+    };
+  }, [isVisible]);
   return /* @__PURE__ */ (0, import_jsx_runtime67.jsx)(
     "header",
     {
