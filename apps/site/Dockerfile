@@ -15,6 +15,13 @@ RUN npx prisma generate --schema=apps/site/prisma/schema.prisma
 # Build site (SSR; DATABASE_URL not needed at build time)
 RUN SKIP_DB=1 npm run build --workspace=apps/site
 
+# Разыменовать симлинки в public/ (next start не следует за ними).
+# apps/site/public/{clip-logos,ai-mascots} → ../../../assets/* — реальные файлы
+# в /app/assets/. Превращаем симлинки в реальные копии.
+RUN cp -RL /app/apps/site/public /app/apps/site/public.real && \
+    rm -rf /app/apps/site/public && \
+    mv /app/apps/site/public.real /app/apps/site/public
+
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM node:20-alpine
 
@@ -28,9 +35,6 @@ COPY --from=builder /app/apps/site/next.config.ts   ./apps/site/next.config.ts
 COPY --from=builder /app/apps/site/prisma           ./apps/site/prisma
 COPY --from=builder /app/apps/site/prisma.config.ts ./apps/site/prisma.config.ts
 COPY --from=builder /app/apps/site/content          ./apps/site/content
-# Симлинки apps/site/public/{ai-mascots,clip-logos} указывают на /app/assets/*
-# Копируем целевую директорию, чтобы симлинки разрешались
-COPY --from=builder /app/assets                     ./assets
 COPY --from=builder /app/scripts                    ./scripts
 COPY --from=builder /app/node_modules               ./node_modules
 COPY --from=builder /app/package.json               ./package.json
