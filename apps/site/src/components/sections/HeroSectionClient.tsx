@@ -33,6 +33,7 @@ import { RocketmindMenu } from "./RocketmindMenu";
 const HERO_ROTATION_INTERVAL_MS = 2800;
 const HERO_ROTATION_TRANSITION_MS = 640;
 const HERO_ROTATION_ENTRY_DELAY_MS = 220;
+const HERO_CTA_EXTRA_DELAY_MS = 120;
 const LENS_STORAGE_KEY = "rocketmind:lens-controls:v2";
 const SHOW_LENS_CONTROLS = false;
 
@@ -830,47 +831,40 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav
                 </span>
               </h1>
 
-              {activeLine && (() => {
-                const ctaInner = (
-                  <>
-                    <AnimatePresence initial={false} mode="wait">
-                      <motion.span
-                        key={activeLine.ctaLabel}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{
-                          duration: HERO_ROTATION_TRANSITION_MS / 1000,
-                          ease: [0.23, 1, 0.32, 1],
-                        }}
+              {activeLine && (
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.div
+                    key={`cta-${safeActiveIndex}`}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -16 }}
+                    transition={{
+                      delay: (HERO_ROTATION_ENTRY_DELAY_MS + HERO_CTA_EXTRA_DELAY_MS) / 1000,
+                      duration: HERO_ROTATION_TRANSITION_MS / 1000,
+                      ease: [0.23, 1, 0.32, 1],
+                    }}
+                  >
+                    {activeLine.formId ? (
+                      <button
+                        type="button"
+                        onClick={() => openForm(activeLine.formId!)}
+                        className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
                       >
                         {activeLine.ctaLabel || "Обсудить стратегию"}
-                      </motion.span>
-                    </AnimatePresence>
-                    <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
-                  </>
-                );
-                const ctaClass =
-                  "h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer";
-                return activeLine.formId ? (
-                  <button
-                    key={safeActiveIndex}
-                    type="button"
-                    onClick={() => openForm(activeLine.formId!)}
-                    className={ctaClass}
-                  >
-                    {ctaInner}
-                  </button>
-                ) : (
-                  <Link
-                    key={safeActiveIndex}
-                    href={activeLine.ctaHref || "#contact"}
-                    className={ctaClass}
-                  >
-                    {ctaInner}
-                  </Link>
-                );
-              })()}
+                        <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
+                      </button>
+                    ) : (
+                      <Link
+                        href={activeLine.ctaHref || "#contact"}
+                        className="h4 inline-flex items-center gap-3 text-foreground transition-[opacity,color] duration-150 hover:opacity-88 cursor-pointer"
+                      >
+                        {activeLine.ctaLabel || "Обсудить стратегию"}
+                        <ArrowUpRight size={20} strokeWidth={2.1} className="text-primary" />
+                      </Link>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              )}
             </motion.div>
 
             <motion.div className="flex flex-row items-center gap-4 self-end lg:flex-col lg:items-end lg:gap-5" {...heroFadeUp(heroReady, 0.38)}>
