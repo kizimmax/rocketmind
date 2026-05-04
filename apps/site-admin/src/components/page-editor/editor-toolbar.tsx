@@ -31,30 +31,34 @@ export function EditorToolbar({
       <TooltipProvider>
         {/* Undo */}
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              disabled={!canUndo}
-              onClick={onUndo}
-            >
-              <Undo2 className="h-4 w-4" />
-            </Button>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                disabled={!canUndo}
+                onClick={onUndo}
+              />
+            }
+          >
+            <Undo2 className="h-4 w-4" />
           </TooltipTrigger>
           <TooltipContent>Отменить</TooltipContent>
         </Tooltip>
 
         {/* Redo */}
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              disabled={!canRedo}
-              onClick={onRedo}
-            >
-              <Redo2 className="h-4 w-4" />
-            </Button>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                disabled={!canRedo}
+                onClick={onRedo}
+              />
+            }
+          >
+            <Redo2 className="h-4 w-4" />
           </TooltipTrigger>
           <TooltipContent>Повторить</TooltipContent>
         </Tooltip>
@@ -78,10 +82,10 @@ export function EditorToolbar({
 
         {/* Cancel */}
         <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon-sm" onClick={onCancel}>
-              <X className="h-4 w-4" />
-            </Button>
+          <TooltipTrigger
+            render={<Button variant="ghost" size="icon-sm" onClick={onCancel} />}
+          >
+            <X className="h-4 w-4" />
           </TooltipTrigger>
           <TooltipContent>Отменить все изменения</TooltipContent>
         </Tooltip>
