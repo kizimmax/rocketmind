@@ -135,10 +135,12 @@ export default function RPlanPage() {
         setTrackColor(tracks[slug].color ?? 'yellow');
         setTrackStartWeek(tracks[slug].startWeek);
         setMode('board');
-        const base = window.location.pathname.replace(/\/$/, '');
-        const parts = base.split('/');
-        const planIdx = parts.indexOf('r-plan');
-        if (!parts[planIdx + 1]) window.history.replaceState({}, '', `${base}/${slug}`);
+        // Обновляем URL до ?track=slug (query-param безопасен со static nginx)
+        const params = new URLSearchParams(window.location.search);
+        if (!params.get('track')) {
+          params.set('track', slug);
+          window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+        }
       } else {
         setMode('notfound');
       }
@@ -302,8 +304,10 @@ export default function RPlanPage() {
   }, [tracks, showToast]);
 
   const navigateToTrack = useCallback((slug: string) => {
-    const base = window.location.pathname.replace(/\/$/, '');
-    window.location.href = `${base}/${slug}`;
+    // Используем ?track= вместо path-сегмента: static nginx fallback не знает /r-plan/{slug}
+    const params = new URLSearchParams(window.location.search);
+    params.set('track', slug);
+    window.location.href = `${window.location.pathname}?${params}`;
   }, []);
 
   const resetForm = useCallback(() => {
