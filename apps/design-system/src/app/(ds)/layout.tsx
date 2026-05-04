@@ -12,7 +12,7 @@ import {
   MessageSquare, Sparkles, Zap, LayoutDashboard, LayoutTemplate, FileText,
 } from "lucide-react"
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ""
 const DS_VERSION = "1.5.7"
 const DS_DATE = "2026-03-26"
 

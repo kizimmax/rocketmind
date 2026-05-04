@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { User, ShieldCheck, MousePointerClick, Zap, Lightbulb, Smile, ThumbsUp } from "lucide-react"
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ""
 
 const MASCOTS: Array<{
   key: string

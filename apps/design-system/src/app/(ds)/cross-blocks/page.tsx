@@ -10,7 +10,7 @@ import { RocketmindMenu } from "@/components/sections/RocketmindMenu"
 import { MobileNav } from "@/components/sections/MobileNav"
 import { Footer } from "@/components/sections/Footer"
 
-const BASE_PATH = process.env.NODE_ENV === "production" ? "/rocketmind/ds" : ""
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ""
 
 const DEMO_LOGOS: LogoMarqueeItem[] = [
   { alt: "Билайн",          src: `${BASE_PATH}/clip-logos/bilaine.svg`,       width: 125, height: 24 },
