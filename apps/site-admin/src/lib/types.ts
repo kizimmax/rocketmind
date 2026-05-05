@@ -900,8 +900,30 @@ export interface Article {
   metaTitle: string;
   metaDescription: string;
 
+  /**
+   * Многостраничная статья. Когда true — `chapters` определяет структуру:
+   * каждая глава рендерится на отдельном URL `/media/{slug}/{chapter.slug}`.
+   * `body` всё равно заполняется (плоский сборник секций всех глав) для
+   * совместимости с поиском/глоссарием.
+   */
+  multiPage: boolean;
+  /** Главы многостраничной статьи. Пусто при `multiPage=false`. */
+  chapters?: ArticleChapter[];
+
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Глава многостраничной статьи. Содержит свой набор секций (того же типа,
+ * что и обычное `body`). `slug` — уникальный URL-сегмент в рамках статьи.
+ */
+export interface ArticleChapter {
+  id: string;
+  slug: string;
+  title: string;
+  navLabel: string;
+  sections: ArticleSection[];
 }
 
 // ── Glossary term ───────────────────────────────────────────────────────────

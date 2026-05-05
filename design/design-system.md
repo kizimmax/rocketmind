@@ -1770,6 +1770,44 @@ Table
 
 ---
 
+### 6.1.7 Pagination / Пагинация статьи
+
+Используется в конце многостраничной статьи (перед блоком «Похожие статьи»). Две полноширинные кнопки с бордером — переход на предыдущий/следующий раздел статьи. Если предыдущей/следующей главы нет, оставшаяся кнопка занимает всю ширину тела статьи (cols 2-3).
+
+**Импорт:** `import { ArticlePagination } from "@rocketmind/ui"`
+
+#### Спецификация
+
+| Свойство | Значение |
+|---|---|
+| Контейнер | `flex w-full gap-2` (gap = `--space-2` = 8px) |
+| Высота кнопки | `72px` (md), `60px` (mobile) |
+| Padding кнопки | `px-6` (md, 24px), `px-4` (mobile, 16px) |
+| Граница | `1px solid var(--rm-gray-3)` |
+| Радиус | `--radius-sm` |
+| Цвет текста | `--rm-gray-fg-main` |
+| Шрифт label | Loos Condensed Medium, `var(--text-14)` (md) / `var(--text-12)` (mobile), uppercase, `tracking-[0.02em]`, `truncate` |
+| Иконка | lucide `ArrowLeft` / `ArrowRight`, 16px, `strokeWidth=1.5`, `shrink-0` |
+| Gap между иконкой и label | `gap-3` (12px) |
+| Hover | `border-color: var(--rm-gray-fg-main)` (transition 120ms) |
+| Focus-visible | `outline: 2px solid var(--ring)`, `outline-offset: 2px` |
+
+#### Состояния layout
+
+| Состояние | Структура |
+|---|---|
+| `prev` + `next` | Две кнопки `flex-1 50/50`. Левая: `justify-start`, `[← Label]`. Правая: `justify-end`, `[Label →]` |
+| Только `next` (первый раздел) | Одна кнопка `w-full justify-end`: `[Label →]` |
+| Только `prev` (последний раздел) | Одна кнопка `w-full justify-start`: `[← Label]` |
+
+#### Правила
+
+- Используется только в многостраничных статьях. Для одностраничной (длинной) статьи блок не рендерится.
+- Label — `chapter.navLabel || chapter.title`. Длинные имена обрезаются `truncate` без обёртки (одна строка).
+- Размещается в потоке тела статьи (cols 2-3 на десктопе), не выходит на aside-колонку. Внешний margin сверху — `mt-24` (96px), как gap между секциями.
+
+---
+
 ### 6.2 Input
 
 Используется в: авторизация (email, code), чат (поле ввода сообщения), поиск в каталоге агентов, фильтры.

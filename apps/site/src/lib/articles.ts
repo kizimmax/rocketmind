@@ -70,6 +70,14 @@ export type ArticleSection = {
   bottomCtaId?: string;
 };
 
+export type ArticleChapter = {
+  id: string;
+  slug: string;
+  title: string;
+  navLabel: string;
+  sections: ArticleSection[];
+};
+
 export type ArticleEntry = {
   slug: string;
   title: string;
@@ -88,6 +96,10 @@ export type ArticleEntry = {
   pinnedOrder: number;
   metaTitle: string;
   metaDescription: string;
+  /** Многостраничный режим — главы на отдельных URL. */
+  multiPage: boolean;
+  /** Главы. Пусто при `multiPage=false`. */
+  chapters: ArticleChapter[];
 };
 
 // ── Parsers (pure, sync) ───────────────────────────────────────────────────────
@@ -272,6 +284,23 @@ function parseStatus(value: unknown): ArticleStatus {
   return typeof value === "string" && VALID_STATUSES.has(value) ? (value as ArticleStatus) : "published";
 }
 
+function parseChapters(raw: unknown): ArticleChapter[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item, idx): ArticleChapter | null => {
+      if (!item || typeof item !== "object") return null;
+      const rec = item as Record<string, unknown>;
+      const slug = typeof rec.slug === "string" ? rec.slug.trim() : "";
+      if (!slug) return null;
+      const id = typeof rec.id === "string" && rec.id ? rec.id : `c${idx}`;
+      const title = typeof rec.title === "string" ? rec.title : "";
+      const navLabel = typeof rec.navLabel === "string" ? rec.navLabel : "";
+      const sections = parseSections(Array.isArray(rec.sections) ? rec.sections : []);
+      return { id, slug, title, navLabel, sections };
+    })
+    .filter((c): c is ArticleChapter => c !== null);
+}
+
 function rowToEntry(row: {
   slug: string; type: string; status: string; title: string; description: string;
   content: unknown; coverPath: string | null; expertSlug: string | null; publishedAt: string;
@@ -279,6 +308,13 @@ function rowToEntry(row: {
   cardVariant: string; metaTitle: string; metaDescription: string;
 }): ArticleEntry {
   const c = (row.content && typeof row.content === "object" ? row.content : {}) as Record<string, unknown>;
+  const multiPage = c.multiPage === true;
+  const chapters = multiPage ? parseChapters(c.chapters) : [];
+  // body — плоский сборник: для одностраничной — как раньше (content.body),
+  // для многостраничной — конкатенация секций всех глав (для глоссария/поиска).
+  const sections = multiPage
+    ? chapters.flatMap((ch) => ch.sections)
+    : parseSections(Array.isArray(c.body) ? c.body : []);
   return {
     slug: row.slug,
     title: row.title,
@@ -291,12 +327,14 @@ function rowToEntry(row: {
     tags: row.tagIds,
     keyThoughts: Array.isArray(c.keyThoughts) ? (c.keyThoughts as unknown[]).filter((k): k is string => typeof k === "string") : [],
     coverUrl: row.coverPath ?? null,
-    sections: parseSections(Array.isArray(c.body) ? c.body : []),
+    sections,
     cardVariant: row.cardVariant === "wide" ? "wide" : "default",
     pinned: row.pinned,
     pinnedOrder: row.pinnedOrder,
     metaTitle: row.metaTitle || `${row.title} | Rocketmind`,
     metaDescription: row.metaDescription,
+    multiPage,
+    chapters,
   };
 }
 
@@ -313,6 +351,23 @@ export async function getAllArticles(): Promise<ArticleEntry[]> {
   } catch {
     return [];
   }
+}
+
+/**
+ * Похожие статьи: общий хотя бы один тег с текущей, исключая саму статью.
+ * Сортировка — по `publishedAt` desc. Лимит — `limit` (по умолчанию 12).
+ */
+export async function getSimilarArticles(
+  article: ArticleEntry,
+  limit = 12,
+): Promise<ArticleEntry[]> {
+  const tagSet = new Set(article.tags);
+  if (tagSet.size === 0) return [];
+  const all = await getAllArticles();
+  return all
+    .filter((a) => a.slug !== article.slug && a.tags.some((t) => tagSet.has(t)))
+    .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
+    .slice(0, limit);
 }
 
 export async function getArticleBySlug(slug: string): Promise<ArticleEntry | null> {

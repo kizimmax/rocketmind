@@ -54,6 +54,9 @@ export async function PUT(
         body: Array.isArray(body.body) ? body.body : [],
         keyThoughts: Array.isArray(body.keyThoughts) ? body.keyThoughts : [],
         ...(type === "case" && body.caseCard ? { caseCard: body.caseCard } : {}),
+        ...(body.multiPage === true
+          ? { multiPage: true, chapters: Array.isArray(body.chapters) ? body.chapters : [] }
+          : { multiPage: false }),
         sortOrder: typeof body.order === "number" ? body.order : 0,
       },
       coverPath,

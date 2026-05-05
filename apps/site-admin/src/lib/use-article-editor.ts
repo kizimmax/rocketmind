@@ -129,6 +129,8 @@ const FIELD_LABELS: Partial<Record<keyof Article, string>> = {
   tagIds: "Теги",
   keyThoughts: "Ключевые мысли",
   body: "Тело статьи",
+  multiPage: "Многостраничная",
+  chapters: "Главы",
   metaTitle: "Meta Title",
   metaDescription: "Meta Description",
 };

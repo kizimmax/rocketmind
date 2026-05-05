@@ -9,7 +9,7 @@ import {
   Textarea,
   Switch,
 } from "@rocketmind/ui";
-import { Pin, LayoutGrid } from "lucide-react";
+import { Pin, LayoutGrid, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminStore } from "@/lib/store";
 import { useArticleEditor, getArticleChanges } from "@/lib/use-article-editor";
@@ -19,9 +19,10 @@ import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-d
 import { ArticleHeroEditor } from "./article-hero-editor";
 import { ArticlePreviewCard } from "./article-preview-card";
 import { ArticleSectionsEditor } from "./article-sections-editor";
+import { ArticleChaptersEditor } from "./article-chapters-editor";
 import { SlugRedirects } from "./slug-redirects";
 import { CaseCardEditor } from "@/components/page-editor/block-editors/case-card-editor";
-import type { ArticleType, CaseCardBlockData } from "@/lib/types";
+import type { ArticleType, ArticleChapter, CaseCardBlockData } from "@/lib/types";
 
 interface Props {
   articleId: string;
@@ -205,6 +206,27 @@ function ArticleEditorInner({
                     />
                   </div>
                 )}
+                <div className="mt-4">
+                  <ToggleRow
+                    icon={<BookOpen className="h-4 w-4" strokeWidth={1.5} />}
+                    label="Многостраничная"
+                    description="Делит статью на главы — каждая на своём URL /media/{slug}/{chapter-slug}. В конце каждой главы появляется пагинация."
+                    checked={article.multiPage === true}
+                    onCheckedChange={(v) => {
+                      update("multiPage", v);
+                      if (v && (!article.chapters || article.chapters.length === 0)) {
+                        const wrapped: ArticleChapter = {
+                          id: `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+                          slug: "glava-1",
+                          title: article.title || "Глава 1",
+                          navLabel: "Глава 1",
+                          sections: article.body,
+                        };
+                        update("chapters", [wrapped]);
+                      }
+                    }}
+                  />
+                </div>
               </Section>
 
               <Section title="SEO" grow>
@@ -284,13 +306,21 @@ function ArticleEditorInner({
           {/* 3. Body editor — без внешней рамки/фона: редактор живёт «в ленте» страницы */}
           <section>
             <h2 className="mb-4 font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-14)] uppercase tracking-[0.02em] text-foreground">
-              Тело статьи
+              {article.multiPage ? "Главы статьи" : "Тело статьи"}
             </h2>
-            <ArticleSectionsEditor
-              articleSlug={article.slug}
-              sections={article.body}
-              onChange={(next) => update("body", next)}
-            />
+            {article.multiPage ? (
+              <ArticleChaptersEditor
+                articleSlug={article.slug}
+                chapters={article.chapters ?? []}
+                onChange={(next) => update("chapters", next)}
+              />
+            ) : (
+              <ArticleSectionsEditor
+                articleSlug={article.slug}
+                sections={article.body}
+                onChange={(next) => update("body", next)}
+              />
+            )}
           </section>
         </div>
       </div>

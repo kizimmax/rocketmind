@@ -574,6 +574,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
         ...(type === "case"
           ? { caseCard: emptyCaseCard, featured: false }
           : {}),
+        multiPage: false,
         cardVariant: "default",
         pinned: false,
         pinnedOrder: 0,

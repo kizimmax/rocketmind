@@ -50,6 +50,7 @@ export * from './components/ui/tag';
 export * from './components/ui/author';
 export * from './components/ui/key-thoughts';
 export * from './components/ui/article-nav';
+export * from './components/ui/article-pagination';
 export * from './components/ui/article-card';
 export * from './components/ui/glossary';
 export * from './components/ui/article-body';

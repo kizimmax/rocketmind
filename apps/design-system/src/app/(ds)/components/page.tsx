@@ -19,6 +19,7 @@ import { DialogShowcase } from "@/components/ui/dialog-showcase"
 import { DropdownMenuShowcase } from "@/components/ui/dropdown-menu-showcase"
 import { ToastShowcase } from "@/components/ui/toast-showcase"
 import { ShowMoreShowcase } from "@/components/ui/show-more-showcase"
+import { ArticlePaginationShowcase } from "@/components/ui/article-pagination-showcase"
 import { AccordionShowcase } from "@/components/ui/accordion-showcase"
 import {
   Rocket, User, Gem, BookOpen, Search,
@@ -1582,6 +1583,15 @@ export default function ComponentsPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── Pagination ── */}
+        <div className="mb-12">
+          <SubSection id="components-pagination" title="Пагинация" />
+          <p className="text-[length:var(--text-14)] text-muted-foreground mb-6">
+            Навигация между разделами многостраничной статьи. Размещается в конце тела статьи перед блоком «Похожие статьи». Пропсы: <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">prev</code>, <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">next</code> (каждый — <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">{`{ label, href }`}</code>), опционально <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">renderLink</code> для интеграции с next/link.
+          </p>
+          <ArticlePaginationShowcase />
         </div>
 
           {/* ── Аккордеон ── */}

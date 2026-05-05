@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-type ArticleContent = { body?: unknown; keyThoughts?: unknown[]; caseCard?: unknown; sortOrder?: number; order?: number; [key: string]: unknown };
+type ArticleContent = { body?: unknown; keyThoughts?: unknown[]; caseCard?: unknown; sortOrder?: number; order?: number; multiPage?: unknown; chapters?: unknown; [key: string]: unknown };
 
 function toDto(a: {
   id: string; slug: string; type: string; status: string; title: string; description: string;
@@ -27,6 +27,8 @@ function toDto(a: {
     tagIds: a.tagIds,
     keyThoughts: Array.isArray(c.keyThoughts) ? c.keyThoughts.filter((t): t is string => typeof t === "string") : [],
     body,
+    multiPage: c.multiPage === true,
+    chapters: Array.isArray(c.chapters) ? c.chapters : [],
     caseCard: type === "case" ? (c.caseCard ?? undefined) : undefined,
     featured: type === "case" ? a.featured : undefined,
     cardVariant: a.cardVariant === "wide" ? "wide" : "default",

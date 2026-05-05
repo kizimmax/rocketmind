@@ -72,6 +72,7 @@ const sections: NavSection[] = [
     { id: "components-toasts",     label: "Toasts" },
     { id: "components-show-more",  label: "Show More" },
     { id: "components-slider",     label: "Слайдер" },
+    { id: "components-pagination", label: "Пагинация" },
   ]},
   { id: "tooltips", label: "Тултипы",         Icon: MessageSquare, subsections: [
     { id: "tooltips-animation", label: "Анимация" },

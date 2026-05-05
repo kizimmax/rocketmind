@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   collectResolvedCtas,
   collectResolvedProductAsides,
@@ -19,8 +19,15 @@ import { PageBottom } from "@/components/sections/PageBottom";
 
 const SIMILAR_ARTICLES_LIMIT = 12;
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export async function generateStaticParams() {
-  return (await getAllArticles()).map((a) => ({ slug: a.slug }));
+  // Многостраничные статьи рендерятся через /media/[slug]/[chapter];
+  // здесь генерим параметры только для одностраничных. Если зайти на
+  // /media/{slug} многостраничной статьи — серверный редирект на первую главу.
+  return (await getAllArticles())
+    .filter((a) => !a.multiPage)
+    .map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({
@@ -47,6 +54,10 @@ export default async function ArticlePage({
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article) notFound();
+  // Многостраничная статья: редирект на первую главу.
+  if (article.multiPage && article.chapters.length > 0) {
+    redirect(`${BASE}/media/${article.slug}/${article.chapters[0].slug}`);
+  }
 
   const expert = article.expertSlug ? await getExpertBySlug(article.expertSlug) : null;
   const tags = await getPublicTags();

@@ -64,6 +64,7 @@ export function createSeedArticles(_tags: MediaTag[]): Article[] {
     coverImageData: undefined,
     publishedAt: new Date(2025, 4 - offset, 16).toISOString().slice(0, 10),
     body: [],
+    multiPage: false,
     cardVariant: "default",
     pinned: false,
     pinnedOrder: 0,

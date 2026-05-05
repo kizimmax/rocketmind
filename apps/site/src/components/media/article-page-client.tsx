@@ -7,9 +7,12 @@ import {
   Author,
   KeyThoughts,
   ArticleNav,
+  ArticlePagination,
   TooltipProvider,
   slugifyArticleHeading,
 } from "@rocketmind/ui";
+import type { ArticleNavItem } from "@rocketmind/ui";
+import Link from "next/link";
 import type {
   ArticleEntry,
   ResolvedProductAside,
@@ -29,6 +32,13 @@ import {
 
 interface Props {
   article: ArticleEntry;
+  /** id текущей главы для многостраничной статьи. Если не задан — рендерим article.sections (одностраничный режим). */
+  currentChapterId?: string;
+  /** Пагинация в конце тела (только для многостраничной). */
+  pagination?: {
+    prev?: { label: string; href: string };
+    next?: { label: string; href: string };
+  };
   expertName: string | null;
   expertAvatarUrl: string | null;
   tagItems: { id: string; label: string }[];
@@ -63,6 +73,8 @@ function stagger(index: number): React.CSSProperties {
 
 export function ArticlePageClient({
   article,
+  currentChapterId,
+  pagination,
   resolvedQuoteExperts,
   expertName,
   expertAvatarUrl,
@@ -77,17 +89,46 @@ export function ArticlePageClient({
     () => ({ index: glossaryIndex }),
     [glossaryIndex],
   );
-  // ── ToC: items из section.title/navLabel (пропускаем секции без заголовка) ──
-  const navItems = useMemo(
-    () =>
-      article.sections
-        .filter((s) => s.title.trim())
-        .map((s) => ({
-          id: slugifyArticleHeading(s.title.trim()),
-          label: s.navLabel.trim() || s.title.trim(),
-        })),
-    [article.sections],
-  );
+
+  // Источник секций для рендера тела.
+  // - Многостраничная: секции текущей главы.
+  // - Одностраничная: article.sections (как раньше).
+  const isMultiPage = article.multiPage && currentChapterId !== undefined;
+  const currentChapter = isMultiPage
+    ? article.chapters.find((c) => c.id === currentChapterId)
+    : null;
+  const renderSections = currentChapter ? currentChapter.sections : article.sections;
+
+  // ── ToC: для одностраничной — H2-якоря текущего тела;
+  //         для многостраничной — список глав со href, под активной — её H2-секции.
+  const navItems = useMemo<ArticleNavItem[]>(() => {
+    if (isMultiPage) {
+      return article.chapters.map((ch) => {
+        const isActive = ch.id === currentChapterId;
+        const childItems: ArticleNavItem[] = isActive
+          ? ch.sections
+              .filter((s) => s.title.trim())
+              .map((s) => ({
+                id: slugifyArticleHeading(s.title.trim()),
+                label: s.navLabel.trim() || s.title.trim(),
+              }))
+          : [];
+        return {
+          id: ch.slug,
+          label: ch.navLabel.trim() || ch.title.trim() || ch.slug,
+          href: `${BASE}/media/${article.slug}/${ch.slug}`,
+          active: isActive,
+          children: childItems.length > 0 ? childItems : undefined,
+        };
+      });
+    }
+    return article.sections
+      .filter((s) => s.title.trim())
+      .map((s) => ({
+        id: slugifyArticleHeading(s.title.trim()),
+        label: s.navLabel.trim() || s.title.trim(),
+      }));
+  }, [isMultiPage, article.chapters, article.sections, article.slug, currentChapterId]);
 
   // Scrollspy: активен тот H2, верх которого уже прошёл линию 92px от верха
   // viewport (т.е. пользователь проскроллил «через» него). Если ни один H2
@@ -138,7 +179,7 @@ export function ArticlePageClient({
     setActiveId(id); // моментальная подсветка, не дожидаясь scrollspy
   }
 
-  const hasAnyContent = article.sections.some(
+  const hasAnyContent = renderSections.some(
     (s) => s.title.trim() || s.blocks.length > 0 || s.asides.length > 0,
   );
 
@@ -584,7 +625,7 @@ export function ArticlePageClient({
     // [data-section-body] / [data-section-aside-wrap] монтируется ТОЛЬКО когда
     // isDesktop (или isWide) === true. Без этой deps первый прогон sync() ничего
     // не находит, ResizeObserver не подписывается, wrapper'ы остаются с natural height.
-  }, [article.sections, isDesktop, isWide]);
+  }, [renderSections, isDesktop, isWide]);
 
   const breadcrumbs = (
     <Breadcrumbs
@@ -670,7 +711,7 @@ export function ArticlePageClient({
                     className="mt-24 flex flex-col gap-24"
                     style={stagger(3)}
                   >
-                    {article.sections.map((section) => (
+                    {renderSections.map((section) => (
                       <div key={section.id} data-section-body={section.id}>
                         <SectionBody
                           section={section}
@@ -680,6 +721,17 @@ export function ArticlePageClient({
                         />
                       </div>
                     ))}
+                    {pagination && (pagination.prev || pagination.next) && (
+                      <ArticlePagination
+                        prev={pagination.prev}
+                        next={pagination.next}
+                        renderLink={({ href, className, children, ...rest }) => (
+                          <Link href={href} className={className} {...rest}>
+                            {children}
+                          </Link>
+                        )}
+                      />
+                    )}
                   </div>
                 ) : (
                   <div
@@ -732,7 +784,7 @@ export function ArticlePageClient({
 
                 {hasAnyContent && (
                   <div className="mt-24 flex flex-col gap-10" style={stagger(3)}>
-                    {article.sections.map((section) => (
+                    {renderSections.map((section) => (
                       <div
                         key={section.id}
                         data-section-aside-wrap={section.id}
@@ -921,7 +973,7 @@ export function ArticlePageClient({
                 id="article-body"
                 className="flex flex-col gap-16 md:gap-24"
               >
-                {article.sections.map((section) => (
+                {renderSections.map((section) => (
                   <SectionMobile
                     key={section.id}
                     section={section}
@@ -932,6 +984,17 @@ export function ArticlePageClient({
                     glossary={glossaryConfig}
                   />
                 ))}
+                {pagination && (pagination.prev || pagination.next) && (
+                  <ArticlePagination
+                    prev={pagination.prev}
+                    next={pagination.next}
+                    renderLink={({ href, className, children, ...rest }) => (
+                      <Link href={href} className={className} {...rest}>
+                        {children}
+                      </Link>
+                    )}
+                  />
+                )}
               </div>
             ) : (
               /* Desktop layout — 4-col grid, bodies и asides как ДВА независимых потока */
@@ -949,7 +1012,7 @@ export function ArticlePageClient({
                 {/* Bodies — col 2-3, собственный flex-col без учёта asides.
                     data-section-body="<id>" — для height-sync sticky-wrapper'ов asides. */}
                 <div className="lg:col-span-2 flex flex-col gap-24">
-                  {article.sections.map((section) => (
+                  {renderSections.map((section) => (
                     <div key={section.id} data-section-body={section.id}>
                       <SectionBody
                         section={section}
@@ -959,6 +1022,17 @@ export function ArticlePageClient({
                       />
                     </div>
                   ))}
+                  {pagination && (pagination.prev || pagination.next) && (
+                    <ArticlePagination
+                      prev={pagination.prev}
+                      next={pagination.next}
+                      renderLink={({ href, className, children, ...rest }) => (
+                        <Link href={href} className={className} {...rest}>
+                          {children}
+                        </Link>
+                      )}
+                    />
+                  )}
                 </div>
 
                 {/* Asides — col 4, собственный flex-col. pl-[45px] — контент прибит
@@ -976,7 +1050,7 @@ export function ArticlePageClient({
                       секции. Если aside-кластер выше body-секции + COMP, wrapper
                       расширяется под inner, пушит следующий wrapper вниз. */}
                   <div className="flex flex-col gap-10">
-                    {article.sections.map((section) => (
+                    {renderSections.map((section) => (
                       <div
                         key={section.id}
                         data-section-aside-wrap={section.id}
