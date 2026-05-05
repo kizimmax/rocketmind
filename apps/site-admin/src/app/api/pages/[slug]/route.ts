@@ -32,6 +32,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  try {
   const { slug: rawSlug } = await params;
   const pageId = decodeURIComponent(rawSlug);
   const url = pageId.startsWith("/") ? pageId : `/${pageId}`;
@@ -239,6 +240,13 @@ export async function PUT(
   }
 
   return NextResponse.json({ ok: true });
+  } catch (e) {
+    const err = e as Error;
+    return NextResponse.json(
+      { error: err.message ?? "unknown error", name: err.name, stack: err.stack },
+      { status: 500 },
+    );
+  }
 }
 
 export async function DELETE(
