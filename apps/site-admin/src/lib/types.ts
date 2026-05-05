@@ -921,7 +921,6 @@ export interface Article {
 export interface ArticleChapter {
   id: string;
   slug: string;
-  title: string;
   navLabel: string;
   sections: ArticleSection[];
 }

@@ -225,7 +225,6 @@ function ArticleEditorInner({
                           const wrapped: ArticleChapter = {
                             id: `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
                             slug: "glava-1",
-                            title: article.title || "Глава 1",
                             navLabel: "Глава 1",
                             sections: article.body,
                           };

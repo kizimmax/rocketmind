@@ -115,7 +115,7 @@ export function ArticlePageClient({
           : [];
         return {
           id: ch.slug,
-          label: ch.navLabel.trim() || ch.title.trim() || ch.slug,
+          label: ch.navLabel.trim() || ch.slug,
           href: `${BASE}/media/${article.slug}/${ch.slug}`,
           active: isActive,
           children: childItems.length > 0 ? childItems : undefined,

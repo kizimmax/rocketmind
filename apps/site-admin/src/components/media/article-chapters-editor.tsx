@@ -12,6 +12,7 @@ import {
   Input,
 } from "@rocketmind/ui";
 import type { ArticleChapter } from "@/lib/types";
+import { slugify } from "@/lib/store";
 import { ArticleSectionsEditor, type ChapterTarget } from "./article-sections-editor";
 
 interface Props {
@@ -32,7 +33,6 @@ function makeChapter(idx: number): ArticleChapter {
   return {
     id: newChapterId(),
     slug: `glava-${n}`,
-    title: `Глава ${n}`,
     navLabel: `Глава ${n}`,
     sections: [],
   };
@@ -49,7 +49,6 @@ function normalize(raw: unknown): ArticleChapter[] {
       return {
         id: typeof r.id === "string" && r.id ? r.id : `c_legacy_${i}`,
         slug,
-        title: typeof r.title === "string" ? r.title : "",
         navLabel: typeof r.navLabel === "string" ? r.navLabel : "",
         sections: Array.isArray(r.sections)
           ? (r.sections as ArticleChapter["sections"])
@@ -132,7 +131,6 @@ export function ArticleChaptersEditor({
       const newCh: ArticleChapter = {
         id: newChapterId(),
         slug: `glava-${n}`,
-        title: `Глава ${n}`,
         navLabel: `Глава ${n}`,
         sections: after,
       };
@@ -194,7 +192,7 @@ export function ArticleChaptersEditor({
       {chapters.map((ch, idx) => {
         const otherChapters: ChapterTarget[] = chapters
           .filter((c) => c.id !== ch.id)
-          .map((c) => ({ id: c.id, label: c.navLabel || c.title || `Глава ${chapters.indexOf(c) + 1}` }));
+          .map((c) => ({ id: c.id, label: c.navLabel || `Глава ${chapters.indexOf(c) + 1}` }));
         return (
           <ChapterRow
             key={ch.id}
@@ -286,7 +284,7 @@ function DeleteChapterDialog({
   }
   const sectionsCount = chapter.sections.length;
   const isLast = otherChapters.length === 0;
-  const chapterTitle = chapter.title || chapter.navLabel || "Без названия";
+  const chapterTitle = chapter.navLabel || "Без названия";
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -324,7 +322,7 @@ function DeleteChapterDialog({
               >
                 {otherChapters.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.navLabel || c.title || "Без названия"}
+                    {c.navLabel || "Без названия"}
                   </option>
                 ))}
               </select>
@@ -382,6 +380,12 @@ function ChapterRow({
   onSplitChapterAt: (sectionIndex: number) => void;
 }) {
   const [open, setOpen] = useState(true);
+  // Slug авто-генерируется из navLabel пока совпадает с slugify(navLabel).
+  // Как только пользователь правит slug вручную — авто-синк отключается до
+  // следующего сохранения/перезагрузки.
+  const [slugAutoSync, setSlugAutoSync] = useState(
+    () => chapter.slug === slugify(chapter.navLabel),
+  );
   return (
     <div className="rounded-sm border border-border">
       <div className="flex items-center gap-2 border-b border-border bg-[color:var(--rm-gray-1)]/40 px-3 py-2">
@@ -397,7 +401,7 @@ function ChapterRow({
           Глава {index + 1}
         </span>
         <span className="ml-2 truncate text-[length:var(--text-13)] font-medium text-foreground">
-          {chapter.title || chapter.navLabel || "(без названия)"}
+          {chapter.navLabel || "(без названия)"}
         </span>
         <div className="ml-auto flex items-center gap-1">
           <IconBtn onClick={onMoveUp} disabled={index === 0} label="Выше">
@@ -413,26 +417,33 @@ function ChapterRow({
       </div>
       {open && (
         <div className="flex flex-col gap-4 p-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            <Field label="Slug (URL)" hint={slugConflict ? "Дубликат slug в статье" : undefined} error={slugConflict}>
-              <Input
-                value={chapter.slug}
-                onChange={(e) => onUpdate({ slug: e.target.value })}
-                placeholder="glava-1"
-              />
-            </Field>
-            <Field label="Заголовок главы">
-              <Input
-                value={chapter.title}
-                onChange={(e) => onUpdate({ title: e.target.value })}
-                placeholder="Глава 1"
-              />
-            </Field>
+          <div className="grid gap-3 md:grid-cols-2">
             <Field label="Подпись в меню">
               <Input
                 value={chapter.navLabel}
-                onChange={(e) => onUpdate({ navLabel: e.target.value })}
-                placeholder={chapter.title || "Глава 1"}
+                onChange={(e) => {
+                  const navLabel = e.target.value;
+                  if (slugAutoSync) {
+                    onUpdate({ navLabel, slug: slugify(navLabel) });
+                  } else {
+                    onUpdate({ navLabel });
+                  }
+                }}
+                placeholder="Глава 1"
+              />
+            </Field>
+            <Field
+              label="Slug (URL)"
+              hint={slugConflict ? "Дубликат slug в статье" : undefined}
+              error={slugConflict}
+            >
+              <Input
+                value={chapter.slug}
+                onChange={(e) => {
+                  setSlugAutoSync(false);
+                  onUpdate({ slug: e.target.value });
+                }}
+                placeholder="glava-1"
               />
             </Field>
           </div>

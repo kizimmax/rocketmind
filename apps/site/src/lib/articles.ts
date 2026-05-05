@@ -73,7 +73,6 @@ export type ArticleSection = {
 export type ArticleChapter = {
   id: string;
   slug: string;
-  title: string;
   navLabel: string;
   sections: ArticleSection[];
 };
@@ -293,10 +292,9 @@ function parseChapters(raw: unknown): ArticleChapter[] {
       const slug = typeof rec.slug === "string" ? rec.slug.trim() : "";
       if (!slug) return null;
       const id = typeof rec.id === "string" && rec.id ? rec.id : `c${idx}`;
-      const title = typeof rec.title === "string" ? rec.title : "";
       const navLabel = typeof rec.navLabel === "string" ? rec.navLabel : "";
       const sections = parseSections(Array.isArray(rec.sections) ? rec.sections : []);
-      return { id, slug, title, navLabel, sections };
+      return { id, slug, navLabel, sections };
     })
     .filter((c): c is ArticleChapter => c !== null);
 }

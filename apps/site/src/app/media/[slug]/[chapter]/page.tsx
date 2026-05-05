@@ -39,7 +39,7 @@ export async function generateMetadata({
   }
   const ch = article.chapters.find((c) => c.slug === chapter);
   if (!ch) return { title: "Раздел не найден | Rocketmind" };
-  const titleBase = ch.title || article.title;
+  const titleBase = ch.navLabel || article.title;
   return {
     title: article.metaTitle
       ? `${titleBase} — ${article.metaTitle}`
@@ -93,10 +93,10 @@ export default async function ArticleChapterPage({
   const nextCh = idx < article.chapters.length - 1 ? article.chapters[idx + 1] : null;
   const pagination = {
     prev: prevCh
-      ? { label: prevCh.navLabel || prevCh.title, href: `${BASE}/media/${article.slug}/${prevCh.slug}` }
+      ? { label: prevCh.navLabel || prevCh.slug, href: `${BASE}/media/${article.slug}/${prevCh.slug}` }
       : undefined,
     next: nextCh
-      ? { label: nextCh.navLabel || nextCh.title, href: `${BASE}/media/${article.slug}/${nextCh.slug}` }
+      ? { label: nextCh.navLabel || nextCh.slug, href: `${BASE}/media/${article.slug}/${nextCh.slug}` }
       : undefined,
   };
 
