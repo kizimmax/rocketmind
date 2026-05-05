@@ -224,6 +224,9 @@ function ArticleEditorInner({
                         };
                         update("chapters", [wrapped]);
                       }
+                      if (!v && article.chapters && article.chapters.length > 0) {
+                        update("body", article.chapters.flatMap((ch) => ch.sections));
+                      }
                     }}
                   />
                 </div>

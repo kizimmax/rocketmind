@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider, Toaster } from "@rocketmind/ui";
 import { AuthProvider } from "@/lib/auth-context";
+import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
   title: "CMS — Rocketmind",
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <body className="antialiased">
+        <NextTopLoader color="var(--foreground)" showSpinner={false} height={2} />
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

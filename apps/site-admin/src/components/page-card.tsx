@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   MoreHorizontal,
@@ -209,6 +210,8 @@ interface PageCardProps {
 
 export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDelete, onTogglePublish, onToggleFeatured, onGripDown, onGripUp, index, count, onMove, dragProps }: PageCardProps) {
   const router = useRouter();
+  const [navigating, setNavigating] = useState(false);
+  const navigate = (href: string) => { setNavigating(true); router.push(href); };
 
   // «Системный» макет: title + description + pencil без номера, drag-handle,
   // dropdown'а статусов и удаления. Применяется к:
@@ -231,8 +234,8 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
   if (viewMode === "list") {
     return (
       <tr
-        className={`group border-b border-border transition-colors hover:bg-muted/50 cursor-pointer ${dragProps?.isDragging ? "opacity-50" : ""}`}
-        onClick={() => router.push(`/pages/${page.id}`)}
+        className={`group border-b border-border transition-colors hover:bg-muted/50 cursor-pointer ${dragProps?.isDragging ? "opacity-50" : ""} ${navigating ? "opacity-60" : ""}`}
+        onClick={() => navigate(`/pages/${page.id}`)}
         draggable={dragProps?.draggable}
         onDragStart={dragProps?.onDragStart}
         onDragOver={dragProps?.onDragOver}
@@ -354,8 +357,14 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
   return (
     <div
       className="group relative flex h-full flex-col overflow-hidden rounded-sm border border-border bg-card transition-colors hover:border-foreground/25 cursor-pointer"
-      onClick={() => router.push(`/pages/${page.id}`)}
+      onClick={() => navigate(`/pages/${page.id}`)}
     >
+      {/* Навигационный оверлей */}
+      {navigating && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-rm-gray-3 border-t-foreground" />
+        </div>
+      )}
       {/* Drag handle — top-left, visible on hover */}
       {onGripDown && (
         <div
@@ -489,7 +498,8 @@ function SyntheticPageCard({
   dragProps?: PageCardProps["dragProps"];
 }) {
   const router = useRouter();
-  const open = () => router.push(`/pages/${page.id}`);
+  const [navigating, setNavigating] = useState(false);
+  const open = () => { setNavigating(true); router.push(`/pages/${page.id}`); };
 
   const systemBadge = (
     <span className="shrink-0 rounded-sm bg-foreground/10 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wider text-foreground">
@@ -547,6 +557,11 @@ function SyntheticPageCard({
       className="group relative flex h-full flex-col overflow-hidden rounded-sm border border-border bg-card transition-colors hover:border-foreground/25 cursor-pointer"
       onClick={open}
     >
+      {navigating && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-rm-gray-3 border-t-foreground" />
+        </div>
+      )}
       <div className="flex h-[80px] items-center px-4 pt-4">
         <div className="flex h-[56px] w-[56px] shrink-0 items-center justify-center rounded-sm border border-dashed border-border text-muted-foreground/60">
           <Settings className="h-5 w-5" />
