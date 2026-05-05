@@ -16,6 +16,7 @@ import { EditorToolbar } from "@/components/page-editor/editor-toolbar";
 import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-dialog";
 import { ArticleSectionsEditor } from "./article-sections-editor";
 import { GlossaryHeroEditor } from "./glossary-hero-editor";
+import { SlugRedirects } from "./slug-redirects";
 
 interface Props {
   termId: string;
@@ -105,9 +106,11 @@ function Inner({
   const backHref = "/media?tab=glossary";
 
   function handleSave() {
+    const slugChanged = term.slug !== original.slug;
     onSave(term);
     markSaved(term);
     toast.success("Термин сохранён");
+    if (slugChanged) router.replace(`/media/glossary/${term.slug}`);
   }
 
   function handleBack() {
@@ -127,6 +130,7 @@ function Inner({
     onSave(term);
     markSaved(term);
     setUnsavedOpen(false);
+    // navigateTarget указывает, куда уходить — slug не нужен, страницу всё равно покидаем
     router.push(navigateTarget || backHref);
   }
 
@@ -162,7 +166,7 @@ function Inner({
             {term.title || "Без названия"}
           </h1>
           <p className="truncate text-[length:var(--text-12)] text-muted-foreground">
-            /media/glossary#{term.slug}
+            /media/glossary/term/{term.slug}
           </p>
         </div>
         <Button
@@ -191,13 +195,17 @@ function Inner({
                 <div className="flex flex-col gap-4">
                   <Field
                     label="Slug"
-                    hint="Меняется один раз при создании — не редактируется здесь."
+                    hint="При смене slug автоматически создаётся редирект со старого URL."
                   >
-                    <Input value={term.slug} disabled />
+                    <Input
+                      value={term.slug}
+                      onChange={(e) => update("slug", e.target.value)}
+                    />
                   </Field>
                   <p className="text-[length:var(--text-11)] text-muted-foreground">
-                    Якорь термина: <code>/media/glossary#{term.slug}</code>
+                    Адрес страницы: <code>/media/glossary/term/{term.slug}</code>
                   </p>
+                  <SlugRedirects currentUrl={`/media/glossary/term/${term.slug}`} />
                 </div>
               </Section>
 

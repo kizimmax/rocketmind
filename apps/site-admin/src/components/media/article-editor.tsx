@@ -8,6 +8,11 @@ import {
   Input,
   Textarea,
   Switch,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from "@rocketmind/ui";
 import { Pin, LayoutGrid, BookOpen } from "lucide-react";
 import { toast } from "sonner";
@@ -75,6 +80,7 @@ function ArticleEditorInner({
 
   const [unsavedOpen, setUnsavedOpen] = useState(false);
   const [navigateTarget, setNavigateTarget] = useState<string | null>(null);
+  const [confirmDisableMultiPage, setConfirmDisableMultiPage] = useState(false);
 
   // Sync dirty to navigation guard (so AdminHeader links trigger tryNavigate)
   useEffect(() => {
@@ -213,19 +219,25 @@ function ArticleEditorInner({
                     description="Делит статью на главы — каждая на своём URL /media/{slug}/{chapter-slug}. В конце каждой главы появляется пагинация."
                     checked={article.multiPage === true}
                     onCheckedChange={(v) => {
-                      update("multiPage", v);
-                      if (v && (!article.chapters || article.chapters.length === 0)) {
-                        const wrapped: ArticleChapter = {
-                          id: `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
-                          slug: "glava-1",
-                          title: article.title || "Глава 1",
-                          navLabel: "Глава 1",
-                          sections: article.body,
-                        };
-                        update("chapters", [wrapped]);
-                      }
-                      if (!v && article.chapters && article.chapters.length > 0) {
-                        update("body", article.chapters.flatMap((ch) => ch.sections));
+                      if (v) {
+                        update("multiPage", true);
+                        if (!article.chapters || article.chapters.length === 0) {
+                          const wrapped: ArticleChapter = {
+                            id: `c_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+                            slug: "glava-1",
+                            title: article.title || "Глава 1",
+                            navLabel: "Глава 1",
+                            sections: article.body,
+                          };
+                          update("chapters", [wrapped]);
+                        }
+                      } else if (article.chapters && article.chapters.length > 1) {
+                        setConfirmDisableMultiPage(true);
+                      } else {
+                        update("multiPage", false);
+                        if (article.chapters && article.chapters.length > 0) {
+                          update("body", article.chapters.flatMap((ch) => ch.sections));
+                        }
                       }
                     }}
                   />
@@ -349,6 +361,34 @@ function ArticleEditorInner({
         onDiscard={handleDiscardAndLeave}
         onSave={handleSaveAndLeave}
       />
+
+      {/* Подтверждение отключения многостраничности */}
+      <Dialog open={confirmDisableMultiPage} onOpenChange={setConfirmDisableMultiPage}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Отключить многостраничность?</DialogTitle>
+          </DialogHeader>
+          <p className="text-[length:var(--text-14)] text-muted-foreground">
+            Все секции из {article.chapters?.length ?? 0} глав будут объединены в один список.
+            Структура глав будет потеряна при следующем сохранении.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDisableMultiPage(false)}>
+              Отмена
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                update("multiPage", false);
+                update("body", (article.chapters ?? []).flatMap((ch) => ch.sections));
+                setConfirmDisableMultiPage(false);
+              }}
+            >
+              Объединить и отключить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,8 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowUp, Compass, Trash2 } from "lucide-react";
-import { Input } from "@rocketmind/ui";
+import { ArrowDown, ArrowUp, Compass, FolderInput, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Input,
+} from "@rocketmind/ui";
+import type { ChapterTarget } from "./article-sections-editor";
 import type {
   ArticleAside,
   ArticleBodyBlock,
@@ -29,6 +36,8 @@ interface Props {
   onRemove: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
+  otherChapters?: ChapterTarget[];
+  onMoveToChapter?: (sectionId: string, targetChapterId: string) => void;
 }
 
 export function ArticleSectionRow({
@@ -40,6 +49,8 @@ export function ArticleSectionRow({
   onRemove,
   onMoveUp,
   onMoveDown,
+  otherChapters,
+  onMoveToChapter,
 }: Props) {
   function updateTitle(title: string) {
     onChange({ ...section, title });
@@ -157,6 +168,30 @@ export function ArticleSectionRow({
           >
             <ArrowDown className="h-3.5 w-3.5" />
           </button>
+          {otherChapters && otherChapters.length > 0 && onMoveToChapter && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Переместить в главу"
+                  title="Переместить в..."
+                  className="flex h-6 w-6 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <FolderInput className="h-3.5 w-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[180px]">
+                {otherChapters.map((ch) => (
+                  <DropdownMenuItem
+                    key={ch.id}
+                    onSelect={() => onMoveToChapter(section.id, ch.id)}
+                  >
+                    {ch.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <button
             type="button"
             onClick={onRemove}

@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Plus, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@rocketmind/ui";
 import type { ArticleChapter } from "@/lib/types";
-import { ArticleSectionsEditor } from "./article-sections-editor";
+import { ArticleSectionsEditor, type ChapterTarget } from "./article-sections-editor";
 
 interface Props {
   articleSlug: string;
@@ -100,6 +100,22 @@ export function ArticleChaptersEditor({
     [chapters, onChange],
   );
 
+  const moveSectionToChapter = useCallback(
+    (sectionId: string, targetChapterId: string) => {
+      const sourceIdx = chapters.findIndex((ch) =>
+        ch.sections.some((s) => s.id === sectionId),
+      );
+      const targetIdx = chapters.findIndex((ch) => ch.id === targetChapterId);
+      if (sourceIdx === -1 || targetIdx === -1 || sourceIdx === targetIdx) return;
+      const arr = chapters.map((ch) => ({ ...ch, sections: [...ch.sections] }));
+      const section = arr[sourceIdx].sections.find((s) => s.id === sectionId)!;
+      arr[sourceIdx].sections = arr[sourceIdx].sections.filter((s) => s.id !== sectionId);
+      arr[targetIdx].sections = [...arr[targetIdx].sections, section];
+      onChange(arr);
+    },
+    [chapters, onChange],
+  );
+
   if (chapters.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-sm border border-dashed border-border bg-[color:var(--rm-gray-1)]/40 px-4 py-10 text-center">
@@ -120,20 +136,27 @@ export function ArticleChaptersEditor({
 
   return (
     <div className="flex flex-col gap-4">
-      {chapters.map((ch, idx) => (
-        <ChapterRow
-          key={ch.id}
-          articleSlug={articleSlug}
-          chapter={ch}
-          index={idx}
-          total={chapters.length}
-          slugConflict={!!ch.slug && slugConflicts.has(ch.slug)}
-          onUpdate={(patch) => update(ch.id, patch)}
-          onRemove={() => remove(ch.id)}
-          onMoveUp={() => move(idx, idx - 1)}
-          onMoveDown={() => move(idx, idx + 1)}
-        />
-      ))}
+      {chapters.map((ch, idx) => {
+        const otherChapters: ChapterTarget[] = chapters
+          .filter((c) => c.id !== ch.id)
+          .map((c) => ({ id: c.id, label: c.navLabel || c.title || `Глава ${chapters.indexOf(c) + 1}` }));
+        return (
+          <ChapterRow
+            key={ch.id}
+            articleSlug={articleSlug}
+            chapter={ch}
+            index={idx}
+            total={chapters.length}
+            slugConflict={!!ch.slug && slugConflicts.has(ch.slug)}
+            onUpdate={(patch) => update(ch.id, patch)}
+            onRemove={() => remove(ch.id)}
+            onMoveUp={() => move(idx, idx - 1)}
+            onMoveDown={() => move(idx, idx + 1)}
+            otherChapters={otherChapters}
+            onMoveToChapter={moveSectionToChapter}
+          />
+        );
+      })}
       <button
         type="button"
         onClick={() => insertAt(chapters.length)}
@@ -156,6 +179,8 @@ function ChapterRow({
   onRemove,
   onMoveUp,
   onMoveDown,
+  otherChapters,
+  onMoveToChapter,
 }: {
   articleSlug: string;
   chapter: ArticleChapter;
@@ -166,6 +191,8 @@ function ChapterRow({
   onRemove: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
+  otherChapters: ChapterTarget[];
+  onMoveToChapter: (sectionId: string, targetChapterId: string) => void;
 }) {
   const [open, setOpen] = useState(true);
   return (
@@ -233,6 +260,8 @@ function ChapterRow({
               articleSlug={articleSlug}
               sections={chapter.sections}
               onChange={(next) => onUpdate({ sections: next })}
+              otherChapters={otherChapters}
+              onMoveToChapter={onMoveToChapter}
             />
           </div>
         </div>

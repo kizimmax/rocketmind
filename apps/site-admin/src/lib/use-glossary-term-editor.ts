@@ -150,6 +150,7 @@ function shallowEqualTerm(a: GlossaryTerm, b: GlossaryTerm): boolean {
 const FIELD_LABELS: Partial<Record<keyof GlossaryTerm, string>> = {
   title: "Название",
   description: "Описание",
+  slug: "Slug (URL)",
   status: "Статус публикации",
   tagIds: "Теги",
   sections: "Тело термина",

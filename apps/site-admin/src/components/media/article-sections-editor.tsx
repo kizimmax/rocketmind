@@ -5,12 +5,20 @@ import { Plus } from "lucide-react";
 import type { ArticleSection } from "@/lib/types";
 import { ArticleSectionRow } from "./article-section-row";
 
+export interface ChapterTarget {
+  id: string;
+  label: string;
+}
+
 interface Props {
   articleSlug: string;
   /** Допускается массив произвольной формы — реальные legacy-статьи могут содержать
    *  старый flat-формат блоков. Нормализуем на входе. */
   sections: unknown;
   onChange: (next: ArticleSection[]) => void;
+  /** Если задан — в шапке каждой секции появляется «Переместить в...» */
+  otherChapters?: ChapterTarget[];
+  onMoveToChapter?: (sectionId: string, targetChapterId: string) => void;
 }
 
 function newSectionId(): string {
@@ -82,6 +90,8 @@ export function ArticleSectionsEditor({
   articleSlug,
   sections: rawSections,
   onChange,
+  otherChapters,
+  onMoveToChapter,
 }: Props) {
   const sections = useMemo(() => normalizeSections(rawSections), [rawSections]);
   const insertAt = useCallback(
@@ -143,6 +153,8 @@ export function ArticleSectionsEditor({
             onRemove={() => removeSection(section.id)}
             onMoveUp={() => moveSection(idx, idx - 1)}
             onMoveDown={() => moveSection(idx, idx + 1)}
+            otherChapters={otherChapters}
+            onMoveToChapter={onMoveToChapter}
           />
           <AddSectionButton onClick={() => insertAt(idx + 1)} />
         </div>
