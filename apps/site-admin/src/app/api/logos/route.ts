@@ -14,8 +14,7 @@ const ROCKETMIND_LOGOS = [
   { src: "/images/about/rocketmind-logo-mono.svg", name: "Rocketmind mark" },
 ];
 
-function listLogos(subDir: string, publicPrefix: string, group: string) {
-  const absDir = path.join(UPLOADS_DIR, subDir);
+function listLogos(absDir: string, publicPrefix: string, group: string) {
   if (!fs.existsSync(absDir)) return [];
   return fs
     .readdirSync(absDir)
@@ -36,8 +35,11 @@ function safeStem(name: string): string {
 
 export async function GET() {
   const rocketmind = ROCKETMIND_LOGOS.map((l) => ({ ...l, group: "rocketmind" }));
-  const media = listLogos("logos", "/uploads/logos", "partners");
-  const clip = listLogos("clip-logos", "/uploads/clip-logos", "partners");
+  // logos/ — пользовательские партнёрские логотипы из /data/uploads/logos/
+  // (через uploads-роутинг). clip-logos/ — статичный брендовый набор, лежит
+  // в public/ обоих apps, отдаётся Next.js напрямую как `/clip-logos/...`.
+  const media = listLogos(path.join(UPLOADS_DIR, "logos"), "/uploads/logos", "partners");
+  const clip = listLogos(path.join(process.cwd(), "public", "clip-logos"), "/clip-logos", "partners");
 
   const seen = new Set<string>();
   const partners = [];

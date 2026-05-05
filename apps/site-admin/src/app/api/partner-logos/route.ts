@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
-import { UPLOADS_DIR } from "@/lib/storage";
 
 const SUPPORTED = new Set([".svg", ".png", ".jpg", ".jpeg", ".webp", ".avif"]);
 const PREFERRED = ["beeline", "rusal", "mintsifry", "vtb", "tbank", "rosatom"];
 
+// clip-logos — статичный набор брендовых логотипов, лежит в public/ обоих
+// apps (site и site-admin). Контракт URL: `/clip-logos/{filename}` — Next.js
+// отдаёт его напрямую из public/, без uploads-роутинга.
 export async function GET() {
-  const absDir = path.join(UPLOADS_DIR, "clip-logos");
+  const absDir = path.join(process.cwd(), "public", "clip-logos");
   if (!fs.existsSync(absDir)) return NextResponse.json([]);
 
   const filenames = fs
@@ -27,7 +29,7 @@ export async function GET() {
   return NextResponse.json(
     filenames.map((filename) => ({
       alt: filename.replace(/\.[^.]+$/, ""),
-      src: `/uploads/clip-logos/${filename}`,
+      src: `/clip-logos/${filename}`,
     })),
   );
 }
