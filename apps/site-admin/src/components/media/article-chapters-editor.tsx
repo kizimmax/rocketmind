@@ -2,7 +2,15 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { Plus, ArrowUp, ArrowDown, Trash2, ChevronDown, ChevronRight } from "lucide-react";
-import { Input } from "@rocketmind/ui";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+} from "@rocketmind/ui";
 import type { ArticleChapter } from "@/lib/types";
 import { ArticleSectionsEditor, type ChapterTarget } from "./article-sections-editor";
 
@@ -10,6 +18,9 @@ interface Props {
   articleSlug: string;
   chapters: unknown;
   onChange: (next: ArticleChapter[]) => void;
+  /** Вызывается, когда пользователь подтверждает удаление последней оставшейся главы.
+   *  Парент должен переключить multiPage в false и плоско залить body. */
+  onDisableMultiPage?: () => void;
 }
 
 function newChapterId(): string {
@@ -52,8 +63,11 @@ export function ArticleChaptersEditor({
   articleSlug,
   chapters: rawChapters,
   onChange,
+  onDisableMultiPage,
 }: Props) {
   const chapters = useMemo(() => normalize(rawChapters), [rawChapters]);
+  const [deletingChapterId, setDeletingChapterId] = useState<string | null>(null);
+  const [moveTargetId, setMoveTargetId] = useState<string>("");
 
   const slugConflicts = useMemo(() => {
     const seen = new Set<string>();
@@ -85,6 +99,47 @@ export function ArticleChaptersEditor({
   const remove = useCallback(
     (id: string) => {
       onChange(chapters.filter((ch) => ch.id !== id));
+    },
+    [chapters, onChange],
+  );
+
+  const requestDelete = useCallback(
+    (id: string) => {
+      const ch = chapters.find((c) => c.id === id);
+      if (!ch) return;
+      // Пустая глава, и она не последняя → удаляем без вопросов
+      if (ch.sections.length === 0 && chapters.length > 1) {
+        remove(id);
+        return;
+      }
+      // Иначе — открываем диалог
+      const firstOther = chapters.find((c) => c.id !== id);
+      setMoveTargetId(firstOther?.id ?? "");
+      setDeletingChapterId(id);
+    },
+    [chapters, remove],
+  );
+
+  const splitChapterAt = useCallback(
+    (chapterId: string, sectionIndex: number) => {
+      const idx = chapters.findIndex((c) => c.id === chapterId);
+      if (idx === -1) return;
+      const cur = chapters[idx];
+      if (sectionIndex <= 0 || sectionIndex >= cur.sections.length) return;
+      const before = cur.sections.slice(0, sectionIndex);
+      const after = cur.sections.slice(sectionIndex);
+      const n = chapters.length + 1;
+      const newCh: ArticleChapter = {
+        id: newChapterId(),
+        slug: `glava-${n}`,
+        title: `Глава ${n}`,
+        navLabel: `Глава ${n}`,
+        sections: after,
+      };
+      const next = [...chapters];
+      next[idx] = { ...cur, sections: before };
+      next.splice(idx + 1, 0, newCh);
+      onChange(next);
     },
     [chapters, onChange],
   );
@@ -149,11 +204,12 @@ export function ArticleChaptersEditor({
             total={chapters.length}
             slugConflict={!!ch.slug && slugConflicts.has(ch.slug)}
             onUpdate={(patch) => update(ch.id, patch)}
-            onRemove={() => remove(ch.id)}
+            onRemove={() => requestDelete(ch.id)}
             onMoveUp={() => move(idx, idx - 1)}
             onMoveDown={() => move(idx, idx + 1)}
             otherChapters={otherChapters}
             onMoveToChapter={moveSectionToChapter}
+            onSplitChapterAt={(sectionIndex) => splitChapterAt(ch.id, sectionIndex)}
           />
         );
       })}
@@ -165,7 +221,136 @@ export function ArticleChaptersEditor({
         <Plus className="h-3.5 w-3.5" />
         Добавить главу
       </button>
+
+      <DeleteChapterDialog
+        open={deletingChapterId !== null}
+        chapter={chapters.find((c) => c.id === deletingChapterId) ?? null}
+        otherChapters={chapters.filter((c) => c.id !== deletingChapterId)}
+        moveTargetId={moveTargetId}
+        onMoveTargetChange={setMoveTargetId}
+        onClose={() => setDeletingChapterId(null)}
+        onConfirmDelete={() => {
+          if (!deletingChapterId) return;
+          if (chapters.length === 1) {
+            onDisableMultiPage?.();
+          } else {
+            remove(deletingChapterId);
+          }
+          setDeletingChapterId(null);
+        }}
+        onConfirmMove={() => {
+          if (!deletingChapterId || !moveTargetId) return;
+          const source = chapters.find((c) => c.id === deletingChapterId);
+          const target = chapters.find((c) => c.id === moveTargetId);
+          if (!source || !target) return;
+          const next = chapters
+            .map((c) =>
+              c.id === target.id
+                ? { ...c, sections: [...c.sections, ...source.sections] }
+                : c,
+            )
+            .filter((c) => c.id !== deletingChapterId);
+          onChange(next);
+          setDeletingChapterId(null);
+        }}
+      />
     </div>
+  );
+}
+
+function DeleteChapterDialog({
+  open,
+  chapter,
+  otherChapters,
+  moveTargetId,
+  onMoveTargetChange,
+  onClose,
+  onConfirmDelete,
+  onConfirmMove,
+}: {
+  open: boolean;
+  chapter: ArticleChapter | null;
+  otherChapters: ArticleChapter[];
+  moveTargetId: string;
+  onMoveTargetChange: (id: string) => void;
+  onClose: () => void;
+  onConfirmDelete: () => void;
+  onConfirmMove: () => void;
+}) {
+  if (!chapter) {
+    return (
+      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+        <DialogContent />
+      </Dialog>
+    );
+  }
+  const sectionsCount = chapter.sections.length;
+  const isLast = otherChapters.length === 0;
+  const chapterTitle = chapter.title || chapter.navLabel || "Без названия";
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {isLast ? "Отключить разделение на главы?" : `Удалить главу «${chapterTitle}»?`}
+          </DialogTitle>
+        </DialogHeader>
+
+        {isLast ? (
+          <p className="text-[length:var(--text-14)] text-muted-foreground">
+            Это последняя глава. При её удалении статья перестанет быть многостраничной —
+            {sectionsCount > 0
+              ? ` все ${sectionsCount} секций станут обычным содержимым на одной странице.`
+              : " статья станет обычной (без секций)."}
+          </p>
+        ) : sectionsCount === 0 ? (
+          <p className="text-[length:var(--text-14)] text-muted-foreground">
+            Глава пустая — будет удалена без потерь.
+          </p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <p className="text-[length:var(--text-14)] text-muted-foreground">
+              В главе {sectionsCount} секций. Что с ними сделать?
+            </p>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[length:var(--text-12)] text-muted-foreground">
+                Перенести секции в:
+              </span>
+              <select
+                value={moveTargetId}
+                onChange={(e) => onMoveTargetChange(e.target.value)}
+                className="h-9 rounded-sm border border-border bg-background px-3 text-[length:var(--text-13)]"
+              >
+                {otherChapters.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.navLabel || c.title || "Без названия"}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={onClose}>
+            Отмена
+          </Button>
+          {!isLast && sectionsCount > 0 && (
+            <Button onClick={onConfirmMove} disabled={!moveTargetId}>
+              Перенести и удалить главу
+            </Button>
+          )}
+          <Button variant="destructive" onClick={onConfirmDelete}>
+            {isLast
+              ? "Отключить разделение"
+              : sectionsCount > 0
+                ? "Удалить с секциями"
+                : "Удалить главу"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -181,6 +366,7 @@ function ChapterRow({
   onMoveDown,
   otherChapters,
   onMoveToChapter,
+  onSplitChapterAt,
 }: {
   articleSlug: string;
   chapter: ArticleChapter;
@@ -193,6 +379,7 @@ function ChapterRow({
   onMoveDown: () => void;
   otherChapters: ChapterTarget[];
   onMoveToChapter: (sectionId: string, targetChapterId: string) => void;
+  onSplitChapterAt: (sectionIndex: number) => void;
 }) {
   const [open, setOpen] = useState(true);
   return (
@@ -262,6 +449,7 @@ function ChapterRow({
               onChange={(next) => onUpdate({ sections: next })}
               otherChapters={otherChapters}
               onMoveToChapter={onMoveToChapter}
+              onSplitChapterAt={onSplitChapterAt}
             />
           </div>
         </div>

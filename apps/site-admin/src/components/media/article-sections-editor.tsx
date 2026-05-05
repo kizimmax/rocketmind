@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Scissors } from "lucide-react";
 import type { ArticleSection } from "@/lib/types";
 import { ArticleSectionRow } from "./article-section-row";
 
@@ -19,6 +19,9 @@ interface Props {
   /** Если задан — в шапке каждой секции появляется «Переместить в...» */
   otherChapters?: ChapterTarget[];
   onMoveToChapter?: (sectionId: string, targetChapterId: string) => void;
+  /** Если задан — между секциями появляется «Начать новую главу».
+   *  sectionIndex — позиция, начиная с которой секции уйдут в новую главу. */
+  onSplitChapterAt?: (sectionIndex: number) => void;
 }
 
 function newSectionId(): string {
@@ -92,6 +95,7 @@ export function ArticleSectionsEditor({
   onChange,
   otherChapters,
   onMoveToChapter,
+  onSplitChapterAt,
 }: Props) {
   const sections = useMemo(() => normalizeSections(rawSections), [rawSections]);
   const insertAt = useCallback(
@@ -134,14 +138,14 @@ export function ArticleSectionsEditor({
         <p className="text-[length:var(--text-12)] text-muted-foreground">
           Пока нет секций. Добавьте первую — у каждой свой H2 и свои блоки.
         </p>
-        <AddSectionButton onClick={() => insertAt(0)} variant="primary" />
+        <AddSectionButton onClick={() => insertAt(0)} />
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <AddSectionButton onClick={() => insertAt(0)} />
+      <SectionDivider onAddSection={() => insertAt(0)} />
       {sections.map((section, idx) => (
         <div key={section.id} className="flex flex-col gap-3">
           <ArticleSectionRow
@@ -156,43 +160,64 @@ export function ArticleSectionsEditor({
             otherChapters={otherChapters}
             onMoveToChapter={onMoveToChapter}
           />
-          <AddSectionButton onClick={() => insertAt(idx + 1)} />
+          <SectionDivider
+            onAddSection={() => insertAt(idx + 1)}
+            onSplitChapter={
+              // Между секциями: idx — последняя «над», idx+1 — первая «под».
+              // Сплит делаем по позиции idx+1 (всё с idx+1 уходит в новую главу).
+              // Не показываем после последней секции (новая глава была бы пустой).
+              onSplitChapterAt && idx < sections.length - 1
+                ? () => onSplitChapterAt(idx + 1)
+                : undefined
+            }
+          />
         </div>
       ))}
     </div>
   );
 }
 
-function AddSectionButton({
-  onClick,
-  variant = "divider",
+function SectionDivider({
+  onAddSection,
+  onSplitChapter,
 }: {
-  onClick: () => void;
-  variant?: "divider" | "primary";
+  onAddSection: () => void;
+  onSplitChapter?: () => void;
 }) {
-  if (variant === "primary") {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className="flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-[length:var(--text-12)] font-medium text-foreground transition-colors hover:bg-muted"
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Добавить секцию
-      </button>
-    );
-  }
   return (
-    <div className="group/addsection relative flex h-7 items-center justify-center">
-      <div className="absolute left-0 right-0 h-px bg-border transition-colors group-hover/addsection:bg-[var(--rm-violet-100)]/60" />
+    <div className="group/divider relative flex h-7 items-center justify-center gap-1.5">
+      <div className="absolute left-0 right-0 h-px bg-border transition-colors group-hover/divider:bg-[var(--rm-violet-100)]/60" />
+      {onSplitChapter && (
+        <button
+          type="button"
+          onClick={onSplitChapter}
+          className="relative z-10 flex items-center gap-1 rounded-sm border border-border bg-background px-2 py-1 text-[length:var(--text-11)] font-medium text-muted-foreground opacity-60 transition-all hover:border-[var(--rm-violet-100)] hover:bg-background hover:text-[var(--rm-violet-100)] hover:opacity-100"
+        >
+          <Scissors className="h-3 w-3" />
+          Начать новую главу
+        </button>
+      )}
       <button
         type="button"
-        onClick={onClick}
+        onClick={onAddSection}
         className="relative z-10 flex items-center gap-1 rounded-sm border border-border bg-background px-2 py-1 text-[length:var(--text-11)] font-medium text-muted-foreground opacity-60 transition-all hover:border-[var(--rm-violet-100)] hover:bg-background hover:text-[var(--rm-violet-100)] hover:opacity-100"
       >
         <Plus className="h-3 w-3" />
         Добавить секцию
       </button>
     </div>
+  );
+}
+
+function AddSectionButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-[length:var(--text-12)] font-medium text-foreground transition-colors hover:bg-muted"
+    >
+      <Plus className="h-3.5 w-3.5" />
+      Добавить секцию
+    </button>
   );
 }

@@ -328,6 +328,11 @@ function ArticleEditorInner({
                 articleSlug={article.slug}
                 chapters={article.chapters ?? []}
                 onChange={(next) => update("chapters", next)}
+                onDisableMultiPage={() => {
+                  const flat = (article.chapters ?? []).flatMap((ch) => ch.sections);
+                  update("multiPage", false);
+                  update("body", flat);
+                }}
               />
             ) : (
               <ArticleSectionsEditor
