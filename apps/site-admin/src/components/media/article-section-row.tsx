@@ -117,7 +117,7 @@ export function ArticleSectionRow({
   const navPreview = navLabel.trim() || title.trim();
 
   return (
-    <section className="group/section relative rounded-sm border border-border bg-[color:var(--rm-gray-1)]/20 p-4">
+    <section className="group/section relative rounded-sm border border-border bg-background p-4">
       {/* Шапка секции: бейдж, инпут «В навигации», подсказка и действия — в одну строку */}
       <header className="mb-2 flex items-center gap-3">
         <span className="shrink-0 flex h-6 items-center gap-1.5 rounded-sm border border-border bg-[color:var(--rm-gray-1)] px-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] font-medium uppercase tracking-[0.02em] text-muted-foreground">

@@ -387,8 +387,8 @@ function ChapterRow({
     () => chapter.slug === slugify(chapter.navLabel),
   );
   return (
-    <div className="rounded-sm border border-border">
-      <div className="flex items-center gap-2 border-b border-border bg-[color:var(--rm-gray-1)]/40 px-3 py-2">
+    <div className="rounded-sm border border-border bg-card">
+      <div className="flex items-center gap-2 border-b border-border px-3 py-2">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}

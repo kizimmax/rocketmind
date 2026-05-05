@@ -132,6 +132,12 @@ export default async function ArticleChapterPage({
         <SimilarArticlesCarousel articles={similarArticles} />
       )}
       <PageBottom />
+      {/* Спейсер под фиксированный бар MobileChapterTabs (64px + safe-area). */}
+      <div
+        aria-hidden
+        className="h-[64px] md:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      />
     </>
   );
 }

@@ -24,6 +24,7 @@ import {
   FilePreviewModal,
   type FilePreviewFile,
 } from "./file-preview-modal";
+import { MobileChapterTabs } from "./mobile-chapter-tabs";
 import {
   SectionBody,
   SectionMobile,
@@ -1109,6 +1110,19 @@ export function ArticlePageClient({
         file={previewFile}
         onClose={() => setPreviewFile(null)}
       />
+
+      {isMultiPage && currentChapterId && (
+        <MobileChapterTabs
+          articleSlug={article.slug}
+          currentChapterId={currentChapterId}
+          basePath={BASE}
+          chapters={article.chapters.map((ch) => ({
+            id: ch.id,
+            slug: ch.slug,
+            label: ch.navLabel.trim() || ch.slug,
+          }))}
+        />
+      )}
     </article>
     </TooltipProvider>
   );
