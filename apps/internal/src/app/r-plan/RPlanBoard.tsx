@@ -628,6 +628,20 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
   // ── Dynamic column count based on container width ──────────────────────────
   const containerRef = useRef<HTMLDivElement>(null);
   const [fittingCount, setFittingCount] = useState(VISIBLE_COUNT);
+
+  // ── Sticky header compact mode (collapses to 1 line on scroll) ─────────────
+  const [headerCompact, setHeaderCompact] = useState(false);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const top = el.getBoundingClientRect().top;
+      setHeaderCompact(top <= 0);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -1466,9 +1480,9 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
 
               {/* ═══ ZOOM OUT — Header (weeks) ═══ */}
               {(isMobile || zoomMode === 'out') && (
-              <div className="flex border-b border-border bg-muted/40 sticky top-0 z-10">
+              <div className="flex border-b border-border bg-background sticky top-0 z-10">
                 <div
-                  className="flex-shrink-0 px-2 py-3 md:px-4 border-r border-border text-[length:var(--text-12)] font-mono uppercase tracking-wide text-muted-foreground bg-muted/40"
+                  className={`flex-shrink-0 px-2 md:px-4 border-r border-border text-[length:var(--text-12)] font-mono uppercase tracking-wide text-muted-foreground bg-background transition-[padding] duration-150 ${headerCompact ? 'py-1.5' : 'py-3'}`}
                   style={isMobile ? { width: '30%', minWidth: 0 } : { width: COL_W, minWidth: COL_W }}
                 >
                   Раздел
@@ -1480,10 +1494,10 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                   return (
                     <div
                       key={w.id}
-                      className="group/week flex-1 px-2 py-2 md:px-3 md:py-2.5 border-r border-border last:border-r-0 relative overflow-hidden"
+                      className={`group/week flex-1 px-2 md:px-3 border-r border-border last:border-r-0 relative overflow-hidden transition-[padding] duration-150 ${headerCompact ? 'py-1 md:py-1.5' : 'py-2 md:py-2.5'}`}
                       style={{
                         minWidth: 0,
-                        backgroundColor: isCurrent ? cssVar(effColor, '900') : undefined,
+                        backgroundColor: isCurrent ? cssVar(effColor, '900') : 'var(--background)',
                         borderTop: `2px solid ${cssVar(effColor, '100')}`,
                       }}
                     >
@@ -1510,12 +1524,14 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                           </Tooltip>
                         </span>
                       </div>
-                      {/* Row 2: theme/summary */}
-                      <div className="mt-1">
-                        <p className="text-[length:var(--text-12)] leading-snug min-w-0" style={{ color: cssVar(effColor, 'fg-subtle') }}>
-                          <EditableText value={w.theme} onChange={v => { updateWeekTheme(w.id, v); setSummaryReady(null); }} startEditing={summaryReady === w.id} placeholder="саммари" />
-                        </p>
-                      </div>
+                      {/* Row 2: theme/summary — hidden when scrolled (compact) */}
+                      {!headerCompact && (
+                        <div className="mt-1">
+                          <p className="text-[length:var(--text-12)] leading-snug min-w-0" style={{ color: cssVar(effColor, 'fg-subtle') }}>
+                            <EditableText value={w.theme} onChange={v => { updateWeekTheme(w.id, v); setSummaryReady(null); }} startEditing={summaryReady === w.id} placeholder="саммари" />
+                          </p>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1529,9 +1545,9 @@ export default function RPlanBoard({ dbPath, trackName, trackColor = 'yellow', s
                 const awIsCurrent = visibleStartIdx === currentWeekIdx;
                 const awColor = getEffectiveColor(visibleStartIdx);
                 return (
-                  <div className="flex border-b border-border bg-muted/40 sticky top-0 z-10">
+                  <div className="flex border-b border-border bg-background sticky top-0 z-10">
                     <div
-                      className="flex-shrink-0 px-4 py-3 border-r border-border text-[length:var(--text-12)] font-mono uppercase tracking-wide text-muted-foreground bg-muted/40"
+                      className={`flex-shrink-0 px-4 border-r border-border text-[length:var(--text-12)] font-mono uppercase tracking-wide text-muted-foreground bg-background transition-[padding] duration-150 ${headerCompact ? 'py-1.5' : 'py-3'}`}
                       style={{ width: COL_W, minWidth: COL_W }}
                     >
                       Раздел

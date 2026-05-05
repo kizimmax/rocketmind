@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { parseDataUrl, saveBuffer, deleteFilesWithBase, writeConfig, readConfig } from "@/lib/storage";
 import { createAutoRedirect } from "@/lib/redirects";
 
+export const dynamic = "force-dynamic";
+
 const IMAGE_EXTS = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif"];
 const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".m4a", ".webm"];
 
@@ -262,8 +264,4 @@ export async function DELETE(
 
   await prisma.page.delete({ where: { id: page.id } });
   return NextResponse.json({ ok: true });
-}
-
-export function generateStaticParams() {
-  return [];
 }
