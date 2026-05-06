@@ -4387,7 +4387,8 @@ function marginTopClass(prev, curr) {
   return "mt-[16px]";
 }
 var LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g;
-function renderInline(text, glossary) {
+var GLOSSARY_URL_PREFIX = "glossary:";
+function renderInline(text, glossary, slugLookup) {
   const used = /* @__PURE__ */ new Set();
   const nodes = [];
   let last = 0;
@@ -4397,17 +4398,33 @@ function renderInline(text, glossary) {
     if (match.index > last) {
       pushPlain(nodes, text.slice(last, match.index), `t-${last}`, glossary, used);
     }
-    nodes.push(
-      /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
-        "a",
-        {
-          href: match[2],
-          className: "underline underline-offset-2 transition-colors hover:text-[color:var(--rm-yellow-100)]",
-          children: match[1]
-        },
-        `a-${match.index}`
-      )
-    );
+    const label = match[1];
+    const url = match[2];
+    if (url.startsWith(GLOSSARY_URL_PREFIX)) {
+      const slug = url.slice(GLOSSARY_URL_PREFIX.length);
+      const entry = slugLookup?.get(slug) ?? null;
+      if (entry) {
+        nodes.push(
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(GlossaryLink, { entry, matched: label }, `gm-${match.index}`)
+        );
+      } else {
+        nodes.push(
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(React16.Fragment, { children: label }, `gm-${match.index}`)
+        );
+      }
+    } else {
+      nodes.push(
+        /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+          "a",
+          {
+            href: url,
+            className: "underline underline-offset-2 transition-colors hover:text-[color:var(--rm-yellow-100)]",
+            children: label
+          },
+          `a-${match.index}`
+        )
+      );
+    }
     last = match.index + match[0].length;
   }
   if (last < text.length) {
@@ -4526,7 +4543,8 @@ function H4({ text, className }) {
 function Paragraph({
   text,
   className,
-  glossary
+  glossary,
+  slugLookup
 }) {
   return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
     "p",
@@ -4535,7 +4553,7 @@ function Paragraph({
         "text-[length:var(--text-18)] leading-[1.2] text-[color:var(--rm-gray-fg-main)]",
         className
       ),
-      children: renderInline(text, glossary)
+      children: renderInline(text, glossary, slugLookup)
     }
   );
 }
@@ -4968,7 +4986,12 @@ function ListCardGrid({
     }
   );
 }
-function Quote({ text, className }) {
+function Quote({
+  text,
+  className,
+  glossary,
+  slugLookup
+}) {
   return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
     "blockquote",
     {
@@ -4981,7 +5004,7 @@ function Quote({ text, className }) {
         "md:text-[length:var(--text-24)] md:leading-[1.16]",
         className
       ),
-      children: text
+      children: renderInline(text, glossary, slugLookup)
     }
   );
 }
@@ -4996,6 +5019,12 @@ function ArticleBody({
     () => glossary && glossary.index.length > 0 ? buildGlossaryRegex(glossary.index, glossary.excludeSlug) : null,
     [glossary]
   );
+  const slugLookup = React16.useMemo(() => {
+    if (!glossary || glossary.index.length === 0) return null;
+    const m = /* @__PURE__ */ new Map();
+    for (const e of glossary.index) m.set(e.slug, e);
+    return m;
+  }, [glossary]);
   return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: cn("flex flex-col items-stretch", className), ...props, children: blocks.map((block, i) => {
     const prev = i === 0 ? null : blocks[i - 1].type;
     const mt = marginTopClass(prev, block.type);
@@ -5078,12 +5107,22 @@ function ArticleBody({
           {
             text,
             className: mt,
-            glossary: compiledGlossary
+            glossary: compiledGlossary,
+            slugLookup
           },
           block.id
         );
       case "quote":
-        return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(Quote, { text, className: mt }, block.id);
+        return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+          Quote,
+          {
+            text,
+            className: mt,
+            glossary: compiledGlossary,
+            slugLookup
+          },
+          block.id
+        );
       default:
         return null;
     }
@@ -7303,7 +7342,7 @@ function FormModalBody({
     const hasGift = gift && gift.url.trim();
     return /* @__PURE__ */ (0, import_jsx_runtime61.jsxs)("div", { className: "flex flex-col items-center gap-7 py-8 text-center", children: [
       /* @__PURE__ */ (0, import_jsx_runtime61.jsx)("div", { className: "flex h-14 w-14 items-center justify-center rounded-full border border-border", children: /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(import_lucide_react13.Check, { className: "h-6 w-6 text-foreground", strokeWidth: 2 }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime61.jsx)("p", { className: "h2 text-foreground", children: form.successMessage || "\u0417\u0430\u044F\u0432\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0430. \u041C\u044B \u0441\u0432\u044F\u0436\u0435\u043C\u0441\u044F \u0441 \u0432\u0430\u043C\u0438 \u0432 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0435 \u0432\u0440\u0435\u043C\u044F." }),
+      /* @__PURE__ */ (0, import_jsx_runtime61.jsx)("p", { className: "h3 text-foreground", children: form.successMessage || "\u0417\u0430\u044F\u0432\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0430. \u041C\u044B \u0441\u0432\u044F\u0436\u0435\u043C\u0441\u044F \u0441 \u0432\u0430\u043C\u0438 \u0432 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0435 \u0432\u0440\u0435\u043C\u044F." }),
       hasGift && /* @__PURE__ */ (0, import_jsx_runtime61.jsxs)(
         "a",
         {

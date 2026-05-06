@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
+  BookMarked,
   Bold,
   ChevronDown,
   CornerDownLeft,
@@ -17,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ArticleBodyBlockType } from "@/lib/types";
+import { useAdminStore } from "@/lib/store";
 import { BlockTypeMenu } from "./block-type-menu";
 import { detectListMode, transformLines, type ListMode } from "./list-helpers";
 
@@ -178,6 +180,27 @@ export function ArticleBodyTextarea({
       t.setSelectionRange(pos + 1, pos + 1);
     });
   }, [value, onChange]);
+
+  const insertGlossaryLink = useCallback(
+    (slug: string) => {
+      if (!selRange) return;
+      const { start, end } = selRange;
+      const selected = value.slice(start, end);
+      if (!selected) return;
+      const replacement = `[${selected}](glossary:${slug})`;
+      const next = value.slice(0, start) + replacement + value.slice(end);
+      onChange(next);
+      requestAnimationFrame(() => {
+        const el = taRef.current;
+        if (!el) return;
+        el.focus();
+        const s = start + 1;
+        const e = s + selected.length;
+        el.setSelectionRange(s, e);
+      });
+    },
+    [selRange, value, onChange],
+  );
 
   const insertLink = useCallback(() => {
     if (!selRange) return;
@@ -367,6 +390,12 @@ export function ArticleBodyTextarea({
           >
             нераз.&nbsp;пробел
           </ToolBtn>
+          {(blockType === "paragraph" || blockType === "quote") && (
+            <TermPickerButton
+              disabled={!selRange}
+              onPick={insertGlossaryLink}
+            />
+          )}
           <ToolBtn onClick={insertNewline} title="Перенос строки внутри блока">
             <CornerDownLeft className="mr-1 h-3 w-3" /> перенос
           </ToolBtn>
@@ -465,6 +494,110 @@ function TabBtn({
     >
       {children}
     </button>
+  );
+}
+
+function TermPickerButton({
+  disabled,
+  onPick,
+}: {
+  disabled?: boolean;
+  onPick: (slug: string) => void;
+}) {
+  const { glossaryTerms } = useAdminStore();
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Закрывать popover по клику вне (toolbar parent останавливает свой mouseDown,
+  // поэтому отдельный listener на document).
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
+  // Только опубликованные. Сортировка по title (RU локаль).
+  const terms = useMemo(() => {
+    const published = glossaryTerms.filter((t) => t.status === "published");
+    published.sort((a, b) => a.title.localeCompare(b.title, "ru"));
+    return published;
+  }, [glossaryTerms]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase("ru-RU");
+    if (!q) return terms;
+    return terms.filter((t) => t.title.toLocaleLowerCase("ru-RU").includes(q));
+  }, [terms, query]);
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          if (!disabled) {
+            setOpen((v) => !v);
+            setQuery("");
+            requestAnimationFrame(() => inputRef.current?.focus());
+          }
+        }}
+        title="Привязать термин из глоссария"
+        className="flex h-6 items-center justify-center rounded-sm px-1.5 text-[length:var(--text-11)] font-medium text-foreground transition-colors enabled:hover:bg-muted disabled:opacity-40"
+      >
+        <BookMarked className="mr-1 h-3 w-3" /> термин
+        <ChevronDown className="ml-0.5 h-3 w-3 opacity-60" />
+      </button>
+      {open && (
+        <div
+          className="absolute left-0 top-[calc(100%+4px)] z-40 flex w-64 flex-col rounded-sm border border-border bg-popover shadow-md"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div className="border-b border-border p-1.5">
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setOpen(false);
+                }
+              }}
+              placeholder="Поиск термина…"
+              className="h-7 w-full rounded-sm border border-border bg-background px-2 text-[length:var(--text-12)] outline-none focus:border-foreground/40"
+            />
+          </div>
+          <div className="max-h-64 overflow-y-auto p-1">
+            {filtered.length === 0 ? (
+              <div className="px-2 py-2 text-[length:var(--text-11)] text-muted-foreground">
+                {terms.length === 0 ? "Нет терминов" : "Ничего не найдено"}
+              </div>
+            ) : (
+              filtered.map((t) => (
+                <button
+                  key={t.slug}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    onPick(t.slug);
+                    setOpen(false);
+                  }}
+                  className="block w-full truncate rounded-sm px-2 py-1.5 text-left text-[length:var(--text-12)] text-foreground hover:bg-muted"
+                  title={t.title}
+                >
+                  {t.title}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

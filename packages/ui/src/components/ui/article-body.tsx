@@ -134,12 +134,14 @@ function marginTopClass(
 // ── Inline markdown-link parser for paragraphs ──────────────────────────────
 
 const LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/g
+const GLOSSARY_URL_PREFIX = "glossary:"
 
 type CompiledGlossary = ReturnType<typeof buildGlossaryRegex>
 
 function renderInline(
   text: string,
   glossary: CompiledGlossary,
+  slugLookup: Map<string, GlossaryIndexEntry> | null,
 ): React.ReactNode[] {
   // Per-paragraph used-set: slug подсвечивается только в первом своём
   // вхождении в этом абзаце.
@@ -152,15 +154,34 @@ function renderInline(
     if (match.index > last) {
       pushPlain(nodes, text.slice(last, match.index), `t-${last}`, glossary, used)
     }
-    nodes.push(
-      <a
-        key={`a-${match.index}`}
-        href={match[2]}
-        className="underline underline-offset-2 transition-colors hover:text-[color:var(--rm-yellow-100)]"
-      >
-        {match[1]}
-      </a>,
-    )
+    const label = match[1]
+    const url = match[2]
+    if (url.startsWith(GLOSSARY_URL_PREFIX)) {
+      // Ручная привязка термина: [текст](glossary:slug). Если slug найден в
+      // индексе — рендерим GlossaryLink (тот же стиль, что у автоподстановки).
+      // Если термин удалён — показываем plain text без ссылки.
+      const slug = url.slice(GLOSSARY_URL_PREFIX.length)
+      const entry = slugLookup?.get(slug) ?? null
+      if (entry) {
+        nodes.push(
+          <GlossaryLink key={`gm-${match.index}`} entry={entry} matched={label} />,
+        )
+      } else {
+        nodes.push(
+          <React.Fragment key={`gm-${match.index}`}>{label}</React.Fragment>,
+        )
+      }
+    } else {
+      nodes.push(
+        <a
+          key={`a-${match.index}`}
+          href={url}
+          className="underline underline-offset-2 transition-colors hover:text-[color:var(--rm-yellow-100)]"
+        >
+          {label}
+        </a>,
+      )
+    }
     last = match.index + match[0].length
   }
   if (last < text.length) {
@@ -320,10 +341,12 @@ function Paragraph({
   text,
   className,
   glossary,
+  slugLookup,
 }: {
   text: string
   className?: string
   glossary: CompiledGlossary
+  slugLookup: Map<string, GlossaryIndexEntry> | null
 }) {
   return (
     <p
@@ -332,7 +355,7 @@ function Paragraph({
         className,
       )}
     >
-      {renderInline(text, glossary)}
+      {renderInline(text, glossary, slugLookup)}
     </p>
   )
 }
@@ -957,7 +980,17 @@ export function ListCardGrid({
   )
 }
 
-function Quote({ text, className }: { text: string; className?: string }) {
+function Quote({
+  text,
+  className,
+  glossary,
+  slugLookup,
+}: {
+  text: string
+  className?: string
+  glossary: CompiledGlossary
+  slugLookup: Map<string, GlossaryIndexEntry> | null
+}) {
   return (
     <blockquote
       className={cn(
@@ -970,7 +1003,7 @@ function Quote({ text, className }: { text: string; className?: string }) {
         className,
       )}
     >
-      {text}
+      {renderInline(text, glossary, slugLookup)}
     </blockquote>
   )
 }
@@ -1003,6 +1036,15 @@ export function ArticleBody({
         : null,
     [glossary],
   )
+
+  // Lookup по slug — для ручных привязок [текст](glossary:slug). Не учитывает
+  // excludeSlug: автор статьи мог намеренно сослаться на сам термин.
+  const slugLookup = React.useMemo(() => {
+    if (!glossary || glossary.index.length === 0) return null
+    const m = new Map<string, GlossaryIndexEntry>()
+    for (const e of glossary.index) m.set(e.slug, e)
+    return m
+  }, [glossary])
 
   return (
     <div className={cn("flex flex-col items-stretch", className)} {...props}>
@@ -1107,10 +1149,19 @@ export function ArticleBody({
                 text={text}
                 className={mt}
                 glossary={compiledGlossary}
+                slugLookup={slugLookup}
               />
             )
           case "quote":
-            return <Quote key={block.id} text={text} className={mt} />
+            return (
+              <Quote
+                key={block.id}
+                text={text}
+                className={mt}
+                glossary={compiledGlossary}
+                slugLookup={slugLookup}
+              />
+            )
           default:
             return null
         }
