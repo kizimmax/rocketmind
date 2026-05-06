@@ -746,7 +746,7 @@ export function HeroSectionClient({ logos, title, pikCaption, rotatingLines, nav
                 </p>
               </div>
 
-              <MobileNav />
+              <MobileNav nav={nav} />
             </div>
           </motion.div>
 
