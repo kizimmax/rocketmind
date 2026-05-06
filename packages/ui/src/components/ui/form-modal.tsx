@@ -215,7 +215,7 @@ function FormModalBody({
           <Check className="h-6 w-6 text-foreground" strokeWidth={2} />
         </div>
 
-        <p className="h2 text-foreground">
+        <p className="h3 text-foreground">
           {form.successMessage ||
             "Заявка получена. Мы свяжемся с вами в ближайшее время."}
         </p>
