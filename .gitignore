@@ -19,3 +19,13 @@ apps/site/public/media/uploads/
 
 # Локальный dev-стек на Docker (uploads + config контейнеров)
 .docker-data/
+
+# Dev-only: sync-admin-public.mjs дублирует static в admin/public; в репо
+# источник истины — apps/site/public/, дубли в admin/public — кэш.
+apps/site-admin/public/images
+apps/site-admin/public/ai-mascots
+apps/site-admin/public/clip-logos
+apps/site-admin/public/media
+apps/site-admin/public/forms
+apps/site-admin/public/avatars
+apps/site-admin/public/partners

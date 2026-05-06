@@ -41,6 +41,7 @@ services:
         cd /app/apps/site-admin && npx prisma migrate deploy &&
         cd /app && node scripts/seed-admin.mjs &&
         node scripts/seed-unique-pages.mjs &&
+        node scripts/sync-admin-public.mjs &&
         npm run dev --workspace=apps/site-admin
       "
     volumes:
