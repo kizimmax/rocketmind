@@ -63,6 +63,9 @@ function LeftImage({
       src={src}
       alt={alt}
       fill
+      // priority — hero-фото секции «О Rocketmind» обычно LCP, без него Next
+      // ругается в консоли о Web Vitals и грузит лениво.
+      priority
       unoptimized={src.startsWith("data:")}
       className="object-cover object-top"
       sizes="(min-width: 1512px) 302px, 25vw"

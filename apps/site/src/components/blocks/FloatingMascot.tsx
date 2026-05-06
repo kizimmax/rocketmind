@@ -165,8 +165,8 @@ export function FloatingMascot({ onOpenChat, hidden, flyUp }: FloatingMascotProp
         <Image
           src={`${BASE_PATH}/ai-mascots/alex/${showBubble ? "alex_pointer_2" : "alex_base"}.png`}
           alt="Алекс"
-          width={56}
-          height={56}
+          width={57}
+          height={57}
           className="relative h-[57px] w-[57px] object-contain"
         />
       </button>

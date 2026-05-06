@@ -16,12 +16,17 @@
 | 6 | BUG-016 | medium | data | Бэк принимает кириллические slug в /api/articles, /api/glossary | 🟢 Готово локально |
 | 7 | BUG-015 | medium | functional | `/api/articles/{slug}/uploads` не поддерживает `kind:audio` | 🟢 Готово локально |
 | 8 | BUG-019 | medium | security | PUT `/api/pages/...` отдаёт сырой stack trace на invalid JSON | 🟢 Готово локально |
-| 9 | BUG-018 | cosmetic | api | BMP даёт 400 «invalid dataUrl» вместо 415 «unsupported mime» | ⏸ Отложено (потребует API-change в parseDataUrl, прибыль низкая — фронт-контроль уже не даёт BMP) |
+| 9 | BUG-018 | cosmetic | api | BMP даёт 400 «invalid dataUrl» вместо 415 «unsupported mime» | 🟢 Готово локально (extractDataUrlMime + 415 в /api/articles/[slug]/uploads) |
 | 10 | BUG-003 | high | SEO | Термины глоссария не в sitemap | 🟢 Готово локально |
 | 11 | BUG-004 | high | SEO | Рассинхрон baseURL между sitemap/robots/admin | 🟢 Готово локально (env SITE_URL + storage в SystemConfig) |
 | 12 | BUG-005 | medium | SEO | Sitemap не содержит /products/{cat} | 🟢 Уже было исправлено в коде, верифицировано |
 | 13 | BUG-012 | medium | functional | «Регенерировать sitemap» дублирует устаревший URL | 🟢 Готово локально (унификация storage) |
-| 14-19 | — | medium/cosmetic | ux / a11y / perf | BUG-006/007/008/009/010/011 (cosmetic UX, accessibility, perf hints) | ⏸ Отложено до отдельной итерации с design-review |
+| 14 | BUG-008 | medium | functional | /media/glossary в админке выдаёт «Статья не найдена» | 🟢 Redirect на /media?tab=glossary |
+| 15 | BUG-006 | medium | UI | Глоссарий показывает фильтры «Урок»/«Кейс» от статей | 🟢 Системные теги отфильтрованы |
+| 16 | BUG-007 | medium | a11y | Иконочные кнопки на page-card без aria-label | 🟢 Добавлены aria-label + title |
+| 17 | BUG-009 | cosmetic | console | Aspect-ratio warning на мascot-картинках | 🟢 Согласовали props=CSS dim |
+| 18 | BUG-010 | cosmetic | perf | LCP-фото Alex без priority | 🟢 priority на hero-Image |
+| 19 | BUG-011 | medium | console | 404-resource на /cta-forms | 🟢 Не воспроизводится (закрыт ранним фиксом) |
 
 **Легенда:** 🔴 в работе · 🟡 ждёт ответа от тебя · 🟢 готово локально · ⚪ не начато · ✅ запушено
 

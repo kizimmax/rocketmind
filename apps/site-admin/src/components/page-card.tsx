@@ -117,13 +117,15 @@ function PageActions({
       <Button
         variant="ghost"
         size="icon-sm"
+        aria-label="Редактировать страницу"
+        title="Редактировать страницу"
         onClick={() => router.push(`/pages/${page.id}`)}
       >
         <Pencil className="h-3.5 w-3.5" />
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm">
+          <Button variant="ghost" size="icon-sm" aria-label="Действия со страницей" title="Действия">
             <MoreHorizontal className="h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
@@ -544,7 +546,7 @@ function SyntheticPageCard({
           <span className="text-[length:var(--text-10)] font-mono text-muted-foreground/40">—</span>
         </td>
         <td className="py-2 pr-3 pl-1 align-middle" onClick={(e) => e.stopPropagation()}>
-          <Button variant="ghost" size="icon-sm" onClick={open}>
+          <Button variant="ghost" size="icon-sm" aria-label="Открыть редактор" title="Открыть редактор" onClick={open}>
             <Pencil className="h-3.5 w-3.5" />
           </Button>
         </td>

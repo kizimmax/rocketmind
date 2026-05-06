@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseDataUrl, saveBuffer, randomHex } from "@/lib/storage";
+import { parseDataUrl, saveBuffer, randomHex, extractDataUrlMime } from "@/lib/storage";
 
 const FILE_MIME_TO_EXT: Record<string, string> = {
   "application/pdf": ".pdf",
@@ -70,7 +70,12 @@ export async function POST(
   }
 
   const parsed = parseDataUrl(rec.dataUrl);
-  if (!parsed) return NextResponse.json({ error: "invalid dataUrl" }, { status: 400 });
+  if (!parsed) {
+    // Различаем «формат битый» (400) и «MIME неизвестен» (415).
+    const mime = extractDataUrlMime(rec.dataUrl);
+    if (mime) return NextResponse.json({ error: `unsupported mime: ${mime}` }, { status: 415 });
+    return NextResponse.json({ error: "invalid dataUrl" }, { status: 400 });
+  }
 
   const { mime, buffer } = parsed;
   const maxBytes = kind === "file" ? MAX_FILE_BYTES

@@ -77,6 +77,15 @@ export const IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif", ".a
 
 export function isImageMime(mime: string): boolean { return IMAGE_MIMES.has(mime); }
 
+/** Достаёт MIME из data URL, не проверяя поддерживается ли он. Используется,
+ *  чтобы отличить «битый формат строки» (400) от «формат верный, но MIME не
+ *  поддерживается» (415). */
+export function extractDataUrlMime(s: unknown): string | null {
+  if (typeof s !== "string") return null;
+  const m = s.match(/^data:([^;]+);base64,/);
+  return m ? m[1] : null;
+}
+
 export function publicUrlFor(filePath: string): string {
   const normalized = filePath.split(path.sep).join("/");
   return `/uploads/${normalized}`;

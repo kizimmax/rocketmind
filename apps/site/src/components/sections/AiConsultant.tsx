@@ -364,8 +364,8 @@ export function ConsultantInput({
           <Image
             src={`${BASE_PATH}/ai-mascots/alex/alex_base.png`}
             alt="Алекс"
-            width={108}
-            height={108}
+            width={100}
+            height={100}
             className="h-[100px] w-[100px] object-contain"
           />
         </div>
@@ -390,8 +390,8 @@ export function ConsultantInput({
           <Image
             src={`${BASE_PATH}/ai-mascots/alex/alex_base.png`}
             alt="Алекс"
-            width={80}
-            height={80}
+            width={44}
+            height={44}
             className="relative h-[44px] w-[44px] object-contain"
           />
         </div>

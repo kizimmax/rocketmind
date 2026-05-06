@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { useAdminStore } from "@/lib/store";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { GlossaryTerm } from "@/lib/types";
+import { SYSTEM_MEDIA_TAG_IDS } from "@/lib/types";
 
 const STATUS_BADGE: Record<
   string,
@@ -196,30 +197,35 @@ export function GlossaryAdminPanel() {
         </div>
       </div>
 
-      {/* Tag filter */}
-      {mediaTags.length > 0 && (
-        <div className="mb-6 flex flex-wrap gap-2">
-          <Tag
-            size="m"
-            state={filterTagId === "all" ? "active" : "interactive"}
-            as="button"
-            onClick={() => setFilterTagId("all")}
-          >
-            Все термины
-          </Tag>
-          {mediaTags.map((t) => (
+      {/* Tag filter — без системных lesson/case (они применимы только к статьям). */}
+      {(() => {
+        const SYSTEM_IDS = new Set<string>(SYSTEM_MEDIA_TAG_IDS);
+        const glossaryTags = mediaTags.filter((t) => !SYSTEM_IDS.has(t.id));
+        if (glossaryTags.length === 0) return null;
+        return (
+          <div className="mb-6 flex flex-wrap gap-2">
             <Tag
-              key={t.id}
               size="m"
-              state={filterTagId === t.id ? "active" : "interactive"}
+              state={filterTagId === "all" ? "active" : "interactive"}
               as="button"
-              onClick={() => setFilterTagId(t.id)}
+              onClick={() => setFilterTagId("all")}
             >
-              {t.label}
+              Все термины
             </Tag>
-          ))}
-        </div>
-      )}
+            {glossaryTags.map((t) => (
+              <Tag
+                key={t.id}
+                size="m"
+                state={filterTagId === t.id ? "active" : "interactive"}
+                as="button"
+                onClick={() => setFilterTagId(t.id)}
+              >
+                {t.label}
+              </Tag>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* List */}
       {(() => {
