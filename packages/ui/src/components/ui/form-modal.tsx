@@ -61,6 +61,11 @@ export type FormEntity = {
   successMessage: string;
   successGift?: FormSuccessGift | null;
   fields: FormFieldsConfig;
+  /**
+   * Какие из включённых полей обязательны. Если не передано — fallback к
+   * историческому поведению (name + email обязательны, phone/message — нет).
+   */
+  requiredFields?: FormFieldsConfig;
   chips: FormChipsConfig;
   consent: FormConsentConfig;
 };
@@ -267,6 +272,13 @@ function FormModalBody({
 
 // ── DynamicForm ────────────────────────────────────────────────────────────
 
+type FieldKey = "name" | "email" | "phone" | "message";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// 10–15 цифр (с опц. «+» и любыми разделителями).
+const PHONE_RE = /^\+?[\d\s\-()]{10,20}$/;
+
+
 export function DynamicForm({
   form,
   chipPrefilled,
@@ -297,6 +309,8 @@ export function DynamicForm({
   );
   const [consentChecked, setConsentChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
+  const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
 
   // Чипсы рендерятся, если страница передала и `chipsConfig`, и хотя бы одну
   // опцию. Источник правды по multi/label — `chipsConfig` (на блоке «Услуги»).
@@ -317,9 +331,53 @@ export function DynamicForm({
     }
   }
 
+  // Required: если админ не передал requiredFields — fallback к историческому
+  // поведению (name+email обязательны, остальные — нет).
+  const required: FormFieldsConfig = form.requiredFields ?? {
+    name: true,
+    email: true,
+    phone: false,
+    message: false,
+  };
+
+  function validateField(key: FieldKey, value: string): string {
+    const isRequired = form.fields[key] && required[key];
+    const trimmed = value.trim();
+    if (!trimmed) return isRequired ? "Поле обязательно" : "";
+    if (key === "email" && !EMAIL_RE.test(trimmed)) return "Некорректный email";
+    if (key === "phone" && !PHONE_RE.test(trimmed)) return "Некорректный телефон";
+    return "";
+  }
+
+  function handleBlur(key: FieldKey, value: string) {
+    setTouched((t) => ({ ...t, [key]: true }));
+    setErrors((e) => ({ ...e, [key]: validateField(key, value) }));
+  }
+
+  function handleChange(key: FieldKey, value: string) {
+    if (key === "name") setName(value);
+    else if (key === "email") setEmail(value);
+    else if (key === "phone") setPhone(value);
+    else if (key === "message") setMessage(value);
+    if (touched[key]) {
+      setErrors((e) => ({ ...e, [key]: validateField(key, value) }));
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (submitting) return;
+    const values: Record<FieldKey, string> = { name, email, phone, message };
+    const nextErrors: Partial<Record<FieldKey, string>> = {};
+    (Object.keys(values) as FieldKey[]).forEach((k) => {
+      if (!form.fields[k]) return;
+      const err = validateField(k, values[k]);
+      if (err) nextErrors[k] = err;
+    });
+    setErrors(nextErrors);
+    setTouched({ name: true, email: true, phone: true, message: true });
     if (!consentChecked) return;
+    if (Object.keys(nextErrors).length > 0) return;
     setSubmitting(true);
     try {
       const payload: Record<string, unknown> = { formId: form.id };
@@ -333,6 +391,13 @@ export function DynamicForm({
       setSubmitting(false);
     }
   }
+
+  const hasAnyRequiredEmpty =
+    (form.fields.name && required.name && !name.trim()) ||
+    (form.fields.email && required.email && !email.trim()) ||
+    (form.fields.phone && required.phone && !phone.trim()) ||
+    (form.fields.message && required.message && !message.trim());
+  const canSubmit = consentChecked && !hasAnyRequiredEmpty && !submitting;
 
   // Stagger: модалка едет ~500ms снизу. Внутренние элементы стартуют через
   // 180ms (когда контент уже почти на месте) с шагом 70ms — заголовок →
@@ -354,44 +419,54 @@ export function DynamicForm({
 
       <div className="flex flex-col gap-3">
         {form.fields.name && (
-          <Input
-            placeholder="Имя"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            autoComplete="name"
-            style={stage()}
-          />
+          <FieldShell error={errors.name} stage={stage()}>
+            <Input
+              placeholder={required.name ? "Имя*" : "Имя"}
+              value={name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              onBlur={(e) => handleBlur("name", e.target.value)}
+              autoComplete="name"
+              aria-invalid={!!errors.name}
+            />
+          </FieldShell>
         )}
         {form.fields.email && (
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoComplete="email"
-            style={stage()}
-          />
+          <FieldShell error={errors.email} stage={stage()}>
+            <Input
+              type="email"
+              placeholder={required.email ? "Email*" : "Email"}
+              value={email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              onBlur={(e) => handleBlur("email", e.target.value)}
+              autoComplete="email"
+              aria-invalid={!!errors.email}
+            />
+          </FieldShell>
         )}
         {form.fields.phone && (
-          <Input
-            type="tel"
-            placeholder="Телефон"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            autoComplete="tel"
-            style={stage()}
-          />
+          <FieldShell error={errors.phone} stage={stage()}>
+            <Input
+              type="tel"
+              placeholder={required.phone ? "Телефон*" : "Телефон"}
+              value={phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              onBlur={(e) => handleBlur("phone", e.target.value)}
+              autoComplete="tel"
+              aria-invalid={!!errors.phone}
+            />
+          </FieldShell>
         )}
         {form.fields.message && (
-          <Textarea
-            placeholder="Сообщение"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="min-h-[80px]"
-            style={stage()}
-          />
+          <FieldShell error={errors.message} stage={stage()}>
+            <Textarea
+              placeholder={required.message ? "Сообщение*" : "Сообщение"}
+              value={message}
+              onChange={(e) => handleChange("message", e.target.value)}
+              onBlur={(e) => handleBlur("message", e.target.value)}
+              className="min-h-[80px]"
+              aria-invalid={!!errors.message}
+            />
+          </FieldShell>
         )}
 
         {showChips && (
@@ -436,7 +511,7 @@ export function DynamicForm({
 
       <Button
         type="submit"
-        disabled={!consentChecked || submitting}
+        disabled={!canSubmit}
         className="h-12 w-full px-6 text-[length:var(--text-16)] uppercase tracking-[0.04em]"
         style={stage()}
       >
@@ -445,6 +520,29 @@ export function DynamicForm({
           : form.submitButtonText || "Отправить"}
       </Button>
     </form>
+  );
+}
+
+// ── FieldShell — поле + сообщение об ошибке под ним ──────────────────────
+
+function FieldShell({
+  error,
+  stage,
+  children,
+}: {
+  error?: string;
+  stage: React.CSSProperties;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1" style={stage}>
+      {children}
+      {error && (
+        <span className="text-[12px] leading-[1.3] text-destructive">
+          {error}
+        </span>
+      )}
+    </div>
   );
 }
 

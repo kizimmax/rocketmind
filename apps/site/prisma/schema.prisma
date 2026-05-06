@@ -187,6 +187,30 @@ model Redirect {
   @@map("redirects")
 }
 
+// ── Form submissions (lead capture) ─────────────────────────────────────────
+
+model FormSubmission {
+  id        String   @id @default(uuid())
+  formId    String
+  formName  String   @default("")
+  pageUrl   String?
+  data      Json     // {name, phone, email, message, ...}
+  ipAddress String?
+  userAgent String?
+  // Per-channel delivery status: null = disabled, "ok" | "skipped" | "error"
+  bitrix24Status String?
+  bitrix24Error  String?
+  emailStatus    String?
+  emailError     String?
+  telegramStatus String?
+  telegramError  String?
+  createdAt DateTime @default(now())
+
+  @@map("form_submissions")
+  @@index([formId])
+  @@index([createdAt])
+}
+
 // ── Assets (centralized file registry) ────────────────────────────────────────
 
 model Asset {

@@ -2,7 +2,7 @@
 
 import { apiFetch } from "@/lib/api-client";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Upload, X } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, Pencil, Upload, X, FileText, Download, ExternalLink } from "lucide-react";
 import {
   Button,
   Checkbox,
@@ -27,7 +27,9 @@ import type {
   FormEntity,
   EntityScope,
   FormConsentConfig,
+  FormIntegrations,
 } from "@/lib/types";
+import { DEFAULT_INTEGRATIONS } from "@/lib/types";
 import {
   ID_REGEX,
   SCOPE_LABEL,
@@ -262,6 +264,52 @@ export function FormsPanel({
 
 // ── Form Card ───────────────────────────────────────────────────────────────
 
+const IMAGE_URL_RE = /\.(jpe?g|png|webp|gif|svg|avif)$/i;
+function isImageUrl(url: string): boolean {
+  return IMAGE_URL_RE.test(url.split("?")[0]);
+}
+
+function FilePreview({ url, fileName }: { url: string; fileName: string }) {
+  const displayName = fileName || url.split("/").pop() || url;
+  return (
+    <div className="flex items-center gap-2 rounded-sm border border-border bg-[color:var(--rm-gray-1)]/40 p-2">
+      {isImageUrl(url) ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt=""
+          className="h-16 w-16 shrink-0 rounded-sm border border-border bg-[color:var(--rm-gray-1)] object-cover"
+        />
+      ) : (
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-sm border border-border bg-[color:var(--rm-gray-1)]">
+          <FileText className="h-6 w-6 text-muted-foreground" />
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[length:var(--text-12)] text-foreground">{displayName}</div>
+        <div className="truncate text-[length:var(--text-11)] text-muted-foreground">{url}</div>
+      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-foreground/50 hover:text-foreground"
+        title="Открыть в новой вкладке"
+      >
+        <ExternalLink className="h-3.5 w-3.5" />
+      </a>
+      <a
+        href={url}
+        download={fileName || undefined}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-foreground/50 hover:text-foreground"
+        title="Скачать"
+      >
+        <Download className="h-3.5 w-3.5" />
+      </a>
+    </div>
+  );
+}
+
 function FormCard({
   form,
   onPatch,
@@ -290,6 +338,19 @@ function FormCard({
       : "",
   );
   const [giftUploading, setGiftUploading] = useState(false);
+  const [integrations, setIntegrations] = useState<FormIntegrations>(
+    form.integrations ?? DEFAULT_INTEGRATIONS,
+  );
+
+  function patchIntegrations(patch: Partial<FormIntegrations>) {
+    const next: FormIntegrations = {
+      bitrix24: { ...integrations.bitrix24, ...(patch.bitrix24 ?? {}) },
+      email: { ...integrations.email, ...(patch.email ?? {}) },
+      telegram: { ...integrations.telegram, ...(patch.telegram ?? {}) },
+    };
+    setIntegrations(next);
+    onPatch({ integrations: next });
+  }
 
   useEffect(() => setName(form.name), [form.name]);
   useEffect(
@@ -307,6 +368,10 @@ function FormCard({
         : "",
     );
   }, [form.successGift]);
+
+  useEffect(() => {
+    setIntegrations(form.integrations ?? DEFAULT_INTEGRATIONS);
+  }, [form.integrations]);
 
   function saveGift() {
     if (!giftEnabled || !giftUrl.trim()) {
@@ -446,32 +511,48 @@ function FormCard({
                 label="Имя"
                 placeholder="Имя"
                 enabled={form.fields.name}
+                required={form.requiredFields.name}
                 onToggle={(v) =>
                   onPatch({ fields: { ...form.fields, name: v } })
+                }
+                onToggleRequired={(v) =>
+                  onPatch({ requiredFields: { ...form.requiredFields, name: v } })
                 }
               />
               <FieldPreviewRow
                 label="Email"
                 placeholder="Email"
                 enabled={form.fields.email}
+                required={form.requiredFields.email}
                 onToggle={(v) =>
                   onPatch({ fields: { ...form.fields, email: v } })
+                }
+                onToggleRequired={(v) =>
+                  onPatch({ requiredFields: { ...form.requiredFields, email: v } })
                 }
               />
               <FieldPreviewRow
                 label="Телефон"
                 placeholder="Телефон"
                 enabled={form.fields.phone}
+                required={form.requiredFields.phone}
                 onToggle={(v) =>
                   onPatch({ fields: { ...form.fields, phone: v } })
+                }
+                onToggleRequired={(v) =>
+                  onPatch({ requiredFields: { ...form.requiredFields, phone: v } })
                 }
               />
               <FieldPreviewRow
                 label="Сообщение"
                 placeholder="Сообщение"
                 enabled={form.fields.message}
+                required={form.requiredFields.message}
                 onToggle={(v) =>
                   onPatch({ fields: { ...form.fields, message: v } })
+                }
+                onToggleRequired={(v) =>
+                  onPatch({ requiredFields: { ...form.requiredFields, message: v } })
                 }
                 multiline
               />
@@ -615,6 +696,10 @@ function FormCard({
                   )}
                 </div>
 
+                {giftKind === "file" && giftUrl && !giftUploading && (
+                  <FilePreview url={giftUrl} fileName={giftFileName} />
+                )}
+
                 <Input
                   size="sm"
                   placeholder="Текст кнопки (напр. «Скачать гайд»)"
@@ -624,6 +709,117 @@ function FormCard({
                 />
               </div>
             )}
+            </div>
+          </div>
+
+          {/* Integrations — куда уходят заявки. Все три канала независимы (additive). */}
+          <div className="mx-auto w-full max-w-[560px] rounded-md border border-border bg-background p-6 shadow-sm flex flex-col gap-5">
+            <div>
+              <div className="text-[length:var(--text-11)] uppercase tracking-wide text-muted-foreground">
+                Куда отправлять заявки
+              </div>
+              <div className="mt-1 text-[length:var(--text-12)] text-muted-foreground">
+                Заявка всегда сохраняется в БД. Дополнительно можно включить любые из трёх каналов.
+              </div>
+            </div>
+
+            {/* Bitrix24 */}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2">
+                <Switch
+                  size="sm"
+                  checked={integrations.bitrix24.enabled}
+                  onCheckedChange={(v) => patchIntegrations({ bitrix24: { ...integrations.bitrix24, enabled: v } })}
+                  aria-label="Bitrix24"
+                />
+                <div className="text-[length:var(--text-13)] font-medium text-foreground">Bitrix24 (CRM)</div>
+              </div>
+              {integrations.bitrix24.enabled && (
+                <div className="flex flex-col gap-1.5 pl-9">
+                  <Input
+                    size="sm"
+                    placeholder="https://<portal>.bitrix24.ru/rest/<USER_ID>/<TOKEN>/"
+                    value={integrations.bitrix24.webhookUrl}
+                    onChange={(e) => setIntegrations({ ...integrations, bitrix24: { ...integrations.bitrix24, webhookUrl: e.target.value } })}
+                    onBlur={() => patchIntegrations({ bitrix24: integrations.bitrix24 })}
+                  />
+                  <div className="text-[length:var(--text-11)] text-muted-foreground">
+                    URL входящего вебхука. Bitrix → «Разработчикам» → «Прочее» → «Входящий вебхук», права <code>crm</code>.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2">
+                <Switch
+                  size="sm"
+                  checked={integrations.email.enabled}
+                  onCheckedChange={(v) => patchIntegrations({ email: { ...integrations.email, enabled: v } })}
+                  aria-label="Email"
+                />
+                <div className="text-[length:var(--text-13)] font-medium text-foreground">Email</div>
+              </div>
+              {integrations.email.enabled && (
+                <div className="flex flex-col gap-1.5 pl-9">
+                  <Input
+                    size="sm"
+                    placeholder="hello@rocketmind.ru, sales@rocketmind.ru"
+                    value={integrations.email.recipients.join(", ")}
+                    onChange={(e) => setIntegrations({ ...integrations, email: { ...integrations.email, recipients: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) } })}
+                    onBlur={() => patchIntegrations({ email: integrations.email })}
+                  />
+                  <Input
+                    size="sm"
+                    placeholder="Тема письма (опц., по умолчанию «Новая заявка с {форма}»)"
+                    value={integrations.email.subject ?? ""}
+                    onChange={(e) => setIntegrations({ ...integrations, email: { ...integrations.email, subject: e.target.value } })}
+                    onBlur={() => patchIntegrations({ email: integrations.email })}
+                  />
+                  <div className="text-[length:var(--text-11)] text-muted-foreground">
+                    Получателей через запятую. SMTP-настройки задаются в env переменных на сервере.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Telegram */}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2">
+                <Switch
+                  size="sm"
+                  checked={integrations.telegram.enabled}
+                  onCheckedChange={(v) => patchIntegrations({ telegram: { ...integrations.telegram, enabled: v } })}
+                  aria-label="Telegram"
+                />
+                <div className="text-[length:var(--text-13)] font-medium text-foreground">Telegram</div>
+              </div>
+              {integrations.telegram.enabled && (
+                <div className="flex flex-col gap-1.5 pl-9">
+                  <div className="flex gap-1.5">
+                    <Input
+                      size="sm"
+                      placeholder="Chat ID (например -1001234567890)"
+                      value={integrations.telegram.chatId}
+                      onChange={(e) => setIntegrations({ ...integrations, telegram: { ...integrations.telegram, chatId: e.target.value } })}
+                      onBlur={() => patchIntegrations({ telegram: integrations.telegram })}
+                      className="flex-1"
+                    />
+                    <Input
+                      size="sm"
+                      placeholder="Topic ID (опц.)"
+                      value={integrations.telegram.topicId ?? ""}
+                      onChange={(e) => setIntegrations({ ...integrations, telegram: { ...integrations.telegram, topicId: e.target.value } })}
+                      onBlur={() => patchIntegrations({ telegram: integrations.telegram })}
+                      className="w-32"
+                    />
+                  </div>
+                  <div className="text-[length:var(--text-11)] text-muted-foreground">
+                    Bot-токен задаётся в env <code>TELEGRAM_BOT_TOKEN</code> на сервере. Бот должен быть добавлен в чат/группу.
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -643,13 +839,17 @@ function FieldPreviewRow({
   label,
   placeholder,
   enabled,
+  required,
   onToggle,
+  onToggleRequired,
   multiline,
 }: {
   label: string;
   placeholder: string;
   enabled: boolean;
+  required: boolean;
   onToggle: (next: boolean) => void;
+  onToggleRequired: (next: boolean) => void;
   multiline?: boolean;
 }) {
   const previewClass =
@@ -663,9 +863,13 @@ function FieldPreviewRow({
       {multiline ? (
         <div className={`${previewClass} min-h-[60px] py-2.5`}>
           {placeholder}
+          {enabled && required && <span className="ml-0.5 text-foreground">*</span>}
         </div>
       ) : (
-        <div className={`${previewClass} h-10`}>{placeholder}</div>
+        <div className={`${previewClass} h-10`}>
+          {placeholder}
+          {enabled && required && <span className="ml-0.5 text-foreground">*</span>}
+        </div>
       )}
       <label
         className="flex shrink-0 cursor-pointer items-center gap-2 rounded-sm border border-border bg-muted/30 px-2 text-[length:var(--text-11)] text-muted-foreground"
@@ -676,6 +880,19 @@ function FieldPreviewRow({
           onChange={(e) => onToggle(e.currentTarget.checked)}
         />
         {label}
+      </label>
+      <label
+        className={`flex shrink-0 items-center gap-2 rounded-sm border border-border bg-muted/30 px-2 text-[length:var(--text-11)] text-muted-foreground ${
+          enabled ? "cursor-pointer" : "pointer-events-none opacity-50"
+        }`}
+        title={`Сделать поле «${label}» ${required ? "необязательным" : "обязательным"}`}
+      >
+        <Checkbox
+          checked={required}
+          disabled={!enabled}
+          onChange={(e) => onToggleRequired(e.currentTarget.checked)}
+        />
+        обяз.
       </label>
     </div>
   );

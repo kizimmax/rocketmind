@@ -41,6 +41,7 @@ export type FormEntity = {
   successMessage: string;
   successGift?: FormSuccessGift | null;
   fields: FormFieldsConfig;
+  requiredFields: FormFieldsConfig;
   chips: FormChipsConfig;
   consent: FormConsentConfig;
   createdAt: string;
@@ -54,6 +55,16 @@ function parseScope(value: unknown): EntityScope {
 function parseFields(raw: unknown): FormFieldsConfig {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   return { name: r.name !== false, email: r.email !== false, phone: r.phone === true, message: r.message === true };
+}
+
+function parseRequiredFields(raw: unknown): FormFieldsConfig {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  return {
+    name: r.name === undefined ? true : r.name === true,
+    email: r.email === undefined ? true : r.email === true,
+    phone: r.phone === true,
+    message: r.message === true,
+  };
 }
 
 function parseChips(raw: unknown): FormChipsConfig {
@@ -101,6 +112,7 @@ function rowToForm(row: { id: string; name: string; content: unknown; createdAt:
     successMessage: typeof c.successMessage === "string" ? c.successMessage : "",
     successGift: parseSuccessGift(c.successGift),
     fields: parseFields(c.fields),
+    requiredFields: parseRequiredFields(c.requiredFields),
     chips: parseChips(c.chips),
     consent: parseConsent(c.consent),
     createdAt: row.createdAt.toISOString(),

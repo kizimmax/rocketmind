@@ -1301,6 +1301,11 @@ type FormEntity = {
     successMessage: string;
     successGift?: FormSuccessGift | null;
     fields: FormFieldsConfig;
+    /**
+     * Какие из включённых полей обязательны. Если не передано — fallback к
+     * историческому поведению (name + email обязательны, phone/message — нет).
+     */
+    requiredFields?: FormFieldsConfig;
     chips: FormChipsConfig;
     consent: FormConsentConfig;
 };

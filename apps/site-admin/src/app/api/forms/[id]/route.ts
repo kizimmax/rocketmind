@@ -11,6 +11,17 @@ function parseFields(raw: unknown) {
   return { name: r.name !== false, email: r.email !== false, phone: r.phone === true, message: r.message === true };
 }
 
+function parseRequiredFields(raw: unknown) {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  // Default — историческое поведение: name+email обязательны.
+  return {
+    name: r.name === undefined ? true : r.name === true,
+    email: r.email === undefined ? true : r.email === true,
+    phone: r.phone === true,
+    message: r.message === true,
+  };
+}
+
 function parseChips(raw: unknown) {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   return { enabled: r.enabled === true, multi: r.multi === true, label: typeof r.label === "string" ? r.label : "" };
@@ -22,6 +33,33 @@ function parseSuccessGift(raw: unknown) {
   const url = typeof r.url === "string" ? r.url.trim() : "";
   if (!url) return null;
   return { kind: r.kind === "file" ? "file" : "link", url, label: typeof r.label === "string" ? r.label : "" };
+}
+
+function parseIntegrations(raw: unknown) {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const b = (r.bitrix24 ?? {}) as Record<string, unknown>;
+  const e = (r.email ?? {}) as Record<string, unknown>;
+  const t = (r.telegram ?? {}) as Record<string, unknown>;
+  const recipients = Array.isArray(e.recipients)
+    ? e.recipients.filter((x): x is string => typeof x === "string" && x.trim().length > 0).map((x) => x.trim())
+    : [];
+  return {
+    bitrix24: {
+      enabled: b.enabled === true,
+      webhookUrl: typeof b.webhookUrl === "string" ? b.webhookUrl.trim() : "",
+      assignedById: typeof b.assignedById === "number" ? b.assignedById : null,
+    },
+    email: {
+      enabled: e.enabled === true,
+      recipients,
+      subject: typeof e.subject === "string" ? e.subject : "",
+    },
+    telegram: {
+      enabled: t.enabled === true,
+      chatId: typeof t.chatId === "string" ? t.chatId.trim() : "",
+      topicId: typeof t.topicId === "string" ? t.topicId.trim() : "",
+    },
+  };
 }
 
 function parseConsent(raw: unknown) {
@@ -70,8 +108,10 @@ export async function PUT(
         successMessage: typeof body.successMessage === "string" ? body.successMessage : "",
         successGift: parseSuccessGift(body.successGift),
         fields: parseFields(body.fields),
+        requiredFields: parseRequiredFields(body.requiredFields),
         chips: parseChips(body.chips),
         consent: parseConsent(body.consent),
+        integrations: parseIntegrations(body.integrations),
       },
     },
   });

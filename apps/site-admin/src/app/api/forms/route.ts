@@ -7,8 +7,42 @@ function parseScope(v: unknown): Scope {
 }
 
 const DEFAULT_FIELDS = { name: true, email: true, phone: false, message: true };
+/** Историческое поведение: required был хардкодом на name+email. Сохраняем. */
+const DEFAULT_REQUIRED_FIELDS = { name: true, email: true, phone: false, message: false };
 const DEFAULT_CHIPS = { enabled: false, multi: false, label: "Тема обращения" };
 const DEFAULT_CONSENT = { text: "Я соглашаюсь с {links} и даю согласие на обработку персональных данных.", links: [] };
+const DEFAULT_INTEGRATIONS = {
+  bitrix24: { enabled: false, webhookUrl: "", assignedById: null as number | null },
+  email: { enabled: false, recipients: [] as string[], subject: "" },
+  telegram: { enabled: false, chatId: "", topicId: "" },
+};
+
+function mergeIntegrations(raw: unknown) {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const b = (r.bitrix24 ?? {}) as Record<string, unknown>;
+  const e = (r.email ?? {}) as Record<string, unknown>;
+  const t = (r.telegram ?? {}) as Record<string, unknown>;
+  const recipients = Array.isArray(e.recipients)
+    ? e.recipients.filter((x): x is string => typeof x === "string")
+    : [];
+  return {
+    bitrix24: {
+      enabled: b.enabled === true,
+      webhookUrl: typeof b.webhookUrl === "string" ? b.webhookUrl : "",
+      assignedById: typeof b.assignedById === "number" ? b.assignedById : null,
+    },
+    email: {
+      enabled: e.enabled === true,
+      recipients,
+      subject: typeof e.subject === "string" ? e.subject : "",
+    },
+    telegram: {
+      enabled: t.enabled === true,
+      chatId: typeof t.chatId === "string" ? t.chatId : "",
+      topicId: typeof t.topicId === "string" ? t.topicId : "",
+    },
+  };
+}
 
 function parseSuccessGift(raw: unknown) {
   if (!raw || typeof raw !== "object") return null;
@@ -18,7 +52,7 @@ function parseSuccessGift(raw: unknown) {
   return { kind: r.kind === "file" ? "file" : "link", url, label: typeof r.label === "string" ? r.label : "" };
 }
 
-type FormContent = { id?: string; scope?: string; title?: string; description?: string; submitButtonText?: string; successMessage?: string; successGift?: unknown; fields?: object; chips?: object; consent?: object; [key: string]: unknown };
+type FormContent = { id?: string; scope?: string; title?: string; description?: string; submitButtonText?: string; successMessage?: string; successGift?: unknown; fields?: object; requiredFields?: object; chips?: object; consent?: object; integrations?: object; [key: string]: unknown };
 
 function toDto(f: { id: string; name: string; content: unknown; createdAt: Date; updatedAt: Date }) {
   const cnt = (f.content ?? {}) as FormContent;
@@ -33,8 +67,10 @@ function toDto(f: { id: string; name: string; content: unknown; createdAt: Date;
     successMessage: String(cnt.successMessage ?? ""),
     successGift: parseSuccessGift(cnt.successGift),
     fields: { ...DEFAULT_FIELDS, ...(cnt.fields as object) },
+    requiredFields: { ...DEFAULT_REQUIRED_FIELDS, ...(cnt.requiredFields as object ?? {}) },
     chips: { ...DEFAULT_CHIPS, ...(cnt.chips as object) },
     consent: { ...DEFAULT_CONSENT, ...(cnt.consent as object) },
+    integrations: mergeIntegrations(cnt.integrations),
     createdAt: f.createdAt.toISOString(),
     updatedAt: f.updatedAt.toISOString(),
   };
@@ -68,8 +104,10 @@ export async function POST(request: Request) {
         successMessage: "Спасибо! Мы получили заявку и свяжемся с вами в ближайшее время.",
         successGift: null,
         fields: DEFAULT_FIELDS,
+        requiredFields: DEFAULT_REQUIRED_FIELDS,
         chips: DEFAULT_CHIPS,
         consent: DEFAULT_CONSENT,
+        integrations: DEFAULT_INTEGRATIONS,
         createdAt: now,
       },
     },

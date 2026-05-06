@@ -6979,6 +6979,8 @@ function FormModalBody({
     }
   );
 }
+var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+var PHONE_RE = /^\+?[\d\s\-()]{10,20}$/;
 function DynamicForm({
   form,
   chipPrefilled,
@@ -6996,6 +6998,8 @@ function DynamicForm({
   );
   const [consentChecked, setConsentChecked] = useState9(false);
   const [submitting, setSubmitting] = useState9(false);
+  const [errors, setErrors] = useState9({});
+  const [touched, setTouched] = useState9({});
   const showChips = !!chipsConfig && Array.isArray(availableChips) && availableChips.length > 0;
   const isMulti = chipsConfig?.multi === true;
   const chipsLabel = chipsConfig?.label ?? "";
@@ -7008,9 +7012,47 @@ function DynamicForm({
       setChips((cur) => cur[0] === label ? [] : [label]);
     }
   }
+  const required = form.requiredFields ?? {
+    name: true,
+    email: true,
+    phone: false,
+    message: false
+  };
+  function validateField(key, value) {
+    const isRequired = form.fields[key] && required[key];
+    const trimmed = value.trim();
+    if (!trimmed) return isRequired ? "\u041F\u043E\u043B\u0435 \u043E\u0431\u044F\u0437\u0430\u0442\u0435\u043B\u044C\u043D\u043E" : "";
+    if (key === "email" && !EMAIL_RE.test(trimmed)) return "\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 email";
+    if (key === "phone" && !PHONE_RE.test(trimmed)) return "\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 \u0442\u0435\u043B\u0435\u0444\u043E\u043D";
+    return "";
+  }
+  function handleBlur(key, value) {
+    setTouched((t) => ({ ...t, [key]: true }));
+    setErrors((e) => ({ ...e, [key]: validateField(key, value) }));
+  }
+  function handleChange(key, value) {
+    if (key === "name") setName(value);
+    else if (key === "email") setEmail(value);
+    else if (key === "phone") setPhone(value);
+    else if (key === "message") setMessage(value);
+    if (touched[key]) {
+      setErrors((e) => ({ ...e, [key]: validateField(key, value) }));
+    }
+  }
   async function handleSubmit(e) {
     e.preventDefault();
+    if (submitting) return;
+    const values = { name, email, phone, message };
+    const nextErrors = {};
+    Object.keys(values).forEach((k) => {
+      if (!form.fields[k]) return;
+      const err = validateField(k, values[k]);
+      if (err) nextErrors[k] = err;
+    });
+    setErrors(nextErrors);
+    setTouched({ name: true, email: true, phone: true, message: true });
     if (!consentChecked) return;
+    if (Object.keys(nextErrors).length > 0) return;
     setSubmitting(true);
     try {
       const payload = { formId: form.id };
@@ -7024,6 +7066,8 @@ function DynamicForm({
       setSubmitting(false);
     }
   }
+  const hasAnyRequiredEmpty = form.fields.name && required.name && !name.trim() || form.fields.email && required.email && !email.trim() || form.fields.phone && required.phone && !phone.trim() || form.fields.message && required.message && !message.trim();
+  const canSubmit = consentChecked && !hasAnyRequiredEmpty && !submitting;
   let order = 0;
   const stage = () => ({
     opacity: 0,
@@ -7035,50 +7079,52 @@ function DynamicForm({
       form.description && /* @__PURE__ */ jsx61(DialogDescription, { children: form.description })
     ] }),
     /* @__PURE__ */ jsxs39("div", { className: "flex flex-col gap-3", children: [
-      form.fields.name && /* @__PURE__ */ jsx61(
+      form.fields.name && /* @__PURE__ */ jsx61(FieldShell, { error: errors.name, stage: stage(), children: /* @__PURE__ */ jsx61(
         Input,
         {
-          placeholder: "\u0418\u043C\u044F",
+          placeholder: required.name ? "\u0418\u043C\u044F*" : "\u0418\u043C\u044F",
           value: name,
-          onChange: (e) => setName(e.target.value),
-          required: true,
+          onChange: (e) => handleChange("name", e.target.value),
+          onBlur: (e) => handleBlur("name", e.target.value),
           autoComplete: "name",
-          style: stage()
+          "aria-invalid": !!errors.name
         }
-      ),
-      form.fields.email && /* @__PURE__ */ jsx61(
+      ) }),
+      form.fields.email && /* @__PURE__ */ jsx61(FieldShell, { error: errors.email, stage: stage(), children: /* @__PURE__ */ jsx61(
         Input,
         {
           type: "email",
-          placeholder: "Email",
+          placeholder: required.email ? "Email*" : "Email",
           value: email,
-          onChange: (e) => setEmail(e.target.value),
-          required: true,
+          onChange: (e) => handleChange("email", e.target.value),
+          onBlur: (e) => handleBlur("email", e.target.value),
           autoComplete: "email",
-          style: stage()
+          "aria-invalid": !!errors.email
         }
-      ),
-      form.fields.phone && /* @__PURE__ */ jsx61(
+      ) }),
+      form.fields.phone && /* @__PURE__ */ jsx61(FieldShell, { error: errors.phone, stage: stage(), children: /* @__PURE__ */ jsx61(
         Input,
         {
           type: "tel",
-          placeholder: "\u0422\u0435\u043B\u0435\u0444\u043E\u043D",
+          placeholder: required.phone ? "\u0422\u0435\u043B\u0435\u0444\u043E\u043D*" : "\u0422\u0435\u043B\u0435\u0444\u043E\u043D",
           value: phone,
-          onChange: (e) => setPhone(e.target.value),
+          onChange: (e) => handleChange("phone", e.target.value),
+          onBlur: (e) => handleBlur("phone", e.target.value),
           autoComplete: "tel",
-          style: stage()
+          "aria-invalid": !!errors.phone
         }
-      ),
-      form.fields.message && /* @__PURE__ */ jsx61(
+      ) }),
+      form.fields.message && /* @__PURE__ */ jsx61(FieldShell, { error: errors.message, stage: stage(), children: /* @__PURE__ */ jsx61(
         Textarea,
         {
-          placeholder: "\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435",
+          placeholder: required.message ? "\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435*" : "\u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435",
           value: message,
-          onChange: (e) => setMessage(e.target.value),
+          onChange: (e) => handleChange("message", e.target.value),
+          onBlur: (e) => handleBlur("message", e.target.value),
           className: "min-h-[80px]",
-          style: stage()
+          "aria-invalid": !!errors.message
         }
-      ),
+      ) }),
       showChips && /* @__PURE__ */ jsxs39("div", { className: "flex flex-col gap-1.5", style: stage(), children: [
         chipsLabel && /* @__PURE__ */ jsx61("span", { className: "text-[12px] uppercase tracking-wide text-muted-foreground", children: chipsLabel }),
         /* @__PURE__ */ jsx61("div", { className: "flex flex-wrap gap-1.5", children: availableChips.map((c) => {
@@ -7112,12 +7158,22 @@ function DynamicForm({
       Button,
       {
         type: "submit",
-        disabled: !consentChecked || submitting,
+        disabled: !canSubmit,
         className: "h-12 w-full px-6 text-[length:var(--text-16)] uppercase tracking-[0.04em]",
         style: stage(),
         children: submitting ? "\u041E\u0442\u043F\u0440\u0430\u0432\u043A\u0430\u2026" : form.submitButtonText || "\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C"
       }
     )
+  ] });
+}
+function FieldShell({
+  error,
+  stage,
+  children
+}) {
+  return /* @__PURE__ */ jsxs39("div", { className: "flex flex-col gap-1", style: stage, children: [
+    children,
+    error && /* @__PURE__ */ jsx61("span", { className: "text-[12px] leading-[1.3] text-destructive", children: error })
   ] });
 }
 function ConsentCheckbox({

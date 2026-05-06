@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import {
   Badge,
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -82,17 +83,27 @@ function ArticleActionsMenu({
 }) {
   const router = useRouter();
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-          aria-label="Действия"
-          onClick={(e) => e.stopPropagation()}
+    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+      {article.status === "hidden" && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onTogglePublish(article.id)}
         >
-          <MoreHorizontal className="h-4 w-4" />
-        </button>
-      </DropdownMenuTrigger>
+          <Eye className="mr-1.5 h-3.5 w-3.5" />
+          Опубликовать
+        </Button>
+      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            aria-label="Действия"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </button>
+        </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onSelect={() => router.push(`/media/${article.slug}`)}
@@ -144,7 +155,8 @@ function ArticleActionsMenu({
           <Trash2 className="mr-2 h-4 w-4" /> Удалить
         </DropdownMenuItem>
       </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownMenu>
+    </div>
   );
 }
 

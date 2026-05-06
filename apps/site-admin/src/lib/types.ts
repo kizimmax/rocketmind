@@ -408,6 +408,13 @@ export interface FormFieldsConfig {
 }
 
 /**
+ * Тоглы «обязательное поле» для каждого включённого поля. Применяется только
+ * к полю, у которого `fields.<key> = true`. Управляется галочкой «обяз.»
+ * в админке рядом с галочкой включения поля.
+ */
+export type FormRequiredFieldsConfig = FormFieldsConfig;
+
+/**
  * Чипсы. Опции при рендере приходят из контекста страницы (заголовки карточек
  * блока «Услуги»). Если на странице услуг нет — блок чипсов скрыт даже если
  * `enabled = true`.
@@ -444,6 +451,40 @@ export interface FormSuccessGift {
  * Переиспользуемая форма-модалка. Привязывается к CTA через `cta.formId` или
  * к продуктовой странице через `page.formId`.
  */
+/**
+ * Каналы куда уходят заявки. Все три независимы (additive). Каждый можно
+ * включить отдельно. Если все выключены — заявка только в БД (FormSubmission).
+ */
+export interface FormIntegrations {
+  bitrix24: {
+    enabled: boolean;
+    /** Полный URL incoming-вебхука Bitrix24 до /crm.lead.add.json. */
+    webhookUrl: string;
+    /** ID ответственного менеджера в CRM (опц.). */
+    assignedById?: number | null;
+  };
+  email: {
+    enabled: boolean;
+    /** Получатели — массив email'ов. */
+    recipients: string[];
+    /** Кастомный subject (опц.); по умолчанию «Новая заявка с {form.name}». */
+    subject?: string;
+  };
+  telegram: {
+    enabled: boolean;
+    /** Chat ID (для группы — отрицательное число, для лички — положительное). */
+    chatId: string;
+    /** Topic ID для форумных групп (опц.). */
+    topicId?: string;
+  };
+}
+
+export const DEFAULT_INTEGRATIONS: FormIntegrations = {
+  bitrix24: { enabled: false, webhookUrl: "", assignedById: null },
+  email: { enabled: false, recipients: [], subject: "" },
+  telegram: { enabled: false, chatId: "", topicId: "" },
+};
+
 export interface FormEntity {
   id: string;
   name: string;
@@ -455,8 +496,12 @@ export interface FormEntity {
   /** Необязательный «подарок» — файл или ссылка, показываются на экране успеха. */
   successGift?: FormSuccessGift | null;
   fields: FormFieldsConfig;
+  /** Какие из включённых полей обязательны. */
+  requiredFields: FormRequiredFieldsConfig;
   chips: FormChipsConfig;
   consent: FormConsentConfig;
+  /** Куда отправлять заявки. Если поле отсутствует у старых записей — fallback на DEFAULT_INTEGRATIONS. */
+  integrations?: FormIntegrations;
   createdAt: string;
   updatedAt: string;
 }
