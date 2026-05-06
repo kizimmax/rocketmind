@@ -1,10 +1,29 @@
 #!/bin/sh
+# На PaaS (Amvera) у нас нет shell-доступа в контейнер — все одноразовые
+# миграции БД и данных запускаются автоматически при старте. Скрипты
+# идемпотентны: повторный запуск на уже мигрированной БД — no-op.
 set -e
 
 export PATH="/app/node_modules/.bin:$PATH"
 
-# Ensure upload directory exists (persisted volume)
-mkdir -p /data/uploads
+# Persisted volume mounts (Amvera).
+mkdir -p /data/uploads /data/config /data/emails
 
 cd /app/apps/site-admin
+
+# 1. Накатить ожидающие Prisma-миграции (например, новую таблицу form_submissions).
+# `migrate deploy` идемпотентна: применённые миграции пропускаются.
+# || true — не блокируем старт, если БД временно недоступна; ошибка попадёт в логи.
+echo "[entrypoint] prisma migrate deploy…"
+npx prisma migrate deploy || echo "[entrypoint] migrate failed (см. логи выше) — пропускаем"
+
+# 2. Миграции данных (idempotent).
+echo "[entrypoint] enable-bitrix24-on-existing-forms…"
+node /app/scripts/enable-bitrix24-on-existing-forms.mjs || echo "[entrypoint] bitrix24 migration failed — пропускаем"
+
+echo "[entrypoint] migrate-uploads-to-relative…"
+node /app/scripts/migrate-uploads-to-relative.mjs || echo "[entrypoint] uploads migration failed — пропускаем"
+
+# 3. Старт сервера.
+echo "[entrypoint] starting next…"
 exec next start -p 80
