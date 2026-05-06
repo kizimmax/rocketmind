@@ -65,7 +65,7 @@ function rowToEntry(row: {
     sections: parseSections(Array.isArray(c.sections) ? c.sections : []),
     pinned: c.pinned === true,
     pinnedOrder: typeof c.pinnedOrder === "number" ? c.pinnedOrder : 0,
-    aliases: parseAliases(c.aliases),
+    aliases: combineAliases(c),
   };
 }
 
@@ -74,6 +74,23 @@ function parseAliases(raw: unknown): string[] {
   return raw
     .map((v) => (typeof v === "string" ? v.trim() : ""))
     .filter((v) => v.length > 0);
+}
+
+function combineAliases(content: Record<string, unknown>): string[] {
+  // Ручные + авто-падежи. Объединяем без дублей, регистр сохраняем (lookup
+  // в applyGlossaryLinks уже регистронезависимый).
+  const manual = parseAliases(content.aliases);
+  const auto = parseAliases(content.autoAliases);
+  if (auto.length === 0) return manual;
+  const seen = new Set(manual.map((s) => s.toLocaleLowerCase("ru-RU")));
+  const merged = [...manual];
+  for (const a of auto) {
+    const key = a.toLocaleLowerCase("ru-RU");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(a);
+  }
+  return merged;
 }
 
 export async function getAllGlossaryTerms(): Promise<GlossaryTermEntry[]> {
@@ -103,7 +120,7 @@ export async function getGlossaryIndex(): Promise<GlossaryIndexEntry[]> {
         slug: row.slug,
         title: row.title,
         description: row.description,
-        aliases: parseAliases(c.aliases),
+        aliases: combineAliases(c),
       };
     });
   } catch {

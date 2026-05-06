@@ -211,10 +211,43 @@ function Inner({
               </Section>
 
               <Section title="Синонимы и формы">
+                <Field
+                  label="Род"
+                  hint="Влияет на авто-падежи. Угадывается по окончанию названия — поправьте, если ошибка."
+                >
+                  <select
+                    value={term.gender ?? "feminine"}
+                    onChange={(e) =>
+                      update("gender", e.target.value as "masculine" | "feminine" | "neuter")
+                    }
+                    className="h-9 w-full rounded-sm border border-border bg-background px-2 text-[length:var(--text-13)] outline-none focus:border-foreground/40"
+                  >
+                    <option value="masculine">мужской</option>
+                    <option value="feminine">женский</option>
+                    <option value="neuter">средний</option>
+                  </select>
+                </Field>
                 <AliasesEditor
                   value={term.aliases ?? []}
                   onChange={(next) => update("aliases", next)}
                 />
+                {Array.isArray(term.autoAliases) && term.autoAliases.length > 0 && (
+                  <div className="mt-3 rounded-sm border border-dashed border-border bg-muted/30 p-3">
+                    <p className="mb-2 text-[length:var(--text-11)] uppercase tracking-[0.04em] text-muted-foreground">
+                      Авто-падежи (генерятся при сохранении)
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {term.autoAliases.map((a) => (
+                        <span
+                          key={a}
+                          className="rounded-sm bg-background px-2 py-0.5 text-[length:var(--text-12)] text-muted-foreground"
+                        >
+                          {a}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </Section>
 
               <Section title="Теги">

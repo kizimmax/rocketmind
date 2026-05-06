@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeSlug } from "@/lib/slugify";
+import { generateAutoAliases, guessGender, type Gender } from "@/lib/glossary-morph";
 
 type GlossaryContent = {
   order?: number;
@@ -9,8 +10,18 @@ type GlossaryContent = {
   pinned?: boolean;
   pinnedOrder?: number;
   aliases?: unknown[];
+  autoAliases?: unknown[];
+  gender?: unknown;
   [key: string]: unknown;
 };
+
+const GENDERS = new Set<Gender>(["masculine", "feminine", "neuter"]);
+function parseGender(raw: unknown, fallbackTitle: string): Gender {
+  if (typeof raw === "string" && GENDERS.has(raw as Gender)) return raw as Gender;
+  // Авто-определение по последнему слову title.
+  const tokens = fallbackTitle.trim().split(/\s+/);
+  return guessGender(tokens[tokens.length - 1] ?? "");
+}
 
 function toDto(t: {
   id: string;
@@ -27,11 +38,15 @@ function toDto(t: {
 }) {
   const c = (t.content ?? {}) as GlossaryContent;
   const sections = Array.isArray(c.sections) ? c.sections : Array.isArray(c.body) ? c.body : [];
-  const aliases = Array.isArray(c.aliases)
-    ? c.aliases
-        .map((v) => (typeof v === "string" ? v.trim() : ""))
-        .filter((v) => v.length > 0)
-    : [];
+  const cleanList = (raw: unknown): string[] =>
+    Array.isArray(raw)
+      ? raw
+          .map((v) => (typeof v === "string" ? v.trim() : ""))
+          .filter((v) => v.length > 0)
+      : [];
+  const aliases = cleanList(c.aliases);
+  const autoAliases = cleanList(c.autoAliases);
+  const gender = parseGender(c.gender, t.title);
   return {
     id: `glossary/${t.slug}`,
     slug: t.slug,
@@ -44,6 +59,8 @@ function toDto(t: {
     metaDescription: t.metaDescription,
     sections,
     aliases,
+    autoAliases,
+    gender,
     pinned: c.pinned === true,
     pinnedOrder: typeof c.pinnedOrder === "number" ? c.pinnedOrder : 0,
     createdAt: t.createdAt.toISOString(),

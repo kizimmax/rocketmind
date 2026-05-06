@@ -129,6 +129,8 @@ export function createSeedGlossaryTerms(): GlossaryTerm[] {
     metaDescription: "",
     sections: [],
     aliases: [],
+    autoAliases: [],
+    gender: "feminine",
     pinned: false,
     pinnedOrder: 0,
     createdAt: now,

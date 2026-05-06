@@ -788,6 +788,8 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       metaDescription: "",
       sections: [],
       aliases: [],
+      autoAliases: [],
+      gender: "feminine",
       pinned: false,
       pinnedOrder: 0,
       createdAt: now,
@@ -821,16 +823,30 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
-    }).then((r) => r.json() as Promise<{ ok: boolean; slug?: string }>)
+    }).then((r) => r.json() as Promise<{
+      ok: boolean;
+      slug?: string;
+      autoAliases?: string[];
+      gender?: GlossaryTerm["gender"];
+    }>)
       .then((data) => {
         const newSlug = data.slug;
-        if (newSlug && newSlug !== originalSlug) {
-          setGlossaryTerms((prev) =>
-            prev.map((t) =>
-              t.id === term.id ? { ...t, id: `glossary/${newSlug}`, slug: newSlug } : t
-            )
-          );
-        }
+        setGlossaryTerms((prev) =>
+          prev.map((t) => {
+            if (t.id !== term.id) return t;
+            const patched: GlossaryTerm = {
+              ...t,
+              ...(Array.isArray(data.autoAliases)
+                ? { autoAliases: data.autoAliases }
+                : {}),
+              ...(data.gender ? { gender: data.gender } : {}),
+            };
+            if (newSlug && newSlug !== originalSlug) {
+              return { ...patched, id: `glossary/${newSlug}`, slug: newSlug };
+            }
+            return patched;
+          }),
+        );
       }).catch(() => {});
   }, []);
 

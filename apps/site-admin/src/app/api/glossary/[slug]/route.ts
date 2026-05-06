@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createAutoRedirect } from "@/lib/redirects";
+import { generateAutoAliases, guessGender, type Gender } from "@/lib/glossary-morph";
+
+const GENDERS = new Set<Gender>(["masculine", "feminine", "neuter"]);
+function pickGender(raw: unknown, title: string): Gender {
+  if (typeof raw === "string" && GENDERS.has(raw as Gender)) return raw as Gender;
+  const tokens = (title || "").trim().split(/\s+/);
+  return guessGender(tokens[tokens.length - 1] ?? "");
+}
 
 export async function PUT(
   request: Request,
@@ -29,24 +37,49 @@ export async function PUT(
       tagIds: Array.isArray(body.tagIds) ? body.tagIds : [],
       metaTitle: body.metaTitle ?? "",
       metaDescription: body.metaDescription ?? "",
-      content: {
-        order: typeof body.order === "number" ? body.order : 0,
-        sections: Array.isArray(body.sections) ? body.sections : [],
-        pinned: body.pinned === true,
-        pinnedOrder: typeof body.pinnedOrder === "number" ? body.pinnedOrder : 0,
-        aliases: Array.isArray(body.aliases)
+      content: (() => {
+        const aliases: string[] = Array.isArray(body.aliases)
           ? body.aliases
               .map((v: unknown) => (typeof v === "string" ? v.trim() : ""))
               .filter((v: string) => v.length > 0)
-          : [],
-      },
+          : [];
+        const title: string = typeof body.title === "string" ? body.title : "";
+        const gender = pickGender(body.gender, title);
+        // Авто-падежи генерим строго по title; ручные aliases пользователь
+        // продолжает вести отдельно (могут быть синонимами, аббревиатурами).
+        const autoAliases = title.trim() ? generateAutoAliases(title, gender) : [];
+        return {
+          order: typeof body.order === "number" ? body.order : 0,
+          sections: Array.isArray(body.sections) ? body.sections : [],
+          pinned: body.pinned === true,
+          pinnedOrder: typeof body.pinnedOrder === "number" ? body.pinnedOrder : 0,
+          aliases,
+          autoAliases,
+          gender,
+        };
+      })(),
     },
   });
   if (slugChanged) {
     await createAutoRedirect(`/media/glossary/term/${slug}`, `/media/glossary/term/${newSlug}`, "glossary", existing.id);
   }
 
-  return NextResponse.json({ ok: true, slug: newSlug, updatedAt: term.updatedAt.toISOString() });
+  const savedContent = (term.content ?? {}) as { autoAliases?: unknown; gender?: unknown };
+  const autoAliases = Array.isArray(savedContent.autoAliases)
+    ? (savedContent.autoAliases as unknown[]).filter((v): v is string => typeof v === "string")
+    : [];
+  const gender =
+    typeof savedContent.gender === "string" &&
+    GENDERS.has(savedContent.gender as Gender)
+      ? (savedContent.gender as Gender)
+      : pickGender(undefined, term.title);
+  return NextResponse.json({
+    ok: true,
+    slug: newSlug,
+    updatedAt: term.updatedAt.toISOString(),
+    autoAliases,
+    gender,
+  });
 }
 
 export async function DELETE(
