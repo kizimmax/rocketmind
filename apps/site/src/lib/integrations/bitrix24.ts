@@ -24,12 +24,16 @@ export async function sendToBitrix24(
   webhookUrl: string,
   lead: Bitrix24Lead,
 ): Promise<SendResult> {
-  if (!webhookUrl || !webhookUrl.trim()) {
-    return { status: "skipped", reason: "no webhook url" };
+  // Если у формы свой URL не задан — используем глобальный из env.
+  // Это позволяет «прикрутить Bitrix к ВСЕМ формам по умолчанию» без правки
+  // каждой формы в админке. Per-form URL имеет приоритет.
+  const effectiveUrl = (webhookUrl?.trim() || process.env.BITRIX24_DEFAULT_WEBHOOK_URL || "").trim();
+  if (!effectiveUrl) {
+    return { status: "skipped", reason: "no webhook url (per-form empty and BITRIX24_DEFAULT_WEBHOOK_URL not set)" };
   }
 
   // Нормализуем URL: добавляем /crm.lead.add.json если юзер вставил только корень.
-  const url = webhookUrl.trim().replace(/\/$/, "");
+  const url = effectiveUrl.replace(/\/$/, "");
   const endpoint = url.endsWith("/crm.lead.add.json")
     ? url
     : `${url}/crm.lead.add.json`;

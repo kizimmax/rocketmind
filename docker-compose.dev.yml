@@ -74,6 +74,17 @@ services:
       CONFIG_DIR: /data/config
       CMS_PUBLIC_URL: http://localhost:3004
       NODE_ENV: development
+      # Bitrix24 incoming webhook — глобальный fallback для всех форм с пустым per-form URL.
+      # Значение берётся из shell-env (или ./.env в корне репо). НЕ ХАРДКОДИТЬ ТОКЕН СЮДА.
+      BITRIX24_DEFAULT_WEBHOOK_URL: ${BITRIX24_DEFAULT_WEBHOOK_URL:-}
+      # Telegram-бот — токен передаём по той же схеме (когда привяжем).
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      # SMTP для email-нотификаций (если не задано — сайт пишет HTML-mock в /data/emails/).
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     depends_on:
       admin:
         condition: service_started

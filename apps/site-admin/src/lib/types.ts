@@ -480,7 +480,10 @@ export interface FormIntegrations {
 }
 
 export const DEFAULT_INTEGRATIONS: FormIntegrations = {
-  bitrix24: { enabled: false, webhookUrl: "", assignedById: null },
+  // Bitrix24 включён по умолчанию: при пустом webhookUrl backend использует
+  // глобальный URL из env BITRIX24_DEFAULT_WEBHOOK_URL. Если в env ничего нет —
+  // sender вернёт skipped без ошибки.
+  bitrix24: { enabled: true, webhookUrl: "", assignedById: null },
   email: { enabled: false, recipients: [], subject: "" },
   telegram: { enabled: false, chatId: "", topicId: "" },
 };

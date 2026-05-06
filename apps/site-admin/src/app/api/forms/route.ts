@@ -12,7 +12,9 @@ const DEFAULT_REQUIRED_FIELDS = { name: true, email: true, phone: false, message
 const DEFAULT_CHIPS = { enabled: false, multi: false, label: "Тема обращения" };
 const DEFAULT_CONSENT = { text: "Я соглашаюсь с {links} и даю согласие на обработку персональных данных.", links: [] };
 const DEFAULT_INTEGRATIONS = {
-  bitrix24: { enabled: false, webhookUrl: "", assignedById: null as number | null },
+  // Bitrix24 включён по умолчанию для всех новых форм. Per-form URL не задан —
+  // backend подставит глобальный из env BITRIX24_DEFAULT_WEBHOOK_URL.
+  bitrix24: { enabled: true, webhookUrl: "", assignedById: null as number | null },
   email: { enabled: false, recipients: [] as string[], subject: "" },
   telegram: { enabled: false, chatId: "", topicId: "" },
 };

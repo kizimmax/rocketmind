@@ -738,13 +738,14 @@ function FormCard({
                 <div className="flex flex-col gap-1.5 pl-9">
                   <Input
                     size="sm"
-                    placeholder="https://<portal>.bitrix24.ru/rest/<USER_ID>/<TOKEN>/"
+                    placeholder="Пусто = глобальный URL (env BITRIX24_DEFAULT_WEBHOOK_URL)"
                     value={integrations.bitrix24.webhookUrl}
                     onChange={(e) => setIntegrations({ ...integrations, bitrix24: { ...integrations.bitrix24, webhookUrl: e.target.value } })}
                     onBlur={() => patchIntegrations({ bitrix24: integrations.bitrix24 })}
                   />
                   <div className="text-[length:var(--text-11)] text-muted-foreground">
-                    URL входящего вебхука. Bitrix → «Разработчикам» → «Прочее» → «Входящий вебхук», права <code>crm</code>.
+                    Кастомный URL вебхука для этой формы (override). Если пусто — используется глобальный портал, заданный администратором сервера.
+                    Создать новый вебхук: Bitrix → «Разработчикам» → «Прочее» → «Входящий вебхук», права <code>crm</code>.
                   </div>
                 </div>
               )}
