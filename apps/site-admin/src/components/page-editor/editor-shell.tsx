@@ -1,6 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/lib/api-client";
+import { filterSlugInput } from "@/lib/slugify";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, ImagePlus, Upload, Trash2 } from "lucide-react";
@@ -551,7 +552,7 @@ export function EditorShell({ initialPage }: EditorShellProps) {
               <Input
                 size="sm"
                 value={page.slug}
-                onChange={(e) => updateMeta("slug", e.target.value)}
+                onChange={(e) => updateMeta("slug", filterSlugInput(e.target.value))}
                 className="font-mono"
               />
               <SlugRedirects currentUrl={page.id.startsWith("/") ? page.id : `/${page.id}`} />

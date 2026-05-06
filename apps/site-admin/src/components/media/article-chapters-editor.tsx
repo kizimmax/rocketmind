@@ -13,6 +13,7 @@ import {
 } from "@rocketmind/ui";
 import type { ArticleChapter } from "@/lib/types";
 import { slugify } from "@/lib/store";
+import { filterSlugInput } from "@/lib/slugify";
 import { ArticleSectionsEditor, type ChapterTarget } from "./article-sections-editor";
 
 interface Props {
@@ -441,7 +442,7 @@ function ChapterRow({
                 value={chapter.slug}
                 onChange={(e) => {
                   setSlugAutoSync(false);
-                  onUpdate({ slug: e.target.value });
+                  onUpdate({ slug: filterSlugInput(e.target.value) });
                 }}
                 placeholder="glava-1"
               />

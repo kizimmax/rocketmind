@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeSlug } from "@/lib/slugify";
 
 type ExpertContent = { name?: string; tag?: string; shortBio?: string; bio?: string; [key: string]: unknown };
 
@@ -22,7 +23,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { slug, name, tag, shortBio, bio } = body;
+  const { name, tag, shortBio, bio } = body;
+  const slug = normalizeSlug(body.slug);
   if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
 
   const existing = await prisma.expert.findUnique({ where: { slug } });

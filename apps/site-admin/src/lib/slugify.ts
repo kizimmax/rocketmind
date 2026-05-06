@@ -25,6 +25,16 @@ export function slugify(input: string): string {
     .substring(0, 60);
 }
 
+/** Фильтрует ввод пользователя на лету: оставляет только [a-z0-9-], убирает
+ *  кириллицу, пробелы и спецсимволы. Используется в onChange slug-инпутов. */
+export function filterSlugInput(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .substring(0, 60);
+}
+
 /** Нормализует slug на бэке: пропускает уже-валидные ASCII slug'и без изменений,
  *  иначе прогоняет через slugify. Возвращает пустую строку если вход «мусорный». */
 export function normalizeSlug(input: unknown): string {

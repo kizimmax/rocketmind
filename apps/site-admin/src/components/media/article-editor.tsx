@@ -17,6 +17,7 @@ import {
 import { Pin, LayoutGrid, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminStore } from "@/lib/store";
+import { filterSlugInput } from "@/lib/slugify";
 import { useArticleEditor, getArticleChanges } from "@/lib/use-article-editor";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { EditorToolbar } from "@/components/page-editor/editor-toolbar";
@@ -178,7 +179,7 @@ function ArticleEditorInner({
                   <Field label="Slug">
                     <Input
                       value={article.slug}
-                      onChange={(e) => update("slug", e.target.value)}
+                      onChange={(e) => update("slug", filterSlugInput(e.target.value))}
                     />
                   </Field>
                   <p className="text-[length:var(--text-11)] text-muted-foreground">
