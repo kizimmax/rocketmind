@@ -34,8 +34,22 @@ export async function POST(req: Request) {
     if (!form) return NextResponse.json({ error: "form not found" }, { status: 404 });
 
     const content = (form.content ?? {}) as Record<string, unknown>;
-    const integrations = (content.integrations ?? {}) as FormIntegrations;
+    const rawIntegrations = (content.integrations ?? {}) as FormIntegrations;
     const successGift = (content.successGift ?? null) as unknown;
+
+    // Legacy-формы без поля integrations: Bitrix24 включён по умолчанию,
+    // если задан глобальный URL. Email/Telegram — только при явном enabled
+    // (потому что у них требуется per-form настройка адресатов/chatId).
+    const hasAnyIntegration =
+      !!(rawIntegrations as Record<string, unknown>).bitrix24
+      || !!(rawIntegrations as Record<string, unknown>).email
+      || !!(rawIntegrations as Record<string, unknown>).telegram;
+    const integrations: FormIntegrations = {
+      ...rawIntegrations,
+      bitrix24: hasAnyIntegration
+        ? (rawIntegrations.bitrix24 ?? { enabled: false })
+        : { enabled: !!process.env.BITRIX24_DEFAULT_WEBHOOK_URL, webhookUrl: "" },
+    };
 
     // Trim & normalize.
     const fields: Record<string, unknown> = {};

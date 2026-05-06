@@ -54,6 +54,24 @@ export function FormsPanel({
   const [idTouched, setIdTouched] = useState(false);
   const [newScope, setNewScope] = useState<EntityScope>("both");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [integrationDefaults, setIntegrationDefaults] = useState<{
+    bitrix24DefaultWebhookUrl: string;
+    telegramConfigured: boolean;
+    emailConfigured: boolean;
+  }>({ bitrix24DefaultWebhookUrl: "", telegramConfigured: false, emailConfigured: false });
+
+  useEffect(() => {
+    apiFetch("/api/system/integrations-defaults")
+      .then((r) => r.json())
+      .then((d: { bitrix24?: { defaultWebhookUrl?: string }; telegram?: { configured?: boolean }; email?: { configured?: boolean } }) => {
+        setIntegrationDefaults({
+          bitrix24DefaultWebhookUrl: d.bitrix24?.defaultWebhookUrl ?? "",
+          telegramConfigured: d.telegram?.configured === true,
+          emailConfigured: d.email?.configured === true,
+        });
+      })
+      .catch(() => { /* fall back на пустые placeholders */ });
+  }, []);
 
   const existingIds = new Set(items.map((f) => f.id));
   const idCollision = newId !== "" && existingIds.has(newId);
@@ -237,6 +255,7 @@ export function FormsPanel({
             onPatch={(p) => patch(f.id, p)}
             onDelete={() => setDeleteTarget(f.id)}
             onApplyConsentTextToAll={applyConsentTextToAll}
+            integrationDefaults={integrationDefaults}
           />
         ))}
       </div>
@@ -315,11 +334,17 @@ function FormCard({
   onPatch,
   onDelete,
   onApplyConsentTextToAll,
+  integrationDefaults,
 }: {
   form: FormEntity;
   onPatch: (p: Partial<FormEntity>) => void;
   onDelete: () => void;
   onApplyConsentTextToAll: (text: string) => Promise<void>;
+  integrationDefaults: {
+    bitrix24DefaultWebhookUrl: string;
+    telegramConfigured: boolean;
+    emailConfigured: boolean;
+  };
 }) {
   const [expanded, setExpanded] = useState(false);
   const [name, setName] = useState(form.name);
@@ -738,14 +763,20 @@ function FormCard({
                 <div className="flex flex-col gap-1.5 pl-9">
                   <Input
                     size="sm"
-                    placeholder="Пусто = глобальный URL (env BITRIX24_DEFAULT_WEBHOOK_URL)"
+                    placeholder={
+                      integrationDefaults.bitrix24DefaultWebhookUrl
+                        ? `По умолчанию: ${integrationDefaults.bitrix24DefaultWebhookUrl}`
+                        : "https://<portal>.bitrix24.ru/rest/<USER_ID>/<TOKEN>/"
+                    }
                     value={integrations.bitrix24.webhookUrl}
                     onChange={(e) => setIntegrations({ ...integrations, bitrix24: { ...integrations.bitrix24, webhookUrl: e.target.value } })}
                     onBlur={() => patchIntegrations({ bitrix24: integrations.bitrix24 })}
                   />
                   <div className="text-[length:var(--text-11)] text-muted-foreground">
-                    Кастомный URL вебхука для этой формы (override). Если пусто — используется глобальный портал, заданный администратором сервера.
-                    Создать новый вебхук: Bitrix → «Разработчикам» → «Прочее» → «Входящий вебхук», права <code>crm</code>.
+                    {integrationDefaults.bitrix24DefaultWebhookUrl
+                      ? <>Если поле пустое — заявки идут на глобальный портал (см. placeholder). Заполни здесь, чтобы переопределить для этой формы.</>
+                      : <>URL входящего вебхука. Bitrix → «Разработчикам» → «Прочее» → «Входящий вебхук», права <code>crm</code>.</>
+                    }
                   </div>
                 </div>
               )}

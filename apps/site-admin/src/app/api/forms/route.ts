@@ -27,9 +27,14 @@ function mergeIntegrations(raw: unknown) {
   const recipients = Array.isArray(e.recipients)
     ? e.recipients.filter((x): x is string => typeof x === "string")
     : [];
+  // Legacy-формы (созданные до интеграций) не имеют поля integrations вовсе.
+  // Чтобы не заставлять админа вручную включать Bitrix24 на каждой форме, для них
+  // дефолт = ВКЛ. Если форма уже пересохранена после фичи (raw имеет любой ключ) —
+  // читаем enabled явно (true только если буквально true, иначе false).
+  const hasAny = !!r.bitrix24 || !!r.email || !!r.telegram;
   return {
     bitrix24: {
-      enabled: b.enabled === true,
+      enabled: hasAny ? b.enabled === true : true,
       webhookUrl: typeof b.webhookUrl === "string" ? b.webhookUrl : "",
       assignedById: typeof b.assignedById === "number" ? b.assignedById : null,
     },
