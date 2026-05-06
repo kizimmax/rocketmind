@@ -7154,16 +7154,15 @@ function DynamicForm({
         onChange: setConsentChecked
       }
     ) }),
-    /* @__PURE__ */ jsx61(
+    /* @__PURE__ */ jsx61("div", { style: stage(), children: /* @__PURE__ */ jsx61(
       Button,
       {
         type: "submit",
         disabled: !canSubmit,
         className: "h-12 w-full px-6 text-[length:var(--text-16)] uppercase tracking-[0.04em]",
-        style: stage(),
         children: submitting ? "\u041E\u0442\u043F\u0440\u0430\u0432\u043A\u0430\u2026" : form.submitButtonText || "\u041E\u0442\u043F\u0440\u0430\u0432\u0438\u0442\u044C"
       }
-    )
+    ) })
   ] });
 }
 function FieldShell({

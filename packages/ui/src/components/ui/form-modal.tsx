@@ -509,16 +509,17 @@ export function DynamicForm({
         />
       </div>
 
-      <Button
-        type="submit"
-        disabled={!canSubmit}
-        className="h-12 w-full px-6 text-[length:var(--text-16)] uppercase tracking-[0.04em]"
-        style={stage()}
-      >
-        {submitting
-          ? "Отправка…"
-          : form.submitButtonText || "Отправить"}
-      </Button>
+      <div style={stage()}>
+        <Button
+          type="submit"
+          disabled={!canSubmit}
+          className="h-12 w-full px-6 text-[length:var(--text-16)] uppercase tracking-[0.04em]"
+        >
+          {submitting
+            ? "Отправка…"
+            : form.submitButtonText || "Отправить"}
+        </Button>
+      </div>
     </form>
   );
 }
