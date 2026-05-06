@@ -1,0 +1,30 @@
+FROM node:20-alpine
+
+# Prisma engines + bcrypt build deps
+RUN apk add --no-cache openssl libc6-compat
+
+WORKDIR /app
+
+# Cache layer: copy only manifests so npm install reruns only on dep changes
+COPY package.json package-lock.json* ./
+COPY apps/site/package.json ./apps/site/
+COPY apps/site-admin/package.json ./apps/site-admin/
+COPY apps/design-system/package.json ./apps/design-system/
+COPY apps/saas/package.json ./apps/saas/
+COPY apps/internal/package.json ./apps/internal/
+COPY packages/ui/package.json ./packages/ui/
+
+RUN npm install --include=dev --ignore-scripts \
+  && npm rebuild bcryptjs 2>/dev/null || true
+
+# Build shared UI package once at image build (admin/site import compiled output)
+COPY packages/ui ./packages/ui
+RUN npm run build --workspace=packages/ui
+
+# Generate Prisma client into node_modules so anonymous volume preserves it
+COPY apps/site/prisma ./apps/site/prisma
+RUN npx prisma generate --schema=apps/site/prisma/schema.prisma
+
+# Source code is bind-mounted at runtime via docker-compose; no COPY of apps/* here.
+
+EXPOSE 3001 3004

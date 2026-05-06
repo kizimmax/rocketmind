@@ -1,0 +1,103 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: rm
+      POSTGRES_PASSWORD: rm
+      POSTGRES_DB: rocketmind
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rm -d rocketmind"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  admin:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile.dev
+    image: rocketmind-dev:latest
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      DATABASE_URL: postgresql://rm:rm@postgres:5432/rocketmind
+      JWT_SECRET: dev-secret-not-for-production
+      UPLOADS_DIR: /data/uploads
+      CONFIG_DIR: /data/config
+      CMS_PUBLIC_URL: http://localhost:3004
+      NODE_ENV: development
+      SEED_ADMIN_LOGIN: admin
+      SEED_ADMIN_PASSWORD: admin123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        cd /app/apps/site-admin && npx prisma migrate deploy &&
+        cd /app && node scripts/seed-admin.mjs &&
+        node scripts/seed-unique-pages.mjs &&
+        npm run dev --workspace=apps/site-admin
+      "
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+      - ./design:/app/design
+      - ./assets:/app/assets
+      - ./scripts:/app/scripts
+      - ./.docker-data/uploads:/data/uploads
+      - ./.docker-data/config:/data/config
+      - ./.docker-data/emails:/data/emails
+      # Anonymous volumes preserve container's linux-binary node_modules
+      - /app/node_modules
+      - /app/apps/site-admin/node_modules
+      - /app/apps/site/node_modules
+      - /app/apps/design-system/node_modules
+      - /app/apps/saas/node_modules
+      - /app/apps/internal/node_modules
+      - /app/packages/ui/node_modules
+      - /app/apps/site-admin/.next
+      - /app/apps/site/.next
+
+  site:
+    image: rocketmind-dev:latest
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://rm:rm@postgres:5432/rocketmind
+      UPLOADS_DIR: /data/uploads
+      CONFIG_DIR: /data/config
+      CMS_PUBLIC_URL: http://localhost:3004
+      NODE_ENV: development
+    depends_on:
+      admin:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    command: npm run dev --workspace=apps/site
+    volumes:
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+      - ./design:/app/design
+      - ./assets:/app/assets
+      - ./scripts:/app/scripts
+      - ./.docker-data/uploads:/data/uploads
+      - ./.docker-data/config:/data/config
+      - ./.docker-data/emails:/data/emails
+      - /app/node_modules
+      - /app/apps/site-admin/node_modules
+      - /app/apps/site/node_modules
+      - /app/apps/design-system/node_modules
+      - /app/apps/saas/node_modules
+      - /app/apps/internal/node_modules
+      - /app/packages/ui/node_modules
+      - /app/apps/site-admin/.next
+      - /app/apps/site/.next
+
+volumes:
+  pgdata:

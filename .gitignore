@@ -16,3 +16,6 @@ apps/site-admin/public/media
 
 # Загружаемые файлы статей (из админского uploads endpoint)
 apps/site/public/media/uploads/
+
+# Локальный dev-стек на Docker (uploads + config контейнеров)
+.docker-data/
