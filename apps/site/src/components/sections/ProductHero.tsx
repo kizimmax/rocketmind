@@ -268,15 +268,17 @@ export function ProductHero({
             </div>
 
             {/* Bottom-right (col 3): icon */}
-            <div className="col-start-3 row-start-3 self-end translate-x-4" style={fadeIn(3)}>
-              <Image
-                src={coverImage}
-                alt=""
-                width={400}
-                height={400}
-                className="w-full h-auto object-contain"
-              />
-            </div>
+            {coverImage && (
+              <div className="col-start-3 row-start-3 self-end translate-x-4" style={fadeIn(3)}>
+                <Image
+                  src={coverImage}
+                  alt=""
+                  width={400}
+                  height={400}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -342,15 +344,17 @@ export function ProductHero({
               )}
             </div>
 
-            <div className="col-start-3 row-start-3 self-end translate-x-3" style={fadeIn(3)}>
-              <Image
-                src={coverImage}
-                alt=""
-                width={400}
-                height={400}
-                className="w-full h-auto object-contain"
-              />
-            </div>
+            {coverImage && (
+              <div className="col-start-3 row-start-3 self-end translate-x-3" style={fadeIn(3)}>
+                <Image
+                  src={coverImage}
+                  alt=""
+                  width={400}
+                  height={400}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+            )}
           </div>
         </div>
 

@@ -370,7 +370,9 @@ export async function getSimilarArticles(
 
 export async function getArticleBySlug(slug: string): Promise<ArticleEntry | null> {
   try {
-    const row = await prisma.article.findUnique({ where: { slug } });
+    // findFirst + status filter — `findUnique` не принимает не-уникальные where, поэтому
+    // фильтр статуса делаем здесь, чтобы скрытые/архивные не отдавались публике.
+    const row = await prisma.article.findFirst({ where: { slug, status: "published" } });
     if (!row) return null;
     return rowToEntry(row);
   } catch {

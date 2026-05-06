@@ -15,9 +15,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Browser-encoded путь (`/consulting/%D1%82%D0%B5%D1%81%D1%82`) и БД-вариант
+  // (`/consulting/тест`) не совпадают строкой — приводим оба к decoded форме.
+  // `findFirst` вместо `findUnique`: в where был не-уникальный `isActive`, что
+  // тихо падало в Prisma 7 → catch → редирект не отдавался.
+  let lookupPath = pathname;
+  try { lookupPath = decodeURIComponent(pathname); } catch { /* malformed encoding */ }
+
   try {
-    const redirect = await prisma.redirect.findUnique({
-      where: { fromUrl: pathname, isActive: true },
+    const candidates = [lookupPath];
+    if (lookupPath !== pathname) candidates.push(pathname);
+
+    const redirect = await prisma.redirect.findFirst({
+      where: { fromUrl: { in: candidates }, isActive: true },
       select: { toUrl: true, statusCode: true },
     });
 

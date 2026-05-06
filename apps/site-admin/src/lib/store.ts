@@ -19,7 +19,6 @@ import type {
   MediaTag,
   GlossaryTerm,
 } from "./types";
-import { createSeedPages } from "./seed-data";
 import {
   createSeedArticles,
   createSeedGlossaryTerms,
@@ -309,10 +308,10 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       const res = await apiFetch("/api/pages");
       if (!res.ok) throw new Error();
       const data = await res.json();
-      const pages = Array.isArray(data) && data.length ? (data as SitePage[]) : createSeedPages();
+      const pages = Array.isArray(data) ? (data as SitePage[]) : [];
       setPages(withSynthetics(pages));
     } catch {
-      setPages(withSynthetics(createSeedPages()));
+      setPages(withSynthetics([]));
     } finally {
       setLoading(false);
     }
@@ -344,12 +343,7 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
       // `options.caseType` теперь принимает только "mini" — оставлен в сигнатуре
       // ради совместимости интерфейса StoreContext, но игнорируется.
       void options;
-      const slug = title
-        .toLowerCase()
-        .replace(/[^a-zа-яё0-9\s-]/gi, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .substring(0, 50);
+      const slug = slugify(title) || `page-${Date.now()}`;
 
       if (isStaticExport) {
         const now = new Date().toISOString();

@@ -113,7 +113,7 @@ export async function getGlossaryIndex(): Promise<GlossaryIndexEntry[]> {
 
 export async function getGlossaryTermBySlug(slug: string): Promise<GlossaryTermEntry | null> {
   try {
-    const row = await prisma.glossaryTerm.findUnique({ where: { slug } });
+    const row = await prisma.glossaryTerm.findFirst({ where: { slug, status: "published" } });
     if (!row) return null;
     return rowToEntry(row);
   } catch {

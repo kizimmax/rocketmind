@@ -247,7 +247,7 @@ async function buildAboutPage(page: { slug: string; content: unknown; metaTitle:
 
 export async function getAboutPage(): Promise<AboutPageData | null> {
   try {
-    const page = await prisma.page.findFirst({ where: { category: "unique", slug: { in: ["about", "rocketmind"] } } });
+    const page = await prisma.page.findFirst({ where: { category: "unique", slug: { in: ["about", "rocketmind"] }, status: "published" } });
     if (!page) return null;
     return buildAboutPage(page);
   } catch {
@@ -257,7 +257,7 @@ export async function getAboutPage(): Promise<AboutPageData | null> {
 
 export async function getCasesIndexPage(): Promise<AboutPageData | null> {
   try {
-    const page = await prisma.page.findFirst({ where: { category: "unique", slug: "cases-index" } });
+    const page = await prisma.page.findFirst({ where: { category: "unique", slug: "cases-index", status: "published" } });
     if (!page) return null;
     return buildAboutPage(page);
   } catch {
@@ -278,7 +278,7 @@ const HOME_HERO_DEFAULTS: HomeHeroData = {
 
 export async function getHomePage(): Promise<HomePageData> {
   try {
-    const page = await prisma.page.findFirst({ where: { category: "unique", slug: "home" } });
+    const page = await prisma.page.findFirst({ where: { category: "unique", slug: "home", status: "published" } });
     if (!page) return { hero: HOME_HERO_DEFAULTS, methodology: null, sections: null };
 
     const data = (page.content && typeof page.content === "object" ? page.content : {}) as Record<string, unknown>;

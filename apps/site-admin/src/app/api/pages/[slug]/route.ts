@@ -244,8 +244,14 @@ export async function PUT(
   return NextResponse.json({ ok: true });
   } catch (e) {
     const err = e as Error;
+    // Stack trace раскрываем только в dev — на проде не светим внутренности.
+    const isDev = process.env.NODE_ENV !== "production";
+    // eslint-disable-next-line no-console
+    console.error("[PUT /api/pages/[slug]] error:", err);
     return NextResponse.json(
-      { error: err.message ?? "unknown error", name: err.name, stack: err.stack },
+      isDev
+        ? { error: err.message ?? "unknown error", name: err.name, stack: err.stack }
+        : { error: "internal_error" },
       { status: 500 },
     );
   }

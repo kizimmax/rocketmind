@@ -5,7 +5,14 @@ import crypto from "crypto";
 export const UPLOADS_DIR = process.env.UPLOADS_DIR ?? "/data/uploads";
 export const CONFIG_DIR = process.env.CONFIG_DIR ?? "/data/config";
 
-const CMS_PUBLIC_URL = (process.env.CMS_PUBLIC_URL ?? "http://localhost:3004").replace(/\/$/, "");
+/**
+ * Был CMS_PUBLIC_URL (абсолютный) — мы хранили в БД `http://admin:3004/uploads/...`,
+ * что на проде давало кросс-доменные `<img>` с CSP/CORS-проблемами и завязку на хост.
+ * Теперь храним **относительный путь** `/uploads/...`. Сайт обслуживает его через
+ * собственный route handler (`apps/site/src/app/uploads/[...path]/route.ts`),
+ * админка — через свой. Оба читают из одного `UPLOADS_DIR` (на проде — общий volume
+ * `/data/uploads`).
+ */
 
 export const MIME_TO_EXT: Record<string, string> = {
   "image/png": ".png",
@@ -59,9 +66,20 @@ export function mimeForExt(ext: string): string {
   return EXT_TO_MIME[ext.toLowerCase()] ?? "application/octet-stream";
 }
 
+/** Image-only MIME-белый список. Использовать для аватаров эксперта/отзыва/глоссария
+ *  и любых полей вида «фото», где приём PDF/audio/video/zip — баг и потенциальный
+ *  disk leak (соседний файл со старым расширением не удаляется). */
+export const IMAGE_MIMES = new Set<string>([
+  "image/png", "image/jpeg", "image/jpg", "image/webp",
+  "image/svg+xml", "image/gif", "image/avif",
+]);
+export const IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif", ".avif"];
+
+export function isImageMime(mime: string): boolean { return IMAGE_MIMES.has(mime); }
+
 export function publicUrlFor(filePath: string): string {
   const normalized = filePath.split(path.sep).join("/");
-  return `${CMS_PUBLIC_URL}/uploads/${normalized}`;
+  return `/uploads/${normalized}`;
 }
 
 export interface ParsedDataUrl {

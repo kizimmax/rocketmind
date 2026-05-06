@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /admin/
-Allow: /
-Sitemap: https://r-front-rocketmind.amvera.io/sitemap.xml

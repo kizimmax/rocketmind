@@ -26,7 +26,7 @@ function normaliseStats(raw: unknown): CaseStat[] {
 
 export async function getAllCases(): Promise<CaseEntry[]> {
   const [miniPages, bigArticles] = await Promise.all([
-    prisma.page.findMany({ where: { category: "cases" } }).catch(() => []),
+    prisma.page.findMany({ where: { category: "cases", status: "published" } }).catch(() => []),
     prisma.article.findMany({ where: { type: "case", status: "published" } }).catch(() => []),
   ]);
 

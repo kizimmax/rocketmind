@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { parseDataUrl, saveBuffer, deleteFilesWithBase } from "@/lib/storage";
-
-const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp", ".svg"];
+import { parseDataUrl, saveBuffer, deleteFilesWithBase, isImageMime, IMAGE_EXTS } from "@/lib/storage";
 
 export async function PUT(
   request: Request,
@@ -19,12 +17,16 @@ export async function PUT(
   if (typeof body.avatar === "string") {
     if (body.avatar.startsWith("data:")) {
       const parsed = parseDataUrl(body.avatar);
-      if (parsed) {
-        deleteFilesWithBase("testimonials", id, IMAGE_EXTS);
-        const diskName = `${id}${parsed.ext}`;
-        const { publicUrl } = saveBuffer("testimonials", diskName, parsed.buffer);
-        avatarPath = publicUrl;
+      if (!parsed) {
+        return NextResponse.json({ error: "invalid_dataUrl" }, { status: 400 });
       }
+      if (!isImageMime(parsed.mime)) {
+        return NextResponse.json({ error: "unsupported_mime", message: `Только изображения: ${parsed.mime} не принят` }, { status: 415 });
+      }
+      deleteFilesWithBase("testimonials", id, IMAGE_EXTS);
+      const diskName = `${id}${parsed.ext}`;
+      const { publicUrl } = saveBuffer("testimonials", diskName, parsed.buffer);
+      avatarPath = publicUrl;
     } else {
       avatarPath = body.avatar;
     }

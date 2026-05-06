@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeSlug } from "@/lib/slugify";
 
 type ArticleContent = { body?: unknown; keyThoughts?: unknown[]; caseCard?: unknown; sortOrder?: number; order?: number; multiPage?: unknown; chapters?: unknown; [key: string]: unknown };
 
@@ -48,8 +49,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { slug, title, type: rawType } = body as { slug?: string; title?: string; type?: string };
-  if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
+  const { slug: rawSlug, title, type: rawType } = body as { slug?: string; title?: string; type?: string };
+  // Нормализуем на бэке: даже если фронт прислал кириллицу — кладём в БД ASCII slug.
+  // Это backstop на случай, если автогенерация на фронте сломается или клиент шлёт сырой ввод.
+  const slug = normalizeSlug(rawSlug);
+  if (!slug) return NextResponse.json({ error: "invalid slug" }, { status: 400 });
   const type = rawType === "lesson" || rawType === "case" ? rawType : "default";
 
   const existing = await prisma.article.findUnique({ where: { slug } });

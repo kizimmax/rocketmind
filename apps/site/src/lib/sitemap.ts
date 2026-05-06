@@ -48,6 +48,10 @@ export async function collectSitemapEntries(): Promise<SitemapEntry[]> {
     entries.push({ loc: `/media/${a.slug}`, lastmod: toDate(a.publishedAt) });
   }
 
+  for (const term of terms) {
+    entries.push({ loc: `/media/glossary/term/${term.slug}`, lastmod: today });
+  }
+
   for (const t of publicTags) {
     if ((tagUsageMap[t.id] ?? 0) === 0) continue;
     entries.push({ loc: `/media/tag/${t.id}`, lastmod: today });

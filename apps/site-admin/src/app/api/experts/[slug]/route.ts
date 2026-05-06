@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { parseDataUrl, saveBuffer, deleteFilesWithBase, randomHex } from "@/lib/storage";
+import { parseDataUrl, saveBuffer, deleteFilesWithBase, randomHex, isImageMime, IMAGE_EXTS } from "@/lib/storage";
 
-const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif"];
 
 export async function PUT(
   request: Request,
@@ -41,12 +40,18 @@ export async function POST(
     const formData = await request.formData();
     const file = formData.get("photo") as File | null;
     if (!file) return NextResponse.json({ error: "no file" }, { status: 400 });
+    if (file.type && !isImageMime(file.type)) {
+      return NextResponse.json({ error: "unsupported_mime", message: `Только изображения: ${file.type} не принят` }, { status: 415 });
+    }
     ext = "." + (file.name.split(".").pop() || "jpg");
     buffer = Buffer.from(await file.arrayBuffer());
   } else {
     const body = await request.json();
     const parsed = parseDataUrl(body.dataUrl);
-    if (!parsed) return NextResponse.json({ error: "invalid dataUrl" }, { status: 400 });
+    if (!parsed) return NextResponse.json({ error: "invalid_dataUrl" }, { status: 400 });
+    if (!isImageMime(parsed.mime)) {
+      return NextResponse.json({ error: "unsupported_mime", message: `Только изображения: ${parsed.mime} не принят` }, { status: 415 });
+    }
     buffer = parsed.buffer;
     ext = parsed.ext;
   }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeSlug } from "@/lib/slugify";
 
 type GlossaryContent = {
   order?: number;
@@ -57,8 +58,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { slug, title } = body as { slug?: string; title?: string };
-  if (!slug) return NextResponse.json({ error: "slug required" }, { status: 400 });
+  const { slug: rawSlug, title } = body as { slug?: string; title?: string };
+  const slug = normalizeSlug(rawSlug);
+  if (!slug) return NextResponse.json({ error: "invalid slug" }, { status: 400 });
 
   const existing = await prisma.glossaryTerm.findUnique({ where: { slug } });
   if (existing) return NextResponse.json({ error: "exists" }, { status: 409 });
