@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@rocketmind/ui";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api-client";
 import { useAdminStore } from "@/lib/store";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { GlossaryTerm } from "@/lib/types";
@@ -122,6 +123,21 @@ export function GlossaryAdminPanel() {
     toast.success("Термин удалён");
   }
 
+  async function handleBackfillMorph() {
+    const id = toast.loading("Пересчёт падежей…");
+    try {
+      const res = await apiFetch("/api/glossary/backfill-morph", { method: "POST" });
+      if (!res.ok) throw new Error(await res.text());
+      const data = (await res.json()) as { processed: number; updated: number };
+      toast.success(
+        `Падежи пересчитаны: ${data.updated} из ${data.processed}. Обновите страницу.`,
+        { id },
+      );
+    } catch (e) {
+      toast.error(`Ошибка: ${e instanceof Error ? e.message : String(e)}`, { id });
+    }
+  }
+
   return (
     <div>
       {/* Create + view toggle */}
@@ -159,10 +175,20 @@ export function GlossaryAdminPanel() {
             </Button>
           </div>
         ) : (
-          <Button variant="outline" size="sm" onClick={() => setIsCreating(true)}>
-            <Plus className="mr-1 h-4 w-4" />
-            Добавить термин
-          </Button>
+          <>
+            <Button variant="outline" size="sm" onClick={() => setIsCreating(true)}>
+              <Plus className="mr-1 h-4 w-4" />
+              Добавить термин
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackfillMorph}
+              title="Сгенерить падежи для всех терминов разом"
+            >
+              Пересчитать падежи
+            </Button>
+          </>
         )}
         </div>
 
