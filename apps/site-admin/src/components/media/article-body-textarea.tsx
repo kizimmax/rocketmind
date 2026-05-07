@@ -103,7 +103,11 @@ export function ArticleBodyTextarea({
   // когда попвер активен — textarea теряет фокус, и без этого флага toolbar бы
   // размонтировался до того, как dropdown успеет отрендериться.
   const [typeMenuOpen, setTypeMenuOpen] = useState(false);
-  const toolbarVisible = focused || typeMenuOpen;
+  // По той же причине поднимаем `open` из TermPickerButton — фокус инпута
+  // поиска внутри попапа блюрит textarea, иначе toolbar размонтируется
+  // одновременно с попапом.
+  const [termMenuOpen, setTermMenuOpen] = useState(false);
+  const toolbarVisible = focused || typeMenuOpen || termMenuOpen;
 
   const supportsInline = blockType === "paragraph";
 
@@ -394,6 +398,8 @@ export function ArticleBodyTextarea({
             <TermPickerButton
               disabled={!selRange}
               onPick={insertGlossaryLink}
+              open={termMenuOpen}
+              onOpenChange={setTermMenuOpen}
             />
           )}
           <ToolBtn onClick={insertNewline} title="Перенос строки внутри блока">
@@ -500,26 +506,28 @@ function TabBtn({
 function TermPickerButton({
   disabled,
   onPick,
+  open,
+  onOpenChange,
 }: {
   disabled?: boolean;
   onPick: (slug: string) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const { glossaryTerms } = useAdminStore();
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // Закрывать popover по клику вне (toolbar parent останавливает свой mouseDown,
-  // поэтому отдельный listener на document).
+  // Закрывать popover по клику вне.
   useEffect(() => {
     if (!open) return;
     const onDocClick = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!wrapRef.current?.contains(e.target as Node)) onOpenChange(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
-  }, [open]);
+  }, [open, onOpenChange]);
 
   // Только опубликованные. Сортировка по title (RU локаль).
   const terms = useMemo(() => {
@@ -542,9 +550,12 @@ function TermPickerButton({
         onMouseDown={(e) => {
           e.preventDefault();
           if (!disabled) {
-            setOpen((v) => !v);
-            setQuery("");
-            requestAnimationFrame(() => inputRef.current?.focus());
+            const next = !open;
+            onOpenChange(next);
+            if (next) {
+              setQuery("");
+              requestAnimationFrame(() => inputRef.current?.focus());
+            }
           }
         }}
         title="Привязать термин из глоссария"
@@ -565,7 +576,7 @@ function TermPickerButton({
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
-                  setOpen(false);
+                  onOpenChange(false);
                 }
               }}
               placeholder="Поиск термина…"
@@ -585,7 +596,7 @@ function TermPickerButton({
                   onMouseDown={(e) => {
                     e.preventDefault();
                     onPick(t.slug);
-                    setOpen(false);
+                    onOpenChange(false);
                   }}
                   className="block w-full truncate rounded-sm px-2 py-1.5 text-left text-[length:var(--text-12)] text-foreground hover:bg-muted"
                   title={t.title}
