@@ -18,6 +18,7 @@ import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-d
 import { ArticleSectionsEditor } from "./article-sections-editor";
 import { GlossaryHeroEditor } from "./glossary-hero-editor";
 import { SlugRedirects } from "./slug-redirects";
+import { openPreview } from "@/lib/preview-client";
 
 interface Props {
   termId: string;
@@ -72,6 +73,12 @@ function Inner({
 
   const [unsavedOpen, setUnsavedOpen] = useState(false);
   const [navigateTarget, setNavigateTarget] = useState<string | null>(null);
+
+  const termPublicUrl = `/media/glossary/term/${term.slug}`;
+
+  async function handlePreview() {
+    await openPreview("glossary", term.slug, termPublicUrl, term);
+  }
 
   // Sync dirty state to navigation guard so AdminHeader links trigger
   // tryNavigate → pendingHref → modal.
@@ -328,6 +335,7 @@ function Inner({
         onTogglePublish={handleTogglePublish}
         onSave={handleSave}
         onCancel={handleBack}
+        onPreview={handlePreview}
       />
 
       {/* Unsaved changes dialog */}

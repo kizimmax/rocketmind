@@ -211,6 +211,24 @@ model FormSubmission {
   @@index([createdAt])
 }
 
+// ── Preview drafts (черновики для предпросмотра до публикации) ────────────────
+
+model PreviewDraft {
+  id        String   @id
+  type      String
+  slug      String
+  publicUrl String
+  payload   Json
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+
+  @@index([slug, type])
+  @@index([expiresAt])
+  @@map("preview_drafts")
+}
+
 // ── Assets (centralized file registry) ────────────────────────────────────────
 
 model Asset {

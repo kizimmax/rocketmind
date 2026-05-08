@@ -14,6 +14,8 @@ import { SiteModalProvider } from "@/components/site-modal-provider";
 import { SITE_URL } from "@/lib/site-url";
 import { getAllForms } from "@/lib/forms";
 import { getSiteNav } from "@/lib/site-nav";
+import { readActivePreviewDraft } from "@/lib/preview-draft";
+import { PreviewBar } from "@/components/preview/PreviewBar";
 
 const robotoMono = Roboto_Mono({
   subsets: ["latin", "cyrillic"],
@@ -43,6 +45,10 @@ export default async function RootLayout({
     label: l.label,
     url: l.href,
   }));
+
+  // Preview-режим: показываем подсказку слева снизу, что это черновик.
+  const activeDraft = await readActivePreviewDraft();
+  const showPreviewBar = activeDraft != null;
   return (
     <html lang="ru" suppressHydrationWarning className={robotoMono.variable}>
       <body className="antialiased">
@@ -64,6 +70,7 @@ export default async function RootLayout({
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
+            {showPreviewBar && <PreviewBar />}
           </SiteModalProvider>
         </ThemeProvider>
       </body>

@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 import type { ArticleBodyBlock } from "@rocketmind/ui";
 import { getProductBySlug } from "./products";
 import { getExpertBySlug } from "./experts";
+import { isPreviewMode, matchPreviewPayload } from "./preview-draft";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -370,11 +371,71 @@ export async function getSimilarArticles(
 
 export async function getArticleBySlug(slug: string): Promise<ArticleEntry | null> {
   try {
+    // Preview-режим: подменяем содержимое черновиком из PreviewDraft (in-memory правки),
+    // либо читаем из таблицы без фильтра статуса (видим скрытые).
+    if (await isPreviewMode()) {
+      const draft = await matchPreviewPayload<Record<string, unknown>>("article", { slug });
+      if (draft) return previewArticlePayloadToEntry(draft) ?? null;
+      const draftRow = await prisma.article.findFirst({ where: { slug } });
+      if (!draftRow) return null;
+      return rowToEntry(draftRow);
+    }
     // findFirst + status filter — `findUnique` не принимает не-уникальные where, поэтому
     // фильтр статуса делаем здесь, чтобы скрытые/архивные не отдавались публике.
     const row = await prisma.article.findFirst({ where: { slug, status: "published" } });
     if (!row) return null;
     return rowToEntry(row);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Преобразует payload, присланный редактором админки (admin Article shape), в
+ * виртуальный row в формате прозрачно `prisma.article.findFirst()`, после чего
+ * прогоняет его через `rowToEntry`. Используется только в preview-режиме.
+ */
+function previewArticlePayloadToEntry(p: Record<string, unknown>): ArticleEntry | null {
+  try {
+    const type = p.type === "lesson" || p.type === "case" ? p.type : "default";
+    const slug = typeof p.slug === "string" ? p.slug : "";
+    if (!slug) return null;
+    const content: Record<string, unknown> = {
+      body: Array.isArray(p.body) ? p.body : [],
+      keyThoughts: Array.isArray(p.keyThoughts) ? p.keyThoughts : [],
+      ...(type === "case" && p.caseCard ? { caseCard: p.caseCard } : {}),
+      ...(p.multiPage === true
+        ? { multiPage: true, chapters: Array.isArray(p.chapters) ? p.chapters : [] }
+        : { multiPage: false }),
+      sortOrder: typeof p.order === "number" ? p.order : 0,
+    };
+    const virtualRow = {
+      slug,
+      type,
+      status: typeof p.status === "string" ? p.status : "published",
+      title: typeof p.title === "string" ? p.title : "",
+      description: typeof p.description === "string" ? p.description : "",
+      content,
+      // В админке cover лежит в `coverImageData` (либо data: URL для свежей
+       // загрузки, либо относительный путь после сохранения). На сайте лоадер
+       // ждёт `coverPath` — мапим один в другой.
+      coverPath:
+        typeof p.coverImageData === "string" && p.coverImageData
+          ? p.coverImageData
+          : typeof p.coverPath === "string"
+            ? p.coverPath
+            : null,
+      expertSlug: typeof p.expertSlug === "string" ? p.expertSlug : null,
+      publishedAt: typeof p.publishedAt === "string" ? p.publishedAt : "",
+      tagIds: Array.isArray(p.tagIds) ? (p.tagIds as string[]) : [],
+      pinned: p.pinned === true,
+      pinnedOrder: typeof p.pinnedOrder === "number" ? p.pinnedOrder : 0,
+      featured: p.featured === true,
+      cardVariant: p.cardVariant === "wide" ? "wide" : "default",
+      metaTitle: typeof p.metaTitle === "string" ? p.metaTitle : "",
+      metaDescription: typeof p.metaDescription === "string" ? p.metaDescription : "",
+    };
+    return rowToEntry(virtualRow);
   } catch {
     return null;
   }

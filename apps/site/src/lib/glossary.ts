@@ -9,6 +9,7 @@ import {
 import type { CtaEntity } from "./ctas";
 import { getCtaById } from "./ctas";
 import { getExpertBySlug } from "./experts";
+import { isPreviewMode, matchPreviewPayload } from "./preview-draft";
 
 export type GlossaryTermStatus = "published" | "hidden" | "archived";
 
@@ -130,9 +131,55 @@ export async function getGlossaryIndex(): Promise<GlossaryIndexEntry[]> {
 
 export async function getGlossaryTermBySlug(slug: string): Promise<GlossaryTermEntry | null> {
   try {
+    if (await isPreviewMode()) {
+      const draft = await matchPreviewPayload<Record<string, unknown>>("glossary", { slug });
+      if (draft) {
+        const entry = previewGlossaryPayloadToEntry(draft);
+        if (entry) return entry;
+      }
+      const draftRow = await prisma.glossaryTerm.findFirst({ where: { slug } });
+      if (!draftRow) return null;
+      return rowToEntry(draftRow);
+    }
     const row = await prisma.glossaryTerm.findFirst({ where: { slug, status: "published" } });
     if (!row) return null;
     return rowToEntry(row);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Преобразует payload, присланный редактором админки (admin GlossaryTerm shape),
+ * в виртуальный row для `rowToEntry`. Используется только в preview-режиме.
+ */
+function previewGlossaryPayloadToEntry(p: Record<string, unknown>): GlossaryTermEntry | null {
+  try {
+    const slug = typeof p.slug === "string" ? p.slug : "";
+    if (!slug) return null;
+    const aliases: string[] = Array.isArray(p.aliases)
+      ? (p.aliases as unknown[]).filter((v): v is string => typeof v === "string")
+      : [];
+    const content: Record<string, unknown> = {
+      order: typeof p.order === "number" ? p.order : 0,
+      sections: Array.isArray(p.sections) ? p.sections : [],
+      pinned: p.pinned === true,
+      pinnedOrder: typeof p.pinnedOrder === "number" ? p.pinnedOrder : 0,
+      aliases,
+      autoAliases: Array.isArray(p.autoAliases) ? p.autoAliases : [],
+      gender: typeof p.gender === "string" ? p.gender : undefined,
+    };
+    const virtualRow = {
+      slug,
+      status: typeof p.status === "string" ? p.status : "published",
+      title: typeof p.title === "string" ? p.title : "",
+      description: typeof p.description === "string" ? p.description : "",
+      content,
+      tagIds: Array.isArray(p.tagIds) ? (p.tagIds as string[]) : [],
+      metaTitle: typeof p.metaTitle === "string" ? p.metaTitle : "",
+      metaDescription: typeof p.metaDescription === "string" ? p.metaDescription : "",
+    };
+    return rowToEntry(virtualRow);
   } catch {
     return null;
   }

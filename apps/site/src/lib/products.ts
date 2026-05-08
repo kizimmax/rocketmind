@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { resolveExperts, type ExpertData } from "./experts";
+import { isPreviewMode, matchPreviewPayload } from "./preview-draft";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -236,7 +237,16 @@ async function pageToProductData(page: {
       ...(audioUrl ? { audioData: audioUrl } : {}),
     },
     about,
-    audience: data.audience && typeof data.audience === "object" ? (data.audience as ForWhomData) : null,
+    audience: (() => {
+      if (!data.audience || typeof data.audience !== "object") return null;
+      const a = data.audience as Record<string, unknown>;
+      // facts иногда отсутствует, если редактор включил блок, но не добавил
+      // ни одной карточки — UI компонент крашится на `facts.length`.
+      return {
+        ...(a as ForWhomData),
+        facts: Array.isArray(a.facts) ? (a.facts as ForWhomData["facts"]) : [],
+      } as ForWhomData;
+    })(),
     tools: data.tools && typeof data.tools === "object" ? (data.tools as ToolsData) : null,
     results: data.results && typeof data.results === "object" ? (data.results as ResultsData) : null,
     services: data.services && typeof data.services === "object" ? (data.services as ServicesData) : null,
@@ -268,7 +278,24 @@ export async function getProductBySlug(slug: string, category?: string): Promise
     const where = category
       ? { slug, category }
       : { slug, category: { in: CATALOG_CATEGORIES } };
-    const page = await prisma.page.findFirst({ where: { ...where, status: "published" } });
+    const inPreview = await isPreviewMode();
+    if (inPreview) {
+      // В preview-режиме сначала пробуем подменить страницу синтетическим
+      // page row, который admin сложил из редакторских блоков (без сохранения
+      // в БД). Это позволяет видеть несохранённые правки.
+      const draftRow = await matchPreviewPayload<Parameters<typeof pageToProductData>[0]>(
+        "page",
+        { slug },
+      );
+      if (draftRow) return pageToProductData(draftRow);
+      // Фоллбэк — последняя сохранённая версия без фильтра статуса.
+      const page = await prisma.page.findFirst({ where });
+      if (!page) return null;
+      return pageToProductData(page);
+    }
+    const page = await prisma.page.findFirst({
+      where: { ...where, status: "published" },
+    });
     if (!page) return null;
     return pageToProductData(page);
   } catch {

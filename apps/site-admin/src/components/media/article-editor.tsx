@@ -29,6 +29,7 @@ import { ArticleChaptersEditor } from "./article-chapters-editor";
 import { SlugRedirects } from "./slug-redirects";
 import { CaseCardEditor } from "@/components/page-editor/block-editors/case-card-editor";
 import type { ArticleType, ArticleChapter, CaseCardBlockData } from "@/lib/types";
+import { openPreview } from "@/lib/preview-client";
 
 interface Props {
   articleId: string;
@@ -82,6 +83,12 @@ function ArticleEditorInner({
   const [unsavedOpen, setUnsavedOpen] = useState(false);
   const [navigateTarget, setNavigateTarget] = useState<string | null>(null);
   const [confirmDisableMultiPage, setConfirmDisableMultiPage] = useState(false);
+
+  const articlePublicUrl = `/media/${article.slug}`;
+
+  async function handlePreview() {
+    await openPreview("article", article.slug, articlePublicUrl, article);
+  }
 
   // Sync dirty to navigation guard (so AdminHeader links trigger tryNavigate)
   useEffect(() => {
@@ -356,6 +363,7 @@ function ArticleEditorInner({
         onTogglePublish={handleTogglePublish}
         onSave={handleSave}
         onCancel={handleBack}
+        onPreview={handlePreview}
       />
 
       {/* Unsaved changes dialog */}

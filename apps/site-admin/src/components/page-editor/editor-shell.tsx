@@ -22,6 +22,7 @@ import { EditorToolbar } from "./editor-toolbar";
 import { SlugRedirects } from "@/components/media/slug-redirects";
 import { BlockList } from "./block-list";
 import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
+import { openPreview } from "@/lib/preview-client";
 
 const DESC_REC_MIN = 60;
 const DESC_REC_MAX = 120;
@@ -400,6 +401,13 @@ export function EditorShell({ initialPage }: EditorShellProps) {
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [navigateTarget, setNavigateTarget] = useState<string | null>(null);
 
+  const pagePublicUrl =
+    page.sectionId === "unique" ? `/${page.slug}` : `/${page.sectionId}/${page.slug}`;
+
+  async function handlePreview() {
+    await openPreview("page", page.slug, pagePublicUrl, page);
+  }
+
   // Sync dirty state to navigation guard
   useEffect(() => {
     setDirty(isDirty);
@@ -725,6 +733,7 @@ export function EditorShell({ initialPage }: EditorShellProps) {
         }
         onSave={handleSave}
         onCancel={handleBack}
+        onPreview={handlePreview}
       />
 
       {/* Unsaved changes dialog */}

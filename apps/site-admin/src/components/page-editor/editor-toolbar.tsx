@@ -1,6 +1,6 @@
 "use client";
 
-import { Undo2, Redo2, X } from "lucide-react";
+import { Undo2, Redo2, X, ExternalLink } from "lucide-react";
 import { Button, Switch, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@rocketmind/ui";
 
 interface EditorToolbarProps {
@@ -13,6 +13,7 @@ interface EditorToolbarProps {
   onTogglePublish: (published: boolean) => void;
   onSave: () => void;
   onCancel: () => void;
+  onPreview?: () => void | Promise<void>;
 }
 
 export function EditorToolbar({
@@ -25,6 +26,7 @@ export function EditorToolbar({
   onTogglePublish,
   onSave,
   onCancel,
+  onPreview,
 }: EditorToolbarProps) {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-sm border border-border bg-background px-4 py-3 shadow-lg">
@@ -89,6 +91,27 @@ export function EditorToolbar({
           </TooltipTrigger>
           <TooltipContent>Отменить все изменения</TooltipContent>
         </Tooltip>
+
+        {/* Preview */}
+        {onPreview && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void onPreview()}
+                >
+                  <ExternalLink className="mr-1 h-3.5 w-3.5" />
+                  Предпросмотр
+                </Button>
+              }
+            >
+              <span />
+            </TooltipTrigger>
+            <TooltipContent>Открыть на сайте в режиме черновика</TooltipContent>
+          </Tooltip>
+        )}
 
         {/* Save */}
         <Button

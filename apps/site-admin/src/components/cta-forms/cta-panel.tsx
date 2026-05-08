@@ -245,7 +245,7 @@ function CtaCard({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="rounded-sm p-1 text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
+          className="rounded-sm bg-white p-1 text-black hover:bg-white/90"
           aria-label={expanded ? "Свернуть" : "Развернуть"}
         >
           {expanded ? (
