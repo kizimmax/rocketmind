@@ -6,6 +6,7 @@ import { AuthProvider } from "@/lib/auth-context";
 export const metadata: Metadata = {
   title: "Rocketmind",
   description: "AI-агенты для ведения кейсов",
+  manifest: "/manifest.json"
 };
 
 export const viewport: Viewport = {

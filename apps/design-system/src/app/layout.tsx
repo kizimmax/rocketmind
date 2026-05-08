@@ -5,6 +5,7 @@ import { ThemeProvider, Toaster, TooltipProvider } from "@rocketmind/ui"
 export const metadata: Metadata = {
   title: "Rocketmind Design System",
   description: "Design system documentation for Rocketmind SaaS platform",
+  manifest: "/manifest.json"
 };
 
 export default function RootLayout({

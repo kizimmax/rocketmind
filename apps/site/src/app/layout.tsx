@@ -27,6 +27,7 @@ export const metadata: Metadata = {
   title: "Rocketmind | Стратегия и бизнес-модели",
   description:
     "Помогаем командам искать, проверять и усиливать бизнес-модели, связывать стратегию с операционными действиями.",
+  manifest: "/manifest.json"
 };
 
 export default async function RootLayout({

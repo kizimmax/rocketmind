@@ -7,6 +7,7 @@ import NextTopLoader from "nextjs-toploader";
 export const metadata: Metadata = {
   title: "CMS — Rocketmind",
   description: "Админка маркетингового сайта Rocketmind",
+  manifest: "/manifest.json"
 };
 
 export const viewport: Viewport = {
@@ -26,7 +27,7 @@ export default function RootLayout({
         <NextTopLoader color="var(--foreground)" showSpinner={false} height={2} />
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
