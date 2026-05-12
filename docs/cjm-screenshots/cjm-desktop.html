@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>CJM — Desktop</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "SF Pro Text", system-ui, sans-serif; background: #f4f4f2; color: #111; padding: 32px; }
+  h1 { font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 8px; }
+  .sub { font-size: 13px; color: #666; margin-bottom: 32px; }
+  .canvas { position: relative; width: 6360px; height: 920px; }
+  .card { position: absolute; width: 280px; }
+  .card .img-wrap { position: relative; width: 280px; height: 175px; border: 1px solid #d4d4d2; border-radius: 4px; overflow: hidden; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  .card img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .card .badge { position: absolute; top: 8px; left: 8px; background: #111; color: #fff; font-family: ui-monospace, "SF Mono", monospace; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.06em; }
+  .card .title { margin-top: 8px; font-size: 12px; font-weight: 500; line-height: 1.3; color: #222; text-align: center; }
+  .card .sub-title { font-size: 10px; color: #888; text-align: center; margin-top: 2px; }
+  svg.arrows { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+  svg path { fill: none; stroke: #d97706; stroke-width: 2; }
+  svg .arrowhead { fill: #d97706; }
+  .legend { font-size: 11px; color: #999; margin-top: 24px; }
+</style>
+</head>
+<body>
+<h1>Карта пользовательского пути · Desktop (1440×900)</h1>
+<div class="sub">R-Акселератор MVP 1.1 — от лендинга до оплаты</div>
+<div class="canvas" id="canvas">
+  <svg class="arrows" id="arrows" viewBox="0 0 6360 920" preserveAspectRatio="none">
+    <defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" class="arrowhead"></path>
+      </marker>
+    </defs>
+  </svg>
+</div>
+
+<div class="legend">62 скрина · 19 экранов в потоке · точка развилки на Q3 «стадия» онбординга</div>
+
+<script>
+const CARD_W = 280, CARD_H = 175, COL_GAP = 60, ROW_GAP = 60;
+const LABEL_H = 50;
+const ROW_H = CARD_H + LABEL_H + ROW_GAP;
+const TOP_MARGIN = 40;
+const LEFT_MARGIN = 30;
+const MID_ROW_Y = TOP_MARGIN + ROW_H; // y of central row
+
+const flow = [
+  {col:1,  row:0,  stage:'01', title:'Лендинг',          sub:'rocketmind.ru', img:'01-landing/01-01-01-landing-desktop.png'},
+  {col:2,  row:0,  stage:'02', title:'Email',            sub:'login',         img:'02-registration/02-01-01-login-email-desktop.jpg'},
+  {col:3,  row:0,  stage:'02', title:'Код',              sub:'OTP 6 цифр',    img:'02-registration/02-01-03-login-otp-desktop.jpg'},
+  {col:4,  row:0,  stage:'02', title:'Редирект',         sub:'/manager',      img:'02-registration/02-01-05-post-login-manager-desktop.jpg'},
+  {col:5,  row:0,  stage:'03', title:'Чат с Алексом',    sub:'zero-state',    img:'03-onboarding/03-01-01-zero-state-chat-desktop.jpg'},
+  {col:6,  row:0,  stage:'03', title:'Q1: роль',         sub:'фаундер / SME', img:'03-onboarding/03-01-03-q1-role-desktop.jpg'},
+  {col:7,  row:0,  stage:'03', title:'Q3: стадия',       sub:'РАЗВИЛКА',      img:'03-onboarding/03-02-01-divergence-stage-desktop.jpg', accent:true},
+  {col:8,  row:-1, stage:'03', title:'Исход «новый»',    sub:'строю с нуля',  img:'03-onboarding/03-03-01-outcome-new-desktop.jpg'},
+  {col:8,  row:0,  stage:'03', title:'Исход «MVP»',      sub:'уже запущен',   img:'03-onboarding/03-04-01-outcome-existing-desktop.jpg'},
+  {col:8,  row:1,  stage:'03', title:'Исход «pivot»',    sub:'меняю курс',    img:'03-onboarding/03-05-01-outcome-pivot-desktop.jpg'},
+  {col:9,  row:0,  stage:'04', title:'Дашборд',          sub:'3 проекта',     img:'04-dashboard/04-01-01-dashboard-projects-desktop.jpg'},
+  {col:10, row:0,  stage:'04', title:'Проект открыт',    sub:'pipeline R1–R5',img:'04-dashboard/04-03-01-project-p1-pipeline-desktop.jpg'},
+  {col:11, row:0,  stage:'05', title:'R1 Маркет',        sub:'Роман',         img:'05-r1-market-research/05-02-01-r1-conversation-desktop.jpg'},
+  {col:12, row:0,  stage:'06', title:'R2 Сегменты',      sub:'Регина',        img:'06-r2-segments/06-02-01-r2-conversation-desktop.jpg'},
+  {col:13, row:0,  stage:'07', title:'R+ Синтетика',     sub:'Роза',          img:'07-rplus-synthetic/07-02-01-rplus-conversation-desktop.jpg'},
+  {col:14, row:0,  stage:'08', title:'R3 Бизнес-модель', sub:'Римма',         img:'08-r3-bizmodel/08-02-01-r3-conversation-desktop.jpg'},
+  {col:15, row:0,  stage:'09', title:'R4 MVP-план',      sub:'Роберт',        img:'09-r4-mvp/09-02-01-r4-conversation-desktop.jpg'},
+  {col:16, row:0,  stage:'10', title:'R5 Питч',          sub:'Рон',           img:'10-r5-pitch/10-02-01-r5-conversation-desktop.jpg'},
+  {col:17, row:0,  stage:'12', title:'Тарифы',           sub:'Free/Pro/Team', img:'12-paywall/12-01-01-plans-desktop.jpg'},
+  {col:18, row:0,  stage:'12', title:'Оплата',           sub:'карта',         img:'12-paywall/12-02-01-payment-desktop.jpg'},
+];
+
+const arrows = [
+  // линейный поток до Q3
+  {from:{col:1,row:0}, to:{col:2,row:0}},
+  {from:{col:2,row:0}, to:{col:3,row:0}},
+  {from:{col:3,row:0}, to:{col:4,row:0}},
+  {from:{col:4,row:0}, to:{col:5,row:0}},
+  {from:{col:5,row:0}, to:{col:6,row:0}},
+  {from:{col:6,row:0}, to:{col:7,row:0}},
+  // fork: Q3 → 3 исхода
+  {from:{col:7,row:0}, to:{col:8,row:-1}},
+  {from:{col:7,row:0}, to:{col:8,row:0}},
+  {from:{col:7,row:0}, to:{col:8,row:1}},
+  // merge: 3 исхода → дашборд
+  {from:{col:8,row:-1}, to:{col:9,row:0}},
+  {from:{col:8,row:0}, to:{col:9,row:0}},
+  {from:{col:8,row:1}, to:{col:9,row:0}},
+  // линейный поток от дашборда до оплаты
+  {from:{col:9,row:0}, to:{col:10,row:0}},
+  {from:{col:10,row:0}, to:{col:11,row:0}},
+  {from:{col:11,row:0}, to:{col:12,row:0}},
+  {from:{col:12,row:0}, to:{col:13,row:0}},
+  {from:{col:13,row:0}, to:{col:14,row:0}},
+  {from:{col:14,row:0}, to:{col:15,row:0}},
+  {from:{col:15,row:0}, to:{col:16,row:0}},
+  {from:{col:16,row:0}, to:{col:17,row:0}},
+  {from:{col:17,row:0}, to:{col:18,row:0}},
+];
+
+function pos(col, row) {
+  const x = LEFT_MARGIN + (col - 1) * (CARD_W + COL_GAP);
+  const y = MID_ROW_Y + row * ROW_H;
+  return {x, y};
+}
+
+const canvas = document.getElementById('canvas');
+flow.forEach(c => {
+  const {x, y} = pos(c.col, c.row);
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.left = x + 'px';
+  card.style.top = y + 'px';
+  card.innerHTML = `
+    <div class="img-wrap" ${c.accent ? 'style="border-color:#d97706;border-width:2px"' : ''}>
+      <span class="badge">${c.stage}</span>
+      <img src="${c.img}" alt="${c.title}">
+    </div>
+    <div class="title">${c.title}</div>
+    <div class="sub-title">${c.sub}</div>
+  `;
+  canvas.appendChild(card);
+});
+
+const svg = document.getElementById('arrows');
+arrows.forEach(a => {
+  const p1 = pos(a.from.col, a.from.row);
+  const p2 = pos(a.to.col, a.to.row);
+  const x1 = p1.x + CARD_W;
+  const y1 = p1.y + CARD_H / 2;
+  const x2 = p2.x;
+  const y2 = p2.y + CARD_H / 2;
+  // bezier curve when row differs
+  const dx = (x2 - x1) / 2;
+  const d = `M ${x1} ${y1} C ${x1+dx} ${y1}, ${x2-dx} ${y2}, ${x2} ${y2}`;
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('marker-end', 'url(#ah)');
+  svg.appendChild(path);
+});
+</script>
+</body>
+</html>

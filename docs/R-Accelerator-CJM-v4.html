@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-Акселератор — CJM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{
+  --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;
+  --color-surface-offset:#f3f0ec;--color-border:#d4d1ca;--color-divider:#dcd9d5;
+  --color-text:#28251d;--color-text-muted:#7a7974;--color-text-faint:#bab9b4;
+  --color-primary:#01696f;--color-primary-hover:#0c4e54;--color-primary-highlight:#cedcd8;
+  --color-warning:#964219;--color-warning-highlight:#ddcfc6;
+  --color-gold:#d19900;--color-gold-highlight:#e9e0c6;
+  --color-blue:#006494;--color-blue-highlight:#c6d8e4;
+  --color-purple:#7a39bb;--color-purple-highlight:#dacfde;
+  --color-orange:#da7101;--color-orange-highlight:#e7d7c4;
+  --color-success:#437a22;--color-success-highlight:#d4dfcc;
+  --shadow-sm:0 1px 3px oklch(0.2 0.01 80/0.08);
+  --shadow-md:0 4px 16px oklch(0.2 0.01 80/0.1);
+  --radius-sm:0.375rem;--radius-md:0.5rem;--radius-lg:0.75rem;
+  --font-body:'Inter',sans-serif;--font-display:'Instrument Serif',Georgia,serif;
+  --space-1:0.25rem;--space-2:0.5rem;--space-3:0.75rem;--space-4:1rem;
+  --space-6:1.5rem;--space-8:2rem;
+}
+[data-theme="dark"]{
+  --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
+  --color-surface-offset:#22211f;--color-border:#393836;--color-divider:#262523;
+  --color-text:#cdccca;--color-text-muted:#797876;--color-text-faint:#5a5957;
+  --color-primary:#4f98a3;--color-primary-highlight:#313b3b;
+  --color-warning-highlight:#564942;--color-gold-highlight:#4d4332;
+  --color-blue-highlight:#3a4550;--color-purple-highlight:#4e4652;
+  --color-orange-highlight:#564b3e;--color-success-highlight:#3a4435;
+  --shadow-sm:0 1px 3px oklch(0 0 0/0.25);--shadow-md:0 4px 16px oklch(0 0 0/0.35);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{font-family:var(--font-body);font-size:14px;background:var(--color-bg);color:var(--color-text);min-height:100vh}
+
+/* HEADER */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:var(--color-surface);
+  border-bottom:1px solid var(--color-border);
+  padding:var(--space-3) var(--space-6);
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:var(--shadow-sm);
+}
+.header-logo{display:flex;align-items:center;gap:var(--space-3)}
+.logo-mark{width:32px;height:32px}
+.header-title{font-family:var(--font-display);font-size:1.25rem;letter-spacing:-0.01em;color:var(--color-text)}
+.header-subtitle{font-size:0.75rem;color:var(--color-text-muted);margin-top:1px}
+.header-controls{display:flex;align-items:center;gap:var(--space-3)}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:0.7rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+.badge-stage{background:var(--color-primary-highlight);color:var(--color-primary)}
+.btn-toggle{background:none;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:6px 8px;cursor:pointer;color:var(--color-text-muted);transition:all 0.18s;display:flex;align-items:center}
+.btn-toggle:hover{border-color:var(--color-primary);color:var(--color-primary)}
+
+/* LEGEND */
+.legend{
+  display:flex;gap:var(--space-4);align-items:center;
+  padding:var(--space-3) var(--space-6);
+  background:var(--color-surface-2);
+  border-bottom:1px solid var(--color-divider);
+  font-size:0.72rem;color:var(--color-text-muted);
+  flex-wrap:wrap;
+}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* SCROLL WRAPPER */
+.table-scroll{overflow-x:auto;overflow-y:visible;padding:var(--space-6);padding-top:var(--space-4)}
+.table-scroll::-webkit-scrollbar{height:8px}
+.table-scroll::-webkit-scrollbar-track{background:var(--color-surface-offset);border-radius:4px}
+.table-scroll::-webkit-scrollbar-thumb{background:var(--color-border);border-radius:4px}
+.table-scroll::-webkit-scrollbar-thumb:hover{background:var(--color-text-faint)}
+
+/* CJM TABLE */
+.cjm-table{border-collapse:separate;border-spacing:0;min-width:max-content}
+
+/* STAGE HEADER ROW */
+.stage-header-row th{
+  background:var(--color-surface);
+  border-bottom:2px solid var(--color-primary);
+  padding:var(--space-3) var(--space-4);
+  text-align:center;font-size:0.7rem;
+  font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--color-text-muted);
+  white-space:nowrap;
+  position:sticky;top:0;z-index:20;
+}
+.stage-header-row th.stage-col{
+  min-width:400px;max-width:440px;
+  border-right:1px solid var(--color-border);
+  position:sticky;top:0;
+}
+.stage-header-row th.stage-pill{padding-bottom:var(--space-2)}
+
+.stage-number{
+  display:inline-block;
+  width:22px;height:22px;
+  background:var(--color-primary);color:#fff;
+  border-radius:50%;
+  font-size:0.65rem;font-weight:800;
+  line-height:22px;text-align:center;
+  margin-bottom:4px;
+}
+.stage-name{display:block;font-size:0.72rem;font-weight:700;color:var(--color-text);margin-top:2px}
+.stage-screen{display:block;font-size:0.62rem;font-weight:400;color:var(--color-text-muted);margin-top:1px}
+
+/* FIRST STICKY COLUMN */
+.user-label-col{
+  position:sticky;left:0;z-index:30;
+  background:var(--color-surface);
+  min-width:180px;max-width:200px;width:190px;
+  border-right:2px solid var(--color-border);
+  padding:var(--space-3) var(--space-4);
+  vertical-align:middle;
+}
+.user-group-header .user-label-col{
+  border-bottom:1px solid var(--color-border);
+  background:var(--color-surface-2);
+}
+
+/* USER GROUP HEADER */
+.user-group-header td{
+  background:var(--color-surface-2);
+  border-bottom:1px solid var(--color-divider);
+  padding:var(--space-2) var(--space-3);
+  font-size:0.7rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;
+  color:var(--color-text-muted);
+}
+
+/* USER NAME CELL */
+.user-name-block{display:flex;flex-direction:column;gap:3px}
+.user-emoji{font-size:1.2rem;line-height:1}
+.user-name{font-weight:700;font-size:0.75rem;color:var(--color-text);line-height:1.2}
+.user-desc{font-size:0.65rem;color:var(--color-text-muted);line-height:1.3}
+
+/* SUBROW LABEL */
+.subrow-label{
+  position:sticky;left:0;z-index:25;
+  min-width:180px;max-width:200px;width:190px;
+  border-right:2px solid var(--color-border);
+  padding:var(--space-2) var(--space-3);
+  vertical-align:top;
+  font-size:0.65rem;font-weight:600;letter-spacing:0.03em;text-transform:uppercase;
+}
+.label-expect{color:var(--color-primary);background:color-mix(in oklab,var(--color-primary-highlight) 60%,var(--color-surface))}
+.label-pain{color:var(--color-warning);background:color-mix(in oklab,var(--color-warning-highlight) 60%,var(--color-surface))}
+
+/* CONTENT CELLS */
+.cell-expect,.cell-pain{
+  vertical-align:top;
+  padding:var(--space-3) var(--space-3);
+  min-width:400px;max-width:440px;
+  border-right:1px solid var(--color-divider);
+  font-size:0.72rem;line-height:1.5;
+  color:var(--color-text);
+}
+.cell-expect{background:color-mix(in oklab,var(--color-primary-highlight) 20%,var(--color-surface))}
+.cell-pain{background:color-mix(in oklab,var(--color-warning-highlight) 20%,var(--color-surface))}
+.cell-expect:hover{background:color-mix(in oklab,var(--color-primary-highlight) 35%,var(--color-surface))}
+.cell-pain:hover{background:color-mix(in oklab,var(--color-warning-highlight) 35%,var(--color-surface))}
+
+/* USER ROW SEPARATOR */
+.user-separator td{height:8px;background:var(--color-bg);border-top:2px solid var(--color-border)}
+.user-separator .user-label-col{background:var(--color-bg);position:sticky;left:0;z-index:25}
+
+ul.cell-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+ul.cell-list li{display:flex;gap:5px;align-items:flex-start;line-height:1.4}
+ul.cell-list li::before{content:"";flex-shrink:0;margin-top:5px;width:5px;height:5px;border-radius:50%}
+.cell-expect ul.cell-list li::before{background:var(--color-primary)}
+.cell-pain ul.cell-list li::before{background:var(--color-warning)}
+
+/* STAGE CATEGORY */
+.stage-cat{
+  display:inline-block;
+  font-size:0.6rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+  padding:2px 6px;border-radius:var(--radius-sm);
+  margin-bottom:4px;
+}
+
+/* FOOTER */
+.footer{padding:var(--space-4) var(--space-6);font-size:0.7rem;color:var(--color-text-faint);border-top:1px solid var(--color-divider);text-align:center}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <svg class="logo-mark" viewBox="0 0 32 32" fill="none" aria-label="R-Акселератор">
+      <rect width="32" height="32" rx="8" fill="#01696f"/>
+      <path d="M8 24V8h8.5c2.8 0 5 2.2 5 5s-2.2 5-5 5H12" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="21" cy="21" r="3" fill="#cedcd8"/>
+    </svg>
+    <div>
+      <div class="header-title">R-Акселератор</div>
+      <div class="header-subtitle">Customer Journey Map — все пользователи × все этапы</div>
+    </div>
+  </div>
+  <div class="header-controls">
+    <span class="badge badge-stage">CJM v1.0</span>
+    <button class="btn-toggle" data-theme-toggle aria-label="Переключить тему">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="legend">
+  <span style="font-weight:600;color:var(--color-text);margin-right:4px">Легенда:</span>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--color-primary-highlight)"></div><span>Ожидание пользователя</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--color-warning-highlight)"></div><span>Боли и опасения</span></div>
+  <span style="margin-left:auto;font-size:0.68rem">← Скролл по горизонтали →</span>
+</div>
+
+<div class="table-scroll">
+<table class="cjm-table">
+<thead>
+<tr class="stage-header-row">
+  <th class="stage-col" style="text-align:left">Пользователь</th>
+  <th class="stage-pill"><div class="stage-number">1</div><span class="stage-name">Лендинг</span><span class="stage-screen">Экран 7.0</span></th>
+  <th class="stage-pill"><div class="stage-number">2</div><span class="stage-name">Регистрация</span><span class="stage-screen">Экран 7.1–7.2</span></th>
+  <th class="stage-pill"><div class="stage-number">3</div><span class="stage-name">Онбординг</span><span class="stage-screen">Экран 7.3 · Rocket Manager</span></th>
+  <th class="stage-pill"><div class="stage-number">4</div><span class="stage-name">Дашборд / Проект</span><span class="stage-screen">Экран 7.4</span></th>
+  <th class="stage-pill"><div class="stage-number">5</div><span class="stage-name">R1 — Скоупинг</span><span class="stage-screen">Анализ рынка, TAM/SAM</span></th>
+  <th class="stage-pill"><div class="stage-number">6</div><span class="stage-name">R2 — Проблема</span><span class="stage-screen">JTBD, исследование</span></th>
+  <th class="stage-pill"><div class="stage-number">7</div><span class="stage-name">Р — Конкуренты</span><span class="stage-screen">Анализ рынка</span></th>
+  <th class="stage-pill"><div class="stage-number">8</div><span class="stage-name">R3 — Решение</span><span class="stage-screen">Value Prop Canvas, MVP-идея</span></th>
+  <th class="stage-pill"><div class="stage-number">9</div><span class="stage-name">R4 — MVP</span><span class="stage-screen">Валидация, эксперимент</span></th>
+  <th class="stage-pill"><div class="stage-number">10</div><span class="stage-name">R5 — Питч</span><span class="stage-screen">Инвесторы, one-pager</span></th>
+  <th class="stage-pill"><div class="stage-number">11</div><span class="stage-name">Canvas / Экспорт</span><span class="stage-screen">PDF, артефакты</span></th>
+  <th class="stage-pill"><div class="stage-number">12</div><span class="stage-name">Апгрейд / Оплата</span><span class="stage-screen">Paywall, Pro/Team</span></th>
+</tr>
+</thead>
+<tbody><tr class="user-group-header">
+  <td class="user-label-col" colspan="13" style="text-align:left;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">Требования к интерфейсу по этапам</td>
+</tr>
+<tr>
+  <td class="subrow-label label-expect" style="font-size:0.68rem;">Критично (Must)</td>
+  <td class="cell-expect"><ul class="cell-list"><li>Чёткий hero-блок с ценностным предложением R-Акселератора</li><li>Одна основная CTA «Начать бесплатно» + краткие кейсы</li><li>Объяснение, чем продукт отличается от обычного ChatGPT [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Простая форма email + код подтверждения (OTP)</li><li>Понятные ошибки и сразу переход в онбординг</li><li>Минимум обязательных полей в одном шаге [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Приветствие Rocket Manager и выбор типа проекта (новый / действующий / pivot)</li><li>1–3 простых вопроса для старта</li><li>Прогресс-бар по шагам онбординга [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Список проектов с прогрессом по R1–R5</li><li>Кнопка «Создать проект» и быстрый вход в текущий</li><li>Статус последней сессии по проекту [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Чат-интерфейс с R1 и структурированный TAM/SAM/SOM</li><li>Краткое summary рынка на одном экране</li><li>Автосохранение результата в проекте [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Структура JTBD (Jobs, pains, gains)</li><li>Дерево проблем/гипотез по клиенту</li><li>Сохранение JTBD в структурированном JSON [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Таблица конкурентов с ключевыми параметрами</li><li>Матрица позиционирования</li><li>Сводка сильных и слабых сторон [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>9-блочный Value Proposition Canvas на одном экране</li><li>Заполненные ИИ поля + ручное редактирование</li><li>Связка R1+R2→R3 видна пользователю [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Экран выбора формата MVP: landing / concierge / prototype</li><li>Список шагов эксперимента и критериев успеха</li><li>Привязка MVP к гипотезам из Canvas [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>10-слайдовая структура питча с автогенерацией текста</li><li>Выбор типа инвестора (angel / VC / корп.)</li><li>Предпросмотр питч-дека [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Кнопки экспорта: PDF one-pager и полный Canvas</li><li>Выбор языка и базового шаблона</li><li>Гарантия сохранения артефактов в проекте [Must S1]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Экран сравнения планов Free / Pro / Team</li><li>Форма оплаты и подтверждение активации Pro</li><li>Чётко, что именно разблокируется после оплаты [Must S1]</li></ul></td>
+</tr>
+<tr>
+  <td class="subrow-label label-expect" style="font-size:0.68rem;">Желательно (Should)</td>
+  <td class="cell-expect"><ul class="cell-list"><li>Кейсы по сегментам: фаундер, SME, эксперт, акселератор</li><li>Краткое видео-демо работы Rocket Manager</li><li>FAQ по ИИ, данным и приватности [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>OAuth (Google / Telegram) для быстрого входа</li><li>Сохранение незавершённой регистрации</li><li>Инлайн-подсказки по паролю [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Ветка онбординга под действующий бизнес / эксперта</li><li>Кнопка «Пропустить» для продвинутых</li><li>Подсказки по срокам и ожидаемым результатам [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Team workspace: приглашение участников по email</li><li>Фильтры по статусу проектов и этапам</li><li>Карточки проектов с key metrics (CSAT, прогресс) [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Редактирование входных параметров R1 после первого прогона</li><li>Кнопка «уточнить рынок» с доп. вопросами</li><li>Экспорт структуры рынка в CSV/JSON [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>HITL-кнопка «одобрить/исправить JTBD»</li><li>Автогенерация гайда для интервью</li><li>Пометки ключевых инсайтов [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Добавление конкурентов вручную</li><li>SWOT-структура по ключевым игрокам</li><li>Экспорт в PDF [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Несколько версий Canvas с датами изменений</li><li>Шаблоны Canvas под разные типы проектов</li><li>AI-подсказки по незаполненным блокам [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Шаблоны MVP по частым паттернам</li><li>Поле для бюджета и ресурса команды</li><li>Фиксация статуса валидации гипотезы [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Шаблоны питчей (демо-день, банк, грант)</li><li>Комментарий Rocket Manager к каждому слайду</li><li>HITL-ревью перед экспортом [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Брендирование PDF/Canvas (логотип + цвета)</li><li>Шеринг по ссылке (read-only)</li><li>Версионирование экспортов по датам [Should S2]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Team-биллинг (per-seat) и счёт для юрлица</li><li>Пробный период Pro</li><li>Индикация, какие функции относятся к какому плану [Should S2]</li></ul></td>
+</tr>
+<tr>
+  <td class="subrow-label label-expect" style="font-size:0.68rem;">Улучшение (Could)</td>
+  <td class="cell-expect"><ul class="cell-list"><li>Интерактивный демо-проект без регистрации</li><li>Персонализация лендинга по UTM/сегменту</li><li>Анимированный hero с пайплайном R1–R5 [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Magic link login</li><li>SSO для корпоративных клиентов</li><li>Связка с устройством (desktop/mobile) [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Видеогайд по всей воронке</li><li>Персональный checklist по этапам</li><li>Геймификация прогресса (бейджи, streaks) [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Аналитика по использованию проекта</li><li>Виджет «рекомендованный следующий шаг»</li><li>Таймлайн активности команды [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Визуализация рынка (графики, карты)</li><li>Интеграция с внешними источниками данных</li><li>Несколько сценариев рынка [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Библиотека JTBD по отраслям</li><li>Автокластеризация инсайтов</li><li>Подбор референсов продуктов [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Realtime-данные по конкурентам</li><li>confidence-score по источникам</li><li>Интеграция с API партнёров [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Кастомные блоки Canvas</li><li>Сравнение нескольких Canvas</li><li>AI-рекомендации по фокусу [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Интеграции с Notion/Trello/Jira</li><li>Трекер экспериментов</li><li>A/B-тестирование гипотез [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>AI-коучинг питча</li><li>Система оценки питчей жюри</li><li>Библиотека лучших примеров [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>API-экспорт всех артефактов</li><li>Batch-экспорт по когорте</li><li>White-label PDF для партнёров [Could S3]</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Enterprise-план с tenant-биллингом</li><li>Revenue share для партнёров</li><li>Экран usage-аналитики [Could S3]</li></ul></td>
+</tr>
+<tr class="user-separator"><td class="user-label-col"></td><td colspan="12"></td></tr>
+<tr class="user-group-header"><td class="user-label-col" colspan="13">MVP Stage 1 — Must (Core value: фаундер-одиночка, AI-энтузиаст)</td></tr>
+<tr>
+  <td class="user-label-col" rowspan="2" style="border-bottom:1px solid var(--color-divider)">
+    <div class="user-name-block">
+      <span class="user-emoji">🚀</span>
+      <span class="user-name">Фаундер-одиночка</span>
+      <span class="user-desc">Seed / Early stage, 28–35 лет, нет команды, есть идея</span>
+    </div>
+  </td>
+  <td class="cell-expect"><ul class="cell-list"><li>Понять, поможет ли сервис запустить стартап без MBA</li><li>Увидеть понятный результат — не просто чат</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Зарегистрироваться за секунды, без лишних полей</li><li>Сразу попасть в продукт, а не в «проверьте почту»</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Rocket Manager объяснит, что делать первым шагом</li><li>Не нужно разбираться в методологии самому</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Видеть свой проект и прогресс по этапам</li><li>Легко создать новый проект или продолжить старый</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>ИИ поможет сформулировать рынок, TAM/SAM/SOM</li><li>Получить структуру, которой раньше не хватало</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Разобраться, кто реальный клиент и какова боль</li><li>Получить JTBD-формулировки без интервью с нуля</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Узнать, кто ещё делает похожее и чем отличиться</li><li>Получить аргументы для инвесторов о конкурентах</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Сформулировать Value Proposition чётко и быстро</li><li>Получить 9-блочный Canvas в читаемом виде</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Понять, как проверить идею без больших затрат</li><li>Получить конкретный план эксперимента (23 MVP)</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Сгенерировать питч-нарратив для angel/VC</li><li>Получить структуру из 10 слайдов автоматически</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Скачать PDF one-pager для отправки инвестору</li><li>Иметь весь путь сохранённым в одном месте</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Платить только когда видит реальную ценность</li><li>Понять, что даёт Pro и стоит ли апгрейд</li></ul></td>
+</tr>
+<tr>
+  <td class="cell-pain"><ul class="cell-list"><li>«Это ещё один ChatGPT-обёртка, ничего нового»</li><li>Непонятно, чем отличается от Notion AI</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Страх, что email уйдёт в спам</li><li>Раздражение от длинных форм и обязательных полей</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Слишком много инструкций — хочется просто начать</li><li>Боится «неправильно» ответить на вопросы онбординга</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Пустой дашборд пугает — непонятно, с чего начать</li><li>Слишком много кнопок и пунктов меню</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Ответы ИИ слишком общие, не про его нишу</li><li>Боится, что заложит неверные данные в начале</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Результаты JTBD кажутся очевидными, не инсайтовыми</li><li>Не уверен, правильно ли интерпретирует данные</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Конкурентный анализ слишком поверхностный</li><li>Боится, что ИИ не знает нишевых игроков его рынка</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Canvas выглядит шаблонно — «как у всех»</li><li>Не понимает, что делать с результатами дальше</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>MVP-план кажется нереалистичным без команды</li><li>Боится потратить время на неверную гипотезу</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Питч звучит «как у всех» — нет уникальности</li><li>Не знает, как адаптировать под конкретного инвестора</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>PDF выглядит некрасиво / не брендированно</li><li>Боится отправить инвестору «сырой» документ</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Не понимает разницу Free vs Pro до оплаты</li><li>Боится потерять прогресс при смене тарифа</li></ul></td>
+</tr>
+<tr class="user-separator"><td class="user-label-col"></td><td colspan="12"></td></tr>
+<tr>
+  <td class="user-label-col" rowspan="2" style="border-bottom:1px solid var(--color-divider)">
+    <div class="user-name-block">
+      <span class="user-emoji">🤖</span>
+      <span class="user-name">AI-энтузиаст</span>
+      <span class="user-desc">LLM-разработчики, product-first UX, исследует инструменты</span>
+    </div>
+  </td>
+  <td class="cell-expect"><ul class="cell-list"><li>Сразу понять, какой стек / LLM используется под капотом</li><li>Оценить, насколько система умнее ChatGPT-обёртки</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Минимальная регистрация — OAuth или magic link</li><li>Без подтверждения телефона и лишних шагов</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Пропустить онбординг или пройти в ускоренном режиме</li><li>Посмотреть, как работает state machine изнутри</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Нет избыточного UI — чистый интерфейс, keyboard-first</li><li>Возможность видеть raw ответы моделей</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Понять, что именно R1 генерирует, какой промпт</li><li>Оценить качество RAG и глубину анализа рынка</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Посмотреть, как модель строит JTBD-структуру</li><li>Возможность экспортировать raw JSON-вывод</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Оценить качество конкурентного анализа vs ручного</li><li>Посмотреть источники данных и confidence-уровень</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Редактировать Canvas напрямую, а не через диалог</li><li>Понять, как ИИ генерирует связи между блоками</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Кастомизировать критерии MVP под свою методологию</li><li>Экспортировать весь context payload сессии</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Посмотреть, как ИИ строит нарратив питча</li><li>Возможность редактировать промпты R5 напрямую</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>API-доступ к артефактам без UI-ограничений</li><li>Full JSON-экспорт для дальнейшей обработки</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Pro-тариф оправдан если есть API-доступ</li><li>Прозрачный token-usage и стоимость на запрос</li></ul></td>
+</tr>
+<tr>
+  <td class="cell-pain"><ul class="cell-list"><li>Лендинг маркетинговый — нет технических деталей</li><li>«Ещё одна ChatGPT-обёртка» — нужны доказательства обратного</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Email-верификация замедляет — хочет войти мгновенно</li><li>Нет OAuth через GitHub/Google</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Онбординг принудительный — нельзя скипнуть</li><li>Нет режима «developer» или «advanced» с расширенными настройками</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>UI перегружен объяснениями для новичков</li><li>Нет режима просмотра raw API-ответов</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет инсайта в промпты — чёрный ящик</li><li>Качество анализа нестабильно между запусками</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>JSON-экспорт недоступен в базовом тарифе</li><li>Структура JTBD жёстко задана, нет кастомизации</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет confidence-уровня или источников для проверки</li><li>Данные устарели — нет информации о дате обновления</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет прямого редактирования блоков — только через диалог</li><li>Нельзя добавить кастомные блоки в Canvas</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет доступа к context payload — только ready-made вывод</li><li>MVP-критерии нельзя заменить своими</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Промпты R5 нельзя редактировать или тестировать</li><li>Нет A/B-тестирования нарративов питча</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>API-экспорт только в Pro/Enterprise — нет пробного доступа</li><li>Нет webhooks для интеграции с собственными пайплайнами</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет token-usage отчёта — непрозрачная стоимость</li><li>Pro-апгрейд не даёт доступа к промптам — разочарование</li></ul></td>
+</tr>
+
+<tr class="user-group-header"><td class="user-label-col" colspan="13">Stage 2 — Should (Canvas Premium: SME и эксперт)</td></tr>
+<tr>
+  <td class="user-label-col" rowspan="2" style="border-bottom:1px solid var(--color-divider)">
+    <div class="user-name-block">
+      <span class="user-emoji">🏢</span>
+      <span class="user-name">SME-предприниматель</span>
+      <span class="user-desc">Команда 3–15 чел., ищет новые направления или pivot</span>
+    </div>
+  </td>
+  <td class="cell-expect"><ul class="cell-list"><li>Быстро понять, применимо ли для существующего бизнеса</li><li>Увидеть кейсы — не только стартапы, но и SME</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Зарегистрировать team workspace для нескольких сотрудников</li><li>Войти через корпоративный email без проблем</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Онбординг учитывает, что у него уже есть продукт</li><li>Rocket Manager предложит «existing product» или «pivot» путь</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Несколько проектов / направлений одновременно</li><li>Возможность пригласить коллег в workspace</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Скоупинг учитывает существующую базу клиентов</li><li>Получить реалистичную оценку нового рынка</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Провалидировать JTBD текущих клиентов vs нового сегмента</li><li>Получить структурированный вывод для команды</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Понять, кто настоящие конкуренты нового направления</li><li>Сравнить с текущей бизнес-моделью компании</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Canvas с учётом уже имеющихся ресурсов и каналов</li><li>Быстро создать несколько гипотез для команды</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>MVP-план реалистичен при наличии небольшой команды</li><li>Чёткий список того, что проверять в первую очередь</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Питч для партнёров или банка, не только для инвесторов</li><li>Адаптировать под корпоративную аудиторию</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Экспортировать и поделиться с командой и советом</li><li>Версионирование — сохранить несколько итераций</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Тариф Team с per-seat без скрытых условий</li><li>Понять, как работает биллинг для юрлица</li></ul></td>
+</tr>
+<tr>
+  <td class="cell-pain"><ul class="cell-list"><li>«Это для стартапов, нам не подойдёт»</li><li>Не видит кейсы компаний его размера и отрасли</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Сложно разобраться с разграничением прав в команде</li><li>Нет B2B-счёта или договора — проблема с бухгалтерией</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Онбординг заточен под нового фаундера, а не под действующий бизнес</li><li>Вопросы онбординга кажутся нерелевантными</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Неудобно работать нескольким людям над одним проектом</li><li>Нет понимания, кто что менял (история изменений)</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>R1 генерирует слишком общие цифры без учёта географии</li><li>Вводные данные сложно корректировать после старта</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Команда не понимает, как использовать JTBD в повседневной работе</li><li>Боится, что выводы не поддержат существующую стратегию</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Анализ конкурентов не учитывает локальный рынок</li><li>Нет экспорта для презентации совету директоров</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Canvas не учитывает текущие партнёрства и контракты</li><li>Слишком много гипотез — непонятно, с какой начать</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>MVP-эксперименты требуют бюджета, которого нет в плане</li><li>Команда сопротивляется «опять новой методологии»</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Питч-формат не подходит для B2B-переговоров</li><li>Нет шаблона для банковского финансирования</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет совместного редактирования в реальном времени</li><li>Форматы экспорта не подходят для корп. шаблонов</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Цена кажется высокой для команды 5+ человек</li><li>Нет пробного периода для команды (только для одного)</li></ul></td>
+</tr>
+<tr class="user-separator"><td class="user-label-col"></td><td colspan="12"></td></tr>
+<tr>
+  <td class="user-label-col" rowspan="2" style="border-bottom:1px solid var(--color-divider)">
+    <div class="user-name-block">
+      <span class="user-emoji">🎯</span>
+      <span class="user-name">Эксперт / Консультант</span>
+      <span class="user-desc">Ведёт клиентов, нужен HITL и профессиональный инструмент</span>
+    </div>
+  </td>
+  <td class="cell-expect"><ul class="cell-list"><li>Понять, можно ли встроить в клиентскую практику</li><li>Увидеть возможность работать под своим брендом</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Профессиональный аккаунт с несколькими клиентами</li><li>Возможность пригласить клиента в его пространство</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Онбординг с режимом «expert-first» — минимум объяснений</li><li>Сразу к инструментам, без базового обучения</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Разные проекты для разных клиентов изолированы</li><li>Возможность добавить клиента как участника</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Скоупинг как фасилитируемый процесс с клиентом</li><li>Возможность вмешаться и скорректировать ИИ-вывод</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>HITL — возможность одобрить/отредактировать вывод</li><li>Получить структуру для интервью с клиентом</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Конкурентный анализ можно дополнить своей экспертизой</li><li>Добавить комментарии эксперта к ИИ-выводу</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Canvas как совместный артефакт с клиентом</li><li>Возможность кастомизировать блоки Canvas</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>MVP-план отражает реальные ресурсы клиента</li><li>Возможность добавить экспертные рекомендации</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Питч-дек под брендом клиента, не R-Акселератора</li><li>HITL-одобрение перед финальной версией</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Брендированный PDF с логотипом клиента / эксперта</li><li>Отправить клиенту из интерфейса напрямую</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Professional-тариф с multi-client управлением</li><li>Понять, как выставить счёт своему клиенту</li></ul></td>
+</tr>
+<tr>
+  <td class="cell-pain"><ul class="cell-list"><li>«Инструмент подменит консультанта, а не помогает ему»</li><li>Не видит ценности над тем, что делает сам</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет multi-client управления из одного аккаунта</li><li>Клиентский доступ требует отдельной оплаты</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Онбординг объясняет методологию, которую он знает наизусть</li><li>Нельзя пропустить вводные шаги</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Клиент видит «сырые» ИИ-ответы без редактуры эксперта</li><li>Нет ролевого разграничения эксперт/клиент в проекте</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>ИИ-вывод не учитывает отраслевую экспертизу консультанта</li><li>Нет возможности добавить «закрытые» данные клиента</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>HITL-механизм не очевиден — где кнопка «я одобряю»?</li><li>Клиент видит промежуточные результаты и теряет доверие</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет поля для добавления «закрытой» экспертной информации</li><li>Конкурентный анализ может противоречить клиентским данным</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Клиент требует объяснить каждый блок Canvas — долго</li><li>Нет режима «только просмотр» для клиента</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>MVP-эксперименты требуют бюджета, которого нет у клиента</li><li>Ответственность за результат лежит на консультанте</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Питч выглядит «от ИИ», клиент не воспринимает серьёзно</li><li>Нет шаблонов под разные типы инвесторов</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет white-label — логотип R-Акселератора в PDF</li><li>Клиент задаёт вопросы о сервисе, отвлекаясь от содержания</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет партнёрской программы / реферального дохода</li><li>Неясно, как тарифицировать клиентам</li></ul></td>
+</tr>
+<tr class="user-separator"><td class="user-label-col"></td><td colspan="12"></td></tr>
+
+<tr class="user-group-header"><td class="user-label-col" colspan="13">Stage 3 — Could (B2B: акселераторы и партнёры)</td></tr>
+<tr>
+  <td class="user-label-col" rowspan="2" style="border-bottom:1px solid var(--color-divider)">
+    <div class="user-name-block">
+      <span class="user-emoji">📋</span>
+      <span class="user-name">Менеджер акселератора</span>
+      <span class="user-desc">Программы, когорты 20–50 стартапов, отчётность</span>
+    </div>
+  </td>
+  <td class="cell-expect"><ul class="cell-list"><li>Понять, как подключить когорту стартапов разом</li><li>Увидеть B2B-условия и кейсы для презентации руководству</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Массовая регистрация участников через CSV/email-инвайт</li><li>Сразу настроить программу и сроки этапов</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Онбординг пропускает базовое и идёт к настройке программы</li><li>Настроить workflow под свой акселератор</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Видеть прогресс всей когорты на одном экране</li><li>Переключаться между проектами участников</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Контролировать качество скоупинга у всех участников</li><li>Получать агрегированные данные по когорте</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Проверять JTBD-выводы команд и давать фидбек</li><li>Видеть, где команды застряли — drop-off аналитика</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Сравнивать конкурентные анализы разных команд</li><li>Отслеживать уникальность позиционирования в когорте</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Canvas по всей когорте — сравнение и трекинг</li><li>Выявить стартапы с сильным ценностным предложением</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>MVP-отчётность для отбора на Demo Day</li><li>Статусы валидации по каждой команде</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Отобрать лучшие питчи для Demo Day автоматически</li><li>Получить сводный отчёт по когорте для партнёров</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Сводный PDF/CSV-отчёт по всей когорте</li><li>Артефакты на единой платформе, без сбора по почте</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Cohort-based лицензия, Enterprise-договор с КЭП</li><li>Ценообразование понятно для бюджетирования программы</li></ul></td>
+</tr>
+<tr>
+  <td class="cell-pain"><ul class="cell-list"><li>«Инструмент заменит менторов и нашу методологию»</li><li>Непонятна кастомизация под брендинг акселератора</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет массового инвайта — каждый регистрируется сам</li><li>Нет возможности предустановить шаблон программы</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Онбординг рассчитан на участника, а не на организатора</li><li>Нет раздела «управление когортой» в UI</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Дашборд не показывает агрегированный прогресс когорты</li><li>Нельзя зайти в проект участника как admin-viewer</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет стандарта качества скоупинга — у всех разные форматы</li><li>Данные нельзя экспортировать для внешних отчётов</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет инструмента для группового ревью JTBD-выводов</li><li>Участники получают очень разное качество анализа</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет cross-team сравнения анализов в интерфейсе</li><li>Данные конкурентного анализа не стандартизированы</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Canvas каждой команды уникален — сложно сравнивать</li><li>Нет шаблона Canvas под методологию акселератора</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет сводного дашборда валидации для Demo Day</li><li>MVP-критерии не кастомизированы под требования программы</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет инструмента оценки питчей жюри в интерфейсе</li><li>Питч-материалы в разных форматах у разных команд</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет сводного экспорта — нужно собирать вручную</li><li>PDF-отчёты не брендированы под акселератор</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет постатейного счёта для юрлица / грантового финансирования</li><li>Неясно, как масштабировать на следующий поток</li></ul></td>
+</tr>
+<tr class="user-separator"><td class="user-label-col"></td><td colspan="12"></td></tr>
+<tr>
+  <td class="user-label-col" rowspan="2" style="border-bottom:1px solid var(--color-divider)">
+    <div class="user-name-block">
+      <span class="user-emoji">🤝</span>
+      <span class="user-name">Партнёр / Интегратор</span>
+      <span class="user-desc">B2B SaaS, банки, телекомы, white-label, Partner API</span>
+    </div>
+  </td>
+  <td class="cell-expect"><ul class="cell-list"><li>Увидеть возможности white-label и Partner API</li><li>Найти контакт для enterprise-переговоров</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Зарегистрироваться как организация, не как физлицо</li><li>Получить доступ к партнёрскому порталу / sandbox</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Онбординг сразу переводит в partner-режим</li><li>Документация по API доступна без звонков с продажами</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Tenant-управление своими клиентами из одного места</li><li>Статистика использования по каждому клиенту</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>API для запуска R1-сессий от имени своих клиентов</li><li>Кастомизация входных параметров под свою платформу</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Интеграция с собственной CRM или системой данных</li><li>Webhook-уведомления о завершении сессий</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Данные конкурентного анализа доступны через API</li><li>Возможность обогатить своими источниками данных</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Canvas-данные в структурированном JSON для интеграции</li><li>Возможность встраивать Canvas в свой интерфейс</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>MVP-результаты передаются в CRM-систему партнёра</li><li>Автоматические триггеры по завершению этапа</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Питч-данные передаются в deal flow партнёра</li><li>Co-branded питч-шаблон под партнёра</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>PDF-отчёты с брендингом партнёра, не R-Акселератора</li><li>API-экспорт всех артефактов в нужном формате</li></ul></td>
+  <td class="cell-expect"><ul class="cell-list"><li>Revenue share модель прозрачна и понятна</li><li>Есть Enterprise-контракт с SLA и data residency</li></ul></td>
+</tr>
+<tr>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет видимой страницы для партнёров с условиями API</li><li>Контакт для enterprise — только форма без гарантии ответа</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Регистрация рассчитана на физлицо — нет org-аккаунта</li><li>Нет sandbox-среды для тестирования перед интеграцией</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет partner-онбординга — попадает в стандартный пользовательский</li><li>Документация по API неполная или устаревшая</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет tenant-управления в UI — только через API</li><li>Нет разграничения прав между сотрудниками партнёра</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>API-ограничения не позволяют кастомизировать промпты R1</li><li>Rate limits непонятны для production-нагрузки</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Webhook-документация отсутствует или в черновике</li><li>Нет готовых коннекторов к популярным CRM (Salesforce, HubSpot)</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Данные нельзя обогатить собственными источниками партнёра</li><li>Нет SLA на качество данных конкурентного анализа</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>JSON-схема Canvas меняется без версионирования API</li><li>Нет возможности кастомизировать блоки Canvas для своего рынка</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>MVP-данные не передаются автоматически в pipeline партнёра</li><li>Нет event-системы для отслеживания прогресса клиентов</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Нет co-branded шаблона питча с логотипом партнёра</li><li>Deal flow интеграция требует кастомной разработки</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>PDF API нет — только manual download через UI</li><li>Брендинг партнёра не поддерживается в текущей версии</li></ul></td>
+  <td class="cell-pain"><ul class="cell-list"><li>Data residency требования (GDPR, локальные) не покрыты</li><li>Revenue share расчёт непрозрачен без аудита</li></ul></td>
+</tr>
+<tr class="user-separator"><td class="user-label-col"></td><td colspan="12"></td></tr>
+
+</tbody>
+</table>
+</div>
+
+<div class="footer">
+  R-Акселератор CJM v1.0 · На основе PRD-документации · 6 пользователей × 12 этапов · Апрель 2026
+</div>
+
+<script>
+(function(){
+  const t=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
+  let d=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  r.setAttribute('data-theme',d);
+  if(t)t.addEventListener('click',()=>{
+    d=d==='dark'?'light':'dark';
+    r.setAttribute('data-theme',d);
+    t.innerHTML=d==='dark'
+      ?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      :'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  });
+})();
+</script>
+</body>
+</html>

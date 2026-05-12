@@ -4,7 +4,7 @@ import { requireAuth } from "@/lib/auth";
 import { signPreviewToken } from "@/lib/preview-token";
 import { buildPagePreviewRow } from "@/lib/preview-page-content";
 
-const FALLBACK_SITE_URL = "https://r-front-rocketmind.amvera.io";
+const FALLBACK_SITE_URL = "https://rocketmind-site-rocketmind.amvera.io";
 const SITE_URL = (process.env.SITE_URL ?? FALLBACK_SITE_URL).replace(/\/$/, "");
 const TTL_SEC = 60 * 60; // 60 минут
 

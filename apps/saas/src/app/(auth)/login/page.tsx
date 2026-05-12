@@ -80,7 +80,8 @@ export default function LoginPage() {
     try {
       const success = await verifyCode(code);
       if (success) {
-        router.replace("/");
+        console.log("[login] verify ok, redirecting to /manager");
+        window.location.href = "/manager";
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);

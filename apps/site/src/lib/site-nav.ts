@@ -4,9 +4,9 @@ import type { NavItem, NavSection } from "@rocketmind/ui/content";
 type SectionConfig = { label: string; href: string; category: string; urlPrefix: string };
 
 const SECTIONS: SectionConfig[] = [
-  { label: "Консалтинг и стратегии", href: "/products?filter=consulting", category: "consulting", urlPrefix: "/consulting" },
-  { label: "Онлайн-школа", href: "/products?filter=academy", category: "academy", urlPrefix: "/academy" },
-  { label: "AI-продукты", href: "/products?filter=ai-products", category: "ai-products", urlPrefix: "/ai-products" },
+  { label: "Консалтинг и стратегии", href: "/products/consulting", category: "consulting", urlPrefix: "/consulting" },
+  { label: "Онлайн-школа", href: "/products/academy", category: "academy", urlPrefix: "/academy" },
+  { label: "AI-продукты", href: "/products/ai-products", category: "ai-products", urlPrefix: "/ai-products" },
 ];
 
 const LEGAL_LINKS: { href: string; label: string }[] = [

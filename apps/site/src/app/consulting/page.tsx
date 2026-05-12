@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function ConsultingPage() {
-  redirect("/products?filter=consulting");
+  redirect("/products/consulting");
 }

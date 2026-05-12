@@ -4104,6 +4104,8 @@ function GlossaryLink({
           "a",
           {
             href: `/media/glossary/term/${entry.slug}`,
+            target: "_blank",
+            rel: "noopener noreferrer",
             className: "border-b border-dashed border-[color:var(--rm-yellow-100)]/60 transition-colors hover:border-solid hover:border-[color:var(--rm-yellow-100)] hover:text-[color:var(--rm-yellow-100)]",
             children: matched
           }
@@ -4119,7 +4121,7 @@ function GlossaryLink({
         children: [
           /* @__PURE__ */ jsx42("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-[0.04em] opacity-70", children: entry.title }),
           entry.description && /* @__PURE__ */ jsx42("span", { className: "text-[length:var(--text-13)]", children: entry.description }),
-          /* @__PURE__ */ jsx42("span", { className: "mt-1 text-[length:var(--text-11)] underline underline-offset-2 opacity-80", children: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0432 \u0433\u043B\u043E\u0441\u0441\u0430\u0440\u0438\u0438 \u2192" })
+          /* @__PURE__ */ jsx42("span", { className: "mt-1 text-[length:var(--text-11)] underline underline-offset-2 opacity-80", children: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0432 \u0433\u043B\u043E\u0441\u0441\u0430\u0440\u0438\u0438 \u0432 \u043D\u043E\u0432\u043E\u0439 \u0432\u043A\u043B\u0430\u0434\u043A\u0435 \u2197" })
         ]
       }
     )

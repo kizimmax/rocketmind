@@ -245,17 +245,28 @@ function emitProjectsChanged() {
   }
 }
 
+function isZeroStateMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).has("zero");
+}
+
 export function useProjects() {
   const { user } = useAuth();
-  const [projects, setProjects] = useState<Project[]>(() =>
-    user ? getMockProjects(user.id) : []
-  );
+  const [projects, setProjects] = useState<Project[]>(() => {
+    if (isZeroStateMode()) return [];
+    return user ? getMockProjects(user.id) : [];
+  });
 
   // Синхронизация с мутациями mockProjects из других инстансов
   useEffect(() => {
     function refresh() {
+      if (isZeroStateMode()) {
+        setProjects([]);
+        return;
+      }
       setProjects(user ? getMockProjects(user.id) : []);
     }
+    refresh();
     window.addEventListener("rm:projects-change", refresh);
     return () => window.removeEventListener("rm:projects-change", refresh);
   }, [user]);

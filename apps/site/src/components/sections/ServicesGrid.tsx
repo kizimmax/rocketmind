@@ -73,7 +73,7 @@ export async function ServicesGrid() {
         mobileTitle: "Стратегия\nи бизнес-модели",
         description:
           "Помогаем командам искать, проверять и усиливать бизнес-модели, связывать стратегию с операционными действиями и переходить от продуктовой логики к платформенной и экосистемной архитектуре.",
-        catalogHref: "/products?filter=consulting",
+        catalogHref: "/products/consulting",
         catalogLabel: "Все продукты",
         showIcons: true,
       },
@@ -96,7 +96,7 @@ export async function ServicesGrid() {
         mobileTitle: "Академия\nбизнес-дизайна",
         description:
           "Среда, где управленцы и команды осваивают бизнес-дизайн, платформенное мышление и работу с гипотезами. Мы обучаем тому, что сами применяем в проектах: от системной стратегии до запуска цифровых инициатив.",
-        catalogHref: "/products?filter=academy",
+        catalogHref: "/products/academy",
         catalogLabel: "Все курсы",
         showImages: true,
         partnerBlock: {
@@ -124,7 +124,7 @@ export async function ServicesGrid() {
         mobileTitle: "Продукты\nс AI для бизнеса",
         description:
           "Встроенные помощники, которые усиливают мышление, а не заменяют экспертов. Они помогают командам быстрее проходить через сложные задачи: от исследования и анализа до формирования бизнес-моделей и стратегий.",
-        catalogHref: "/products?filter=ai-products",
+        catalogHref: "/products/ai-products",
         catalogLabel: "Все продукты",
         showImages: true,
       },
@@ -142,7 +142,7 @@ export async function ServicesGrid() {
         headerHighlight: "Экспертные продукты",
         mobileTitle: "Экспертные\nпродукты",
         description: "Продукты, где с вами работает именной эксперт.",
-        catalogHref: "/products?filter=expert",
+        catalogHref: "/products/expert",
         catalogLabel: "Все продукты",
         showImages: true,
       },

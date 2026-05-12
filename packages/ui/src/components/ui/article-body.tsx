@@ -245,6 +245,8 @@ function GlossaryLink({
         render={
           <a
             href={`/media/glossary/term/${entry.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="border-b border-dashed border-[color:var(--rm-yellow-100)]/60 transition-colors hover:border-solid hover:border-[color:var(--rm-yellow-100)] hover:text-[color:var(--rm-yellow-100)]"
           >
             {matched}
@@ -263,7 +265,7 @@ function GlossaryLink({
           <span className="text-[length:var(--text-13)]">{entry.description}</span>
         )}
         <span className="mt-1 text-[length:var(--text-11)] underline underline-offset-2 opacity-80">
-          Открыть в глоссарии →
+          Открыть в глоссарии в новой вкладке ↗
         </span>
       </TooltipContent>
     </Tooltip>
