@@ -3,6 +3,8 @@ import { draftMode } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { verifyPreviewToken } from "@/lib/preview-token";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const id = url.searchParams.get("id") ?? "";
