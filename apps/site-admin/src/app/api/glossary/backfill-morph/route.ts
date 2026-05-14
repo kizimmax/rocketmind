@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateAutoAliases, guessGender, type Gender } from "@/lib/glossary-morph";
+import { generateAutoAliases, guessGenderForTitle, type Gender } from "@/lib/glossary-morph";
 
 export const dynamic = "force-dynamic";
 
 const GENDERS = new Set<Gender>(["masculine", "feminine", "neuter"]);
 function pickGender(raw: unknown, title: string): Gender {
   if (typeof raw === "string" && GENDERS.has(raw as Gender)) return raw as Gender;
-  const tokens = (title || "").trim().split(/\s+/);
-  return guessGender(tokens[tokens.length - 1] ?? "");
+  return guessGenderForTitle(title);
 }
 
 /**

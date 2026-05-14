@@ -15,10 +15,16 @@ declare module "russian-nouns-js" {
     LOCATIVE: unknown;
   };
   export class Lemma {
-    static create(input: { text: string; gender: unknown; indeclinable?: boolean }): Lemma;
+    static create(input: {
+      text: string;
+      gender?: unknown;
+      indeclinable?: boolean;
+      pluraleTantum?: boolean;
+    }): Lemma;
   }
   export class Engine {
-    decline(lemma: Lemma, caseValue: unknown): string[];
+    decline(lemma: Lemma, caseValue: unknown, pluralForm?: string): string[];
+    pluralize(lemma: Lemma): string[];
   }
   const RN: {
     Gender: typeof Gender;

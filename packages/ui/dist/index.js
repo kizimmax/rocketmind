@@ -3970,6 +3970,7 @@ function ControlButton({
 }
 
 // src/components/ui/article-body.tsx
+import { ArrowUpRight } from "lucide-react";
 import { Fragment as Fragment9, jsx as jsx42, jsxs as jsxs22 } from "react/jsx-runtime";
 var RU_MAP = {
   \u0430: "a",
@@ -4121,7 +4122,19 @@ function GlossaryLink({
         children: [
           /* @__PURE__ */ jsx42("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-[0.04em] opacity-70", children: entry.title }),
           entry.description && /* @__PURE__ */ jsx42("span", { className: "text-[length:var(--text-13)]", children: entry.description }),
-          /* @__PURE__ */ jsx42("span", { className: "mt-1 text-[length:var(--text-11)] underline underline-offset-2 opacity-80", children: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0432 \u0433\u043B\u043E\u0441\u0441\u0430\u0440\u0438\u0438 \u0432 \u043D\u043E\u0432\u043E\u0439 \u0432\u043A\u043B\u0430\u0434\u043A\u0435 \u2197" })
+          /* @__PURE__ */ jsxs22(
+            "a",
+            {
+              href: `/media/glossary/term/${entry.slug}`,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "mt-2 inline-flex h-7 items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-medium uppercase tracking-[0.04em] text-[color:var(--rm-yellow-fg)] transition-colors hover:bg-[#FFE040] active:bg-[#E6B800]",
+              children: [
+                "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0432 \u0433\u043B\u043E\u0441\u0441\u0430\u0440\u0438\u0438",
+                /* @__PURE__ */ jsx42(ArrowUpRight, { className: "size-3.5", strokeWidth: 2.25, "aria-hidden": true })
+              ]
+            }
+          )
         ]
       }
     )
@@ -4962,7 +4975,7 @@ function ExpertQuoteStack({
 
 // src/components/ui/section-aside-chip.tsx
 import * as React18 from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight as ArrowUpRight2 } from "lucide-react";
 import { jsx as jsx44, jsxs as jsxs24 } from "react/jsx-runtime";
 var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
   title,
@@ -5002,7 +5015,7 @@ var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
             children: [
               /* @__PURE__ */ jsx44("span", { className: "line-clamp-1 font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] text-[length:var(--text-14)] leading-[1.2] transition-colors group-hover/chip:text-[color:var(--rm-yellow-100)]", children: title }),
               /* @__PURE__ */ jsx44(
-                ArrowUpRight,
+                ArrowUpRight2,
                 {
                   "aria-hidden": true,
                   className: "h-4 w-4 shrink-0 text-[color:var(--rm-yellow-100)] transition-transform group-hover/chip:translate-x-0.5 group-hover/chip:-translate-y-0.5"
@@ -5028,7 +5041,7 @@ var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
 
 // src/components/ui/section-aside-product-card.tsx
 import * as React19 from "react";
-import { ArrowUpRight as ArrowUpRight2 } from "lucide-react";
+import { ArrowUpRight as ArrowUpRight3 } from "lucide-react";
 import { jsx as jsx45, jsxs as jsxs25 } from "react/jsx-runtime";
 var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCard2({
   href,
@@ -5056,7 +5069,7 @@ var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCar
       ...rest,
       children: [
         /* @__PURE__ */ jsx45(
-          ArrowUpRight2,
+          ArrowUpRight3,
           {
             "aria-hidden": true,
             className: "absolute right-3 top-3 z-10 h-4 w-4 text-[color:var(--rm-yellow-100)] transition-transform group-hover/product:translate-x-0.5 group-hover/product:-translate-y-0.5"

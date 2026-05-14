@@ -1,11 +1,13 @@
 import { prisma } from "./prisma";
 import {
   parseSections,
+  parseStyledParagraphs,
   type ArticleSection,
   type ResolvedProductAside,
   type ResolvedQuoteExpert,
   resolveProductAside,
 } from "./articles";
+import type { StyledParagraph } from "@rocketmind/ui";
 import type { CtaEntity } from "./ctas";
 import { getCtaById } from "./ctas";
 import { getExpertBySlug } from "./experts";
@@ -16,7 +18,10 @@ export type GlossaryTermStatus = "published" | "hidden" | "archived";
 export type GlossaryTermEntry = {
   slug: string;
   title: string;
+  /** Legacy lead — для SEO/мета и tooltip'ов глоссария (= первый абзац). */
   description: string;
+  /** Структурированный лид под заголовком. Если непуст — перекрывает description. */
+  descriptionParagraphs: StyledParagraph[];
   status: GlossaryTermStatus;
   order: number;
   tags: string[];
@@ -58,6 +63,7 @@ function rowToEntry(row: {
     slug: row.slug,
     title: row.title,
     description: row.description,
+    descriptionParagraphs: parseStyledParagraphs(c.descriptionParagraphs),
     status: parseStatus(row.status),
     order: typeof c.order === "number" ? c.order : 0,
     tags: row.tagIds,
@@ -168,6 +174,9 @@ function previewGlossaryPayloadToEntry(p: Record<string, unknown>): GlossaryTerm
       aliases,
       autoAliases: Array.isArray(p.autoAliases) ? p.autoAliases : [],
       gender: typeof p.gender === "string" ? p.gender : undefined,
+      ...(Array.isArray(p.descriptionParagraphs) && p.descriptionParagraphs.length > 0
+        ? { descriptionParagraphs: p.descriptionParagraphs }
+        : {}),
     };
     const virtualRow = {
       slug,

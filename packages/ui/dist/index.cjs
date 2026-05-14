@@ -4330,6 +4330,7 @@ function ControlButton({
 }
 
 // src/components/ui/article-body.tsx
+var import_lucide_react11 = require("lucide-react");
 var import_jsx_runtime42 = require("react/jsx-runtime");
 var RU_MAP = {
   \u0430: "a",
@@ -4481,7 +4482,19 @@ function GlossaryLink({
         children: [
           /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-[0.04em] opacity-70", children: entry.title }),
           entry.description && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "text-[length:var(--text-13)]", children: entry.description }),
-          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "mt-1 text-[length:var(--text-11)] underline underline-offset-2 opacity-80", children: "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0432 \u0433\u043B\u043E\u0441\u0441\u0430\u0440\u0438\u0438 \u0432 \u043D\u043E\u0432\u043E\u0439 \u0432\u043A\u043B\u0430\u0434\u043A\u0435 \u2197" })
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+            "a",
+            {
+              href: `/media/glossary/term/${entry.slug}`,
+              target: "_blank",
+              rel: "noopener noreferrer",
+              className: "mt-2 inline-flex h-7 items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-medium uppercase tracking-[0.04em] text-[color:var(--rm-yellow-fg)] transition-colors hover:bg-[#FFE040] active:bg-[#E6B800]",
+              children: [
+                "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0432 \u0433\u043B\u043E\u0441\u0441\u0430\u0440\u0438\u0438",
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react11.ArrowUpRight, { className: "size-3.5", strokeWidth: 2.25, "aria-hidden": true })
+              ]
+            }
+          )
         ]
       }
     )
@@ -5323,7 +5336,7 @@ function ExpertQuoteStack({
 
 // src/components/ui/section-aside-chip.tsx
 var React18 = __toESM(require("react"), 1);
-var import_lucide_react11 = require("lucide-react");
+var import_lucide_react12 = require("lucide-react");
 init_utils();
 var import_jsx_runtime44 = require("react/jsx-runtime");
 var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
@@ -5364,7 +5377,7 @@ var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("span", { className: "line-clamp-1 font-[family-name:var(--font-mono-family)] font-medium uppercase tracking-[0.02em] text-[length:var(--text-14)] leading-[1.2] transition-colors group-hover/chip:text-[color:var(--rm-yellow-100)]", children: title }),
               /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
-                import_lucide_react11.ArrowUpRight,
+                import_lucide_react12.ArrowUpRight,
                 {
                   "aria-hidden": true,
                   className: "h-4 w-4 shrink-0 text-[color:var(--rm-yellow-100)] transition-transform group-hover/chip:translate-x-0.5 group-hover/chip:-translate-y-0.5"
@@ -5390,7 +5403,7 @@ var SectionAsideChip = React18.forwardRef(function SectionAsideChip2({
 
 // src/components/ui/section-aside-product-card.tsx
 var React19 = __toESM(require("react"), 1);
-var import_lucide_react12 = require("lucide-react");
+var import_lucide_react13 = require("lucide-react");
 init_utils();
 var import_jsx_runtime45 = require("react/jsx-runtime");
 var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCard2({
@@ -5419,7 +5432,7 @@ var SectionAsideProductCard = React19.forwardRef(function SectionAsideProductCar
       ...rest,
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
-          import_lucide_react12.ArrowUpRight,
+          import_lucide_react13.ArrowUpRight,
           {
             "aria-hidden": true,
             className: "absolute right-3 top-3 z-10 h-4 w-4 text-[color:var(--rm-yellow-100)] transition-transform group-hover/product:translate-x-0.5 group-hover/product:-translate-y-0.5"
@@ -7257,7 +7270,7 @@ function CTASectionMini({
 
 // src/components/ui/form-modal.tsx
 var import_react9 = require("react");
-var import_lucide_react13 = require("lucide-react");
+var import_lucide_react14 = require("lucide-react");
 init_utils();
 var import_jsx_runtime61 = require("react/jsx-runtime");
 var ModalContext = (0, import_react9.createContext)(null);
@@ -7343,7 +7356,7 @@ function FormModalBody({
     const gift = form.successGift;
     const hasGift = gift && gift.url.trim();
     return /* @__PURE__ */ (0, import_jsx_runtime61.jsxs)("div", { className: "flex flex-col items-center gap-7 py-8 text-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime61.jsx)("div", { className: "flex h-14 w-14 items-center justify-center rounded-full border border-border", children: /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(import_lucide_react13.Check, { className: "h-6 w-6 text-foreground", strokeWidth: 2 }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime61.jsx)("div", { className: "flex h-14 w-14 items-center justify-center rounded-full border border-border", children: /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(import_lucide_react14.Check, { className: "h-6 w-6 text-foreground", strokeWidth: 2 }) }),
       /* @__PURE__ */ (0, import_jsx_runtime61.jsx)("p", { className: "h3 text-foreground", children: form.successMessage || "\u0417\u0430\u044F\u0432\u043A\u0430 \u043F\u043E\u043B\u0443\u0447\u0435\u043D\u0430. \u041C\u044B \u0441\u0432\u044F\u0436\u0435\u043C\u0441\u044F \u0441 \u0432\u0430\u043C\u0438 \u0432 \u0431\u043B\u0438\u0436\u0430\u0439\u0448\u0435\u0435 \u0432\u0440\u0435\u043C\u044F." }),
       hasGift && /* @__PURE__ */ (0, import_jsx_runtime61.jsxs)(
         "a",
@@ -7354,7 +7367,7 @@ function FormModalBody({
           rel: gift.kind === "link" ? "noopener noreferrer" : void 0,
           className: "flex w-full items-center justify-center gap-3 rounded-sm border border-border bg-foreground px-6 py-4 text-[15px] font-semibold uppercase tracking-[0.04em] text-background transition-opacity hover:opacity-80",
           children: [
-            gift.kind === "file" ? /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(import_lucide_react13.Download, { className: "h-5 w-5 shrink-0", strokeWidth: 2 }) : /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(import_lucide_react13.ExternalLink, { className: "h-5 w-5 shrink-0", strokeWidth: 2 }),
+            gift.kind === "file" ? /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(import_lucide_react14.Download, { className: "h-5 w-5 shrink-0", strokeWidth: 2 }) : /* @__PURE__ */ (0, import_jsx_runtime61.jsx)(import_lucide_react14.ExternalLink, { className: "h-5 w-5 shrink-0", strokeWidth: 2 }),
             gift.label || (gift.kind === "file" ? "\u0421\u043A\u0430\u0447\u0430\u0442\u044C \u043C\u0430\u0442\u0435\u0440\u0438\u0430\u043B" : "\u041F\u0435\u0440\u0435\u0439\u0442\u0438 \u043F\u043E \u0441\u0441\u044B\u043B\u043A\u0435")
           ]
         }
@@ -8278,7 +8291,7 @@ init_dotted_surface();
 // src/components/ui/site-footer.tsx
 var import_link5 = __toESM(require("next/link"), 1);
 var import_dynamic = __toESM(require("next/dynamic"), 1);
-var import_lucide_react14 = require("lucide-react");
+var import_lucide_react15 = require("lucide-react");
 var import_jsx_runtime67 = require("react/jsx-runtime");
 var DottedSurface2 = (0, import_dynamic.default)(
   () => Promise.resolve().then(() => (init_dotted_surface(), dotted_surface_exports)).then((m) => m.DottedSurface),
@@ -8347,7 +8360,7 @@ function SiteFooter({
             onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }),
             "aria-label": "\u041D\u0430\u0432\u0435\u0440\u0445",
             className: "inline-flex items-center justify-center w-10 h-10 rounded-sm bg-secondary text-secondary-foreground transition-opacity duration-150 hover:opacity-[0.88] cursor-pointer",
-            children: /* @__PURE__ */ (0, import_jsx_runtime67.jsx)(import_lucide_react14.ChevronUp, { size: 20, strokeWidth: 2 })
+            children: /* @__PURE__ */ (0, import_jsx_runtime67.jsx)(import_lucide_react15.ChevronUp, { size: 20, strokeWidth: 2 })
           }
         )
       ] }),

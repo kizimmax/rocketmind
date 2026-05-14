@@ -142,6 +142,11 @@ function shallowEqualTerm(a: GlossaryTerm, b: GlossaryTerm): boolean {
     return false;
   if (JSON.stringify(a.aliases ?? []) !== JSON.stringify(b.aliases ?? []))
     return false;
+  if (
+    JSON.stringify(a.descriptionParagraphs ?? []) !==
+    JSON.stringify(b.descriptionParagraphs ?? [])
+  )
+    return false;
   return true;
 }
 
@@ -150,6 +155,7 @@ function shallowEqualTerm(a: GlossaryTerm, b: GlossaryTerm): boolean {
 const FIELD_LABELS: Partial<Record<keyof GlossaryTerm, string>> = {
   title: "Название",
   description: "Описание",
+  descriptionParagraphs: "Описание",
   slug: "Slug (URL)",
   status: "Статус публикации",
   tagIds: "Теги",

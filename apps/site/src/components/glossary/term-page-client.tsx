@@ -6,8 +6,10 @@ import {
   Breadcrumbs,
   Tag,
   TooltipProvider,
+  resolveStyledParagraphs,
   slugifyArticleHeading,
 } from "@rocketmind/ui";
+import type { StyledParagraph } from "@rocketmind/ui";
 import {
   AsideItem,
   SectionBody,
@@ -340,11 +342,10 @@ export function GlossaryTermPageClient({
                     <h1 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-32)] uppercase tracking-[-0.02em] leading-[1.08] text-[color:var(--rm-gray-fg-main)] md:text-[52px]">
                       {term.title}
                     </h1>
-                    {term.description && (
-                      <p className="text-[length:var(--text-16)] leading-[1.28] text-[color:var(--rm-gray-fg-main)] md:text-[length:var(--text-18)] md:leading-[1.2] whitespace-pre-line">
-                        {term.description}
-                      </p>
-                    )}
+                    <HeroLeadParagraphs
+                      paragraphs={term.descriptionParagraphs}
+                      legacy={term.description}
+                    />
                   </div>
                 </div>
 
@@ -467,11 +468,10 @@ export function GlossaryTermPageClient({
                 <h1 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-32)] uppercase tracking-[-0.02em] leading-[1.08] text-[color:var(--rm-gray-fg-main)] md:text-[52px]">
                   {term.title}
                 </h1>
-                {term.description && (
-                  <p className="text-[length:var(--text-16)] leading-[1.28] text-[color:var(--rm-gray-fg-main)] md:text-[length:var(--text-18)] md:leading-[1.2] whitespace-pre-line">
-                    {term.description}
-                  </p>
-                )}
+                <HeroLeadParagraphs
+                  paragraphs={term.descriptionParagraphs}
+                  legacy={term.description}
+                />
               </div>
 
               {/* mobile-only: теги под описанием (на lg+ они уйдут в правую колонку) */}
@@ -618,5 +618,48 @@ export function GlossaryTermPageClient({
         />
       </article>
     </TooltipProvider>
+  );
+}
+
+/**
+ * Лид под заголовком термина — стек абзацев. Поддерживает legacy `description`
+ * (одна строка) и новый `descriptionParagraphs` (массив со стилями).
+ */
+function HeroLeadParagraphs({
+  paragraphs,
+  legacy,
+}: {
+  paragraphs: StyledParagraph[];
+  legacy: string;
+}) {
+  const resolved = resolveStyledParagraphs(paragraphs, legacy, { color: "primary" });
+  if (resolved.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-3">
+      {resolved.map((p, i) => {
+        const isPrimary = p.color === "primary";
+        const color = isPrimary
+          ? "text-[color:var(--rm-gray-fg-main)]"
+          : "text-[color:var(--rm-gray-fg-sub)]";
+        if (p.uppercase) {
+          return (
+            <p
+              key={i}
+              className={`font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] md:text-[length:var(--text-18)] whitespace-pre-line ${color}`}
+            >
+              {p.text}
+            </p>
+          );
+        }
+        return (
+          <p
+            key={i}
+            className={`text-[length:var(--text-16)] leading-[1.28] md:text-[length:var(--text-18)] md:leading-[1.2] whitespace-pre-line ${color}`}
+          >
+            {p.text}
+          </p>
+        );
+      })}
+    </div>
   );
 }

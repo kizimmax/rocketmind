@@ -25,6 +25,11 @@ import {
   Textarea,
 } from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import { apiFetch } from "@/lib/api-client";
 import { useAdminStore } from "@/lib/store";
 import type { Article, MediaTag } from "@/lib/types";
@@ -127,17 +132,17 @@ export function ArticleHeroEditor({ draft, onChange }: Props) {
                 </h1>
               </InlineEdit>
 
-              <InlineEdit
-                value={draft.description}
-                onSave={(v) => onChange("description", v)}
-                multiline
-                copy
-                placeholder="Короткое описание, которое появится под заголовком"
-              >
-                <p className="text-[length:var(--text-16)] leading-[1.28] text-[#F0F0F0] md:text-[length:var(--text-18)] md:leading-[1.2]">
-                  {draft.description || "Короткое описание статьи"}
-                </p>
-              </InlineEdit>
+              <HeroDescriptionEditor
+                paragraphs={resolveParagraphs(draft.descriptionParagraphs, draft.description, {
+                  color: "primary",
+                })}
+                onChange={(next) => {
+                  onChange("descriptionParagraphs", next);
+                  // Синхронизируем legacy-поле с первым абзацем — SEO-мета,
+                  // карточки /media и tooltip'ы глоссария читают его напрямую.
+                  onChange("description", next[0]?.text ?? "");
+                }}
+              />
             </div>
 
             {/* Cover */}
@@ -267,6 +272,41 @@ export function ArticleHeroEditor({ draft, onChange }: Props) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hero description — multi-paragraph lead под заголовком
+// ─────────────────────────────────────────────────────────────────────────────
+
+function HeroDescriptionEditor({
+  paragraphs,
+  onChange,
+}: {
+  paragraphs: StyledParagraph[];
+  onChange: (next: StyledParagraph[]) => void;
+}) {
+  if (paragraphs.length === 0) {
+    return (
+      <button
+        type="button"
+        onClick={() => onChange([{ text: "", uppercase: false, color: "primary" }])}
+        className="flex items-center justify-start gap-1 border border-dashed border-[#404040] px-3 py-3 text-left text-[length:var(--text-14)] text-[#939393] transition-colors hover:border-[#FFCC00] hover:text-[#FFCC00]"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Добавить абзац описания
+      </button>
+    );
+  }
+  return (
+    <ParagraphsEditor
+      paragraphs={paragraphs}
+      onChange={onChange}
+      theme="dark"
+      defaults={{ color: "primary" }}
+      placeholder="Короткое описание, которое появится под заголовком"
+      addLabel="Добавить абзац"
+    />
   );
 }
 

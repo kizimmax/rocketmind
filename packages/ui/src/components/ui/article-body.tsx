@@ -10,6 +10,7 @@ import {
   type GlossaryIndexEntry,
 } from "../../lib/glossary-link"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
+import { ArrowUpRight } from "lucide-react"
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -264,9 +265,15 @@ function GlossaryLink({
         {entry.description && (
           <span className="text-[length:var(--text-13)]">{entry.description}</span>
         )}
-        <span className="mt-1 text-[length:var(--text-11)] underline underline-offset-2 opacity-80">
-          Открыть в глоссарии в новой вкладке ↗
-        </span>
+        <a
+          href={`/media/glossary/term/${entry.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex h-7 items-center gap-1 rounded-sm bg-[var(--rm-yellow-100)] px-2.5 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] font-medium uppercase tracking-[0.04em] text-[color:var(--rm-yellow-fg)] transition-colors hover:bg-[#FFE040] active:bg-[#E6B800]"
+        >
+          Открыть в глоссарии
+          <ArrowUpRight className="size-3.5" strokeWidth={2.25} aria-hidden />
+        </a>
       </TooltipContent>
     </Tooltip>
   )

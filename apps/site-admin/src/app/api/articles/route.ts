@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeSlug } from "@/lib/slugify";
 
-type ArticleContent = { body?: unknown; keyThoughts?: unknown[]; caseCard?: unknown; sortOrder?: number; order?: number; multiPage?: unknown; chapters?: unknown; [key: string]: unknown };
+type ArticleContent = { body?: unknown; keyThoughts?: unknown[]; descriptionParagraphs?: unknown; caseCard?: unknown; sortOrder?: number; order?: number; multiPage?: unknown; chapters?: unknown; [key: string]: unknown };
 
 function toDto(a: {
   id: string; slug: string; type: string; status: string; title: string; description: string;
@@ -22,6 +22,7 @@ function toDto(a: {
     type,
     title: a.title,
     description: a.description,
+    descriptionParagraphs: Array.isArray(c.descriptionParagraphs) ? c.descriptionParagraphs : undefined,
     coverImageData: a.coverPath || undefined,
     publishedAt: a.publishedAt,
     expertSlug: a.expertSlug || undefined,

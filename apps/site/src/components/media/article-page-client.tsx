@@ -9,8 +9,10 @@ import {
   ArticleNav,
   ArticlePagination,
   TooltipProvider,
+  resolveStyledParagraphs,
   slugifyArticleHeading,
 } from "@rocketmind/ui";
+import type { StyledParagraph } from "@rocketmind/ui";
 import type { ArticleNavItem } from "@rocketmind/ui";
 import Link from "next/link";
 import type {
@@ -672,11 +674,10 @@ export function ArticlePageClient({
                       <h1 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-32)] uppercase tracking-[-0.02em] leading-[1.08] text-[color:var(--rm-gray-fg-main)] md:text-[52px]">
                         {article.title}
                       </h1>
-                      {article.description && (
-                        <p className="text-[length:var(--text-16)] leading-[1.28] text-[color:var(--rm-gray-fg-main)] md:text-[length:var(--text-18)] md:leading-[1.2]">
-                          {article.description}
-                        </p>
-                      )}
+                      <HeroLeadParagraphs
+                        paragraphs={article.descriptionParagraphs}
+                        legacy={article.description}
+                      />
                     </div>
 
                     {article.coverUrl ? (
@@ -860,11 +861,10 @@ export function ArticlePageClient({
               <h1 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-32)] uppercase tracking-[-0.02em] leading-[1.08] text-[color:var(--rm-gray-fg-main)] md:text-[52px]">
                 {article.title}
               </h1>
-              {article.description && (
-                <p className="text-[length:var(--text-16)] leading-[1.28] text-[color:var(--rm-gray-fg-main)] md:text-[length:var(--text-18)] md:leading-[1.2]">
-                  {article.description}
-                </p>
-              )}
+              <HeroLeadParagraphs
+                paragraphs={article.descriptionParagraphs}
+                legacy={article.description}
+              />
             </div>
 
             <div className="flex flex-col gap-5 lg:hidden" style={stagger(2)}>
@@ -1127,4 +1127,50 @@ export function ArticlePageClient({
     </TooltipProvider>
   );
 }
+
+/**
+ * Лид под заголовком статьи — стек абзацев. Поддерживает legacy `description`
+ * (одна строка) и новый `descriptionParagraphs` (массив со стилями).
+ * Сохраняет responsive 16→18 базовый стиль; uppercase/secondary опционально
+ * включаются на уровне отдельного абзаца через `StyledParagraph`.
+ */
+function HeroLeadParagraphs({
+  paragraphs,
+  legacy,
+}: {
+  paragraphs: StyledParagraph[];
+  legacy: string;
+}) {
+  const resolved = resolveStyledParagraphs(paragraphs, legacy, { color: "primary" });
+  if (resolved.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-3">
+      {resolved.map((p, i) => {
+        const isPrimary = p.color === "primary";
+        const color = isPrimary
+          ? "text-[color:var(--rm-gray-fg-main)]"
+          : "text-[color:var(--rm-gray-fg-sub)]";
+        if (p.uppercase) {
+          return (
+            <p
+              key={i}
+              className={`font-[family-name:var(--font-mono-family)] text-[length:var(--text-16)] font-medium uppercase leading-[1.12] tracking-[0.02em] md:text-[length:var(--text-18)] ${color}`}
+            >
+              {p.text}
+            </p>
+          );
+        }
+        return (
+          <p
+            key={i}
+            className={`text-[length:var(--text-16)] leading-[1.28] md:text-[length:var(--text-18)] md:leading-[1.2] ${color}`}
+          >
+            {p.text}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 

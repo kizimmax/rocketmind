@@ -53,6 +53,9 @@ export async function PUT(
       content: {
         body: Array.isArray(body.body) ? body.body : [],
         keyThoughts: Array.isArray(body.keyThoughts) ? body.keyThoughts : [],
+        ...(Array.isArray(body.descriptionParagraphs) && body.descriptionParagraphs.length > 0
+          ? { descriptionParagraphs: body.descriptionParagraphs }
+          : {}),
         ...(type === "case" && body.caseCard ? { caseCard: body.caseCard } : {}),
         ...(body.multiPage === true
           ? { multiPage: true, chapters: Array.isArray(body.chapters) ? body.chapters : [] }

@@ -121,6 +121,7 @@ export function useArticleEditor(article: Article) {
 const FIELD_LABELS: Partial<Record<keyof Article, string>> = {
   title: "Заголовок",
   description: "Описание",
+  descriptionParagraphs: "Описание",
   slug: "Slug (URL)",
   status: "Статус публикации",
   publishedAt: "Дата публикации",

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeSlug } from "@/lib/slugify";
-import { generateAutoAliases, guessGender, type Gender } from "@/lib/glossary-morph";
+import { generateAutoAliases, guessGenderForTitle, type Gender } from "@/lib/glossary-morph";
 
 type GlossaryContent = {
   order?: number;
@@ -12,15 +12,14 @@ type GlossaryContent = {
   aliases?: unknown[];
   autoAliases?: unknown[];
   gender?: unknown;
+  descriptionParagraphs?: unknown;
   [key: string]: unknown;
 };
 
 const GENDERS = new Set<Gender>(["masculine", "feminine", "neuter"]);
 function parseGender(raw: unknown, fallbackTitle: string): Gender {
   if (typeof raw === "string" && GENDERS.has(raw as Gender)) return raw as Gender;
-  // Авто-определение по последнему слову title.
-  const tokens = fallbackTitle.trim().split(/\s+/);
-  return guessGender(tokens[tokens.length - 1] ?? "");
+  return guessGenderForTitle(fallbackTitle);
 }
 
 function toDto(t: {
@@ -54,6 +53,7 @@ function toDto(t: {
     order: typeof c.order === "number" ? c.order : 0,
     title: t.title,
     description: t.description,
+    descriptionParagraphs: Array.isArray(c.descriptionParagraphs) ? c.descriptionParagraphs : undefined,
     tagIds: t.tagIds,
     metaTitle: t.metaTitle,
     metaDescription: t.metaDescription,

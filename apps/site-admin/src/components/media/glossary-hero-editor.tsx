@@ -1,7 +1,13 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { Breadcrumbs } from "@rocketmind/ui";
 import { InlineEdit } from "@/components/inline-edit";
+import {
+  ParagraphsEditor,
+  resolveParagraphs,
+  type StyledParagraph,
+} from "@/components/paragraphs-editor";
 import type { GlossaryTerm } from "@/lib/types";
 
 interface Props {
@@ -15,10 +21,20 @@ interface Props {
 /**
  * Hero-блок в редакторе термина глоссария — упрощённый аналог `ArticleHeroEditor`.
  * Без обложки, автора, даты, тегов, ключевых мыслей и цитат — только заголовок
- * и описание, оба inline-editable через фиолетовую иконку с карандашом
- * (`InlineEdit`). Сохраняются неразрывные пробелы и переносы строк.
+ * и описание. Заголовок — `InlineEdit`. Описание — мульти-абзацы через
+ * `ParagraphsEditor` (DnD reorder, добавление, удаление). Первый абзац
+ * синхронизируется с legacy-полем `description` для SEO/мета.
  */
 export function GlossaryHeroEditor({ draft, onChange }: Props) {
+  const paragraphs = resolveParagraphs(draft.descriptionParagraphs, draft.description, {
+    color: "primary",
+  });
+
+  function handleParagraphsChange(next: StyledParagraph[]) {
+    onChange("descriptionParagraphs", next);
+    onChange("description", next[0]?.text ?? "");
+  }
+
   return (
     <div className="rounded-sm bg-[#0A0A0A] px-6 py-8 md:px-8 md:py-10">
       <div className="mx-auto max-w-[1100px]">
@@ -46,17 +62,27 @@ export function GlossaryHeroEditor({ draft, onChange }: Props) {
             </h1>
           </InlineEdit>
 
-          <InlineEdit
-            value={draft.description ?? ""}
-            onSave={(v) => onChange("description", v)}
-            multiline
-            copy
-            placeholder="Короткое описание, которое появится под заголовком"
-          >
-            <p className="text-[length:var(--text-16)] leading-[1.28] text-[#F0F0F0] md:text-[length:var(--text-18)] md:leading-[1.2] whitespace-pre-line">
-              {draft.description || "Короткое описание термина"}
-            </p>
-          </InlineEdit>
+          {paragraphs.length === 0 ? (
+            <button
+              type="button"
+              onClick={() =>
+                handleParagraphsChange([{ text: "", uppercase: false, color: "primary" }])
+              }
+              className="flex items-center justify-start gap-1 border border-dashed border-[#404040] px-3 py-3 text-left text-[length:var(--text-14)] text-[#939393] transition-colors hover:border-[#FFCC00] hover:text-[#FFCC00]"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Добавить абзац описания
+            </button>
+          ) : (
+            <ParagraphsEditor
+              paragraphs={paragraphs}
+              onChange={handleParagraphsChange}
+              theme="dark"
+              defaults={{ color: "primary" }}
+              placeholder="Короткое описание, которое появится под заголовком"
+              addLabel="Добавить абзац"
+            />
+          )}
         </div>
       </div>
     </div>

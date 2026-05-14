@@ -898,7 +898,17 @@ export interface Article {
 
   // Hero
   title: string;
+  /**
+   * Legacy single-string lead под заголовком. Сохраняется ради совместимости
+   * с карточками /media, SEO-мета и tooltip'ами глоссария — туда уходит plain
+   * текст первого абзаца из `descriptionParagraphs` (если они заданы).
+   */
   description: string;
+  /**
+   * Структурированный лид: несколько абзацев с поддержкой uppercase/color.
+   * Когда массив непустой — он перекрывает `description` для рендера hero.
+   */
+  descriptionParagraphs?: StyledParagraph[];
   /** Base64 data URL (demo) или относительный путь (persisted). */
   coverImageData?: string;
   /** ISO date (YYYY-MM-DD). */
@@ -987,8 +997,17 @@ export interface GlossaryTerm {
   status: PageStatus;
   order: number;
   title: string;
-  /** Hero-описание термина — короткий лид под заголовком (как Article.description). */
+  /**
+   * Hero-описание термина — короткий лид под заголовком (как `Article.description`).
+   * Сохраняется ради SEO/мета и tooltip'ов глоссария — туда уходит plain текст
+   * первого абзаца из `descriptionParagraphs`, если он задан.
+   */
   description: string;
+  /**
+   * Структурированный лид термина: несколько абзацев. Когда непустой —
+   * перекрывает `description` для рендера hero.
+   */
+  descriptionParagraphs?: StyledParagraph[];
   tagIds: string[];
   metaTitle: string;
   metaDescription: string;

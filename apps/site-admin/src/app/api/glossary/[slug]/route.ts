@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createAutoRedirect } from "@/lib/redirects";
-import { generateAutoAliases, guessGender, type Gender } from "@/lib/glossary-morph";
+import { generateAutoAliases, guessGenderForTitle, type Gender } from "@/lib/glossary-morph";
 
 const GENDERS = new Set<Gender>(["masculine", "feminine", "neuter"]);
 function pickGender(raw: unknown, title: string): Gender {
   if (typeof raw === "string" && GENDERS.has(raw as Gender)) return raw as Gender;
-  const tokens = (title || "").trim().split(/\s+/);
-  return guessGender(tokens[tokens.length - 1] ?? "");
+  return guessGenderForTitle(title);
 }
 
 export async function PUT(
@@ -56,6 +55,9 @@ export async function PUT(
           aliases,
           autoAliases,
           gender,
+          ...(Array.isArray(body.descriptionParagraphs) && body.descriptionParagraphs.length > 0
+            ? { descriptionParagraphs: body.descriptionParagraphs }
+            : {}),
         };
       })(),
     },

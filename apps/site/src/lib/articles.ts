@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import type { ArticleBodyBlock } from "@rocketmind/ui";
+import type { ArticleBodyBlock, StyledParagraph } from "@rocketmind/ui";
 import { getProductBySlug } from "./products";
 import { getExpertBySlug } from "./experts";
 import { isPreviewMode, matchPreviewPayload } from "./preview-draft";
@@ -81,7 +81,10 @@ export type ArticleChapter = {
 export type ArticleEntry = {
   slug: string;
   title: string;
+  /** Legacy lead — для SEO/мета и tooltip'ов глоссария (= первый абзац). */
   description: string;
+  /** Структурированный лид под заголовком. Если непуст — перекрывает description. */
+  descriptionParagraphs: StyledParagraph[];
   status: ArticleStatus;
   order: number;
   type: ArticleType;
@@ -284,6 +287,23 @@ function parseStatus(value: unknown): ArticleStatus {
   return typeof value === "string" && VALID_STATUSES.has(value) ? (value as ArticleStatus) : "published";
 }
 
+export function parseStyledParagraphs(raw: unknown): StyledParagraph[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item): StyledParagraph | null => {
+      if (!item || typeof item !== "object") return null;
+      const rec = item as Record<string, unknown>;
+      const text = typeof rec.text === "string" ? rec.text : "";
+      if (!text.trim()) return null;
+      return {
+        text,
+        uppercase: rec.uppercase === true,
+        color: rec.color === "primary" ? "primary" : "secondary",
+      };
+    })
+    .filter((p): p is StyledParagraph => p !== null);
+}
+
 function parseChapters(raw: unknown): ArticleChapter[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -318,6 +338,7 @@ function rowToEntry(row: {
     slug: row.slug,
     title: row.title,
     description: row.description,
+    descriptionParagraphs: parseStyledParagraphs(c.descriptionParagraphs),
     status: parseStatus(row.status),
     order: typeof c.order === "number" ? c.order : 0,
     type: row.type === "lesson" || row.type === "case" ? row.type : "default",
@@ -403,6 +424,9 @@ function previewArticlePayloadToEntry(p: Record<string, unknown>): ArticleEntry 
     const content: Record<string, unknown> = {
       body: Array.isArray(p.body) ? p.body : [],
       keyThoughts: Array.isArray(p.keyThoughts) ? p.keyThoughts : [],
+      ...(Array.isArray(p.descriptionParagraphs) && p.descriptionParagraphs.length > 0
+        ? { descriptionParagraphs: p.descriptionParagraphs }
+        : {}),
       ...(type === "case" && p.caseCard ? { caseCard: p.caseCard } : {}),
       ...(p.multiPage === true
         ? { multiPage: true, chapters: Array.isArray(p.chapters) ? p.chapters : [] }
