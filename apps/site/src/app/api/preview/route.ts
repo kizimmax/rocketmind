@@ -23,7 +23,17 @@ export async function GET(req: NextRequest) {
   const dm = await draftMode();
   dm.enable();
 
-  const res = NextResponse.redirect(new URL(draft.publicUrl, url.origin), 302);
+  // За Amvera-прокси `req.url` приходит как `http://localhost:80/...` —
+  // если редиректить относительно него, браузер уйдёт на localhost. Читаем
+  // публичный хост из forwarded-заголовков, фолбэк на SITE_URL env, и только
+  // в самом крайнем случае — на url.origin.
+  const fwdHost = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  const fwdProto = req.headers.get("x-forwarded-proto") ?? "https";
+  const publicOrigin = fwdHost
+    ? `${fwdProto}://${fwdHost}`
+    : (process.env.SITE_URL?.replace(/\/$/, "") ?? url.origin);
+
+  const res = NextResponse.redirect(new URL(draft.publicUrl, publicOrigin), 302);
   res.cookies.set("previewDraftId", id, {
     httpOnly: true,
     sameSite: "lax",
