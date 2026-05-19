@@ -1,17 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  Button,
-  Input,
-  Textarea,
-  Checkbox,
-} from "@rocketmind/ui";
+import { Button, Input, Textarea, Checkbox } from "@rocketmind/ui";
 import { apiFetch } from "@/lib/api-client";
 import { toast } from "sonner";
 import { UserCircle, Loader2, Trash2, AlertTriangle } from "lucide-react";
@@ -34,12 +24,12 @@ export type Agent = {
   notes: string | null;
 };
 
-interface AgentFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface AgentEditorProps {
   agent: Agent | null; // null = create mode
   onSaved: (agent: Agent) => void;
   onDeleted?: (id: string) => void;
+  /** Optional cancel handler (e.g. router.back). Hidden if undefined. */
+  onCancel?: () => void;
 }
 
 const EMPTY: Omit<Agent, "id" | "slug"> = {
@@ -56,7 +46,7 @@ const EMPTY: Omit<Agent, "id" | "slug"> = {
   notes: null,
 };
 
-export function AgentForm({ open, onOpenChange, agent, onSaved, onDeleted }: AgentFormProps) {
+export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditorProps) {
   const isEdit = !!agent;
   const [state, setState] = useState<Omit<Agent, "id" | "slug">>(() =>
     agent ? { ...agent } : { ...EMPTY },
@@ -64,11 +54,6 @@ export function AgentForm({ open, onOpenChange, agent, onSaved, onDeleted }: Age
   const [picker, setPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-
-  // Re-init when opening with new agent
-  function reset() {
-    setState(agent ? { ...agent } : { ...EMPTY });
-  }
 
   function toggleTarget(t: string) {
     setState((s) => ({
@@ -115,7 +100,6 @@ export function AgentForm({ open, onOpenChange, agent, onSaved, onDeleted }: Age
       const saved = (await res.json()) as Agent;
       toast.success(isEdit ? "Сохранено" : "AI-эксперт создан");
       onSaved(saved);
-      onOpenChange(false);
     } finally {
       setSaving(false);
     }
@@ -127,228 +111,215 @@ export function AgentForm({ open, onOpenChange, agent, onSaved, onDeleted }: Age
     if (res.ok) {
       toast.success("AI-эксперт удалён");
       onDeleted?.(agent.id);
-      onOpenChange(false);
     } else {
       toast.error("Ошибка удаления");
     }
   }
 
-  const avatarUrl =
-    state.avatarMascot?.imagePath ?? state.avatarPath ?? null;
+  const avatarUrl = state.avatarMascot?.imagePath ?? state.avatarPath ?? null;
 
   return (
     <>
-      <Dialog
-        open={open}
-        onOpenChange={(o) => {
-          onOpenChange(o);
-          if (o) reset();
-        }}
-      >
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{isEdit ? `AI-эксперт: ${agent!.name}` : "Новый AI-эксперт"}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            {/* Avatar */}
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setPicker(true)}
-                className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40 transition-colors hover:border-foreground/40"
-              >
-                {avatarUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <UserCircle className="h-10 w-10 text-muted-foreground" />
-                )}
-              </button>
-              <div className="flex flex-col gap-1 text-[length:var(--text-12)] text-muted-foreground">
-                <span>Аватар — маскот из библиотеки</span>
-                <button
-                  type="button"
-                  onClick={() => setPicker(true)}
-                  className="text-foreground underline-offset-2 hover:underline"
-                >
-                  Выбрать
-                </button>
-              </div>
-            </div>
-
-            {/* Name */}
-            <div>
-              <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-                Имя
-              </label>
-              <Input
-                value={state.name}
-                onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
-                placeholder="напр. Бизнес-наставник"
-              />
-            </div>
-
-            {/* Role */}
-            <div>
-              <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-                Роль
-              </label>
-              <Input
-                value={state.role}
-                onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}
-                placeholder="напр. Бизнес-моделирование"
-              />
-            </div>
-
-            {/* Value */}
-            <div>
-              <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-                Описание пользы
-              </label>
-              <Textarea
-                value={state.valueDescription}
-                onChange={(e) =>
-                  setState((s) => ({ ...s, valueDescription: e.target.value }))
-                }
-                placeholder="Что AI-эксперт делает для ученика, чем полезен"
-                rows={3}
-              />
-            </div>
-
-            {/* Targets */}
-            <div>
-              <div className="mb-1 text-[length:var(--text-12)] text-muted-foreground">
-                Привязка к SaaS
-              </div>
-              <div className="flex gap-4">
-                <label className="flex cursor-pointer items-center gap-2">
-                  <Checkbox
-                    checked={state.targets.includes("saas-teacher")}
-                    onChange={() => toggleTarget("saas-teacher")}
-                  />
-                  <span className="text-[length:var(--text-14)]">saas-teacher</span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-2">
-                  <Checkbox
-                    checked={state.targets.includes("saas")}
-                    onChange={() => toggleTarget("saas")}
-                  />
-                  <span className="text-[length:var(--text-14)]">saas (R-акселератор)</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Webhook */}
-            <div>
-              <div className="mb-1 flex items-center gap-2">
-                <label className="text-[length:var(--text-12)] text-muted-foreground">
-                  n8n webhook URL
-                </label>
-                {!state.n8nWebhookUrl.trim() && (
-                  <span className="inline-flex items-center gap-1 rounded-sm bg-destructive/15 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-destructive">
-                    <AlertTriangle className="h-3 w-3" />
-                    Не подключен
-                  </span>
-                )}
-              </div>
-              <Input
-                value={state.n8nWebhookUrl}
-                onChange={(e) =>
-                  setState((s) => ({ ...s, n8nWebhookUrl: e.target.value }))
-                }
-                placeholder="https://n8n.example.com/webhook/agent-xyz"
-                className={
-                  !state.n8nWebhookUrl.trim()
-                    ? "border-destructive/50 focus-visible:border-destructive"
-                    : undefined
-                }
-              />
-              {!state.n8nWebhookUrl.trim() && (
-                <p className="mt-1 text-[length:var(--text-10)] text-destructive">
-                  Без webhook агент не отвечает — диалог с ним работать не будет.
-                </p>
-              )}
-            </div>
-
-            {/* Secret */}
-            <div>
-              <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-                Shared secret (опц., для HMAC-подписи)
-              </label>
-              <Input
-                value={state.n8nSecret ?? ""}
-                onChange={(e) =>
-                  setState((s) => ({ ...s, n8nSecret: e.target.value || null }))
-                }
-                placeholder="optional"
-              />
-            </div>
-
-            {/* System prompt — пока read-only для бэка, промпты живут в n8n/OpenAI */}
-            <div>
-              <div className="mb-1 flex items-center gap-2">
-                <label className="text-[length:var(--text-12)] text-muted-foreground">
-                  Системный промпт
-                </label>
-                <span className="rounded-sm bg-foreground/10 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-foreground">
-                  В разработке
-                </span>
-              </div>
-              <Textarea
-                value={state.systemPrompt ?? ""}
-                onChange={(e) =>
-                  setState((s) => ({ ...s, systemPrompt: e.target.value || null }))
-                }
-                rows={6}
-                placeholder="Сейчас сами инструкции живут в n8n/OpenAI. Это поле — черновик: текст сохранится в БД, но в payload AI-эксперту пока не уходит."
-              />
-              <p className="mt-1 text-[length:var(--text-10)] text-muted-foreground">
-                Когда подключим передачу промпта в n8n — пометку «В разработке» снимем.
-              </p>
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-                Заметки
-              </label>
-              <Textarea
-                value={state.notes ?? ""}
-                onChange={(e) =>
-                  setState((s) => ({ ...s, notes: e.target.value || null }))
-                }
-                rows={2}
-              />
-            </div>
+      <div className="space-y-4">
+        {/* Avatar */}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setPicker(true)}
+            className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40 transition-colors hover:border-foreground/40"
+          >
+            {avatarUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <UserCircle className="h-10 w-10 text-muted-foreground" />
+            )}
+          </button>
+          <div className="flex flex-col gap-1 text-[length:var(--text-12)] text-muted-foreground">
+            <span>Аватар — маскот из библиотеки</span>
+            <button
+              type="button"
+              onClick={() => setPicker(true)}
+              className="text-foreground underline-offset-2 hover:underline"
+            >
+              Выбрать
+            </button>
           </div>
+        </div>
 
-          <DialogFooter className="flex !justify-between">
-            <div>
-              {isEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive"
-                  onClick={() => setConfirmDelete(true)}
-                >
-                  <Trash2 className="mr-1 h-4 w-4" />
-                  Удалить
-                </Button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
-                Отмена
-              </Button>
-              <Button size="sm" onClick={handleSave} disabled={saving}>
-                {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-                {isEdit ? "Сохранить" : "Создать"}
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        {/* Name */}
+        <div>
+          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+            Имя
+          </label>
+          <Input
+            value={state.name}
+            onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
+            placeholder="напр. Бизнес-наставник"
+          />
+        </div>
+
+        {/* Role */}
+        <div>
+          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+            Роль
+          </label>
+          <Input
+            value={state.role}
+            onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}
+            placeholder="напр. Бизнес-моделирование"
+          />
+        </div>
+
+        {/* Value */}
+        <div>
+          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+            Описание пользы
+          </label>
+          <Textarea
+            value={state.valueDescription}
+            onChange={(e) =>
+              setState((s) => ({ ...s, valueDescription: e.target.value }))
+            }
+            placeholder="Что AI-эксперт делает для ученика, чем полезен"
+            rows={3}
+          />
+        </div>
+
+        {/* Targets */}
+        <div>
+          <div className="mb-1 text-[length:var(--text-12)] text-muted-foreground">
+            Привязка к SaaS
+          </div>
+          <div className="flex gap-4">
+            <label className="flex cursor-pointer items-center gap-2">
+              <Checkbox
+                checked={state.targets.includes("saas-teacher")}
+                onChange={() => toggleTarget("saas-teacher")}
+              />
+              <span className="text-[length:var(--text-14)]">saas-teacher</span>
+            </label>
+            <label className="flex cursor-pointer items-center gap-2">
+              <Checkbox
+                checked={state.targets.includes("saas")}
+                onChange={() => toggleTarget("saas")}
+              />
+              <span className="text-[length:var(--text-14)]">saas (R-акселератор)</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Webhook */}
+        <div>
+          <div className="mb-1 flex items-center gap-2">
+            <label className="text-[length:var(--text-12)] text-muted-foreground">
+              n8n webhook URL
+            </label>
+            {!state.n8nWebhookUrl.trim() && (
+              <span className="inline-flex items-center gap-1 rounded-sm bg-destructive/15 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-destructive">
+                <AlertTriangle className="h-3 w-3" />
+                Не подключен
+              </span>
+            )}
+          </div>
+          <Input
+            value={state.n8nWebhookUrl}
+            onChange={(e) =>
+              setState((s) => ({ ...s, n8nWebhookUrl: e.target.value }))
+            }
+            placeholder="https://n8n.example.com/webhook/agent-xyz"
+            className={
+              !state.n8nWebhookUrl.trim()
+                ? "border-destructive/50 focus-visible:border-destructive"
+                : undefined
+            }
+          />
+          {!state.n8nWebhookUrl.trim() && (
+            <p className="mt-1 text-[length:var(--text-10)] text-destructive">
+              Без webhook агент не отвечает — диалог с ним работать не будет.
+            </p>
+          )}
+        </div>
+
+        {/* Secret */}
+        <div>
+          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+            Shared secret (опц., для HMAC-подписи)
+          </label>
+          <Input
+            value={state.n8nSecret ?? ""}
+            onChange={(e) =>
+              setState((s) => ({ ...s, n8nSecret: e.target.value || null }))
+            }
+            placeholder="optional"
+          />
+        </div>
+
+        {/* System prompt — пока read-only для бэка, промпты живут в n8n/OpenAI */}
+        <div>
+          <div className="mb-1 flex items-center gap-2">
+            <label className="text-[length:var(--text-12)] text-muted-foreground">
+              Системный промпт
+            </label>
+            <span className="rounded-sm bg-foreground/10 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-foreground">
+              В разработке
+            </span>
+          </div>
+          <Textarea
+            value={state.systemPrompt ?? ""}
+            onChange={(e) =>
+              setState((s) => ({ ...s, systemPrompt: e.target.value || null }))
+            }
+            rows={6}
+            placeholder="Сейчас сами инструкции живут в n8n/OpenAI. Это поле — черновик: текст сохранится в БД, но в payload AI-эксперту пока не уходит."
+          />
+          <p className="mt-1 text-[length:var(--text-10)] text-muted-foreground">
+            Когда подключим передачу промпта в n8n — пометку «В разработке» снимем.
+          </p>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+            Заметки
+          </label>
+          <Textarea
+            value={state.notes ?? ""}
+            onChange={(e) =>
+              setState((s) => ({ ...s, notes: e.target.value || null }))
+            }
+            rows={2}
+          />
+        </div>
+      </div>
+
+      {/* Action bar — sticky внизу страницы */}
+      <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+        <div>
+          {isEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive"
+              onClick={() => setConfirmDelete(true)}
+            >
+              <Trash2 className="mr-1 h-4 w-4" />
+              Удалить
+            </Button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          {onCancel && (
+            <Button variant="ghost" size="sm" onClick={onCancel}>
+              Отмена
+            </Button>
+          )}
+          <Button size="sm" onClick={handleSave} disabled={saving}>
+            {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+            {isEdit ? "Сохранить" : "Создать"}
+          </Button>
+        </div>
+      </div>
 
       <MascotPicker
         open={picker}

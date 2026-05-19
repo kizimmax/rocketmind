@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
 import { Button, Input } from "@rocketmind/ui";
 import { Plus, UserCircle, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { AgentForm, type Agent } from "./agent-form";
+import type { Agent } from "./agent-form";
 
 export default function AiAgentsPage() {
+  const router = useRouter();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<Agent | null>(null);
-  const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
@@ -45,18 +45,15 @@ export default function AiAgentsPage() {
         toast.error(err.error === "slug_exists" ? "Такой slug уже есть" : "Ошибка создания");
         return;
       }
+      const created = (await res.json()) as Agent;
       setNewName("");
       setIsCreating(false);
       toast.success(`AI-эксперт «${name}» создан`);
-      load();
+      // Сразу открываем страницу редактирования, чтобы заполнить остальное.
+      router.push(`/ai-agents/${created.id}`);
     } finally {
       setCreating(false);
     }
-  }
-
-  function handleEdit(agent: Agent) {
-    setEditing(agent);
-    setOpen(true);
   }
 
   return (
@@ -123,35 +120,21 @@ export default function AiAgentsPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {agents.map((agent) => (
-            <AgentCard key={agent.id} agent={agent} onClick={() => handleEdit(agent)} />
+            <Link key={agent.id} href={`/ai-agents/${agent.id}`} className="block">
+              <AgentCard agent={agent} />
+            </Link>
           ))}
         </div>
       )}
-
-      <AgentForm
-        open={open}
-        onOpenChange={setOpen}
-        agent={editing}
-        onSaved={() => {
-          load();
-        }}
-        onDeleted={() => {
-          load();
-        }}
-      />
     </div>
   );
 }
 
-function AgentCard({ agent, onClick }: { agent: Agent; onClick: () => void }) {
+function AgentCard({ agent }: { agent: Agent }) {
   const avatar = agent.avatarMascot?.imagePath ?? agent.avatarPath ?? null;
   const webhookMissing = !agent.n8nWebhookUrl?.trim();
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex gap-3 rounded border border-border bg-rm-gray-1/30 p-4 text-left transition-colors hover:border-foreground/30"
-    >
+    <div className="flex gap-3 rounded border border-border bg-rm-gray-1/30 p-4 text-left transition-colors hover:border-foreground/30 cursor-pointer">
       <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded bg-rm-gray-1/60">
         {avatar ? (
           /* eslint-disable-next-line @next/next/no-img-element */
@@ -193,6 +176,6 @@ function AgentCard({ agent, onClick }: { agent: Agent; onClick: () => void }) {
           </p>
         )}
       </div>
-    </button>
+    </div>
   );
 }
