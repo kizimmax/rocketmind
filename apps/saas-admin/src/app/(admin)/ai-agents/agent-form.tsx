@@ -267,14 +267,9 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
 
         {/* ── Right column: системный промпт (большая область) ── */}
         <div className="flex flex-col">
-          <div className="mb-1 flex items-center gap-2">
-            <label className="text-[length:var(--text-12)] text-muted-foreground">
-              Системный промпт
-            </label>
-            <span className="rounded-sm bg-foreground/10 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-foreground">
-              В разработке
-            </span>
-          </div>
+          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+            Системный промпт
+          </label>
           <Textarea
             value={state.systemPrompt ?? ""}
             onChange={(e) =>
@@ -285,7 +280,8 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
             className="flex-1 min-h-[400px] font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)]"
           />
           <p className="mt-1 text-[length:var(--text-10)] text-muted-foreground">
-            Когда подключим передачу промпта в n8n — пометку «В разработке» снимем.
+            <span className="uppercase tracking-wide">В разработке.</span>{" "}
+            Когда подключим передачу промпта в n8n — пометку снимем.
           </p>
         </div>
       </div>
