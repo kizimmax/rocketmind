@@ -8261,6 +8261,13 @@ function AdminSidebar({
             const { Icon } = s;
             const LinkComponent = s.external ? "a" : Link8;
             return /* @__PURE__ */ jsxs45("div", { children: [
+              s.dividerBefore && /* @__PURE__ */ jsx68(
+                "div",
+                {
+                  className: "my-2 border-t border-border",
+                  "aria-hidden": true
+                }
+              ),
               /* @__PURE__ */ jsxs45(
                 "div",
                 {

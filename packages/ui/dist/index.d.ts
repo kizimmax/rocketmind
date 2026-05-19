@@ -1487,6 +1487,8 @@ interface AdminShellSection {
     subsections?: AdminShellSubSection[];
     /** External link (renders with external icon, opens via href without client-side routing) */
     external?: boolean;
+    /** Render a horizontal divider line ABOVE this section (visual group break). */
+    dividerBefore?: boolean;
 }
 interface AdminShellUser {
     firstName: string;

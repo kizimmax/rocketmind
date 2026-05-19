@@ -33,6 +33,8 @@ export interface AdminShellSection {
   subsections?: AdminShellSubSection[];
   /** External link (renders with external icon, opens via href without client-side routing) */
   external?: boolean;
+  /** Render a horizontal divider line ABOVE this section (visual group break). */
+  dividerBefore?: boolean;
 }
 
 export interface AdminShellUser {
@@ -218,6 +220,12 @@ export function AdminSidebar({
 
               return (
                 <div key={s.id}>
+                  {s.dividerBefore && (
+                    <div
+                      className="my-2 border-t border-border"
+                      aria-hidden
+                    />
+                  )}
                   <div
                     className="flex items-center"
                     style={{ height: 34 }}

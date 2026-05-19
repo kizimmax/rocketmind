@@ -57,6 +57,7 @@ const allSections: SiteAdminSection[] = [
     label: "AI-эксперты (SaaS)",
     Icon: Bot,
     external: true,
+    dividerBefore: true,
     rolesAllowed: ["SUPER_ADMIN"],
   },
   {

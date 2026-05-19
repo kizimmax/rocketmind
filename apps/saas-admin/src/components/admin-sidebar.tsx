@@ -1,7 +1,21 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bot, CalendarDays, ShieldCheck, ScrollText } from "lucide-react";
+import {
+  Bot,
+  CalendarDays,
+  ShieldCheck,
+  ScrollText,
+  FileText,
+  Newspaper,
+  Users,
+  Briefcase,
+  MessageSquareQuote,
+  MousePointerClick,
+  Inbox,
+  Settings,
+  ArrowLeftRight,
+} from "lucide-react";
 import {
   AdminSidebar as AdminSidebarShell,
   type AdminShellSection,
@@ -10,14 +24,98 @@ import { useNavigationGuard } from "@/lib/navigation-guard";
 import { useAuth } from "@/lib/auth-context";
 import { isPathVisible } from "@/lib/permissions-client";
 
-const allSections: (AdminShellSection & {
-  rolesAllowed?: Array<"SUPER_ADMIN" | "ADMIN" | "EDITOR">;
+type Role = "SUPER_ADMIN" | "ADMIN" | "EDITOR";
+
+type SaasAdminSection = AdminShellSection & {
+  rolesAllowed?: Role[];
   permissionPath?: string;
-})[] = [
+};
+
+const SITE_ADMIN_URL =
+  process.env.NEXT_PUBLIC_SITE_ADMIN_URL ?? "http://localhost:3004";
+
+const allSections: SaasAdminSection[] = [
+  // ── SaaS-разделы (живут локально в saas-admin) ──
   { id: "ai-agents", href: "/ai-agents", label: "AI-эксперты", Icon: Bot, permissionPath: "ai-agents" },
   { id: "programs", href: "/programs", label: "Программы", Icon: CalendarDays, permissionPath: "programs" },
   { id: "users", href: "/users", label: "Управление админами", Icon: ShieldCheck, rolesAllowed: ["SUPER_ADMIN", "ADMIN"] },
   { id: "audit-log", href: "/audit-log", label: "Аудит-лог", Icon: ScrollText, rolesAllowed: ["SUPER_ADMIN"] },
+
+  // ── Cross-links на сайтовый CMS (видны только SUPER_ADMIN) ──
+  // Иллюзия единого пульта: те же визуальные вкладки + ExternalLink-иконка.
+  {
+    id: "site-pages",
+    href: `${SITE_ADMIN_URL}/pages`,
+    label: "Страницы (сайт)",
+    Icon: FileText,
+    external: true,
+    dividerBefore: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
+  {
+    id: "site-media",
+    href: `${SITE_ADMIN_URL}/media`,
+    label: "Медиа (сайт)",
+    Icon: Newspaper,
+    external: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
+  {
+    id: "site-experts",
+    href: `${SITE_ADMIN_URL}/experts`,
+    label: "Эксперты (сайт)",
+    Icon: Users,
+    external: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
+  {
+    id: "site-cases",
+    href: `${SITE_ADMIN_URL}/cases`,
+    label: "Кейсы (сайт)",
+    Icon: Briefcase,
+    external: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
+  {
+    id: "site-testimonials",
+    href: `${SITE_ADMIN_URL}/testimonials`,
+    label: "Отзывы (сайт)",
+    Icon: MessageSquareQuote,
+    external: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
+  {
+    id: "site-cta-forms",
+    href: `${SITE_ADMIN_URL}/cta-forms`,
+    label: "CTA и формы (сайт)",
+    Icon: MousePointerClick,
+    external: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
+  {
+    id: "site-submissions",
+    href: `${SITE_ADMIN_URL}/submissions`,
+    label: "Заявки (сайт)",
+    Icon: Inbox,
+    external: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
+  {
+    id: "site-system",
+    href: `${SITE_ADMIN_URL}/system`,
+    label: "Системные (сайт)",
+    Icon: Settings,
+    external: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
+  {
+    id: "site-redirects",
+    href: `${SITE_ADMIN_URL}/redirects`,
+    label: "Редиректы (сайт)",
+    Icon: ArrowLeftRight,
+    external: true,
+    rolesAllowed: ["SUPER_ADMIN"],
+  },
 ];
 
 export function AdminSidebar() {
