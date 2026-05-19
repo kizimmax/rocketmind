@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAuth, type Student, type StudentProjectSummary } from "@/lib/auth-context";
 import { Button } from "@rocketmind/ui";
 import { LogOut, UserCircle, Lock } from "lucide-react";
@@ -104,22 +105,28 @@ export function TeacherSidebar({
         )}
       </div>
 
-      {/* User */}
+      {/* User — клик ведёт на /profile (анкета редактируется там) */}
       <div className="flex items-center gap-2 border-t border-border px-3 py-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-foreground/10">
-          <UserCircle className="h-5 w-5 text-foreground" />
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[length:var(--text-12)] text-foreground">
-            {[student.firstName, student.lastName].filter(Boolean).join(" ") ||
-              student.email}
-          </span>
-          {student.role && (
-            <span className="truncate text-[length:var(--text-10)] text-muted-foreground">
-              {student.role}
+        <Link
+          href="/profile"
+          className="flex min-w-0 flex-1 items-center gap-2 hover:opacity-80 transition-opacity"
+          title="Профиль и анкета"
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-foreground/10">
+            <UserCircle className="h-5 w-5 text-foreground" />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-[length:var(--text-12)] text-foreground">
+              {[student.firstName, student.lastName].filter(Boolean).join(" ") ||
+                student.email}
             </span>
-          )}
-        </div>
+            {student.role && (
+              <span className="truncate text-[length:var(--text-10)] text-muted-foreground">
+                {student.role}
+              </span>
+            )}
+          </div>
+        </Link>
         <Button
           variant="ghost"
           size="xs"

@@ -21,6 +21,8 @@ export async function GET() {
       firstName: student.firstName,
       lastName: student.lastName,
       role: student.role,
+      industry: student.industry,
+      region: student.region,
       isActive: student.isActive,
       program: withProjects?.program ?? null,
       project: withProjects?.projects?.[0] ?? null,

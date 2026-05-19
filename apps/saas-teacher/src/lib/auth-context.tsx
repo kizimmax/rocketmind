@@ -28,7 +28,9 @@ export type Student = {
   email: string;
   firstName: string | null;
   lastName: string | null;
-  role: string | null;
+  role: string | null; // «Роль в бизнесе»
+  industry: string | null; // «Сфера деятельности»
+  region: string | null; // «Регион»
   isActive: boolean;
   program: StudentProgramSummary | null;
   project: StudentProjectSummary | null;

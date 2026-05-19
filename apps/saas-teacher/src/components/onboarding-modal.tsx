@@ -46,6 +46,8 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
   const [firstName, setFirstName] = useState(student.firstName ?? "");
   const [lastName, setLastName] = useState(student.lastName ?? "");
   const [role, setRole] = useState(student.role ?? "");
+  const [industry, setIndustry] = useState(student.industry ?? "");
+  const [region, setRegion] = useState(student.region ?? "");
   const [projectName, setProjectName] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -65,12 +67,29 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
       const res = await fetch("/api/students/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, role }),
+        body: JSON.stringify({ firstName, lastName, role, industry, region }),
       });
       if (!res.ok) throw new Error(await res.text());
       setStep({ kind: "project" });
     } catch (err) {
       console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function skipProfile() {
+    // Save whatever is already filled (or nothing) and move on
+    setSaving(true);
+    try {
+      if (firstName.trim() || lastName.trim() || role.trim() || industry.trim() || region.trim()) {
+        await fetch("/api/students/me", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firstName, lastName, role, industry, region }),
+        }).catch(() => {});
+      }
+      setStep({ kind: "project" });
     } finally {
       setSaving(false);
     }
@@ -109,15 +128,16 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
 
         {step.kind === "profile" && (
           <div className="flex flex-col gap-5 py-2">
-            <div className="text-center">
+            <div>
               <h2 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase tracking-tight text-foreground">
-                Расскажите о себе
+                Расскажи о себе
               </h2>
               <p className="mt-1 text-[length:var(--text-14)] text-muted-foreground">
-                Эти данные увидят AI-эксперты, чтобы лучше вам помогать.
+                Это поможет ИИ-агентам говорить с тобой на одном языке и учитывать
+                контекст твоего бизнеса.
               </p>
             </div>
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               <div>
                 <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
                   Имя
@@ -139,19 +159,56 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
               </div>
               <div>
                 <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-                  Роль/должность
+                  Роль в бизнесе
                 </label>
                 <Input
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  placeholder="напр. Основатель"
+                  placeholder="Укажите роль"
                 />
+                <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground/70">
+                  Например: генеральный директор
+                </p>
+              </div>
+              <div>
+                <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+                  Сфера деятельности
+                </label>
+                <Input
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                  placeholder="Укажите сферу"
+                />
+                <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground/70">
+                  Например: производство, образование
+                </p>
+              </div>
+              <div>
+                <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+                  Регион
+                </label>
+                <Input
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  placeholder="Укажите регион"
+                />
+                <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground/70">
+                  Например: Московская область
+                </p>
               </div>
             </div>
             <Button onClick={saveProfile} disabled={!firstName.trim() || saving}>
               {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-              Дальше
+              Продолжить
             </Button>
+            <button
+              type="button"
+              onClick={skipProfile}
+              disabled={saving}
+              className="text-center text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-[var(--rm-yellow-100)] hover:opacity-80 transition-opacity cursor-pointer disabled:opacity-50"
+            >
+              Заполнить позже
+            </button>
           </div>
         )}
 

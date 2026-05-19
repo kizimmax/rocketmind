@@ -21,6 +21,8 @@ type Student = {
   firstName: string | null;
   lastName: string | null;
   role: string | null;
+  industry: string | null;
+  region: string | null;
   isActive: boolean;
   joinedAt: string;
 };

@@ -448,7 +448,9 @@ model Student {
   email     String           @unique
   firstName String?
   lastName  String?
-  role      String?
+  role      String? // «Роль в бизнесе»
+  industry  String? // «Сфера деятельности»
+  region    String? // «Регион»
   isActive  Boolean          @default(true)
   programId String?
   program   Program?         @relation(fields: [programId], references: [id])

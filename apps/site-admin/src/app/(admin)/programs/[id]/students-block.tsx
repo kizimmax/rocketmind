@@ -13,6 +13,8 @@ type Student = {
   firstName: string | null;
   lastName: string | null;
   role: string | null;
+  industry: string | null;
+  region: string | null;
   isActive: boolean;
   joinedAt: string;
 };
@@ -98,6 +100,11 @@ export function StudentsBlock({ initialStudents }: { initialStudents: Student[] 
                     {s.email}
                     {s.role ? ` · ${s.role}` : ""} · {fmtDate(s.joinedAt)}
                   </span>
+                  {(s.industry || s.region) && (
+                    <span className="truncate text-[length:var(--text-12)] text-muted-foreground/70">
+                      {[s.industry, s.region].filter(Boolean).join(" · ")}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <span

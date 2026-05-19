@@ -11,6 +11,8 @@ export async function PATCH(request: Request) {
   if (typeof body.firstName === "string") data.firstName = body.firstName.trim();
   if (typeof body.lastName === "string") data.lastName = body.lastName.trim();
   if (typeof body.role === "string") data.role = body.role.trim();
+  if (typeof body.industry === "string") data.industry = body.industry.trim();
+  if (typeof body.region === "string") data.region = body.region.trim();
 
   const updated = await prisma.student.update({
     where: { id: student.id },
@@ -24,6 +26,8 @@ export async function PATCH(request: Request) {
       firstName: updated.firstName,
       lastName: updated.lastName,
       role: updated.role,
+      industry: updated.industry,
+      region: updated.region,
     },
   });
 }
