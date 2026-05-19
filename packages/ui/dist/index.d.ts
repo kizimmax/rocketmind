@@ -1497,6 +1497,12 @@ interface AdminShellUser {
 interface AdminSidebarProps {
     /** Brand label shown in top bar (e.g. "CMS") */
     brand: string;
+    /**
+     * Secondary tag next to brand — показывает в какой именно админке
+     * пользователь сейчас находится (например "site" / "saas"). Рендерится
+     * мелким muted-шрифтом.
+     */
+    brandTag?: string;
     /** Path to icon for dark-background (light icon) */
     iconDarkPath: string;
     /** Path to icon for light-background (dark icon) */
@@ -1514,9 +1520,10 @@ interface AdminSidebarProps {
     /** Key used to persist pinned state in localStorage */
     pinKey?: string;
 }
-declare function AdminSidebar({ brand, iconDarkPath, iconLightPath, sections, pathname, user, onLogout, tryNavigate, pinKey, }: AdminSidebarProps): react_jsx_runtime.JSX.Element;
+declare function AdminSidebar({ brand, brandTag, iconDarkPath, iconLightPath, sections, pathname, user, onLogout, tryNavigate, pinKey, }: AdminSidebarProps): react_jsx_runtime.JSX.Element;
 interface AdminShellProps {
     brand: string;
+    brandTag?: string;
     iconDarkPath: string;
     iconLightPath: string;
     sections: AdminShellSection[];

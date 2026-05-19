@@ -45,6 +45,12 @@ export interface AdminShellUser {
 export interface AdminSidebarProps {
   /** Brand label shown in top bar (e.g. "CMS") */
   brand: string;
+  /**
+   * Secondary tag next to brand — показывает в какой именно админке
+   * пользователь сейчас находится (например "site" / "saas"). Рендерится
+   * мелким muted-шрифтом.
+   */
+  brandTag?: string;
   /** Path to icon for dark-background (light icon) */
   iconDarkPath: string;
   /** Path to icon for light-background (dark icon) */
@@ -65,6 +71,7 @@ export interface AdminSidebarProps {
 
 export function AdminSidebar({
   brand,
+  brandTag,
   iconDarkPath,
   iconLightPath,
   sections,
@@ -176,8 +183,15 @@ export function AdminSidebar({
               className="h-6 w-6 dark:hidden"
             />
           </div>
-          <span className="flex-1 min-w-0 text-[length:var(--text-14)] font-semibold text-foreground whitespace-nowrap">
-            {brand}
+          <span className="flex-1 min-w-0 flex items-baseline gap-1.5 whitespace-nowrap">
+            <span className="text-[length:var(--text-14)] font-semibold text-foreground">
+              {brand}
+            </span>
+            {brandTag && (
+              <span className="text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground">
+                {brandTag}
+              </span>
+            )}
           </span>
           <button
             onClick={togglePinned}
@@ -377,6 +391,7 @@ export function AdminSidebar({
 
 export interface AdminShellProps {
   brand: string;
+  brandTag?: string;
   iconDarkPath: string;
   iconLightPath: string;
   sections: AdminShellSection[];

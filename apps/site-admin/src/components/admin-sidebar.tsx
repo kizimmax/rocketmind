@@ -93,6 +93,7 @@ export function AdminSidebar() {
   return (
     <AdminSidebarShell
       brand="CMS"
+      brandTag="site"
       iconDarkPath="/icon_dark_background.svg"
       iconLightPath="/icon_light_background.svg"
       sections={sections}
