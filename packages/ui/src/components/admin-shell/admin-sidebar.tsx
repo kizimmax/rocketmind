@@ -192,7 +192,7 @@ export function AdminSidebar({
               {brand}
             </span>
             {brandTag && (
-              <span className="text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground">
+              <span className="text-[length:var(--text-14)] font-semibold uppercase text-muted-foreground">
                 {brandTag}
               </span>
             )}

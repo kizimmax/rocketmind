@@ -8224,7 +8224,7 @@ function AdminSidebar({
           ),
           /* @__PURE__ */ jsxs45("span", { className: "flex-1 min-w-0 flex items-baseline gap-1.5 whitespace-nowrap", children: [
             /* @__PURE__ */ jsx68("span", { className: "text-[length:var(--text-14)] font-semibold text-foreground", children: brand }),
-            brandTag && /* @__PURE__ */ jsx68("span", { className: "text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground", children: brandTag })
+            brandTag && /* @__PURE__ */ jsx68("span", { className: "text-[length:var(--text-14)] font-semibold uppercase text-muted-foreground", children: brandTag })
           ] }),
           /* @__PURE__ */ jsx68(
             "button",
