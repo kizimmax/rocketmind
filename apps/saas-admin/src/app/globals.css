@@ -1,0 +1,37 @@
+@import "@rocketmind/ui/styles";
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+
+/* Admin dark theme: slightly lighter background so editor blocks don't blend */
+.dark {
+  --background: #141414;
+  --rm-gray-1: #1E1E1E;
+}
+
+/* ── Sidebar nav accordion (mirrors apps/design-system) ── */
+.sidebar-subnav {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-smooth) var(--ease-standard);
+}
+.sidebar-subnav.is-open {
+  grid-template-rows: 1fr;
+}
+.sidebar-subnav-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Sidebar scroll indicator ── */
+.sidebar-indicator {
+  transition:
+    top    var(--duration-smooth) var(--ease-standard),
+    height var(--duration-smooth) var(--ease-standard);
+}

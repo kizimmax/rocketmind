@@ -18,6 +18,7 @@
     "dev:saas-teacher": "npm run dev --workspace=apps/saas-teacher",
     "dev:internal": "npm run dev --workspace=apps/internal",
     "dev:site-admin": "npm run dev --workspace=apps/site-admin",
+    "dev:saas-admin": "npm run dev --workspace=apps/saas-admin",
     "docker:up": "docker compose -f docker-compose.dev.yml up -d",
     "docker:up:build": "docker compose -f docker-compose.dev.yml up -d --build",
     "docker:down": "docker compose -f docker-compose.dev.yml down",
