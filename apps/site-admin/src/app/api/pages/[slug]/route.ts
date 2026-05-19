@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { parseDataUrl, saveBuffer, deleteFilesWithBase, writeConfig, readConfig } from "@/lib/storage";
 import { createAutoRedirect } from "@/lib/redirects";
+import { requirePermission } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,8 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const gate = await requirePermission(request, "pages", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   try {
   const { slug: rawSlug } = await params;
   const pageId = decodeURIComponent(rawSlug);
@@ -258,9 +261,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const gate = await requirePermission(request, "pages", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { slug: rawSlug } = await params;
   const pageId = decodeURIComponent(rawSlug);
   const url = pageId.startsWith("/") ? pageId : `/${pageId}`;

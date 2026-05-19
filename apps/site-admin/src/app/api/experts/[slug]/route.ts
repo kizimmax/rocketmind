@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseDataUrl, saveBuffer, deleteFilesWithBase, randomHex, isImageMime, IMAGE_EXTS } from "@/lib/storage";
+import { requirePermission } from "@/lib/auth";
 
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const gate = await requirePermission(request, "experts", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { slug } = await params;
   const expert = await prisma.expert.findUnique({ where: { slug } });
   if (!expert) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -27,6 +30,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const gate = await requirePermission(request, "experts", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { slug } = await params;
   const expert = await prisma.expert.findUnique({ where: { slug } });
   if (!expert) return NextResponse.json({ error: "not found" }, { status: 404 });

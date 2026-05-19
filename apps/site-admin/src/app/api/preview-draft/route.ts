@@ -11,7 +11,7 @@ const TTL_SEC = 60 * 60; // 60 минут
 const VALID_TYPES = new Set(["page", "article", "glossary"]);
 
 export async function POST(req: NextRequest) {
-  const auth = requireAuth(req);
+  const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   let body: unknown;
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       slug,
       publicUrl,
       payload: storedPayload as object,
-      createdBy: auth.userId,
+      createdBy: auth.id,
       expiresAt,
     },
     update: {

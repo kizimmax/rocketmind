@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/auth";
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const gate = await requirePermission(request, "redirects", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { id } = await params;
   const body = await request.json();
 
@@ -34,9 +37,11 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const gate = await requirePermission(request, "redirects", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { id } = await params;
   const existing = await prisma.redirect.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });

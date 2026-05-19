@@ -22,7 +22,7 @@ export interface ArticlePaginationProps extends React.HTMLAttributes<HTMLElement
 }
 
 const BUTTON_BASE =
-  "group flex items-center gap-3 h-[60px] md:h-[72px] px-4 md:px-6 " +
+  "group flex min-w-0 items-center gap-3 h-[60px] md:h-[72px] px-4 md:px-6 " +
   "border border-[color:var(--rm-gray-3)] rounded-sm " +
   "text-[color:var(--rm-gray-fg-main)] " +
   "transition-colors duration-[120ms] " +

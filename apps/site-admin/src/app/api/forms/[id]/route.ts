@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/auth";
 
 type Scope = "product" | "article" | "both";
 function parseScope(v: unknown): Scope {
@@ -89,6 +90,8 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const gate = await requirePermission(request, "cta-forms.forms", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { id } = await params;
   const form = await findForm(id);
   if (!form) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -119,9 +122,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const gate = await requirePermission(request, "cta-forms.forms", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { id } = await params;
   const form = await findForm(id);
   if (form) await prisma.formEntity.delete({ where: { id: form.id } });

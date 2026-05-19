@@ -349,7 +349,7 @@ export function GlossaryTermPageClient({
                   </div>
                 </div>
 
-                {hasAnyContent ? (
+                {hasAnyContent && (
                   <div
                     id="article-body"
                     className="mt-24 flex flex-col gap-24"
@@ -366,13 +366,6 @@ export function GlossaryTermPageClient({
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <p
-                    className="mt-24 text-[length:var(--text-14)] leading-[1.4] text-[color:var(--rm-gray-fg-sub)]"
-                    style={stagger(3)}
-                  >
-                    Описание термина пока не добавлено.
-                  </p>
                 )}
               </div>
 
@@ -519,9 +512,9 @@ export function GlossaryTermPageClient({
 
           {/* BODY — мобилка: per-section стек. Десктоп: 4-кол grid, два независимых
               потока (bodies в col 2-3, asides в col 4) и ToC в col 1. */}
+          {hasAnyContent && (
           <div className="mt-16 md:mt-24" style={stagger(3)}>
-            {hasAnyContent ? (
-              !isDesktop ? (
+            {!isDesktop ? (
                 <div
                   id="article-body"
                   className="flex flex-col gap-16 md:gap-24"
@@ -603,13 +596,9 @@ export function GlossaryTermPageClient({
                     </div>
                   </aside>
                 </div>
-              )
-            ) : (
-              <p className="text-[length:var(--text-14)] leading-[1.4] text-[color:var(--rm-gray-fg-sub)]">
-                Описание термина пока не добавлено.
-              </p>
             )}
           </div>
+          )}
         </div>
 
         <FilePreviewModal

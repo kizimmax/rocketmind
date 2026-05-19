@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseDataUrl, saveBuffer, deleteFilesWithBase } from "@/lib/storage";
 import { createAutoRedirect } from "@/lib/redirects";
+import { requirePermission } from "@/lib/auth";
 
 const COVER_EXTS = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif"];
 
@@ -16,6 +17,9 @@ export async function PUT(
   const { slug } = await params;
   const existing = await prisma.article.findUnique({ where: { slug } });
   if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
+  // Permission depends on the article's actual type (cases vs media.articles).
+  const gate = await requirePermission(request, existing.type === "case" ? "cases" : "media.articles", "EDIT");
+  if (gate instanceof NextResponse) return gate;
 
   const body = await request.json();
   const type = body.type === "lesson" || body.type === "case" ? body.type : "default";
@@ -83,10 +87,14 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
+  const existing = await prisma.article.findUnique({ where: { slug } });
+  if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
+  const gate = await requirePermission(request, existing.type === "case" ? "cases" : "media.articles", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   deleteCover(slug);
   await prisma.article.deleteMany({ where: { slug } });
   return NextResponse.json({ ok: true });

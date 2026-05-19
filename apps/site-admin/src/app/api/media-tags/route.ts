@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/auth";
 
 type DsAccentColor = "yellow" | "violet" | "sky" | "terracotta" | "pink" | "blue" | "red" | "green";
 
@@ -94,13 +95,17 @@ function dbToTag(row: {
   return tag;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "media.tags", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const rows = await prisma.mediaTag.findMany({ orderBy: { createdAt: "asc" } });
   const tags = withSystemTags(rows.map(dbToTag));
   return NextResponse.json({ tags });
 }
 
 export async function PUT(request: Request) {
+  const gate = await requirePermission(request, "media.tags", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const body = (await request.json().catch(() => null)) as { tags?: unknown } | null;
   if (!body) return NextResponse.json({ error: "invalid json" }, { status: 400 });
 

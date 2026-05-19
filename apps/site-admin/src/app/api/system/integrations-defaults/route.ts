@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requirePermission } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,9 @@ export const dynamic = "force-dynamic";
  * Telegram-токен НЕ отдаём (security). Email SMTP не отдаём по той же причине —
  * нужно только знать «настроен или нет».
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "system.settings", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   return NextResponse.json({
     bitrix24: {
       configured: !!process.env.BITRIX24_DEFAULT_WEBHOOK_URL,

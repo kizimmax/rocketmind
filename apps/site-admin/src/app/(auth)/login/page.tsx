@@ -2,10 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button, Input } from "@rocketmind/ui";
 import { useAuth } from "@/lib/auth-context";
 
+function errorMessage(code?: string): string {
+  switch (code) {
+    case "invalid_credentials":
+      return "Неверный логин или пароль";
+    case "account_frozen":
+      return "Учётная запись заморожена";
+    case "too_many_attempts":
+      return "Слишком много попыток. Попробуйте позже";
+    case "login_and_password_required":
+      return "Заполните оба поля";
+    default:
+      return "Ошибка входа";
+  }
+}
+
 export default function LoginPage() {
+  const [loginValue, setLoginValue] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,15 +31,15 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!password.trim() || loading) return;
+    if (!loginValue.trim() || !password.trim() || loading) return;
 
     setLoading(true);
     setError("");
-    const success = await login(password);
-    if (success) {
+    const result = await login(loginValue.trim(), password);
+    if (result.ok) {
       router.replace("/pages");
     } else {
-      setError("Неверный пароль");
+      setError(errorMessage(result.error));
       setPassword("");
       setLoading(false);
     }
@@ -37,11 +54,24 @@ export default function LoginPage() {
               CMS Rocketmind
             </h1>
             <p className="text-[length:var(--text-14)] text-muted-foreground">
-              Введите пароль для входа в админку
+              Введите логин и пароль для входа
             </p>
           </div>
 
           <div className="space-y-3">
+            <Input
+              type="text"
+              size="lg"
+              placeholder="Логин"
+              value={loginValue}
+              disabled={loading}
+              onChange={(e) => {
+                setLoginValue(e.target.value);
+                if (error) setError("");
+              }}
+              aria-invalid={!!error}
+              autoFocus
+            />
             <Input
               type="password"
               size="lg"
@@ -53,7 +83,6 @@ export default function LoginPage() {
                 if (error) setError("");
               }}
               aria-invalid={!!error}
-              autoFocus
             />
 
             {error && (
@@ -66,7 +95,7 @@ export default function LoginPage() {
               type="submit"
               size="lg"
               className="h-12 w-full"
-              disabled={!password.trim() || loading}
+              disabled={!loginValue.trim() || !password.trim() || loading}
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -78,6 +107,15 @@ export default function LoginPage() {
                 </span>
               ) : "Войти"}
             </Button>
+
+            <div className="text-center">
+              <Link
+                href="/forgot"
+                className="text-[length:var(--text-12)] text-muted-foreground hover:text-foreground"
+              >
+                Забыли пароль?
+              </Link>
+            </div>
           </div>
         </form>
       </div>

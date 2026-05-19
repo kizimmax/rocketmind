@@ -139,8 +139,17 @@ export function ArticlePageClient({
   // подсвечен). Это точнее, чем IntersectionObserver с широкой zone, которая
   // на больших экранах ложно помечала первый H2 как активный ещё в hero.
   const [activeId, setActiveId] = useState<string | null>(null);
+  // На многостраничной только children активной главы соответствуют H2-якорям;
+  // сами главы (id=slug) — ссылки на другие страницы и DOM-узлов не имеют.
+  const scrollSpyIds = useMemo<string[]>(() => {
+    if (isMultiPage) {
+      const active = navItems.find((it) => it.active);
+      return (active?.children ?? []).map((c) => c.id);
+    }
+    return navItems.map((it) => it.id);
+  }, [navItems, isMultiPage]);
   useEffect(() => {
-    if (navItems.length === 0) {
+    if (scrollSpyIds.length === 0) {
       setActiveId(null);
       return;
     }
@@ -148,13 +157,13 @@ export function ArticlePageClient({
     function update() {
       raf = 0;
       let lastPassed: string | null = null;
-      for (const item of navItems) {
-        const el = document.getElementById(item.id);
+      for (const id of scrollSpyIds) {
+        const el = document.getElementById(id);
         if (!el) continue;
         const top = el.getBoundingClientRect().top;
         // 4px epsilon: после scrollIntoView top может оказаться 92.0001/91.9999
-        if (top <= 92 + 4) lastPassed = item.id;
-        else break; // navItems в документарном порядке — дальше точно не прошли
+        if (top <= 92 + 4) lastPassed = id;
+        else break; // ids в документарном порядке — дальше точно не прошли
       }
       setActiveId(lastPassed);
     }
@@ -170,7 +179,7 @@ export function ArticlePageClient({
       window.removeEventListener("resize", schedule);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [navItems]);
+  }, [scrollSpyIds]);
 
   // Клик по пункту ToC — плавный скролл к заголовку. Используется scrollIntoView;
   // браузер сам считает целевую позицию с учётом CSS scroll-margin-top: 92px
@@ -295,10 +304,16 @@ export function ArticlePageClient({
           `[data-section-body-cta="${id}"]`,
         );
         const ctaH = cta ? cta.getBoundingClientRect().height : 0;
+        // Без обложки правая колонка визуально пустая (нет hero-cover),
+        // поэтому wide-вариант цитаты, который вылезает в aside-колонку, выглядит
+        // как одинокий «висячий» блок справа. В этом случае всегда narrow —
+        // цитата остаётся под body, правая колонка не используется.
         const quoteLayout: "wide" | "narrow" | null = quote
-          ? bbH >= innerH
-            ? "wide"
-            : "narrow"
+          ? !article.coverUrl
+            ? "narrow"
+            : bbH >= innerH
+              ? "wide"
+              : "narrow"
           : null;
 
         // Sticky-zone: в wide-режиме цитата перекрывает aside-колонку по ширине,
@@ -680,7 +695,7 @@ export function ArticlePageClient({
                       />
                     </div>
 
-                    {article.coverUrl ? (
+                    {article.coverUrl && (
                       <div
                         className="relative overflow-hidden rounded-sm bg-[color:var(--rm-gray-1)]"
                         style={stagger(2)}
@@ -697,17 +712,11 @@ export function ArticlePageClient({
                           aria-hidden
                         />
                       </div>
-                    ) : (
-                      <div
-                        className="rounded-sm bg-[color:var(--rm-gray-1)] lg:h-[465px] aspect-[16/9] lg:aspect-auto"
-                        aria-hidden
-                        style={stagger(2)}
-                      />
                     )}
                   </div>
                 </div>
 
-                {hasAnyContent ? (
+                {hasAnyContent && (
                   <div
                     id="article-body"
                     className="mt-24 flex flex-col gap-24"
@@ -734,18 +743,6 @@ export function ArticlePageClient({
                         )}
                       />
                     )}
-                  </div>
-                ) : (
-                  <div
-                    className="mt-24 flex flex-col items-start gap-3 rounded-sm border border-dashed border-[color:var(--rm-gray-3)] bg-[color:var(--rm-gray-1)]/20 p-6 md:p-10"
-                    style={stagger(3)}
-                  >
-                    <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)]">
-                      Тело статьи пусто
-                    </p>
-                    <p className="text-[length:var(--text-14)] leading-[1.4] text-[color:var(--rm-gray-fg-sub)]">
-                      Добавьте секции с блоками в админке.
-                    </p>
                   </div>
                 )}
               </div>
@@ -893,7 +890,7 @@ export function ArticlePageClient({
               )}
             </div>
 
-            {article.coverUrl ? (
+            {article.coverUrl && (
               <div
                 className="relative overflow-hidden rounded-sm bg-[color:var(--rm-gray-1)]"
                 style={stagger(2)}
@@ -910,12 +907,6 @@ export function ArticlePageClient({
                   aria-hidden
                 />
               </div>
-            ) : (
-              <div
-                className="rounded-sm bg-[color:var(--rm-gray-1)] lg:h-[465px] aspect-[16/9] lg:aspect-auto"
-                aria-hidden
-                style={stagger(2)}
-              />
             )}
           </div>
 
@@ -966,9 +957,9 @@ export function ArticlePageClient({
             На десктопе (lg+): адаптивная 4-колоночная сетка с ДВУМЯ НЕЗАВИСИМЫМИ
             потоками — все bodies текут в col 2-3 (без дыр, даже если aside-колонка
             длиннее), все asides текут в col 4. Asides sticky — стекуются по скроллу. */}
+        {hasAnyContent && (
         <div className="mt-16 md:mt-24" style={stagger(3)}>
-          {hasAnyContent ? (
-            !isDesktop ? (
+          {!isDesktop ? (
               /* Mobile layout — per-section стек (body + aside одной пачкой) */
               <div
                 id="article-body"
@@ -1092,18 +1083,9 @@ export function ArticlePageClient({
                   </div>
                 </aside>
               </div>
-            )
-          ) : (
-            <div className="flex flex-col items-start gap-3 rounded-sm border border-dashed border-[color:var(--rm-gray-3)] bg-[color:var(--rm-gray-1)]/20 p-6 md:p-10">
-              <p className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.02em] text-[color:var(--rm-gray-fg-sub)]">
-                Тело статьи пусто
-              </p>
-              <p className="text-[length:var(--text-14)] leading-[1.4] text-[color:var(--rm-gray-fg-sub)]">
-                Добавьте секции с блоками в админке.
-              </p>
-            </div>
           )}
         </div>
+        )}
       </div>
 
       <FilePreviewModal

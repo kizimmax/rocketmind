@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readConfig, writeConfig } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/auth";
 
 const VALID_IDS = ["consulting", "academy", "expert", "ai-products"] as const;
 type CategoryId = (typeof VALID_IDS)[number];
@@ -46,11 +47,15 @@ function getCategories(): CategoryEntry[] {
   return VALID_IDS.map((id) => byId.get(id) ?? { id });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "products.categories", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   return NextResponse.json({ categories: getCategories() });
 }
 
 export async function PUT(request: Request) {
+  const gate = await requirePermission(request, "products.categories", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const body = (await request.json().catch(() => null)) as { categories?: unknown } | null;
   if (!body) return NextResponse.json({ error: "invalid json" }, { status: 400 });
 

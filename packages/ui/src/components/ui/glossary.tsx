@@ -359,7 +359,7 @@ export function GlossaryPopularRow({
                 "hover:border-[color:var(--rm-yellow-100)]",
               )}
             >
-              <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold uppercase tracking-[-0.01em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] line-clamp-2">
+              <span className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-16)] font-bold uppercase tracking-[-0.01em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] line-clamp-2">
                 {it.title}
               </span>
               {it.description && (

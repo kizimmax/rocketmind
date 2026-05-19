@@ -2,23 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LogOut,
-  FileText,
-  Users,
-  MessageSquareQuote,
-  Newspaper,
-  Briefcase,
-  Sun,
-  Moon,
-  Settings,
-  MousePointerClick,
-  ArrowLeftRight,
-  Inbox,
-} from "lucide-react";
-import { useTheme } from "next-themes";
-import { Button } from "@rocketmind/ui";
-import { useAuth } from "@/lib/auth-context";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { useAdminStore } from "@/lib/store";
 import { ADMIN_SECTIONS } from "@/lib/constants";
@@ -30,7 +13,6 @@ const STANDALONE_SECTION_ROUTES: Record<string, string> = {
 };
 
 export function AdminHeader() {
-  const { logout } = useAuth();
   const pathname = usePathname();
   const { tryNavigate } = useNavigationGuard();
   const { getPage } = useAdminStore();
@@ -47,15 +29,8 @@ export function AdminHeader() {
     ? STANDALONE_SECTION_ROUTES[editingSection.id]
     : undefined;
 
-  const isOnPages = pathname.startsWith("/pages");
-  const isOnMedia = pathname.startsWith("/media");
-  const isOnExperts = pathname.startsWith("/experts");
-  const isOnCases = pathname.startsWith("/cases");
-  const isOnTestimonials = pathname.startsWith("/testimonials");
-  const isOnCtaForms = pathname.startsWith("/cta-forms");
-  const isOnSystem = pathname.startsWith("/system");
-  const isOnRedirects = pathname.startsWith("/redirects");
-  const isOnSubmissions = pathname.startsWith("/submissions");
+  // No header when not editing a page — nav lives in the sidebar.
+  if (!editingPage) return null;
 
   function guardedClick(e: React.MouseEvent, href: string) {
     if (!tryNavigate(href)) e.preventDefault();
@@ -66,20 +41,8 @@ export function AdminHeader() {
   const linkIdle = "text-muted-foreground hover:text-foreground";
   const linkActive = "bg-foreground/10 text-foreground";
 
-  const truncateLabel = (s: string, max = 10) =>
+  const truncateLabel = (s: string, max = 24) =>
     s.length > max ? `${s.slice(0, max - 1)}…` : s;
-
-  const tabs = [
-    { href: "/pages", label: "Страницы", Icon: FileText, isActive: isOnPages },
-    { href: "/media", label: "Медиа", Icon: Newspaper, isActive: isOnMedia },
-    { href: "/experts", label: "Эксперты", Icon: Users, isActive: isOnExperts },
-    { href: "/cases", label: "Кейсы", Icon: Briefcase, isActive: isOnCases },
-    { href: "/testimonials", label: "Отзывы", Icon: MessageSquareQuote, isActive: isOnTestimonials },
-    { href: "/cta-forms", label: "CTA и формы", Icon: MousePointerClick, isActive: isOnCtaForms },
-    { href: "/submissions", label: "Заявки", Icon: Inbox, isActive: isOnSubmissions },
-    { href: "/system", label: "Системные", Icon: Settings, isActive: isOnSystem },
-    { href: "/redirects", label: "Редиректы", Icon: ArrowLeftRight, isActive: isOnRedirects },
-  ];
 
   const separator = (
     <span className="px-0.5 text-[length:var(--text-12)] text-muted-foreground/40 select-none">
@@ -88,107 +51,38 @@ export function AdminHeader() {
   );
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-border bg-background px-6">
-      <div className="flex items-center gap-4">
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-sm bg-foreground">
-            <FileText className="h-3 w-3 text-background" />
-          </div>
-          <span className="text-[length:var(--text-14)] font-semibold text-foreground">
-            CMS
-          </span>
-        </div>
-
-        <nav className="flex items-center gap-1">
-          {tabs.map((tab) => {
-            const showBreadcrumb = editingPage && tab.isActive;
-            if (showBreadcrumb) {
-              return (
-                <div key={tab.href} className="mr-2 flex items-center">
-                  <Link
-                    href={tab.href}
-                    onClick={(e) => guardedClick(e, tab.href)}
-                    className={`flex items-center gap-1.5 ${linkBase} ${linkIdle}`}
-                  >
-                    <tab.Icon className="h-3.5 w-3.5" />
-                    {tab.label}
-                  </Link>
-                  {editingSection && !standaloneRoute && (
-                    <>
-                      {separator}
-                      <Link
-                        href={`/pages?section=${editingSection.id}`}
-                        onClick={(e) =>
-                          guardedClick(e, `/pages?section=${editingSection.id}`)
-                        }
-                        className={`${linkBase} ${linkIdle}`}
-                        title={editingSection.label}
-                      >
-                        {truncateLabel(editingSection.label)}
-                      </Link>
-                    </>
-                  )}
-                  {separator}
-                  <span
-                    className={`${linkBase} ${linkActive}`}
-                    title={editingPage.menuTitle}
-                  >
-                    {truncateLabel(editingPage.menuTitle)}
-                  </span>
-                </div>
-              );
-            }
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                onClick={(e) => guardedClick(e, tab.href)}
-                className={`flex items-center gap-1.5 ${linkBase} ${tab.isActive ? linkActive : linkIdle}`}
-              >
-                <tab.Icon className="h-3.5 w-3.5" />
-                {tab.label}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <ThemeSwitch />
-        <Button
-          variant="ghost"
-          size="xs"
-          className="gap-1.5 text-muted-foreground"
-          onClick={logout}
+    <header className="flex h-12 shrink-0 items-center border-b border-border bg-background px-6">
+      <div className="flex items-center">
+        <Link
+          href="/pages"
+          onClick={(e) => guardedClick(e, "/pages")}
+          className={`${linkBase} ${linkIdle}`}
         >
-          <LogOut className="h-3.5 w-3.5" />
-          Выйти
-        </Button>
+          Страницы
+        </Link>
+        {editingSection && !standaloneRoute && (
+          <>
+            {separator}
+            <Link
+              href={`/pages?section=${editingSection.id}`}
+              onClick={(e) =>
+                guardedClick(e, `/pages?section=${editingSection.id}`)
+              }
+              className={`${linkBase} ${linkIdle}`}
+              title={editingSection.label}
+            >
+              {truncateLabel(editingSection.label)}
+            </Link>
+          </>
+        )}
+        {separator}
+        <span
+          className={`${linkBase} ${linkActive}`}
+          title={editingPage.menuTitle}
+        >
+          {truncateLabel(editingPage.menuTitle)}
+        </span>
       </div>
     </header>
-  );
-}
-
-/* ── Theme toggle ────────────────────────────────────────────────────────────── */
-
-function ThemeSwitch() {
-  const { theme, setTheme } = useTheme();
-  const isDark = theme === "dark";
-
-  return (
-    <button
-      type="button"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="relative flex h-6 w-11 shrink-0 items-center rounded-full border border-border bg-rm-gray-1 transition-colors cursor-pointer"
-      aria-label={isDark ? "Светлая тема" : "Тёмная тема"}
-    >
-      <span
-        className="absolute flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background transition-transform duration-200"
-        style={{ transform: isDark ? "translateX(22px)" : "translateX(4px)" }}
-      >
-        {isDark ? <Moon className="h-2.5 w-2.5" /> : <Sun className="h-2.5 w-2.5" />}
-      </span>
-    </button>
   );
 }

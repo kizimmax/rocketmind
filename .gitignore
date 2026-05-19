@@ -10,6 +10,9 @@ package-lock.json
 .archive
 .gstack/
 
+# Локальные рабочие ассеты (figma экспорты и пр.)
+tmp/
+
 # Dev-only symlink: apps/site-admin/public/media → apps/site/public/media
 # (создаётся вручную: `ln -s ../../site/public/media apps/site-admin/public/media`).
 apps/site-admin/public/media

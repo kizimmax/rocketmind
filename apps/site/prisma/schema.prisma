@@ -9,21 +9,135 @@ datasource db {
 // ── Users ──────────────────────────────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(uuid())
-  firstName String
-  lastName  String
-  login     String   @unique
-  password  String
-  role      Role     @default(EDITOR)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                       String                   @id @default(uuid())
+  firstName                String
+  lastName                 String
+  login                    String                   @unique
+  password                 String
+  role                     Role                     @default(EDITOR)
+  status                   UserStatus               @default(ACTIVE)
+  email                    String?                  @unique
+  emailVerifiedAt          DateTime?
+  secondaryEmail           String?                  @unique
+  secondaryEmailVerifiedAt DateTime?
+  tokenVersion             Int                      @default(0)
+  lastLoginAt              DateTime?
+  lastLoginIp              String?
+  lastLoginUserAgent       String?
+  createdById              String?
+  createdBy                User?                    @relation("CreatedUsers", fields: [createdById], references: [id])
+  createdUsers             User[]                   @relation("CreatedUsers")
+  permissions              UserPermission[]
+  auditLogs                AuditLog[]               @relation("AuditActor")
+  passwordResetTokens      PasswordResetToken[]
+  emailVerificationTokens  EmailVerificationToken[]
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
 
+  @@index([createdById])
   @@map("users")
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
   EDITOR
+}
+
+enum UserStatus {
+  ACTIVE
+  FROZEN
+}
+
+// ── Permissions tree ──────────────────────────────────────────────────────────
+// Path: dot-separated tokens describing the granted node in the access tree.
+// Examples: "pages", "products", "products.<categoryId>", "products.<categoryId>.<productId>".
+// A user has access to a node when an ancestor path (or the path itself) is present.
+
+model UserPermission {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  path        String
+  accessLevel AccessLevel
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([userId, path])
+  @@index([userId])
+  @@map("user_permissions")
+}
+
+enum AccessLevel {
+  VIEW
+  EDIT
+}
+
+// ── Audit log (security events only) ──────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ── Tokens ────────────────────────────────────────────────────────────────────
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String    @unique
+  email       String
+  isSecondary Boolean   @default(false)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("email_verification_tokens")
+}
+
+// ── Rate-limit attempts ───────────────────────────────────────────────────────
+
+model LoginAttempt {
+  id        String   @id @default(uuid())
+  login     String?
+  ip        String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([login, createdAt])
+  @@index([ip, createdAt])
+  @@map("login_attempts")
 }
 
 // ── Pages ─────────────────────────────────────────────────────────────────────
@@ -179,7 +293,7 @@ model Redirect {
   statusCode Int      @default(301)
   kind       String   @default("manual") // "auto" | "manual"
   isActive   Boolean  @default(true)
-  entityType String?  // "article" | "glossary" | "page"
+  entityType String? // "article" | "glossary" | "page"
   entityId   String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -190,13 +304,13 @@ model Redirect {
 // ── Form submissions (lead capture) ─────────────────────────────────────────
 
 model FormSubmission {
-  id        String   @id @default(uuid())
-  formId    String
-  formName  String   @default("")
-  pageUrl   String?
-  data      Json     // {name, phone, email, message, ...}
-  ipAddress String?
-  userAgent String?
+  id             String   @id @default(uuid())
+  formId         String
+  formName       String   @default("")
+  pageUrl        String?
+  data           Json // {name, phone, email, message, ...}
+  ipAddress      String?
+  userAgent      String?
   // Per-channel delivery status: null = disabled, "ok" | "skipped" | "error"
   bitrix24Status String?
   bitrix24Error  String?
@@ -204,11 +318,11 @@ model FormSubmission {
   emailError     String?
   telegramStatus String?
   telegramError  String?
-  createdAt DateTime @default(now())
+  createdAt      DateTime @default(now())
 
-  @@map("form_submissions")
   @@index([formId])
   @@index([createdAt])
+  @@map("form_submissions")
 }
 
 // ── Preview drafts (черновики для предпросмотра до публикации) ────────────────
@@ -250,4 +364,171 @@ model Asset {
   createdAt    DateTime      @default(now())
 
   @@map("assets")
+}
+
+// ── Teacher: places, programs, agents, students ──────────────────────────────
+
+model Place {
+  id        String    @id @default(uuid())
+  name      String
+  address   String?
+  programs  Program[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("places")
+}
+
+model Program {
+  id                 String         @id @default(uuid())
+  title              String
+  placeId            String?
+  place              Place?         @relation(fields: [placeId], references: [id])
+  startsAt           DateTime
+  endsAt             DateTime
+  joinToken          String?        @unique
+  joinTokenRotatedAt DateTime?
+  agents             ProgramAgent[]
+  students           Student[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@map("programs")
+}
+
+model Mascot {
+  id        String    @id @default(uuid())
+  name      String
+  pack      String?
+  imagePath String
+  isBuiltIn Boolean   @default(false)
+  agents    AiAgent[]
+  createdAt DateTime  @default(now())
+
+  @@index([pack])
+  @@map("mascots")
+}
+
+model AiAgent {
+  id               String           @id @default(uuid())
+  slug             String           @unique
+  name             String
+  role             String           @default("")
+  valueDescription String           @default("")
+  avatarMascotId   String?
+  avatarMascot     Mascot?          @relation(fields: [avatarMascotId], references: [id])
+  avatarPath       String?
+  targets          String[]
+  n8nWebhookUrl    String
+  n8nSecret        String?
+  systemPrompt     String? // черновик системного промпта; пока read-only для бэка (промпты живут в n8n/OpenAI)
+  notes            String?
+  programs         ProgramAgent[]
+  sessions         StudentSession[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@map("ai_agents")
+}
+
+model ProgramAgent {
+  programId      String
+  agentId        String
+  isAvailable    Boolean   @default(false)
+  availableSince DateTime?
+  program        Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
+  agent          AiAgent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@id([programId, agentId])
+  @@map("program_agents")
+}
+
+model Student {
+  id        String           @id @default(uuid())
+  email     String           @unique
+  firstName String?
+  lastName  String?
+  role      String?
+  isActive  Boolean          @default(true)
+  programId String?
+  program   Program?         @relation(fields: [programId], references: [id])
+  joinedVia String?
+  joinedAt  DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  projects  StudentProject[]
+  sessions  StudentSession[]
+
+  @@map("students")
+}
+
+model StudentProject {
+  id        String            @id @default(uuid())
+  studentId String
+  student   Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  name      String
+  profile   Json?
+  artifacts StudentArtifact[]
+  sessions  StudentSession[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("student_projects")
+}
+
+model StudentSession {
+  id            String           @id @default(uuid())
+  studentId     String
+  projectId     String
+  agentId       String
+  threadId      String?
+  summary       String?
+  lastMessageAt DateTime?
+  student       Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  project       StudentProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  agent         AiAgent          @relation(fields: [agentId], references: [id])
+  messages      StudentMessage[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([projectId, agentId])
+  @@map("student_sessions")
+}
+
+model StudentMessage {
+  id        String         @id @default(uuid())
+  sessionId String
+  session   StudentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime       @default(now())
+
+  @@index([sessionId])
+  @@map("student_messages")
+}
+
+model StudentArtifact {
+  id        String         @id @default(uuid())
+  projectId String
+  agentId   String?
+  kind      String
+  title     String?
+  content   Json
+  project   StudentProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  @@index([projectId])
+  @@map("student_artifacts")
+}
+
+model OtpCode {
+  id         String    @id @default(uuid())
+  email      String
+  codeHash   String
+  programId  String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+  @@map("otp_codes")
 }

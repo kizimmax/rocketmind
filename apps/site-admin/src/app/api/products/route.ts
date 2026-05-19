@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/auth";
 
 const PRODUCT_CATEGORIES = new Set(["consulting", "academy", "ai-products"]);
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "products.items", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const pages = await prisma.page.findMany({
     where: { category: { in: ["consulting", "academy", "ai-products"] } },
     select: { slug: true, category: true, cardTitle: true, cardDescription: true, content: true },

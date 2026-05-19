@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "redirects", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const redirects = await prisma.redirect.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -9,6 +12,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const gate = await requirePermission(request, "redirects", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const body = await request.json();
   const fromUrl: string = (body.fromUrl ?? "").trim();
   const toUrl: string = (body.toUrl ?? "").trim();

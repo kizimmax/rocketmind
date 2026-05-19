@@ -6,10 +6,13 @@ import { usePathname, useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { VersionHistory } from "@/components/ds/shared"
 import { Badge } from "@rocketmind/ui"
+import { useTheme } from "next-themes"
 import {
   ChevronRight, Menu, X, PanelLeftOpen, PanelLeftClose,
   Layers, Palette, Type, LayoutGrid, Square, Package,
   MessageSquare, Sparkles, Zap, LayoutDashboard, LayoutTemplate, FileText,
+  Home,
+  Sun, Moon,
 } from "lucide-react"
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || ""
@@ -30,6 +33,8 @@ type NavSection = {
 }
 
 const sections: NavSection[] = [
+  { id: "introduction", label: "Интро",         subsections: [], Icon: Home },
+  { id: "guidebook", label: "ДС Гайдбук",      subsections: [], Icon: FileText },
   { id: "logos",    label: "Логотипы",        subsections: [], Icon: Layers },
   { id: "colors",   label: "Цвета",           Icon: Palette, subsections: [
     { id: "colors-bg",       label: "Фоны" },
@@ -115,6 +120,31 @@ const sections: NavSection[] = [
   ]},
 ]
 
+/** Theme toggle row inside sidebar — mirrors the rail/overlay split. */
+function SidebarThemeRow({ railW }: { railW: number }) {
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const isDark = mounted ? theme === "dark" : true
+  const Icon = isDark ? Sun : Moon
+  const label = isDark ? "Светлая" : "Тёмная"
+  return (
+    <button
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      className="shrink-0 border-t border-border w-full flex items-center text-left hover:bg-rm-gray-2/50 transition-colors cursor-pointer"
+      style={{ height: 44 }}
+      title={`Переключить на ${label.toLowerCase()} тему`}
+    >
+      <div className="shrink-0 flex items-center justify-center" style={{ width: railW }}>
+        <Icon size={15} className="text-muted-foreground" />
+      </div>
+      <span className="flex-1 min-w-0 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground whitespace-nowrap">
+        {label} тема
+      </span>
+    </button>
+  )
+}
+
 export default function DSLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -155,7 +185,7 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
   }
 
   /* ── Active section from URL ── */
-  const activeId = pathname.replace(/^\//, "") || "logos"
+  const activeId = pathname.replace(/^\//, "")
 
   useEffect(() => {
     setExpandedId(activeId)
@@ -174,27 +204,32 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
     }
   }, [activeId])
 
-  /* ── Yellow scroll-position indicator ── */
-  const trackRef = useRef<HTMLDivElement>(null)
+  /* ── Yellow active-item indicator ──
+      Lives inside the scrollable nav so it scrolls with the menu.
+      Pixel-precise: top/height match the active trigger row (+ open subnav).
+  ──── */
   const triggerRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const subnavInnerRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  const [indicator, setIndicator] = useState({ top: 0, height: 0 })
+  const [indicator, setIndicator] = useState<{ top: number; height: number; visible: boolean }>({ top: 0, height: 0, visible: false })
 
   useEffect(() => {
     const measure = () => {
       const trigger = triggerRefs.current.get(activeId)
-      const track   = trackRef.current
-      if (!trigger || !track) return
-      const trackH   = track.clientHeight
-      const isOpen   = expandedId === activeId
-      const inner    = subnavInnerRefs.current.get(activeId)
-      const subnavH  = isOpen && inner ? inner.scrollHeight : 0
+      if (!trigger) {
+        setIndicator((s) => ({ ...s, visible: false }))
+        return
+      }
+      const isOpen  = expandedId === activeId
+      const inner   = subnavInnerRefs.current.get(activeId)
+      const subnavH = isOpen && inner ? inner.scrollHeight : 0
       setIndicator({
-        top:    (trigger.offsetTop / trackH) * 100,
-        height: ((trigger.offsetHeight + subnavH) / trackH) * 100,
+        top:     trigger.offsetTop,
+        height:  trigger.offsetHeight + subnavH,
+        visible: true,
       })
     }
     measure()
+    // Re-measure after the subnav accordion finishes animating.
     const t = setTimeout(measure, 310)
     return () => clearTimeout(t)
   }, [activeId, expandedId])
@@ -202,54 +237,45 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
 
-      {/* ───── HEADER ───── */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
-        {/* Desktop header row — logo flush left, aligned with sidebar icons */}
-        <div className="hidden md:flex items-center justify-between h-14 pr-5">
-          {/* Logo — left edge matches sidebar icon left edge (icons are 15px centered in 48px → start at ~16.5px) */}
-          <div className="flex items-center gap-2" style={{ paddingLeft: 14 }}>
-            <img
-              src={`${BASE_PATH}/text_logo_dark_background_en.svg`}
-              alt="Rocketmind"
-              className="h-7 hidden dark:block"
-            />
-            <img
-              src={`${BASE_PATH}/text_logo_light_background_en.svg`}
-              alt="Rocketmind"
-              className="h-7 dark:hidden"
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[length:var(--text-12)] text-muted-foreground font-[family-name:var(--font-mono-family)]">
-              {DS_DATE}
-            </span>
-            <ThemeToggle />
-          </div>
-        </div>
-
-        {/* Mobile header row */}
-        <div className="md:hidden flex items-center justify-between h-14 px-5">
+      {/* ───── MOBILE HEADER ─────
+          Desktop has no header — logo and theme toggle live inside the sidebar.
+          Mobile keeps a compact sticky header since the sidebar is hidden.
+      ──── */}
+      <header className="md:hidden sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+        <div className="flex items-center justify-between h-14 px-5">
           <div className="flex items-center gap-3">
             <button className="p-1 text-muted-foreground" onClick={() => setMobileNav(!mobileNav)}>
               {mobileNav ? <X size={20} /> : <Menu size={20} />}
             </button>
-            <img
-              src={`${BASE_PATH}/text_logo_dark_background_en.svg`}
-              alt="Rocketmind"
-              className="h-7 hidden dark:block"
-            />
-            <img
-              src={`${BASE_PATH}/text_logo_light_background_en.svg`}
-              alt="Rocketmind"
-              className="h-7 dark:hidden"
-            />
+            <Link href="/" scroll={false} className="flex items-center gap-2">
+              <img
+                src={`${BASE_PATH}/icon_dark_background.svg`}
+                alt=""
+                className="h-6 w-6 hidden dark:block"
+              />
+              <img
+                src={`${BASE_PATH}/icon_light_background.svg`}
+                alt=""
+                className="h-6 w-6 dark:hidden"
+              />
+              <img
+                src={`${BASE_PATH}/text_logo_dark_background_en.svg`}
+                alt="Rocketmind"
+                className="h-6 hidden dark:block"
+              />
+              <img
+                src={`${BASE_PATH}/text_logo_light_background_en.svg`}
+                alt="Rocketmind"
+                className="h-6 dark:hidden"
+              />
+            </Link>
           </div>
           <ThemeToggle />
         </div>
 
         {/* Mobile nav drawer */}
         {mobileNav && (
-          <nav className="md:hidden border-t border-border bg-card px-5 py-3 space-y-1">
+          <nav className="border-t border-border bg-card px-5 py-3 space-y-1">
             {sections.map((s) => (
               <Link
                 key={s.id}
@@ -273,7 +299,7 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
           Yellow indicator is fixed at x = RAIL_W - 4 (right edge of icon zone)
       ──── */}
       <aside
-        className="fixed left-0 top-14 bottom-0 z-40 bg-background border-r border-border overflow-hidden transition-[width] duration-200 ease-out hidden md:block"
+        className="fixed left-0 top-0 bottom-0 z-40 bg-background border-r border-border overflow-hidden transition-[width] duration-200 ease-out hidden md:block"
         style={{ width: sidebarW }}
         onMouseEnter={onSidebarEnter}
         onMouseLeave={onSidebarLeave}
@@ -281,34 +307,70 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
         {/* Inner nav — always 220px wide; clips horizontally inside aside */}
         <div className="relative w-[220px] h-full flex flex-col">
 
-          {/* Pin toggle — aligned with section icons */}
-          <div className="shrink-0 flex items-center" style={{ height: 40 }}>
+          {/* ── Logo row — icon in rail, text in overlay ── */}
+          <div className="shrink-0 flex items-center border-b border-border" style={{ height: 56 }}>
+            <Link
+              href="/"
+              scroll={false}
+              className="flex items-center flex-1 min-w-0 group/logo"
+              title="На главную"
+            >
+              {/* Icon zone */}
+              <div
+                className="shrink-0 flex items-center justify-center"
+                style={{ width: RAIL_W }}
+              >
+                <img
+                  src={`${BASE_PATH}/icon_dark_background.svg`}
+                  alt=""
+                  className="h-6 w-6 hidden dark:block transition-transform duration-150 group-hover/logo:scale-105"
+                />
+                <img
+                  src={`${BASE_PATH}/icon_light_background.svg`}
+                  alt=""
+                  className="h-6 w-6 dark:hidden transition-transform duration-150 group-hover/logo:scale-105"
+                />
+              </div>
+              {/* Text logo — visible only when sidebar is expanded */}
+              <span className="flex-1 min-w-0 whitespace-nowrap">
+                <img
+                  src={`${BASE_PATH}/text_logo_dark_background_en.svg`}
+                  alt="Rocketmind"
+                  className="h-5 w-auto hidden dark:block"
+                />
+                <img
+                  src={`${BASE_PATH}/text_logo_light_background_en.svg`}
+                  alt="Rocketmind"
+                  className="h-5 w-auto dark:hidden"
+                />
+              </span>
+            </Link>
+            {/* Pin toggle — only meaningful when sidebar is expanded */}
             <button
               onClick={togglePinned}
               title={pinned ? "Открепить меню" : "Закрепить меню"}
-              className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              style={{ width: RAIL_W, height: 40 }}
+              className="shrink-0 w-9 h-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
             >
-              {pinned ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+              {pinned ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
             </button>
           </div>
 
-          {/* Yellow position indicator — fixed at icon/text boundary */}
-          <div
-            ref={trackRef}
-            className="absolute top-8 bottom-[60px] pointer-events-none z-10 transition-[left] duration-200 ease-out"
-            style={{ left: sidebarW - 4, width: 4 }}
-            aria-hidden
-          >
-            <div
-              className="sidebar-indicator absolute inset-x-0 bg-[var(--rm-yellow-100)]"
-              style={{ top: `${indicator.top}%`, height: `${indicator.height}%` }}
-            />
-          </div>
-
           {/* Scrollable nav list */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden py-8">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-4">
             <nav className="relative">
+              {/* Yellow active-item indicator — aligned with active trigger.
+                  Positioned at the icon/text boundary (right edge of rail zone). */}
+              <div
+                aria-hidden
+                className="sidebar-indicator absolute pointer-events-none z-10 bg-[var(--rm-yellow-100)] transition-[left] duration-200 ease-out"
+                style={{
+                  left: sidebarW - 4,
+                  width: 4,
+                  top: indicator.top,
+                  height: indicator.height,
+                  opacity: indicator.visible ? 1 : 0,
+                }}
+              />
               {sections.map((s) => {
                 const isActive = activeId === s.id
                 const isOpen   = expandedId === s.id
@@ -418,6 +480,9 @@ export default function DSLayout({ children }: { children: React.ReactNode }) {
               })}
             </nav>
           </div>
+
+          {/* ── Theme toggle row — above version ── */}
+          <SidebarThemeRow railW={RAIL_W} />
 
           {/* Version footer — click to open version history */}
           <button

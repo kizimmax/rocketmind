@@ -360,7 +360,7 @@ function Paragraph({
   return (
     <p
       className={cn(
-        "text-[length:var(--text-18)] leading-[1.2] text-[color:var(--rm-gray-fg-main)]",
+        "text-[length:var(--text-18)] leading-[1.32] text-[color:var(--rm-gray-fg-main)]",
         className,
       )}
     >

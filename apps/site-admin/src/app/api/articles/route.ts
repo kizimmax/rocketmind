@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeSlug } from "@/lib/slugify";
+import { requireAnyPermission, requirePermission } from "@/lib/auth";
 
 type ArticleContent = { body?: unknown; keyThoughts?: unknown[]; descriptionParagraphs?: unknown; caseCard?: unknown; sortOrder?: number; order?: number; multiPage?: unknown; chapters?: unknown; [key: string]: unknown };
 
@@ -43,7 +44,11 @@ function toDto(a: {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Articles serve both /media/articles and /cases (type === "case"); either
+  // permission gives read access. Per-type filtering happens client-side.
+  const gate = await requireAnyPermission(request, ["media.articles", "cases"], "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const articles = await prisma.article.findMany({ orderBy: { createdAt: "desc" } });
   return NextResponse.json(articles.map(toDto));
 }
@@ -51,6 +56,10 @@ export async function GET() {
 export async function POST(request: Request) {
   const body = await request.json();
   const { slug: rawSlug, title, type: rawType } = body as { slug?: string; title?: string; type?: string };
+  // Cases require the `cases` permission; everything else requires `media.articles`.
+  const requiredPath = rawType === "case" ? "cases" : "media.articles";
+  const gate = await requirePermission(request, requiredPath, "EDIT");
+  if (gate instanceof NextResponse) return gate;
   // Нормализуем на бэке: даже если фронт прислал кириллицу — кладём в БД ASCII slug.
   // Это backstop на случай, если автогенерация на фронте сломается или клиент шлёт сырой ввод.
   const slug = normalizeSlug(rawSlug);

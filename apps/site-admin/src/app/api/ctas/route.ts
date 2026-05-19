@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/auth";
 
 type Scope = "product" | "article" | "both";
 function parseScope(v: unknown): Scope {
@@ -24,12 +25,16 @@ function toDto(c: { id: string; name: string; content: unknown; createdAt: Date;
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "cta-forms.ctas", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const items = await prisma.ctaEntity.findMany({ orderBy: { createdAt: "asc" } });
   return NextResponse.json(items.map(toDto));
 }
 
 export async function POST(request: Request) {
+  const gate = await requirePermission(request, "cta-forms.ctas", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const body = await request.json();
   const id = typeof body.id === "string" && body.id.trim() ? body.id.trim() : null;
   const name = typeof body.name === "string" && body.name.trim() ? body.name.trim() : "";

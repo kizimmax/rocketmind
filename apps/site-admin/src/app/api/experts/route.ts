@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeSlug } from "@/lib/slugify";
+import { requirePermission } from "@/lib/auth";
 
 type ExpertContent = { name?: string; tag?: string; shortBio?: string; bio?: string; [key: string]: unknown };
 
@@ -16,12 +17,16 @@ function toDto(e: { id: string; slug: string; content: unknown; photoPath: strin
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "experts", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const experts = await prisma.expert.findMany({ orderBy: { sortOrder: "asc" } });
   return NextResponse.json(experts.map(toDto));
 }
 
 export async function POST(request: Request) {
+  const gate = await requirePermission(request, "experts", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const body = await request.json();
   const { name, tag, shortBio, bio } = body;
   const slug = normalizeSlug(body.slug);

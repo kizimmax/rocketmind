@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createAutoRedirect } from "@/lib/redirects";
 import { generateAutoAliases, guessGenderForTitle, type Gender } from "@/lib/glossary-morph";
+import { requirePermission } from "@/lib/auth";
 
 const GENDERS = new Set<Gender>(["masculine", "feminine", "neuter"]);
 function pickGender(raw: unknown, title: string): Gender {
@@ -13,6 +14,8 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const gate = await requirePermission(request, "media.glossary", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { slug } = await params;
   const existing = await prisma.glossaryTerm.findUnique({ where: { slug } });
   if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -85,9 +88,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const gate = await requirePermission(request, "media.glossary", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const { slug } = await params;
   await prisma.glossaryTerm.deleteMany({ where: { slug } });
   return NextResponse.json({ ok: true });

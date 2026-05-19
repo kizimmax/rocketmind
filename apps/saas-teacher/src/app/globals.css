@@ -1,0 +1,53 @@
+@import "@rocketmind/ui/styles";
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+
+/* Streaming cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-blink {
+  animation: blink 0.7s step-end infinite;
+}
+
+/* rm-new-pulse — определён в @rocketmind/ui/styles (DS §8.14) */
+
+/* Mobile bottom-sheet: выезжает снизу / уезжает вниз */
+@keyframes rm-sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes rm-sheet-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+.rm-sheet[data-state="open"] {
+  animation: rm-sheet-in 260ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.rm-sheet[data-state="closed"] {
+  animation: rm-sheet-out 200ms ease-in;
+}
+/* Свайп-закрытие: отключаем keyframe, слайд и fade ведут inline-стили */
+.rm-sheet.rm-sheet-manual-close,
+.rm-sheet.rm-sheet-manual-close[data-state="closed"],
+.rm-sheet-overlay.rm-sheet-manual-close,
+.rm-sheet-overlay.rm-sheet-manual-close[data-state="closed"] {
+  animation: none !important;
+}
+
+/* Обрезка превью артефакта до 3 строк с ellipsis */
+.rm-clamp-3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}

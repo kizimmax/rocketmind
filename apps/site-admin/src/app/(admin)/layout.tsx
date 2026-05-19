@@ -1,26 +1,51 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo } from "react";
 import { AdminStoreProvider } from "@/lib/store";
 import { NavigationGuardProvider } from "@/lib/navigation-guard";
 import { AdminHeader } from "@/components/admin-header";
+import { AdminSidebar } from "@/components/admin-sidebar";
 import { DemoBanner } from "@/components/demo-banner";
+import { isPathVisible } from "@/lib/permissions-client";
+import { ruleForPathname } from "@/lib/route-permissions";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthed, isLoading } = useAuth();
+  const { isAuthed, isLoading, currentUser, permissions } = useAuth();
   const router = useRouter();
+  const pathname = usePathname() ?? "/";
+
+  const access = useMemo(() => {
+    if (!currentUser) return { allowed: false, reason: "no_user" as const };
+    const rule = ruleForPathname(pathname);
+    if (!rule) return { allowed: true } as const;
+    if (rule.rolesAllowed && !rule.rolesAllowed.includes(currentUser.role)) {
+      return { allowed: false, reason: "role" as const };
+    }
+    if (rule.permissionPath && !isPathVisible(currentUser.role, permissions, rule.permissionPath)) {
+      return { allowed: false, reason: "permission" as const };
+    }
+    return { allowed: true } as const;
+  }, [pathname, currentUser, permissions]);
 
   useEffect(() => {
     if (!isLoading && !isAuthed) {
       router.replace("/login");
     }
   }, [isAuthed, isLoading, router]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthed || !currentUser) return;
+    if (access.allowed) return;
+    // Forbidden: send to profile (always accessible) instead of login —
+    // the user is authenticated, just lacks permission for this section.
+    router.replace("/profile");
+  }, [access.allowed, isLoading, isAuthed, currentUser, router]);
 
   if (isLoading) {
     return (
@@ -31,6 +56,7 @@ export default function AdminLayout({
   }
 
   if (!isAuthed) return null;
+  if (!access.allowed) return null;
 
   return (
     <AdminStoreProvider>
@@ -38,9 +64,12 @@ export default function AdminLayout({
         <div className="fixed inset-0 flex flex-col overflow-hidden bg-background">
           <DemoBanner />
           <AdminHeader />
-          <main className="flex flex-1 flex-col overflow-y-auto">
-            {children}
-          </main>
+          <div className="flex flex-1 overflow-hidden">
+            <AdminSidebar />
+            <main className="flex flex-1 flex-col overflow-y-auto">
+              {children}
+            </main>
+          </div>
         </div>
       </NavigationGuardProvider>
     </AdminStoreProvider>

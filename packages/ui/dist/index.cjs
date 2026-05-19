@@ -3204,7 +3204,7 @@ function NavLink({
 var import_lucide_react8 = require("lucide-react");
 init_utils();
 var import_jsx_runtime38 = require("react/jsx-runtime");
-var BUTTON_BASE = "group flex items-center gap-3 h-[60px] md:h-[72px] px-4 md:px-6 border border-[color:var(--rm-gray-3)] rounded-sm text-[color:var(--rm-gray-fg-main)] transition-colors duration-[120ms] hover:border-[color:var(--rm-gray-fg-main)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--ring)]";
+var BUTTON_BASE = "group flex min-w-0 items-center gap-3 h-[60px] md:h-[72px] px-4 md:px-6 border border-[color:var(--rm-gray-3)] rounded-sm text-[color:var(--rm-gray-fg-main)] transition-colors duration-[120ms] hover:border-[color:var(--rm-gray-fg-main)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--ring)]";
 var LABEL_CLASS = "min-w-0 truncate font-[family-name:var(--font-mono-family)] font-medium text-[length:var(--text-12)] md:text-[length:var(--text-14)] uppercase tracking-[0.02em]";
 var ICON_CLASS = "h-4 w-4 shrink-0";
 function ArticlePagination({
@@ -3724,7 +3724,7 @@ function GlossaryPopularRow({
               "hover:border-[color:var(--rm-yellow-100)]"
             ),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-18)] font-bold uppercase tracking-[-0.01em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] line-clamp-2", children: it.title }),
+              /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "font-[family-name:var(--font-heading-family)] text-[length:var(--text-16)] font-bold uppercase tracking-[-0.01em] leading-[1.16] text-[color:var(--rm-gray-fg-main)] line-clamp-2", children: it.title }),
               it.description && /* @__PURE__ */ (0, import_jsx_runtime40.jsx)("span", { className: "text-[length:var(--text-12)] leading-[1.35] text-[color:var(--rm-gray-fg-sub)] line-clamp-3", children: it.description })
             ]
           },
@@ -4565,7 +4565,7 @@ function Paragraph({
     "p",
     {
       className: cn(
-        "text-[length:var(--text-18)] leading-[1.2] text-[color:var(--rm-gray-fg-main)]",
+        "text-[length:var(--text-18)] leading-[1.32] text-[color:var(--rm-gray-fg-main)]",
         className
       ),
       children: renderInline(text, glossary, slugLookup)

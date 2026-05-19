@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { readConfig } from "@/lib/storage";
 import { DEFAULT_BLOCK_TYPES } from "@/lib/constants";
+import { requirePermission } from "@/lib/auth";
 
 // ── Block builder ─────────────────────────────────────────────────────────────
 
@@ -168,7 +169,9 @@ function pageToDto(p: {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "pages", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const allPages = await prisma.page.findMany({ orderBy: [{ category: "asc" }, { sortOrder: "asc" }] });
   const grouped = new Map<string, typeof allPages>();
   for (const p of allPages) {
@@ -188,6 +191,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const gate = await requirePermission(request, "pages", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const body = await request.json();
   const { sectionId, slug, menuTitle } = body;
   if (!slug || !sectionId) return NextResponse.json({ error: "sectionId and slug required" }, { status: 400 });

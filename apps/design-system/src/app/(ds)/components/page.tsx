@@ -3,7 +3,10 @@
 import React from "react"
 import {
   Avatar, AvatarFallback, AvatarImage,
-  Badge, GlowingEffect, ProductCard, ProductImageCard, ScrollArea, Separator, Skeleton, Slider,
+  ArticleCard,
+  Badge, GlowingEffect, ProductCard, ProductImageCard, ScrollArea,
+  SectionAsideProductCard,
+  Separator, Skeleton, Slider,
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from "@rocketmind/ui"
 import { Section, SubSection } from "@/components/ds/shared"
@@ -22,8 +25,8 @@ import { ShowMoreShowcase } from "@/components/ui/show-more-showcase"
 import { ArticlePaginationShowcase } from "@/components/ui/article-pagination-showcase"
 import { AccordionShowcase } from "@/components/ui/accordion-showcase"
 import {
-  Rocket, User, Gem, BookOpen, Search,
-  Loader2, Trash2, ArrowRight, Wrench, GraduationCap
+  Rocket, Gem, BookOpen, Search,
+  Loader2, Trash2, Wrench
 } from "lucide-react"
 
 function SliderInteractiveDemo() {
@@ -666,146 +669,8 @@ export default function ComponentsPage() {
                 </div>
               </div>
 
-              {/* ════════ 1. ПРОДУКТ / УСЛУГА ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">1. Продукт / Услуга</h3>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="h-36 bg-rm-gray-2 overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={28}/></div>
-                    <div className="flex flex-col gap-3 p-5">
-                      <span className={`w-fit px-2 py-0.5 rounded-sm bg-rm-gray-2 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Курс</span>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em] leading-snug">Название продукта</h4>
-                      <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Краткое описание продукта или услуги.</p>
-                      <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
-                        <span className={`${mono} font-semibold text-[length:var(--text-16)]`}>9 900 ₽</span>
-                        <button className={`h-7 px-3 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`}>Купить →</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>M — Широкая</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[1,2].map(i => (
-                  <div key={i} className="flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="h-44 bg-rm-gray-2 overflow-hidden flex items-center justify-center text-muted-foreground"><Rocket size={36}/></div>
-                    <div className="flex flex-col gap-4 p-6">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-sm bg-rm-gray-2 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Курс</span>
-                        <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>· 12 уроков</span>
-                      </div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Название продукта</h4>
-                      <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">Подробное описание продукта — здесь можно разместить больше текста, поскольку карточка шире.</p>
-                      <div className="flex items-center gap-2 text-[var(--rm-yellow-100)]">
-                        {"★★★★★".split("").map((s,j)=><span key={j} className="text-[length:var(--text-14)]">{s}</span>)}
-                        <span className={`${mono} text-[length:var(--text-12)] text-muted-foreground ml-1`}>4.9 (128)</span>
-                      </div>
-                      <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
-                        <div className="flex items-baseline gap-2">
-                          <span className={`${mono} font-medium text-[length:var(--text-18)] md:text-[length:var(--text-24)]`}>9 900 ₽</span>
-                          <span className={`${mono} text-[length:var(--text-14)] text-muted-foreground line-through`}>14 900 ₽</span>
-                        </div>
-                        <button className={`h-8 px-4 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`}>Купить →</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>L — Горизонтальная</p>
-              <div className="flex flex-col gap-3 mb-10">
-                {[1,2].map(i => (
-                  <div key={i} className="flex overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-48 flex-shrink-0 bg-rm-gray-2 flex items-center justify-center text-muted-foreground"><Rocket size={36}/></div>
-                    <div className="flex flex-1 flex-col gap-3 p-6">
-                      <span className={`w-fit px-2 py-0.5 rounded-sm bg-rm-gray-2 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Услуга</span>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Название продукта</h4>
-                      <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Описание продукта. В горизонтальном варианте текст читается слева направо.</p>
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="flex items-baseline gap-2">
-                          <span className={`${mono} font-medium text-[length:var(--text-18)] md:text-[length:var(--text-24)]`}>9 900 ₽</span>
-                          <span className={`${mono} text-[length:var(--text-14)] text-muted-foreground line-through`}>14 900 ₽</span>
-                        </div>
-                        <button className={`h-8 px-4 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`}>Купить →</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* ════════ 2. ЭКСПЕРТ ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">2. Эксперт</h3>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer group">
-                    <div className="h-40 bg-rm-gray-2 flex items-center justify-center"><User size={36} className="text-muted-foreground"/></div>
-                    <div className="flex flex-col gap-3 p-5">
-                      <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Иван Петров</h4>
-                        <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Бизнес-аналитик</span>
-                      </div>
-                      <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">10 лет в консалтинге, помог 200+ компаниям.</p>
-                      <div className="flex flex-wrap gap-1">
-                        {["Стратегия","EdTech"].map(t=><span key={t} className={`px-1.5 py-0.5 rounded-sm bg-rm-gray-2 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>{t}</span>)}
-                      </div>
-                      <span className={`inline-flex items-center gap-1 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-auto group/cta`}>
-                        Подробнее <ArrowRight size={12} className="transition-transform group-hover/cta:translate-x-1"/>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>M — Широкая</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[1,2].map(i => (
-                  <div key={i} className="flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer group">
-                    <div className="h-52 bg-rm-gray-2 flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
-                    <div className="flex flex-col gap-4 p-6">
-                      <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Иван Петров</h4>
-                        <span className={`${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground`}>Бизнес-аналитик</span>
-                      </div>
-                      <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">10 лет в консалтинге, помог 200+ компаниям выйти на новые рынки. Специализация — стратегия роста.</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {["Стратегия","EdTech","SaaS"].map(t=><span key={t} className={`px-2 py-0.5 rounded-sm bg-rm-gray-2 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>{t}</span>)}
-                      </div>
-                      <div className="flex items-center justify-between mt-auto">
-                        <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Кейсов: 48</span>
-                        <span className={`inline-flex items-center gap-1.5 ${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground group/cta`}>
-                          Подробнее <ArrowRight size={14} className="transition-transform group-hover/cta:translate-x-1"/>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>L — Горизонтальная</p>
-              <div className="flex flex-col gap-3 mb-10">
-                {[1,2].map(i => (
-                  <div key={i} className="flex overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-52 flex-shrink-0 bg-rm-gray-2 flex items-center justify-center"><User size={48} className="text-muted-foreground"/></div>
-                    <div className="flex flex-1 items-center gap-8 p-6">
-                      <div className="flex flex-col gap-1 w-48 flex-shrink-0">
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Иван Петров</h4>
-                        <span className={`${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground`}>Бизнес-аналитик</span>
-                      </div>
-                      <p className="flex-1 text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">10 лет в консалтинге, помог 200+ компаниям выйти на новые рынки. Специализация — стратегия роста.</p>
-                      <div className="flex flex-col gap-3 items-end flex-shrink-0">
-                        <div className="flex flex-wrap gap-1.5 justify-end">
-                          {["Стратегия","EdTech"].map(t=><span key={t} className={`px-2 py-0.5 rounded-sm bg-rm-gray-2 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>{t}</span>)}
-                        </div>
-                        <span className={`inline-flex items-center gap-1.5 ${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground group/cta`}>
-                          Подробнее <ArrowRight size={14} className="transition-transform group-hover/cta:translate-x-1"/>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* ════════ 3. С ИКОНКОЙ ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">3. С иконкой</h3>
+              {/* ════════ 1. ПРОДУКТ С ИКОНКОЙ ════════ */}
+              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">1. Продукт с иконкой</h3>
               <p className="text-muted-foreground text-[length:var(--text-14)] mb-4">
                 Карточки для раздела «Консалтинг и стратегия». Иконка 120×120, опциональные аватарки экспертов и жёлтый бейдж.
                 Заголовок — макс. 2 строки, описание — 3 строки с многоточием.
@@ -852,8 +717,8 @@ export default function ComponentsPage() {
                   href="#"
                 />
               </div>
-              {/* ════════ 3b. С ИЗОБРАЖЕНИЕМ ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4 mt-4">3b. С изображением</h3>
+              {/* ════════ 2. С ИЗОБРАЖЕНИЕМ ════════ */}
+              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4 mt-4">2. Продукт с изображением</h3>
               <p className="text-muted-foreground text-[length:var(--text-14)] mb-4">
                 Карточки для разделов «Онлайн-школа» и «AI-продукты». Изображение cover 220px, бейдж -22px overlap.
                 Вариант «wide» — 2 колонки с фактоидами из hero.
@@ -887,394 +752,125 @@ export default function ComponentsPage() {
                 />
               </div>
 
-              {/* ════════ 4. ИИ-АГЕНТ ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">4. ИИ-Агент</h3>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
+              {/* ════════ 3. СТАТЬЯ ════════ */}
+              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">3. Статья</h3>
+              <p className="text-muted-foreground text-[length:var(--text-14)] mb-4">
+                Карточка статьи для раздела «Медиа». Обложка сверху (overlap −22px), бейдж типа (sky — урок, terracotta — кейс), теги, автор и дата.
+                Вариант «wide» — двухколоночный: обложка слева, заголовок и описание во всю ширину.
+              </p>
+              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>Default — обложка сверху</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex flex-col gap-4 p-5 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="relative w-fit">
-                      <div className="w-14 h-14 rounded-full border-2 flex items-center justify-center bg-rm-gray-2" style={{borderColor:"var(--rm-yellow-50)"}}>
-                        <Rocket size={20} className="text-[var(--rm-yellow-100)]"/>
-                      </div>
-                      <span className="absolute -bottom-0.5 -right-0.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-card border border-border">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--rm-green-100)]"/>
-                      </span>
-                    </div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетолог</h4>
-                      <span className={`${mono} text-[length:var(--text-12)] text-muted-foreground`}>@maks</span>
-                    </div>
-                    <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-3">Анализирует рынок, разрабатывает стратегии роста.</p>
-                    <span className={`inline-flex items-center gap-1 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-auto group/cta`}>
-                      Запустить <ArrowRight size={12} className="transition-transform group-hover/cta:translate-x-1"/>
-                    </span>
-                  </div>
-                ))}
+                <ArticleCard
+                  title="Как мы строим экосистемную стратегию для растущих компаний"
+                  description="Разбор фреймворка из 5 шагов, который применяем в консалтинговых проектах."
+                  tags={["Стратегия", "Экосистема"]}
+                  typeBadge={{ label: "Кейс", color: "terracotta" }}
+                  authorName="Иван Петров"
+                  date="12 марта 2026"
+                />
+                <ArticleCard
+                  title="Бизнес-дизайн: от идеи до запуска"
+                  description="Практический разбор инструментов, которые ускоряют вывод продукта на рынок."
+                  tags={["Продукт", "Дизайн"]}
+                  typeBadge={{ label: "Урок", color: "sky" }}
+                  authorName="Ирина Смирнова"
+                  date="5 марта 2026"
+                />
+                <ArticleCard
+                  title="ИИ-агенты в консалтинге"
+                  description="Где LLM реально помогают, а где замедляют работу команды."
+                  tags={["AI", "Консалтинг", "Практика"]}
+                  authorName="Сергей Кузнецов"
+                  date="28 февраля 2026"
+                />
               </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>M — Широкая</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[1,2].map(i => (
-                  <div key={i} className="flex flex-col gap-5 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="flex items-center gap-4">
-                      <div className="relative flex-shrink-0">
-                        <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center bg-rm-gray-2" style={{borderColor:"var(--rm-yellow-50)"}}>
-                          <Rocket size={28} className="text-[var(--rm-yellow-100)]"/>
-                        </div>
-                        <span className="absolute bottom-0.5 right-0.5 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-card border border-border">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--rm-green-100)]"/>
-                          <span className={`${mono} text-[length:var(--text-12)] uppercase text-muted-foreground`}>Акт</span>
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетолог</h4>
-                        <span className={`${mono} text-[length:var(--text-14)] text-muted-foreground`}>@maks</span>
-                      </div>
-                    </div>
-                    <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">Анализирует рынок, разрабатывает стратегии и помогает находить точки роста бизнеса.</p>
-                    <div className="flex items-center justify-between">
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Кейсов: 124</span>
-                      <span className={`inline-flex items-center gap-1.5 ${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground group/cta`}>
-                        Запустить <ArrowRight size={14} className="transition-transform group-hover/cta:translate-x-1"/>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>L — Горизонтальная</p>
-              <div className="flex flex-col gap-3 mb-10">
-                {[1,2].map(i => (
-                  <div key={i} className="flex items-center gap-6 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-20 h-20 rounded-full border-2 flex items-center justify-center bg-rm-gray-2" style={{borderColor:"var(--rm-yellow-50)"}}>
-                        <Rocket size={28} className="text-[var(--rm-yellow-100)]"/>
-                      </div>
-                      <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-[var(--rm-green-100)] border-2 border-card"/>
-                    </div>
-                    <div className="flex flex-col gap-0.5 w-40 flex-shrink-0">
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетолог</h4>
-                      <span className={`${mono} text-[length:var(--text-14)] text-muted-foreground`}>@maks</span>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-1`}>Кейсов: 124</span>
-                    </div>
-                    <p className="flex-1 text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-3">Анализирует рынок, разрабатывает стратегии и помогает находить точки роста бизнеса.</p>
-                    <span className={`inline-flex items-center gap-1.5 ${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground flex-shrink-0 group/cta`}>
-                      Запустить <ArrowRight size={14} className="transition-transform group-hover/cta:translate-x-1"/>
-                    </span>
-                  </div>
-                ))}
+              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>Wide — обложка слева</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                <ArticleCard
+                  variant="wide"
+                  title="Дизайн-спринт за 5 дней: что работает на практике"
+                  description="Адаптация Google Ventures под российский контекст и распределённые команды."
+                  tags={["Спринты", "Команды"]}
+                  typeBadge={{ label: "Кейс", color: "terracotta" }}
+                  authorName="Мария Лебедева"
+                  date="20 февраля 2026"
+                />
               </div>
 
-              {/* ════════ 4. ОТЗЫВ ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">4. Отзыв</h3>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex flex-col gap-4 p-5 rounded-lg border border-border bg-card dark:border-white/[0.06]">
-                    <div className="flex gap-0.5 text-[var(--rm-yellow-100)]">{"★★★★★".split("").map((s,j)=><span key={j} className="text-[length:var(--text-14)]">{s}</span>)}</div>
-                    <blockquote className="text-[length:var(--text-14)] italic leading-[1.5] text-foreground line-clamp-4">«Агент помог за 2 дня разобраться в структуре рынка, на что раньше уходило 2 недели.»</blockquote>
-                    <div className="flex items-center gap-2.5 pt-3 border-t border-border mt-auto">
-                      <div className="w-8 h-8 rounded-full bg-rm-gray-2 border border-border flex-shrink-0 flex items-center justify-center text-muted-foreground"><User size={14}/></div>
-                      <div>
-                        <div className="text-[length:var(--text-14)] font-medium leading-none">Анна Смирнова</div>
-                        <div className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-0.5`}>CEO, TechStartup</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>M — Широкая</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[1,2].map(i => (
-                  <div key={i} className="flex flex-col gap-5 p-6 rounded-lg border border-border bg-card dark:border-white/[0.06]">
-                    <div className="flex gap-0.5 text-[var(--rm-yellow-100)]">{"★★★★★".split("").map((s,j)=><span key={j} className="text-[length:var(--text-16)]">{s}</span>)}</div>
-                    <blockquote className="text-[length:var(--text-16)] italic leading-[1.618] text-foreground">«Агент помог мне за 2 дня разобраться в структуре рынка, на что раньше уходило целых 2 недели работы аналитика.»</blockquote>
-                    <div className="flex items-center gap-3 pt-4 border-t border-border">
-                      <div className="w-10 h-10 rounded-full bg-rm-gray-2 border border-border flex-shrink-0 flex items-center justify-center text-muted-foreground"><User size={16}/></div>
-                      <div className="flex-1">
-                        <div className="text-[length:var(--text-14)] font-medium">Анна Смирнова</div>
-                        <div className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>CEO, TechStartup</div>
-                      </div>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Март 2026</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>L — Горизонтальная</p>
-              <div className="flex flex-col gap-3 mb-10">
-                {[1,2].map(i => (
-                  <div key={i} className="flex gap-8 p-6 rounded-lg border border-border bg-card dark:border-white/[0.06]">
-                    <div className="flex flex-col items-center gap-3 flex-shrink-0 w-36">
-                      <div className="w-16 h-16 rounded-full bg-rm-gray-2 border border-border flex items-center justify-center text-muted-foreground"><User size={24}/></div>
-                      <div className="text-center">
-                        <div className="text-[length:var(--text-14)] font-medium">Анна Смирнова</div>
-                        <div className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>CEO, TechStartup</div>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-3 flex-1">
-                      <div className="flex items-center gap-3">
-                        <div className="flex gap-0.5 text-[var(--rm-yellow-100)]">{"★★★★★".split("").map((s,j)=><span key={j} className="text-[length:var(--text-16)]">{s}</span>)}</div>
-                        <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Март 2026</span>
-                      </div>
-                      <blockquote className="text-[length:var(--text-16)] italic leading-[1.618] text-foreground">«Агент помог мне за 2 дня разобраться в структуре рынка, на что раньше уходило 2 недели работы аналитика.»</blockquote>
-                    </div>
-                  </div>
-                ))}
+              {/* ════════ 4. ASIDE-КАРТОЧКА ПРОДУКТА В СТАТЬЕ ════════ */}
+              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">4. Aside-карточка продукта</h3>
+              <p className="text-muted-foreground text-[length:var(--text-14)] mb-4">
+                Мини-карточка продукта для правой колонки статьи. Вариант <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">default</code> — 72×72 thumb + аватары экспертов (для consulting); вариант <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">image</code> — широкая cover-картинка (для academy/ai-products).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 max-w-[640px]">
+                <SectionAsideProductCard
+                  href="#"
+                  title="Экосистемная стратегия"
+                  description="Стратегия и портфель бизнес-моделей, расширяющих влияние."
+                  experts={[
+                    { name: "Алексей Е.", image: null },
+                    { name: "Ирина Г.", image: null },
+                    { name: "Сергей К.", image: null },
+                  ]}
+                />
+                <SectionAsideProductCard
+                  href="#"
+                  variant="image"
+                  title="Тестирование гипотез"
+                  description="ИИ-агент по тестированию бизнес-гипотез с автоматическим анализом данных."
+                />
               </div>
 
               {/* ════════ 5. КЕЙС ════════ */}
               <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">5. Кейс</h3>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex flex-col gap-3 p-5 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="flex items-center justify-between">
-                      <span className={`px-2 py-0.5 rounded-sm ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-green-900)",color:"var(--rm-green-100)"}}>Активен</span>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>@maks</span>
+              <p className="text-muted-foreground text-[length:var(--text-14)] mb-4">
+                Карточка кейса для раздела «Кейсы». Заголовок, описание, бордерный блок с тремя метриками, итоговый результат.
+                Для «big»-кейсов (есть страница) — жёлтый бордер при наведении и стрелка ↗ в правом верхнем углу.
+              </p>
+              <div className="flex flex-col gap-12 mb-10">
+                <div className="group">
+                  <div className="flex flex-col gap-5 lg:gap-11">
+                    <div className="flex flex-col gap-2 lg:gap-5">
+                      <h2 className="font-[family-name:var(--font-heading-family)] text-[24px] md:text-[36px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0]">
+                        Запуск онлайн-академии для&nbsp;корпоративных команд
+                      </h2>
+                      <p className="text-[16px] xl:text-[18px] leading-[1.32] text-[#939393] max-w-none xl:max-w-[70%]">
+                        Помогли крупному EdTech-игроку упаковать методологию и&nbsp;вывести её на&nbsp;b2b-рынок за&nbsp;6&nbsp;месяцев.
+                      </p>
                     </div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em] line-clamp-2">Анализ рынка EdTech</h4>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>2 часа назад</span>
-                    </div>
-                    <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Агент завершил анализ конкурентов...</p>
-                    <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
-                      <div className="w-5 h-5 rounded-full bg-rm-gray-2 border border-border"/>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>3 сообщ.</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>M — Широкая</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[1,2].map(i => (
-                  <div key={i} className="flex flex-col gap-4 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="flex items-center justify-between">
-                      <span className={`px-2 py-0.5 rounded-sm ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-green-900)",color:"var(--rm-green-100)"}}>Активен</span>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>@maks</span>
-                    </div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Анализ рынка EdTech</h4>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Обновлён 2 часа назад</span>
-                    </div>
-                    <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Агент завершил анализ конкурентов и подготовил сводный отчёт по основным игрокам рынка.</p>
-                    <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-rm-gray-2 border border-border"/>
-                        <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Маркетолог</span>
+                    <div className="relative border border-[#404040] group-hover:border-[var(--rm-yellow-100)] transition-[border-color] duration-200 p-5 sm:p-6 xl:p-8">
+                      <div className="absolute top-[2px] right-[2px] z-10 flex items-center justify-center w-10 h-10 rounded-[4px] text-[#404040] transition-all duration-200 group-hover:text-[#F0F0F0] group-hover:-top-[2px] group-hover:-right-[2px] group-hover:scale-110">
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden>
+                          <path d="M1 10L10 1M10 1H3M10 1V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                       </div>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>3 сообщения</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>L — Горизонтальная</p>
-              <div className="flex flex-col gap-3 mb-10">
-                {[1,2].map(i => (
-                  <div key={i} className="flex items-center gap-6 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="flex flex-col gap-1 w-40 flex-shrink-0">
-                      <span className={`px-2 py-0.5 rounded-sm w-fit ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-green-900)",color:"var(--rm-green-100)"}}>Активен</span>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-1`}>2 часа назад</span>
-                    </div>
-                    <div className="flex flex-col gap-1 w-56 flex-shrink-0">
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Анализ рынка EdTech</h4>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>@maks</span>
-                    </div>
-                    <p className="flex-1 text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Агент завершил анализ конкурентов и подготовил сводный отчёт по основным игрокам рынка EdTech за 2025–2026 год.</p>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <div className="w-6 h-6 rounded-full bg-rm-gray-2 border border-border"/>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>3 сообщ.</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* ════════ 6. КУРС ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">6. Курс</h3>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="relative h-32 bg-rm-gray-2 flex items-center justify-center">
-                      <GraduationCap size={28} className="text-muted-foreground"/>
-                      <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent"/>
-                    </div>
-                    <div className="flex flex-col gap-2.5 p-5">
-                      <div className="flex gap-1.5">
-                        <span className={`px-1.5 py-0.5 rounded-sm ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
-                        <span className={`px-1.5 py-0.5 rounded-sm bg-rm-gray-2 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Видео</span>
-                      </div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em] leading-snug">Маркетинг для стартапов</h4>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>12 уроков</span>
-                      <div className="flex items-center justify-between pt-2.5 border-t border-border mt-auto">
-                        <span className={`${mono} font-semibold text-[length:var(--text-16)]`}>4 900 ₽</span>
-                        <button className={`h-7 px-3 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`}>Начать →</button>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                        {[
+                          { value: "6", label: "месяцев\nдо запуска", description: "От первой стратегической сессии до продаж b2b-клиентам." },
+                          { value: "12", label: "корпоративных\nклиентов", description: "Подписали контракты в первый квартал после запуска." },
+                          { value: "×3", label: "рост выручки\nза год", description: "Относительно базового сценария без b2b-направления." },
+                        ].map((stat, i) => (
+                          <div key={i} className="flex flex-col gap-1 sm:gap-5 xl:justify-between">
+                            <div className="flex flex-row items-center gap-3 sm:flex-col sm:items-start sm:gap-1 xl:flex-row xl:items-center xl:gap-3">
+                              <div className="font-[family-name:var(--font-heading-family)] text-[52px] sm:text-[40px] xl:text-[52px] font-bold uppercase leading-[1.08] tracking-[-0.02em] text-[#F0F0F0] flex-none">
+                                {stat.value}
+                              </div>
+                              <div className={`${mono} text-[18px] font-medium uppercase tracking-[0.02em] leading-[1.16] text-[#F0F0F0] whitespace-pre-wrap`}>
+                                {stat.label}
+                              </div>
+                            </div>
+                            <p className="text-[12px] sm:text-[14px] leading-[1.4] tracking-[0.01em] text-[#939393]">
+                              {stat.description}
+                            </p>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                    <p className={`${mono} text-[16px] font-medium uppercase tracking-[0.04em] leading-[1.16] text-[#F0F0F0] xl:max-w-[70%]`}>
+                      Методология упакована в&nbsp;продукт, продажи&nbsp;— системные, команда заказчика выросла в&nbsp;два&nbsp;раза.
+                    </p>
                   </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>M — Широкая</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[1,2].map(i => (
-                  <div key={i} className="flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="relative h-44 bg-rm-gray-2 flex items-center justify-center">
-                      <GraduationCap size={40} className="text-muted-foreground"/>
-                      <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent"/>
-                    </div>
-                    <div className="flex flex-col gap-4 p-6">
-                      <div className="flex gap-2">
-                        <span className={`px-2 py-0.5 rounded-sm ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
-                        <span className={`px-2 py-0.5 rounded-sm bg-rm-gray-2 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Видео</span>
-                      </div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетинг для стартапов</h4>
-                      <span className={`${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground`}>Иван Петров · 12 уроков</span>
-                      <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Практический курс по привлечению первых клиентов без большого бюджета.</p>
-                      <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
-                        <span className={`${mono} font-medium text-[length:var(--text-18)] md:text-[length:var(--text-24)]`}>4 900 ₽</span>
-                        <button className={`h-8 px-4 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`}>Начать →</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>L — Горизонтальная</p>
-              <div className="flex flex-col gap-3 mb-10">
-                {[1,2].map(i => (
-                  <div key={i} className="flex overflow-hidden rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-52 flex-shrink-0 bg-rm-gray-2 flex items-center justify-center relative">
-                      <GraduationCap size={40} className="text-muted-foreground"/>
-                    </div>
-                    <div className="flex flex-1 items-center gap-6 p-6">
-                      <div className="flex flex-col gap-2 flex-1">
-                        <div className="flex gap-2">
-                          <span className={`px-2 py-0.5 rounded-sm ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-sky-900)",color:"var(--rm-sky-100)"}}>Начинающий</span>
-                        </div>
-                        <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Маркетинг для стартапов</h4>
-                        <span className={`${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground`}>Иван Петров · 12 уроков</span>
-                      </div>
-                      <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                        <span className={`${mono} font-medium text-[length:var(--text-18)] md:text-[length:var(--text-24)]`}>4 900 ₽</span>
-                        <button className={`h-8 px-4 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`}>Начать →</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* ════════ 7. ИНСТРУМЕНТ ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">7. Инструмент</h3>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex flex-col gap-3 p-5 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-10 h-10 rounded-sm border border-border bg-rm-gray-2 flex items-center justify-center text-muted-foreground flex-shrink-0"><Wrench size={18}/></div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Notion</h4>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>База знаний</span>
-                    </div>
-                    <p className="text-[length:var(--text-14)] text-muted-foreground leading-[1.5] line-clamp-2">Синхронизирует кейсы с базой знаний автоматически.</p>
-                    <span className={`w-fit px-1.5 py-0.5 rounded-sm ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-blue-900)",color:"var(--rm-blue-100)"}}>Webhook</span>
-                    <span className={`inline-flex items-center gap-1 ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mt-auto group/cta`}>
-                      Подключить <ArrowRight size={12} className="transition-transform group-hover/cta:translate-x-1"/>
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>M — Широкая</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[1,2].map(i => (
-                  <div key={i} className="flex flex-col gap-4 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-12 h-12 rounded-sm border border-border bg-rm-gray-2 flex items-center justify-center text-muted-foreground flex-shrink-0"><Wrench size={22}/></div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Notion</h4>
-                      <span className={`${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground`}>База знаний</span>
-                    </div>
-                    <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Синхронизирует кейсы с вашей базой знаний Notion автоматически через n8n.</p>
-                    <span className={`w-fit px-2 py-0.5 rounded-sm ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-blue-900)",color:"var(--rm-blue-100)"}}>Webhook</span>
-                    <span className={`inline-flex items-center gap-1.5 ${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground mt-auto group/cta`}>
-                      Подключить <ArrowRight size={14} className="transition-transform group-hover/cta:translate-x-1"/>
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>L — Горизонтальная</p>
-              <div className="flex flex-col gap-3 mb-10">
-                {[1,2].map(i => (
-                  <div key={i} className="flex items-center gap-6 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-14 h-14 rounded-sm border border-border bg-rm-gray-2 flex items-center justify-center text-muted-foreground flex-shrink-0"><Wrench size={24}/></div>
-                    <div className="flex flex-col gap-0.5 w-40 flex-shrink-0">
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Notion</h4>
-                      <span className={`${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground`}>База знаний</span>
-                    </div>
-                    <p className="flex-1 text-[length:var(--text-16)] text-muted-foreground leading-[1.618] line-clamp-2">Синхронизирует кейсы с базой знаний Notion автоматически через n8n вебхуки.</p>
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                      <span className={`px-2 py-0.5 rounded-sm ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em]`} style={{backgroundColor:"var(--rm-blue-900)",color:"var(--rm-blue-100)"}}>Webhook</span>
-                      <span className={`inline-flex items-center gap-1.5 ${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground group/cta`}>
-                        Подключить <ArrowRight size={14} className="transition-transform group-hover/cta:translate-x-1"/>
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* ════════ 8. ПАРТНЁРСКАЯ ПРОГРАММА ════════ */}
-              <h3 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-14)] uppercase tracking-[0.04em] text-muted-foreground mb-4">8. Партнёрская программа</h3>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>S — Узкая</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {[1,2,3].map(i => (
-                  <div key={i} className="flex flex-col gap-3 p-5 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{backgroundColor:"var(--rm-yellow-900)"}}>
-                      <Gem size={18} className="text-[var(--rm-yellow-100)]"/>
-                    </div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Реферальная</h4>
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>До 30% · Пожизненно</span>
-                    </div>
-                    <div className="pt-2 border-t border-border">
-                      <span className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-25)] uppercase tracking-tight leading-none text-[var(--rm-yellow-100)]">30%</span>
-                    </div>
-                    <button className={`h-7 px-3 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] w-full mt-auto`}>Стать партнёром</button>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>M — Широкая</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {[1,2].map(i => (
-                  <div key={i} className="flex flex-col gap-4 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{backgroundColor:"var(--rm-yellow-900)"}}>
-                      <Gem size={22} className="text-[var(--rm-yellow-100)]"/>
-                    </div>
-                    <div>
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Реферальная программа</h4>
-                      <span className={`${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground`}>Доход: до 30% · Пожизненно</span>
-                    </div>
-                    <p className="text-[length:var(--text-16)] text-muted-foreground leading-[1.618]">Приглашайте клиентов и получайте процент от каждой их оплаты навсегда.</p>
-                    <div className="flex flex-col gap-0.5 pt-3 border-t border-border">
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Комиссия</span>
-                      <span className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-25)] uppercase tracking-tight leading-none text-[var(--rm-yellow-100)]">30%</span>
-                    </div>
-                    <button className={`h-8 px-3 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] w-full mt-auto`}>Стать партнёром</button>
-                  </div>
-                ))}
-              </div>
-              <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>L — Горизонтальная</p>
-              <div className="flex flex-col gap-3">
-                {[1,2].map(i => (
-                  <div key={i} className="flex items-center gap-6 p-6 rounded-lg border border-border bg-card transition-all duration-150 hover:border-muted-foreground dark:border-white/[0.06] dark:hover:border-white/[0.20] cursor-pointer">
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0" style={{backgroundColor:"var(--rm-yellow-900)"}}>
-                      <Gem size={24} className="text-[var(--rm-yellow-100)]"/>
-                    </div>
-                    <div className="flex flex-col gap-0.5 w-48 flex-shrink-0">
-                      <h4 className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-18)] md:text-[length:var(--text-24)] uppercase tracking-[-0.005em]">Реферальная программа</h4>
-                      <span className={`${mono} text-[length:var(--text-14)] uppercase tracking-[0.08em] text-muted-foreground`}>Пожизненно</span>
-                    </div>
-                    <p className="flex-1 text-[length:var(--text-16)] text-muted-foreground leading-[1.618]">Приглашайте клиентов и получайте процент от каждой их оплаты навсегда. Без ограничений по времени.</p>
-                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                      <span className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground`}>Комиссия</span>
-                      <span className="font-[family-name:var(--font-heading-family)] font-bold text-[length:var(--text-31)] uppercase tracking-tight leading-none text-[var(--rm-yellow-100)]">30%</span>
-                    </div>
-                    <button className={`h-8 px-5 rounded-sm bg-primary text-primary-foreground ${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] flex-shrink-0`}>Стать партнёром</button>
-                  </div>
-                ))}
+                </div>
               </div>
             </TabsContent>
           </Tabs>

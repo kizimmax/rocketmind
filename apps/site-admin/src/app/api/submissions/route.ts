@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requirePermission } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  const gate = await requirePermission(request, "submissions", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const url = new URL(request.url);
   const formId = url.searchParams.get("formId");
   const limit = Math.min(Number(url.searchParams.get("limit") ?? 100), 500);

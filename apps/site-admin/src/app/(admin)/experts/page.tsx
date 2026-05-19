@@ -170,17 +170,18 @@ function ExpertCard({
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex gap-8 rounded bg-[#121212] p-8 min-h-[349px]">
+    <div className="flex gap-8 rounded border border-border bg-card p-8 min-h-[349px]">
       {/* Photo */}
-      <div className="relative w-[45%] shrink-0 self-stretch group/photo">
+      <div className="relative w-[45%] shrink-0 self-stretch group/photo overflow-hidden rounded-sm border border-border bg-rm-gray-1">
         {expert.image ? (
           <div
             className="h-full w-full bg-cover bg-center"
             style={{ backgroundImage: `url(${expert.image})` }}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-[#2a2a2a]">
-            <UserCircle className="h-16 w-16 text-[#404040]" />
+          <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+            <UserCircle className="h-16 w-16" strokeWidth={1} />
+            <span className="text-[length:var(--text-12)]">Загрузите фото</span>
           </div>
         )}
         {/* Upload overlay */}

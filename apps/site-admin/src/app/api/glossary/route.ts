@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeSlug } from "@/lib/slugify";
 import { generateAutoAliases, guessGenderForTitle, type Gender } from "@/lib/glossary-morph";
+import { requirePermission } from "@/lib/auth";
 
 type GlossaryContent = {
   order?: number;
@@ -68,12 +69,16 @@ function toDto(t: {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const gate = await requirePermission(request, "media.glossary", "VIEW");
+  if (gate instanceof NextResponse) return gate;
   const terms = await prisma.glossaryTerm.findMany({ orderBy: { createdAt: "asc" } });
   return NextResponse.json(terms.map(toDto));
 }
 
 export async function POST(request: Request) {
+  const gate = await requirePermission(request, "media.glossary", "EDIT");
+  if (gate instanceof NextResponse) return gate;
   const body = await request.json();
   const { slug: rawSlug, title } = body as { slug?: string; title?: string };
   const slug = normalizeSlug(rawSlug);
