@@ -57,6 +57,9 @@ export async function PATCH(
     }
     data.endsAt = d;
   }
+  if (typeof body.isActive === "boolean") {
+    data.isActive = body.isActive;
+  }
 
   const updated = await prisma.program.update({ where: { id }, data, include: { place: true } });
   return NextResponse.json(updated);

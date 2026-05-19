@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
-import { Button } from "@rocketmind/ui";
+import { Button, Switch } from "@rocketmind/ui";
 import { ChevronLeft, Calendar, MapPin, Trash2, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -37,6 +37,7 @@ type Program = {
   title: string;
   startsAt: string;
   endsAt: string;
+  isActive: boolean;
   joinToken: string | null;
   place: Place | null;
   agents: ProgramAgentRow[];
@@ -109,6 +110,25 @@ export default function ProgramDetailPage({
       router.push("/programs");
     } else {
       toast.error("Ошибка");
+    }
+  }
+
+  async function toggleProgramActive(next: boolean) {
+    if (!program) return;
+    // Optimistic
+    const prev = program.isActive;
+    setProgram((p) => (p ? { ...p, isActive: next } : p));
+    try {
+      const res = await apiFetch(`/api/programs/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: next }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast.success(next ? "Программа активна" : "Программа закрыта");
+    } catch {
+      setProgram((p) => (p ? { ...p, isActive: prev } : p));
+      toast.error("Не удалось обновить статус");
     }
   }
 
@@ -199,6 +219,24 @@ export default function ProgramDetailPage({
           <Trash2 className="mr-1 h-3.5 w-3.5" />
           Удалить программу
         </Button>
+      </div>
+
+      {/* Свитч «программа активна» — закрывает бесплатный доступ для участников. */}
+      <div className="mb-5 flex items-center justify-between rounded border border-border bg-rm-gray-1/30 p-4">
+        <div className="min-w-0">
+          <p className="text-[length:var(--text-14)] font-medium text-foreground">
+            {program.isActive ? "Программа активна" : "Программа закрыта"}
+          </p>
+          <p className="mt-0.5 text-[length:var(--text-12)] text-muted-foreground">
+            {program.isActive
+              ? "Участники имеют доступ к AI-экспертам."
+              : "Участники видят сообщение о завершении и плашку с подпиской."}
+          </p>
+        </div>
+        <Switch
+          checked={program.isActive}
+          onCheckedChange={(v) => toggleProgramActive(Boolean(v))}
+        />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">

@@ -14,6 +14,8 @@ export type StudentProgramSummary = {
   title: string;
   startsAt: string;
   endsAt: string;
+  /** false = программа закрыта супер-админом → read-only режим + плашка подписки. */
+  isActive: boolean;
   place: { id: string; name: string } | null;
 };
 

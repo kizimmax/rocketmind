@@ -19,9 +19,11 @@ function uid() {
 interface TeacherChatProps {
   agent: TeacherAgent;
   projectId: string;
+  /** Программа закрыта → новые сообщения недоступны, чат read-only. */
+  programClosed?: boolean;
 }
 
-export function TeacherChat({ agent, projectId }: TeacherChatProps) {
+export function TeacherChat({ agent, projectId, programClosed = false }: TeacherChatProps) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [draft, setDraft] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -180,7 +182,22 @@ export function TeacherChat({ agent, projectId }: TeacherChatProps) {
         </div>
       </div>
 
-      {/* Composer */}
+      {/* Composer (или плашка подписки, если программа закрыта) */}
+      {programClosed ? (
+        <div className="border-t border-border bg-rm-gray-1/30 px-6 py-4">
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left">
+            <p className="text-[length:var(--text-14)] text-muted-foreground">
+              Чтобы продолжить диалог — оформите подписку.
+            </p>
+            <a
+              href="/upgrade"
+              className="rounded bg-[var(--rm-yellow-100)] px-4 py-2 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-foreground hover:opacity-90 transition-opacity"
+            >
+              Оформить подписку
+            </a>
+          </div>
+        </div>
+      ) : (
       <div className="border-t border-border px-6 py-4">
         <div className="mx-auto flex max-w-2xl items-end gap-2">
           <Textarea
@@ -204,6 +221,7 @@ export function TeacherChat({ agent, projectId }: TeacherChatProps) {
           </Button>
         </div>
       </div>
+      )}
     </div>
   );
 }

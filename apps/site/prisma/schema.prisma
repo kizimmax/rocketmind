@@ -386,6 +386,10 @@ model Program {
   place              Place?         @relation(fields: [placeId], references: [id])
   startsAt           DateTime
   endsAt             DateTime
+  /// Свитч «программа активна». Когда false — участники видят модалку
+  /// «программа завершена», чат становится read-only, новые сообщения
+  /// закрыты плашкой «оформите подписку».
+  isActive           Boolean        @default(true)
   joinToken          String?        @unique
   joinTokenRotatedAt DateTime?
   agents             ProgramAgent[]

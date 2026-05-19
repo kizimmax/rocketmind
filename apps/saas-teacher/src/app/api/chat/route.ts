@@ -46,8 +46,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "agent_not_found" }, { status: 404 });
   }
 
-  // Verify agent is available for this student's program
+  // Verify agent is available for this student's program; also enforce that
+  // the program itself is still active (super-admin может закрыть программу —
+  // тогда новые сообщения недоступны до оформления подписки).
   if (student.programId) {
+    const program = await prisma.program.findUnique({
+      where: { id: student.programId },
+      select: { isActive: true },
+    });
+    if (program && program.isActive === false) {
+      return NextResponse.json({ error: "program_closed" }, { status: 403 });
+    }
     const pa = await prisma.programAgent.findUnique({
       where: { programId_agentId: { programId: student.programId, agentId } },
     });
