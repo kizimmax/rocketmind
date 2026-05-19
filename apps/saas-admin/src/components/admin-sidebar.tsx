@@ -46,16 +46,16 @@ const allSections: SaasAdminSection[] = [
   {
     id: "site-pages",
     href: `${SITE_ADMIN_URL}/pages`,
-    label: "Страницы (сайт)",
+    label: "Страницы",
     Icon: FileText,
     external: true,
-    dividerBefore: true,
+    groupHeader: "site",
     rolesAllowed: ["SUPER_ADMIN"],
   },
   {
     id: "site-media",
     href: `${SITE_ADMIN_URL}/media`,
-    label: "Медиа (сайт)",
+    label: "Медиа",
     Icon: Newspaper,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],
@@ -63,7 +63,7 @@ const allSections: SaasAdminSection[] = [
   {
     id: "site-experts",
     href: `${SITE_ADMIN_URL}/experts`,
-    label: "Эксперты (сайт)",
+    label: "Эксперты",
     Icon: Users,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],
@@ -71,7 +71,7 @@ const allSections: SaasAdminSection[] = [
   {
     id: "site-cases",
     href: `${SITE_ADMIN_URL}/cases`,
-    label: "Кейсы (сайт)",
+    label: "Кейсы",
     Icon: Briefcase,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],
@@ -79,7 +79,7 @@ const allSections: SaasAdminSection[] = [
   {
     id: "site-testimonials",
     href: `${SITE_ADMIN_URL}/testimonials`,
-    label: "Отзывы (сайт)",
+    label: "Отзывы",
     Icon: MessageSquareQuote,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],
@@ -87,7 +87,7 @@ const allSections: SaasAdminSection[] = [
   {
     id: "site-cta-forms",
     href: `${SITE_ADMIN_URL}/cta-forms`,
-    label: "CTA и формы (сайт)",
+    label: "CTA и формы",
     Icon: MousePointerClick,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],
@@ -95,7 +95,7 @@ const allSections: SaasAdminSection[] = [
   {
     id: "site-submissions",
     href: `${SITE_ADMIN_URL}/submissions`,
-    label: "Заявки (сайт)",
+    label: "Заявки",
     Icon: Inbox,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],
@@ -103,7 +103,7 @@ const allSections: SaasAdminSection[] = [
   {
     id: "site-system",
     href: `${SITE_ADMIN_URL}/system`,
-    label: "Системные (сайт)",
+    label: "Системные",
     Icon: Settings,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],
@@ -111,7 +111,7 @@ const allSections: SaasAdminSection[] = [
   {
     id: "site-redirects",
     href: `${SITE_ADMIN_URL}/redirects`,
-    label: "Редиректы (сайт)",
+    label: "Редиректы",
     Icon: ArrowLeftRight,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],

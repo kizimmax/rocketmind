@@ -1487,8 +1487,12 @@ interface AdminShellSection {
     subsections?: AdminShellSubSection[];
     /** External link (renders with external icon, opens via href without client-side routing) */
     external?: boolean;
-    /** Render a horizontal divider line ABOVE this section (visual group break). */
-    dividerBefore?: boolean;
+    /**
+     * Заголовок группы, выводится ВЫШЕ этой секции — мелким моноширинным
+     * capslock'ом + горизонтальная линия. Используется чтобы отделить
+     * cross-link группу от локальных разделов («saas» / «site»).
+     */
+    groupHeader?: string;
 }
 interface AdminShellUser {
     firstName: string;

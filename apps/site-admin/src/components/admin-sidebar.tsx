@@ -54,16 +54,16 @@ const allSections: SiteAdminSection[] = [
   {
     id: "saas-ai-agents",
     href: `${SAAS_ADMIN_URL}/ai-agents`,
-    label: "AI-эксперты (SaaS)",
+    label: "AI-эксперты",
     Icon: Bot,
     external: true,
-    dividerBefore: true,
+    groupHeader: "saas",
     rolesAllowed: ["SUPER_ADMIN"],
   },
   {
     id: "saas-programs",
     href: `${SAAS_ADMIN_URL}/programs`,
-    label: "Программы (SaaS)",
+    label: "Программы",
     Icon: CalendarDays,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],
@@ -71,7 +71,7 @@ const allSections: SiteAdminSection[] = [
   {
     id: "saas-users",
     href: `${SAAS_ADMIN_URL}/users`,
-    label: "SaaS-пользователи",
+    label: "Пользователи",
     Icon: ShieldCheck,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],

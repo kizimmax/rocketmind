@@ -33,8 +33,12 @@ export interface AdminShellSection {
   subsections?: AdminShellSubSection[];
   /** External link (renders with external icon, opens via href without client-side routing) */
   external?: boolean;
-  /** Render a horizontal divider line ABOVE this section (visual group break). */
-  dividerBefore?: boolean;
+  /**
+   * Заголовок группы, выводится ВЫШЕ этой секции — мелким моноширинным
+   * capslock'ом + горизонтальная линия. Используется чтобы отделить
+   * cross-link группу от локальных разделов («saas» / «site»).
+   */
+  groupHeader?: string;
 }
 
 export interface AdminShellUser {
@@ -234,11 +238,22 @@ export function AdminSidebar({
 
               return (
                 <div key={s.id}>
-                  {s.dividerBefore && (
-                    <div
-                      className="my-2 border-t border-border"
-                      aria-hidden
-                    />
+                  {s.groupHeader && (
+                    <div className="mt-3 mb-1">
+                      <div className="border-t border-border" aria-hidden />
+                      <div
+                        className="flex items-center"
+                        style={{ height: 24 }}
+                      >
+                        <div
+                          className="shrink-0 flex items-center justify-center"
+                          style={{ width: RAIL_W }}
+                        />
+                        <span className="flex-1 min-w-0 text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap">
+                          {s.groupHeader}
+                        </span>
+                      </div>
+                    </div>
                   )}
                   <div
                     className="flex items-center"
