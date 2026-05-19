@@ -1,0 +1,1009 @@
+openapi: 3.0.3
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rocketmind SaaS — Backend API contract (Mongo + custom backend by Иван)
+# ─────────────────────────────────────────────────────────────────────────────
+# Этот документ — источник истины для фронта (`apps/saas-admin`,
+# `apps/saas-teacher`) и бэка (Иван, Amvera, Mongo). Любые правки сначала
+# отражаются здесь, потом в коде.
+#
+# Архитектура:
+#   - apps/saas-admin  — админка управления SaaS (3006). Использует все
+#     /api/admin/*, /api/programs, /api/ai-agents, /api/students endpoints.
+#   - apps/saas-teacher — клиент-приложение для учеников (3005). Использует
+#     /api/auth/*, /api/students/me, /api/students/me/projects, /api/chat,
+#     /api/programs/active.
+#   - n8n остаётся отдельно у Ивана на Amvera. Webhook-URL агента (см. AiAgent
+#     model) фронт-saas-teacher вызывает напрямую (или Иван проксирует — TBD).
+#
+# Схемы под `components.schemas` соответствуют коллекциям Mongo (один-в-один с
+# именами). Иван имеет право денормализовать на стороне бэка — главное,
+# чтобы наружу через API возвращалось то, что описано здесь.
+
+info:
+  title: Rocketmind SaaS Backend API
+  version: 0.1.0-draft
+  description: |
+    Контракт между фронтами (saas-admin / saas-teacher) и бэком Ивана.
+    Этот документ — draft. Иван правит → возвращает → согласовываем финал.
+
+servers:
+  - url: https://api.rocketmind.* # production (TBD)
+    description: Production
+  - url: http://localhost:4000 # local dev (если Иван поднимет локально)
+    description: Local dev
+
+tags:
+  - name: admin-auth
+    description: Авторизация админов saas-admin (super-admin / admin / editor)
+  - name: admin-users
+    description: CRUD админских аккаунтов и пермиссий
+  - name: ai-agents
+    description: Каталог AI-агентов (общий для Teacher и Akselerator)
+  - name: programs
+    description: Программы Teacher (с QR, агентами, учениками)
+  - name: places
+    description: Места проведения программ (справочник)
+  - name: students
+    description: SaaS-пользователи (ученики Teacher)
+  - name: student-auth
+    description: OTP-вход учеников
+  - name: student-me
+    description: Анкета и проекты текущего ученика
+  - name: chat
+    description: Стриминг чата с AI-агентом
+  - name: audit-log
+    description: Аудит-лог админских действий (этап 2)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECURITY SCHEMES
+# ─────────────────────────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    AdminJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT-токен админа saas-admin. Кладётся в HttpOnly cookie `rm_admin_token`
+        после `/api/admin/login` или передаётся в `Authorization: Bearer`.
+    StudentJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT ученика. Cookie `rm_student_token` (HttpOnly, 90 дней). Подписан
+        STUDENT_JWT_SECRET. Создаётся после `/api/auth/verify-code`.
+    ServiceToken:
+      type: apiKey
+      in: header
+      name: X-Service-Token
+      description: |
+        Используется для cross-app запросов (saas-admin → site-admin для
+        чтения каталога маскотов).
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # SCHEMAS — Mongo collections shape (also: API response/request types)
+  # ───────────────────────────────────────────────────────────────────────────
+  schemas:
+    # ───── Common ─────
+    Role:
+      type: string
+      enum: [SUPER_ADMIN, ADMIN, EDITOR]
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Machine-readable код ошибки.
+          examples: [unauthorized, not_found, validation_failed]
+        message:
+          type: string
+          description: Человекочитаемое описание (опционально).
+
+    # ───── Admin user (коллекция `admin_users`) ─────
+    AdminUser:
+      type: object
+      required: [id, email, firstName, lastName, role, isActive, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        firstName: { type: string }
+        lastName: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+        isActive: { type: boolean }
+        # Permission tree — путь от sections.ts. Не применяется к SUPER_ADMIN.
+        permissions:
+          type: array
+          items:
+            type: object
+            properties:
+              path: { type: string, examples: ['ai-agents', 'programs.list'] }
+              access: { type: string, enum: [VIEW, EDIT] }
+        passwordHash:
+          type: string
+          description: bcrypt hash. НИКОГДА не возвращается в API.
+          writeOnly: true
+        lastLoginAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    # ───── Place (коллекция `places`) ─────
+    Place:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string }
+        name: { type: string, examples: ['Москва, Цифровое деловое пространство'] }
+        address: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    # ───── Program (коллекция `programs`) ─────
+    Program:
+      type: object
+      required: [id, title, startsAt, endsAt, isActive, createdAt]
+      properties:
+        id: { type: string }
+        title: { type: string, examples: ['Бизнес-моделирование, апрель 2026'] }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        # Свитч «программа активна». false → ученик видит модалку «программа
+        # завершена» и read-only-чат с плашкой подписки.
+        isActive: { type: boolean }
+        place:
+          oneOf:
+            - $ref: '#/components/schemas/Place'
+            - type: 'null'
+        placeId: { type: string, nullable: true }
+        # QR token (24 random bytes base64url). Используется в URL /join.
+        joinToken: { type: string, nullable: true }
+        joinTokenRotatedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    # ───── AiAgent (коллекция `ai_agents`) ─────
+    AiAgent:
+      type: object
+      required: [id, slug, name, targets, n8nWebhookUrl, createdAt]
+      properties:
+        id: { type: string }
+        slug: { type: string, examples: ['business-modeling'] }
+        name: { type: string, examples: ['Бизнес-моделирование'] }
+        role: { type: string, examples: ['Наставник по бизнес-модели'] }
+        valueDescription:
+          type: string
+          description: Текст приветствия и описание пользы агента.
+        # Каталог общий — `targets[]` определяет в какие SaaS-продукты агент
+        # отображается. Фронт фильтрует по этому массиву.
+        targets:
+          type: array
+          items:
+            type: string
+            enum: [saas-teacher, saas-akselerator]
+        avatarMascotId: { type: string, nullable: true }
+        # URL картинки маскота (резолвится saas-admin из site-admin /api/mascots).
+        avatarUrl: { type: string, nullable: true }
+        n8nWebhookUrl:
+          type: string
+          description: Хост Ивана (Amvera). Фронт шлёт сообщения сюда.
+        n8nSecret:
+          type: string
+          description: HMAC-секрет для подписи запросов в n8n. writeOnly.
+          writeOnly: true
+        systemPrompt:
+          type: string
+          nullable: true
+          description: |
+            Черновик системного промпта — для отображения в админке. На
+            реальное поведение не влияет (промпт живёт в n8n).
+        notes: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    # ───── ProgramAgent (коллекция `program_agents` — M:N) ─────
+    ProgramAgent:
+      type: object
+      required: [programId, agentId, isAvailable]
+      properties:
+        programId: { type: string }
+        agentId: { type: string }
+        # Свитч «агент открыт для этой программы».
+        isAvailable: { type: boolean }
+        availableSince: { type: string, format: date-time, nullable: true }
+
+    # ───── Student (коллекция `students`) — SaaS-пользователи ─────
+    Student:
+      type: object
+      required: [id, email, isActive, joinedAt]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        firstName: { type: string, nullable: true }
+        lastName: { type: string, nullable: true }
+        # «Роль в бизнесе» — UI label обновлён.
+        role: { type: string, nullable: true, examples: ['Генеральный директор'] }
+        # «Сфера деятельности»
+        industry: { type: string, nullable: true, examples: ['Производство'] }
+        # «Регион»
+        region: { type: string, nullable: true, examples: ['Московская область'] }
+        # Свитч от админа — отключённый ученик не может войти.
+        isActive: { type: boolean }
+        programId: { type: string, nullable: true }
+        program:
+          oneOf:
+            - $ref: '#/components/schemas/StudentProgramSummary'
+            - type: 'null'
+        joinedAt: { type: string, format: date-time }
+        joinedVia: { type: string, nullable: true, examples: ['qr'] }
+        updatedAt: { type: string, format: date-time }
+
+    StudentProgramSummary:
+      type: object
+      required: [id, title, startsAt, endsAt, isActive]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        isActive: { type: boolean }
+        place:
+          oneOf:
+            - $ref: '#/components/schemas/Place'
+            - type: 'null'
+
+    # ───── StudentProject (коллекция `student_projects`) ─────
+    StudentProject:
+      type: object
+      required: [id, studentId, name, createdAt]
+      properties:
+        id: { type: string }
+        studentId: { type: string }
+        name: { type: string, examples: ['Бизнес-модель AI-консалтинга'] }
+        # JSON-блок дополнительных полей (опц). Заполняется самим учеником
+        # или агентом через события.
+        profile: { type: object, additionalProperties: true, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    # ───── StudentSession (коллекция `student_sessions`) ─────
+    # Уникальная пара (projectId, agentId). Threads не пересекаются.
+    StudentSession:
+      type: object
+      required: [id, studentId, projectId, agentId]
+      properties:
+        id: { type: string }
+        studentId: { type: string }
+        projectId: { type: string }
+        agentId: { type: string }
+        threadId: { type: string, nullable: true }
+        summary:
+          type: string
+          nullable: true
+          description: Авто-сводка от агента, идёт другим агентам в context.summaries.
+        lastMessageAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    # ───── StudentMessage (коллекция `student_messages`) ─────
+    StudentMessage:
+      type: object
+      required: [id, sessionId, role, content, createdAt]
+      properties:
+        id: { type: string }
+        sessionId: { type: string }
+        role: { type: string, enum: [user, assistant] }
+        content: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    # ───── StudentArtifact (коллекция `student_artifacts`) ─────
+    # «Общая доска» проекта — артефакты видят все агенты этого проекта.
+    StudentArtifact:
+      type: object
+      required: [id, projectId, kind, content, createdAt]
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        agentId: { type: string, nullable: true }
+        kind: { type: string, examples: ['canvas', 'doc', 'list'] }
+        title: { type: string, nullable: true }
+        content: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+
+    # ───── OtpCode (коллекция `otp_codes`) ─────
+    OtpCode:
+      type: object
+      required: [id, email, codeHash, expiresAt, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        codeHash: { type: string, writeOnly: true }
+        programId: { type: string, nullable: true }
+        expiresAt: { type: string, format: date-time }
+        consumedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+    # ───── AuditLogEntry (коллекция `audit_log`, фаза 2) ─────
+    AuditLogEntry:
+      type: object
+      required: [id, actorId, action, target, createdAt]
+      properties:
+        id: { type: string }
+        actorId: { type: string }
+        actorEmail: { type: string, format: email }
+        action: { type: string, examples: ['student.view', 'program.update', 'agent.delete'] }
+        target: { type: string, examples: ['student:abc-123', 'program:xyz-456'] }
+        meta: { type: object, additionalProperties: true, nullable: true }
+        ip: { type: string, nullable: true }
+        userAgent: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # RESPONSES — reusable response components
+  # ───────────────────────────────────────────────────────────────────────────
+  responses:
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Validation:
+      description: Невалидные данные
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────────────────────────────────────
+paths:
+  # ───────────────────────────── Admin auth ─────────────────────────────
+  /api/admin/login:
+    post:
+      tags: [admin-auth]
+      summary: Логин админа saas-admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Успех. JWT в cookie `rm_admin_token`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/AdminUser' }
+        '401': { description: Неверные креды, $ref: '#/components/responses/Unauthorized' }
+
+  /api/admin/me:
+    get:
+      tags: [admin-auth]
+      summary: Текущий админ + его пермиссии
+      security: [{ AdminJWT: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/AdminUser' }
+                  permissions:
+                    type: array
+                    items: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/admin/logout:
+    post:
+      tags: [admin-auth]
+      summary: Logout (очистка cookie)
+      security: [{ AdminJWT: [] }]
+      responses: { '200': { description: OK } }
+
+  # ──────────────────────── Admin password reset / email ────────────────
+  /api/admin/password-reset/send:
+    post:
+      tags: [admin-auth]
+      summary: Отправить ссылку на сброс пароля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses: { '200': { description: OK }, '404': { description: Not found } }
+
+  /api/admin/password-reset/complete:
+    post:
+      tags: [admin-auth]
+      summary: Установить новый пароль по токену
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, newPassword]
+              properties:
+                token: { type: string }
+                newPassword: { type: string, minLength: 8 }
+      responses: { '200': { description: OK }, '400': { $ref: '#/components/responses/Validation' } }
+
+  # ─────────────────────────── Admin users ──────────────────────────────
+  /api/admin/users:
+    get:
+      tags: [admin-users]
+      summary: Список админов
+      security: [{ AdminJWT: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/AdminUser' } }
+    post:
+      tags: [admin-users]
+      summary: Создать админа
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, firstName, lastName, role]
+              properties:
+                email: { type: string, format: email }
+                firstName: { type: string }
+                lastName: { type: string }
+                role: { $ref: '#/components/schemas/Role' }
+      responses:
+        '201':
+          description: Created. Сервер генерирует пароль и шлёт на email.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminUser' }
+
+  /api/admin/users/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [admin-users]
+      summary: Карточка админа
+      security: [{ AdminJWT: [] }]
+      responses: { '200': { content: { application/json: { schema: { $ref: '#/components/schemas/AdminUser' } } } } }
+    patch:
+      tags: [admin-users]
+      summary: Обновить админа
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName: { type: string }
+                lastName: { type: string }
+                role: { $ref: '#/components/schemas/Role' }
+      responses: { '200': { description: OK } }
+    delete:
+      tags: [admin-users]
+      summary: Удалить админа
+      security: [{ AdminJWT: [] }]
+      responses: { '200': { description: OK } }
+
+  /api/admin/users/{id}/permissions:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    put:
+      tags: [admin-users]
+      summary: Заменить пермиссии админа (только super-admin)
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  path: { type: string }
+                  access: { type: string, enum: [VIEW, EDIT] }
+      responses: { '200': { description: OK } }
+
+  /api/admin/users/{id}/freeze:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [admin-users]
+      summary: Заморозить аккаунт (isActive=false)
+      security: [{ AdminJWT: [] }]
+      responses: { '200': { description: OK } }
+
+  /api/admin/users/{id}/unfreeze:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [admin-users]
+      summary: Разморозить аккаунт
+      security: [{ AdminJWT: [] }]
+      responses: { '200': { description: OK } }
+
+  # ─────────────────────────────── Places ───────────────────────────────
+  /api/places:
+    get:
+      tags: [places]
+      summary: Справочник мест проведения программ
+      security: [{ AdminJWT: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Place' } }
+
+  # ─────────────────────────────── Programs ─────────────────────────────
+  /api/programs:
+    get:
+      tags: [programs]
+      summary: Список программ
+      security: [{ AdminJWT: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Program' } }
+    post:
+      tags: [programs]
+      summary: Создать программу
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, startsAt, endsAt]
+              properties:
+                title: { type: string }
+                startsAt: { type: string, format: date-time }
+                endsAt: { type: string, format: date-time }
+                placeName: { type: string, nullable: true }
+      responses:
+        '201': { content: { application/json: { schema: { $ref: '#/components/schemas/Program' } } } }
+
+  /api/programs/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [programs]
+      summary: Детали программы (с агентами и учениками)
+      security: [{ AdminJWT: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Program'
+                  - type: object
+                    properties:
+                      agents:
+                        type: array
+                        items: { $ref: '#/components/schemas/ProgramAgent' }
+                      students:
+                        type: array
+                        items: { $ref: '#/components/schemas/Student' }
+    patch:
+      tags: [programs]
+      summary: Обновить программу (включая свитч isActive)
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                startsAt: { type: string, format: date-time }
+                endsAt: { type: string, format: date-time }
+                placeName: { type: string, nullable: true }
+                # Закрыть программу → ученики видят модалку и read-only-чат.
+                isActive: { type: boolean }
+      responses: { '200': { content: { application/json: { schema: { $ref: '#/components/schemas/Program' } } } } }
+    delete:
+      tags: [programs]
+      summary: Удалить программу (ученики останутся без привязки)
+      security: [{ AdminJWT: [] }]
+      responses: { '200': { description: OK } }
+
+  /api/programs/{id}/regenerate-qr:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    post:
+      tags: [programs]
+      summary: Сгенерировать / обновить joinToken (старый QR инвалидируется)
+      security: [{ AdminJWT: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  joinToken: { type: string }
+                  joinTokenRotatedAt: { type: string, format: date-time }
+
+  /api/programs/active:
+    get:
+      tags: [programs]
+      summary: Активная программа для текущего ученика (saas-teacher)
+      security: [{ StudentJWT: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  program: { $ref: '#/components/schemas/StudentProgramSummary' }
+                  agents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        slug: { type: string }
+                        name: { type: string }
+                        role: { type: string }
+                        valueDescription: { type: string }
+                        avatarUrl: { type: string, nullable: true }
+                        isAvailable: { type: boolean }
+
+  /api/program-agents:
+    post:
+      tags: [programs]
+      summary: Upsert связки агент↔программа (включить/выключить агента)
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [programId, agentId, isAvailable]
+              properties:
+                programId: { type: string }
+                agentId: { type: string }
+                isAvailable: { type: boolean }
+      responses: { '200': { description: OK } }
+
+  # ────────────────────────────── AI-agents ─────────────────────────────
+  /api/ai-agents:
+    get:
+      tags: [ai-agents]
+      summary: Список всех AI-агентов (фильтр по target опционально)
+      security: [{ AdminJWT: [] }]
+      parameters:
+        - name: target
+          in: query
+          schema: { type: string, enum: [saas-teacher, saas-akselerator] }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/AiAgent' } }
+    post:
+      tags: [ai-agents]
+      summary: Создать AI-агента
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slug, name, n8nWebhookUrl, targets]
+              properties:
+                slug: { type: string }
+                name: { type: string }
+                role: { type: string }
+                valueDescription: { type: string }
+                targets:
+                  type: array
+                  items: { type: string, enum: [saas-teacher, saas-akselerator] }
+                avatarMascotId: { type: string, nullable: true }
+                n8nWebhookUrl: { type: string }
+                n8nSecret: { type: string }
+                systemPrompt: { type: string }
+                notes: { type: string }
+      responses:
+        '201': { content: { application/json: { schema: { $ref: '#/components/schemas/AiAgent' } } } }
+
+  /api/ai-agents/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [ai-agents]
+      security: [{ AdminJWT: [] }]
+      responses:
+        '200': { content: { application/json: { schema: { $ref: '#/components/schemas/AiAgent' } } } }
+    patch:
+      tags: [ai-agents]
+      summary: Обновить агента
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiAgent' }
+      responses: { '200': { description: OK } }
+    delete:
+      tags: [ai-agents]
+      summary: Удалить агента (каскадно отключает в программах)
+      security: [{ AdminJWT: [] }]
+      responses: { '200': { description: OK } }
+
+  # ─────────────────────────────── Students ─────────────────────────────
+  /api/students:
+    get:
+      tags: [students]
+      summary: Список SaaS-пользователей (с анкетами)
+      security: [{ AdminJWT: [] }]
+      parameters:
+        - { name: programId, in: query, schema: { type: string } }
+        - { name: query, in: query, schema: { type: string }, description: search by email/name }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Student' } }
+
+  /api/students/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+    get:
+      tags: [students]
+      summary: Карточка ученика (анкета + проекты + сессии)
+      security: [{ AdminJWT: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Student'
+                  - type: object
+                    properties:
+                      projects:
+                        type: array
+                        items: { $ref: '#/components/schemas/StudentProject' }
+                      sessions:
+                        type: array
+                        items: { $ref: '#/components/schemas/StudentSession' }
+    patch:
+      tags: [students]
+      summary: Обновить ученика (admin-side — например, isActive)
+      security: [{ AdminJWT: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isActive: { type: boolean }
+                firstName: { type: string }
+                lastName: { type: string }
+                role: { type: string }
+                industry: { type: string }
+                region: { type: string }
+      responses: { '200': { description: OK } }
+    delete:
+      tags: [students]
+      summary: Удалить ученика (cascade — projects/sessions/messages/artifacts)
+      security: [{ AdminJWT: [] }]
+      responses: { '200': { description: OK } }
+
+  # ─────────────────────────── Student auth (OTP) ───────────────────────
+  /api/auth/request-code:
+    post:
+      tags: [student-auth]
+      summary: Запросить 6-значный код на email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { description: Код отправлен (даже если email неизвестен — для anti-enum) }
+
+  /api/auth/verify-code:
+    post:
+      tags: [student-auth]
+      summary: Проверить код, апсёртнуть Student, выдать JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string, pattern: '^\d{6}$' }
+      responses:
+        '200':
+          description: Успех. JWT в cookie `rm_student_token`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student: { $ref: '#/components/schemas/Student' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: account_disabled — админ отключил ученика
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/auth/me:
+    get:
+      tags: [student-me]
+      summary: Текущий ученик (анкета + программа + проект)
+      security: [{ StudentJWT: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student:
+                    oneOf:
+                      - allOf:
+                          - $ref: '#/components/schemas/Student'
+                          - type: object
+                            properties:
+                              project:
+                                oneOf:
+                                  - $ref: '#/components/schemas/StudentProject'
+                                  - type: 'null'
+                      - type: 'null'
+
+  /api/auth/logout:
+    post:
+      tags: [student-auth]
+      summary: Logout (очистка cookie)
+      responses: { '200': { description: OK } }
+
+  # ─────────────────────────── Student profile ──────────────────────────
+  /api/students/me:
+    patch:
+      tags: [student-me]
+      summary: Обновить анкету (имя/фамилия/роль/сфера/регион)
+      security: [{ StudentJWT: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName: { type: string }
+                lastName: { type: string }
+                role: { type: string, description: '«Роль в бизнесе»' }
+                industry: { type: string, description: '«Сфера деятельности»' }
+                region: { type: string, description: '«Регион»' }
+      responses: { '200': { description: OK } }
+
+  /api/students/me/projects:
+    post:
+      tags: [student-me]
+      summary: Создать первый проект
+      security: [{ StudentJWT: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '201': { content: { application/json: { schema: { $ref: '#/components/schemas/StudentProject' } } } }
+
+  # ─────────────────────────────── Chat ─────────────────────────────────
+  /api/chat:
+    post:
+      tags: [chat]
+      summary: |
+        Отправка сообщения агенту. Стримит ответ через SSE.
+        Возвращает 403 `program_closed` если программа учеником закрыта
+        (saas-teacher показывает плашку подписки).
+      security: [{ StudentJWT: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [projectId, agentId, content]
+              properties:
+                projectId: { type: string }
+                agentId: { type: string }
+                content: { type: string, minLength: 1 }
+      responses:
+        '200':
+          description: SSE-стрим (`text/event-stream`)
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  События: `delta` (текст-чанк), `summary`, `artifact`, `done`.
+                  Каждое — JSON в формате `event: <name>\ndata: <json>\n\n`.
+        '403':
+          description: |
+            Доступ закрыт. Причины:
+              - `program_closed` — программа выключена админом
+              - `agent_not_available` — агент не открыт для этой программы
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ─────────────────────────────── Audit log ────────────────────────────
+  /api/admin/audit-log:
+    get:
+      tags: [audit-log]
+      summary: Лог админских действий (этап 2)
+      security: [{ AdminJWT: [] }]
+      parameters:
+        - { name: actorId, in: query, schema: { type: string } }
+        - { name: action, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AuditLogEntry' }
+
+  # ───────────────────────────── Mascots (cross-app) ────────────────────
+  # Эти endpoints живут на site-admin (Postgres), не на бэке Ивана.
+  # saas-admin использует их через cross-origin запросы с X-Service-Token.
+  # Документируем здесь для полноты картины.
+  /api/mascots:
+    get:
+      tags: [ai-agents]
+      summary: |
+        Список маскотов (живёт на site-admin, общая библиотека визуальных
+        ассетов). В будущем переедет на S3 Yandex.
+      security: [{ ServiceToken: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string }
+                    name: { type: string }
+                    pack: { type: string, nullable: true }
+                    imagePath: { type: string }
+                    isBuiltIn: { type: boolean }
