@@ -120,143 +120,160 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
 
   return (
     <>
-      <div className="space-y-4">
-        {/* Avatar */}
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setPicker(true)}
-            className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40 transition-colors hover:border-foreground/40"
-          >
-            {avatarUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              <UserCircle className="h-10 w-10 text-muted-foreground" />
-            )}
-          </button>
-          <div className="flex flex-col gap-1 text-[length:var(--text-12)] text-muted-foreground">
-            <span>Аватар — маскот из библиотеки</span>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* ── Left column: основные поля ── */}
+        <div className="space-y-4">
+          {/* Avatar */}
+          <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setPicker(true)}
-              className="text-foreground underline-offset-2 hover:underline"
+              className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40 transition-colors hover:border-foreground/40"
             >
-              Выбрать
+              {avatarUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <UserCircle className="h-10 w-10 text-muted-foreground" />
+              )}
             </button>
+            <div className="flex flex-col gap-1 text-[length:var(--text-12)] text-muted-foreground">
+              <span>Аватар — маскот из библиотеки</span>
+              <button
+                type="button"
+                onClick={() => setPicker(true)}
+                className="text-foreground underline-offset-2 hover:underline"
+              >
+                Выбрать
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Name */}
-        <div>
-          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-            Имя
-          </label>
-          <Input
-            value={state.name}
-            onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
-            placeholder="напр. Бизнес-наставник"
-          />
-        </div>
-
-        {/* Role */}
-        <div>
-          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-            Роль
-          </label>
-          <Input
-            value={state.role}
-            onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}
-            placeholder="напр. Бизнес-моделирование"
-          />
-        </div>
-
-        {/* Value */}
-        <div>
-          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-            Описание пользы
-          </label>
-          <Textarea
-            value={state.valueDescription}
-            onChange={(e) =>
-              setState((s) => ({ ...s, valueDescription: e.target.value }))
-            }
-            placeholder="Что AI-эксперт делает для ученика, чем полезен"
-            rows={3}
-          />
-        </div>
-
-        {/* Targets */}
-        <div>
-          <div className="mb-1 text-[length:var(--text-12)] text-muted-foreground">
-            Привязка к SaaS
+          {/* Name */}
+          <div>
+            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+              Имя
+            </label>
+            <Input
+              value={state.name}
+              onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
+              placeholder="напр. Бизнес-наставник"
+            />
           </div>
-          <div className="flex gap-4">
-            <label className="flex cursor-pointer items-center gap-2">
-              <Checkbox
-                checked={state.targets.includes("saas-teacher")}
-                onChange={() => toggleTarget("saas-teacher")}
-              />
-              <span className="text-[length:var(--text-14)]">saas-teacher</span>
-            </label>
-            <label className="flex cursor-pointer items-center gap-2">
-              <Checkbox
-                checked={state.targets.includes("saas")}
-                onChange={() => toggleTarget("saas")}
-              />
-              <span className="text-[length:var(--text-14)]">saas (R-акселератор)</span>
-            </label>
-          </div>
-        </div>
 
-        {/* Webhook */}
-        <div>
-          <div className="mb-1 flex items-center gap-2">
-            <label className="text-[length:var(--text-12)] text-muted-foreground">
-              n8n webhook URL
+          {/* Role */}
+          <div>
+            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+              Роль
             </label>
+            <Input
+              value={state.role}
+              onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}
+              placeholder="напр. Бизнес-моделирование"
+            />
+          </div>
+
+          {/* Value */}
+          <div>
+            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+              Описание пользы
+            </label>
+            <Textarea
+              value={state.valueDescription}
+              onChange={(e) =>
+                setState((s) => ({ ...s, valueDescription: e.target.value }))
+              }
+              placeholder="Что AI-эксперт делает для ученика, чем полезен"
+              rows={3}
+            />
+          </div>
+
+          {/* Targets */}
+          <div>
+            <div className="mb-1 text-[length:var(--text-12)] text-muted-foreground">
+              Привязка к SaaS
+            </div>
+            <div className="flex gap-4">
+              <label className="flex cursor-pointer items-center gap-2">
+                <Checkbox
+                  checked={state.targets.includes("saas-teacher")}
+                  onChange={() => toggleTarget("saas-teacher")}
+                />
+                <span className="text-[length:var(--text-14)]">saas-teacher</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-2">
+                <Checkbox
+                  checked={state.targets.includes("saas")}
+                  onChange={() => toggleTarget("saas")}
+                />
+                <span className="text-[length:var(--text-14)]">saas (R-акселератор)</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Webhook */}
+          <div>
+            <div className="mb-1 flex items-center gap-2">
+              <label className="text-[length:var(--text-12)] text-muted-foreground">
+                n8n webhook URL
+              </label>
+              {!state.n8nWebhookUrl.trim() && (
+                <span className="inline-flex items-center gap-1 rounded-sm bg-destructive/15 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-destructive">
+                  <AlertTriangle className="h-3 w-3" />
+                  Не подключен
+                </span>
+              )}
+            </div>
+            <Input
+              value={state.n8nWebhookUrl}
+              onChange={(e) =>
+                setState((s) => ({ ...s, n8nWebhookUrl: e.target.value }))
+              }
+              placeholder="https://n8n.example.com/webhook/agent-xyz"
+              className={
+                !state.n8nWebhookUrl.trim()
+                  ? "border-destructive/50 focus-visible:border-destructive"
+                  : undefined
+              }
+            />
             {!state.n8nWebhookUrl.trim() && (
-              <span className="inline-flex items-center gap-1 rounded-sm bg-destructive/15 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-destructive">
-                <AlertTriangle className="h-3 w-3" />
-                Не подключен
-              </span>
+              <p className="mt-1 text-[length:var(--text-10)] text-destructive">
+                Без webhook агент не отвечает — диалог с ним работать не будет.
+              </p>
             )}
           </div>
-          <Input
-            value={state.n8nWebhookUrl}
-            onChange={(e) =>
-              setState((s) => ({ ...s, n8nWebhookUrl: e.target.value }))
-            }
-            placeholder="https://n8n.example.com/webhook/agent-xyz"
-            className={
-              !state.n8nWebhookUrl.trim()
-                ? "border-destructive/50 focus-visible:border-destructive"
-                : undefined
-            }
-          />
-          {!state.n8nWebhookUrl.trim() && (
-            <p className="mt-1 text-[length:var(--text-10)] text-destructive">
-              Без webhook агент не отвечает — диалог с ним работать не будет.
-            </p>
-          )}
+
+          {/* Secret */}
+          <div>
+            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+              Shared secret (опц., для HMAC-подписи)
+            </label>
+            <Input
+              value={state.n8nSecret ?? ""}
+              onChange={(e) =>
+                setState((s) => ({ ...s, n8nSecret: e.target.value || null }))
+              }
+              placeholder="optional"
+            />
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+              Заметки
+            </label>
+            <Textarea
+              value={state.notes ?? ""}
+              onChange={(e) =>
+                setState((s) => ({ ...s, notes: e.target.value || null }))
+              }
+              rows={2}
+            />
+          </div>
         </div>
 
-        {/* Secret */}
-        <div>
-          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-            Shared secret (опц., для HMAC-подписи)
-          </label>
-          <Input
-            value={state.n8nSecret ?? ""}
-            onChange={(e) =>
-              setState((s) => ({ ...s, n8nSecret: e.target.value || null }))
-            }
-            placeholder="optional"
-          />
-        </div>
-
-        {/* System prompt — пока read-only для бэка, промпты живут в n8n/OpenAI */}
-        <div>
+        {/* ── Right column: системный промпт (большая область) ── */}
+        <div className="flex flex-col">
           <div className="mb-1 flex items-center gap-2">
             <label className="text-[length:var(--text-12)] text-muted-foreground">
               Системный промпт
@@ -270,26 +287,13 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
             onChange={(e) =>
               setState((s) => ({ ...s, systemPrompt: e.target.value || null }))
             }
-            rows={6}
+            rows={24}
             placeholder="Сейчас сами инструкции живут в n8n/OpenAI. Это поле — черновик: текст сохранится в БД, но в payload AI-эксперту пока не уходит."
+            className="flex-1 min-h-[400px] font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)]"
           />
           <p className="mt-1 text-[length:var(--text-10)] text-muted-foreground">
             Когда подключим передачу промпта в n8n — пометку «В разработке» снимем.
           </p>
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-            Заметки
-          </label>
-          <Textarea
-            value={state.notes ?? ""}
-            onChange={(e) =>
-              setState((s) => ({ ...s, notes: e.target.value || null }))
-            }
-            rows={2}
-          />
         </div>
       </div>
 

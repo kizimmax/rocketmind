@@ -44,7 +44,7 @@ const allSections: SiteAdminSection[] = [
   { id: "submissions", href: "/submissions", label: "Заявки", Icon: Inbox, permissionPath: "submissions" },
   { id: "ai-agents", href: "/ai-agents", label: "AI-эксперты", Icon: Bot, permissionPath: "ai-agents" },
   { id: "programs", href: "/programs", label: "Программы", Icon: CalendarDays, permissionPath: "programs" },
-  { id: "users", href: "/users", label: "Пользователи", Icon: ShieldCheck, rolesAllowed: ["SUPER_ADMIN", "ADMIN"] },
+  { id: "users", href: "/users", label: "Доступы к CMS сайта", Icon: ShieldCheck, rolesAllowed: ["SUPER_ADMIN", "ADMIN"] },
   { id: "audit-log", href: "/audit-log", label: "Аудит-лог", Icon: ScrollText, rolesAllowed: ["SUPER_ADMIN"] },
   { id: "system", href: "/system", label: "Системные", Icon: Settings, permissionPath: "system" },
   { id: "redirects", href: "/redirects", label: "Редиректы", Icon: ArrowLeftRight, permissionPath: "redirects" },
@@ -71,7 +71,7 @@ const allSections: SiteAdminSection[] = [
   {
     id: "saas-users",
     href: `${SAAS_ADMIN_URL}/users`,
-    label: "Пользователи",
+    label: "Доступы к CMS SaaS",
     Icon: ShieldCheck,
     external: true,
     rolesAllowed: ["SUPER_ADMIN"],

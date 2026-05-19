@@ -55,7 +55,7 @@ export default function AgentEditPage({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col p-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col p-6">
       <Link href="/ai-agents">
         <Button size="xs" variant="ghost" className="mb-2 self-start">
           <ChevronLeft className="mr-1 h-4 w-4" />К списку

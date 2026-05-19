@@ -38,7 +38,7 @@ const allSections: SaasAdminSection[] = [
   // ── SaaS-разделы (живут локально в saas-admin) ──
   { id: "ai-agents", href: "/ai-agents", label: "AI-эксперты", Icon: Bot, permissionPath: "ai-agents" },
   { id: "programs", href: "/programs", label: "Программы", Icon: CalendarDays, permissionPath: "programs" },
-  { id: "users", href: "/users", label: "Управление админами", Icon: ShieldCheck, rolesAllowed: ["SUPER_ADMIN", "ADMIN"] },
+  { id: "users", href: "/users", label: "Доступы к CMS SaaS", Icon: ShieldCheck, rolesAllowed: ["SUPER_ADMIN", "ADMIN"] },
   { id: "audit-log", href: "/audit-log", label: "Аудит-лог", Icon: ScrollText, rolesAllowed: ["SUPER_ADMIN"] },
 
   // ── Cross-links на сайтовый CMS (видны только SUPER_ADMIN) ──
