@@ -8638,25 +8638,9 @@ function AdminSidebar({
             const { Icon } = s;
             const LinkComponent = s.external ? "a" : import_link7.default;
             return /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("div", { children: [
-              s.groupHeader && /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("div", { className: "mt-3 mb-1", children: [
+              s.groupHeader && /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("div", { className: "mt-3", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("div", { className: "border-t border-border", "aria-hidden": true }),
-                /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
-                  "div",
-                  {
-                    className: "flex items-center",
-                    style: { height: 24 },
-                    children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
-                        "div",
-                        {
-                          className: "shrink-0 flex items-center justify-center",
-                          style: { width: RAIL_W }
-                        }
-                      ),
-                      /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { className: "flex-1 min-w-0 text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap", children: s.groupHeader })
-                    ]
-                  }
-                )
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("div", { className: "pt-2 pb-1 pl-3", children: /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { className: "text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap", children: s.groupHeader }) })
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
                 "div",

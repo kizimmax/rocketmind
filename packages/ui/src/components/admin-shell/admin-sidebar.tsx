@@ -239,17 +239,10 @@ export function AdminSidebar({
               return (
                 <div key={s.id}>
                   {s.groupHeader && (
-                    <div className="mt-3 mb-1">
+                    <div className="mt-3">
                       <div className="border-t border-border" aria-hidden />
-                      <div
-                        className="flex items-center"
-                        style={{ height: 24 }}
-                      >
-                        <div
-                          className="shrink-0 flex items-center justify-center"
-                          style={{ width: RAIL_W }}
-                        />
-                        <span className="flex-1 min-w-0 text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap">
+                      <div className="pt-2 pb-1 pl-3">
+                        <span className="text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap">
                           {s.groupHeader}
                         </span>
                       </div>

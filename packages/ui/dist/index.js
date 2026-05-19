@@ -8265,25 +8265,9 @@ function AdminSidebar({
             const { Icon } = s;
             const LinkComponent = s.external ? "a" : Link8;
             return /* @__PURE__ */ jsxs45("div", { children: [
-              s.groupHeader && /* @__PURE__ */ jsxs45("div", { className: "mt-3 mb-1", children: [
+              s.groupHeader && /* @__PURE__ */ jsxs45("div", { className: "mt-3", children: [
                 /* @__PURE__ */ jsx68("div", { className: "border-t border-border", "aria-hidden": true }),
-                /* @__PURE__ */ jsxs45(
-                  "div",
-                  {
-                    className: "flex items-center",
-                    style: { height: 24 },
-                    children: [
-                      /* @__PURE__ */ jsx68(
-                        "div",
-                        {
-                          className: "shrink-0 flex items-center justify-center",
-                          style: { width: RAIL_W }
-                        }
-                      ),
-                      /* @__PURE__ */ jsx68("span", { className: "flex-1 min-w-0 text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap", children: s.groupHeader })
-                    ]
-                  }
-                )
+                /* @__PURE__ */ jsx68("div", { className: "pt-2 pb-1 pl-3", children: /* @__PURE__ */ jsx68("span", { className: "text-[length:var(--text-10)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap", children: s.groupHeader }) })
               ] }),
               /* @__PURE__ */ jsxs45(
                 "div",
