@@ -4,7 +4,6 @@ import { useAuth } from "@/lib/auth-context";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { NavigationGuardProvider } from "@/lib/navigation-guard";
-import { AdminHeader } from "@/components/admin-header";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { isPathVisible } from "@/lib/permissions-client";
 import { ruleForPathname } from "@/lib/route-permissions";
@@ -59,7 +58,6 @@ export default function AdminLayout({
   return (
     <NavigationGuardProvider>
       <div className="fixed inset-0 flex flex-col overflow-hidden bg-background">
-        <AdminHeader />
         <div className="flex flex-1 overflow-hidden">
           <AdminSidebar />
           <main className="flex flex-1 flex-col overflow-y-auto">

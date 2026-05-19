@@ -84,3 +84,6 @@ export * from './components/ui/wave-animation';
 export * from './components/ui/dotted-surface';
 export * from './components/ui/site-footer';
 export * from './components/ui/site-header';
+
+// Admin shell (used by site-admin and saas-admin for visual consistency)
+export * from './components/admin-shell/admin-sidebar';

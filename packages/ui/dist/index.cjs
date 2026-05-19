@@ -181,6 +181,8 @@ var init_dotted_surface = __esm({
 var index_exports = {};
 __export(index_exports, {
   AccordionFAQ: () => AccordionFAQ,
+  AdminShell: () => AdminShell,
+  AdminSidebar: () => AdminSidebar,
   ArticleBody: () => ArticleBody,
   ArticleCard: () => ArticleCard,
   ArticleNav: () => ArticleNav,
@@ -8475,9 +8477,337 @@ function HeaderCtaButton({ cta }) {
     }
   );
 }
+
+// src/components/admin-shell/admin-sidebar.tsx
+var import_react15 = require("react");
+var import_link7 = __toESM(require("next/link"), 1);
+var import_next_themes3 = require("next-themes");
+var import_lucide_react16 = require("lucide-react");
+var import_jsx_runtime69 = require("react/jsx-runtime");
+var RAIL_W = 48;
+var FULL_W = 220;
+function AdminSidebar({
+  brand,
+  iconDarkPath,
+  iconLightPath,
+  sections,
+  pathname,
+  user,
+  onLogout,
+  tryNavigate,
+  pinKey = "admin-sidebar-pinned"
+}) {
+  const { theme, setTheme } = (0, import_next_themes3.useTheme)();
+  const isDark = theme === "dark";
+  const [expandedId, setExpandedId] = (0, import_react15.useState)(null);
+  const [pinned, setPinned] = (0, import_react15.useState)(false);
+  const [sidebarOpen, setSidebarOpen] = (0, import_react15.useState)(false);
+  const hoverTimer = (0, import_react15.useRef)(null);
+  const isExpanded = pinned || sidebarOpen;
+  const sidebarW = isExpanded ? FULL_W : RAIL_W;
+  (0, import_react15.useEffect)(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(pinKey) === "true") {
+      setPinned(true);
+    }
+  }, [pinKey]);
+  const togglePinned = () => {
+    const next = !pinned;
+    setPinned(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(pinKey, String(next));
+    }
+    if (next) setSidebarOpen(false);
+  };
+  const onSidebarEnter = () => {
+    if (pinned) return;
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    setSidebarOpen(true);
+  };
+  const onSidebarLeave = () => {
+    if (pinned) return;
+    hoverTimer.current = setTimeout(() => setSidebarOpen(false), 150);
+  };
+  const activeSection = sections.find((s) => !s.external && pathname.startsWith(s.href));
+  const activeId = activeSection?.id ?? "";
+  (0, import_react15.useEffect)(() => {
+    if (activeId) setExpandedId(activeId);
+  }, [activeId]);
+  const navRef = (0, import_react15.useRef)(null);
+  const triggerRefs = (0, import_react15.useRef)(/* @__PURE__ */ new Map());
+  const subnavInnerRefs = (0, import_react15.useRef)(/* @__PURE__ */ new Map());
+  const [indicator, setIndicator] = (0, import_react15.useState)({ top: 0, height: 0, visible: false });
+  (0, import_react15.useEffect)(() => {
+    const measure = () => {
+      const trigger = triggerRefs.current.get(activeId);
+      if (!trigger) {
+        setIndicator((p) => ({ ...p, visible: false }));
+        return;
+      }
+      const isOpen = expandedId === activeId;
+      const inner = subnavInnerRefs.current.get(activeId);
+      const subnavH = isOpen && inner ? inner.scrollHeight : 0;
+      setIndicator({
+        top: trigger.offsetTop,
+        height: trigger.offsetHeight + subnavH,
+        visible: true
+      });
+    };
+    measure();
+    const t = setTimeout(measure, 310);
+    return () => clearTimeout(t);
+  }, [activeId, expandedId]);
+  function guardedClick(e, href, external) {
+    if (external) return;
+    if (tryNavigate && !tryNavigate(href)) e.preventDefault();
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+    "aside",
+    {
+      className: "relative shrink-0 h-full bg-background border-r border-border overflow-hidden transition-[width] duration-200 ease-out",
+      style: { width: sidebarW },
+      onMouseEnter: onSidebarEnter,
+      onMouseLeave: onSidebarLeave,
+      children: /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("div", { className: "relative w-[220px] h-full flex flex-col", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("div", { className: "shrink-0 flex items-center border-b border-border", style: { height: 48 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
+            "div",
+            {
+              className: "shrink-0 flex items-center justify-center",
+              style: { width: RAIL_W },
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                  "img",
+                  {
+                    src: iconDarkPath,
+                    alt: brand,
+                    className: "h-6 w-6 hidden dark:block"
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                  "img",
+                  {
+                    src: iconLightPath,
+                    alt: brand,
+                    className: "h-6 w-6 dark:hidden"
+                  }
+                )
+              ]
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { className: "flex-1 min-w-0 text-[length:var(--text-14)] font-semibold text-foreground whitespace-nowrap", children: brand }),
+          /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+            "button",
+            {
+              onClick: togglePinned,
+              title: pinned ? "\u041E\u0442\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u043C\u0435\u043D\u044E" : "\u0417\u0430\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u043C\u0435\u043D\u044E",
+              className: `shrink-0 flex items-center justify-center text-muted-foreground hover:text-foreground transition-opacity duration-150 cursor-pointer ${isExpanded ? "opacity-100" : "opacity-0 pointer-events-none"}`,
+              style: { width: 40, height: 40 },
+              "aria-label": pinned ? "\u041E\u0442\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u043C\u0435\u043D\u044E" : "\u0417\u0430\u043A\u0440\u0435\u043F\u0438\u0442\u044C \u043C\u0435\u043D\u044E",
+              children: pinned ? /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(import_lucide_react16.PanelLeftClose, { size: 16 }) : /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(import_lucide_react16.PanelLeftOpen, { size: 16 })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("div", { className: "flex-1 overflow-y-auto overflow-x-hidden py-4", children: /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("nav", { ref: navRef, className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+            "div",
+            {
+              className: "absolute pointer-events-none z-10 transition-[left] duration-200 ease-out",
+              style: { left: sidebarW - 4, width: 4, top: 0, bottom: 0 },
+              "aria-hidden": true,
+              children: /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                "div",
+                {
+                  className: "sidebar-indicator absolute inset-x-0 bg-[var(--rm-yellow-100)]",
+                  style: {
+                    top: indicator.top,
+                    height: indicator.height,
+                    opacity: indicator.visible ? 1 : 0
+                  }
+                }
+              )
+            }
+          ),
+          sections.map((s) => {
+            const isActive = activeId === s.id;
+            const isOpen = expandedId === s.id;
+            const hasSubs = !!s.subsections && s.subsections.length > 0;
+            const { Icon } = s;
+            const LinkComponent = s.external ? "a" : import_link7.default;
+            return /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
+                "div",
+                {
+                  className: "flex items-center",
+                  style: { height: 34 },
+                  ref: (el) => {
+                    if (el) triggerRefs.current.set(s.id, el);
+                    else triggerRefs.current.delete(s.id);
+                  },
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                      "div",
+                      {
+                        className: "shrink-0 flex items-center justify-center",
+                        style: { width: RAIL_W },
+                        children: /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                          Icon,
+                          {
+                            size: 15,
+                            className: isActive ? "text-foreground" : "text-muted-foreground"
+                          }
+                        )
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
+                      LinkComponent,
+                      {
+                        href: s.href,
+                        onClick: (e) => guardedClick(e, s.href, s.external),
+                        className: `flex-1 min-w-0 flex items-center gap-1 text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider whitespace-nowrap transition-colors ${isActive ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`,
+                        children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { children: s.label }),
+                          s.external && /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                            import_lucide_react16.ExternalLink,
+                            {
+                              size: 10,
+                              className: "shrink-0 opacity-60",
+                              "aria-hidden": true
+                            }
+                          )
+                        ]
+                      }
+                    ),
+                    hasSubs && /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                      "button",
+                      {
+                        onClick: () => setExpandedId(isOpen ? null : s.id),
+                        className: "shrink-0 w-6 self-stretch flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer",
+                        "aria-label": isOpen ? "\u0421\u043A\u0440\u044B\u0442\u044C \u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u044B" : "\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u044C \u043F\u043E\u0434\u0440\u0430\u0437\u0434\u0435\u043B\u044B",
+                        children: /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                          import_lucide_react16.ChevronRight,
+                          {
+                            size: 12,
+                            className: `transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`
+                          }
+                        )
+                      }
+                    )
+                  ]
+                }
+              ),
+              hasSubs && /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("div", { className: `sidebar-subnav${isOpen ? " is-open" : ""}`, children: /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                "div",
+                {
+                  className: "sidebar-subnav-inner",
+                  ref: (el) => {
+                    if (el) subnavInnerRefs.current.set(s.id, el);
+                    else subnavInnerRefs.current.delete(s.id);
+                  },
+                  children: s.subsections.map((sub) => /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
+                    "a",
+                    {
+                      href: `${s.href}#${sub.id}`,
+                      className: "flex items-center",
+                      style: { height: 26 },
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                          "div",
+                          {
+                            className: "shrink-0 flex items-center justify-center",
+                            style: { width: RAIL_W },
+                            children: /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { className: "text-[9px] font-[family-name:var(--font-mono-family)] text-muted-foreground/40 uppercase tracking-wider select-none", children: sub.label.slice(0, 2) })
+                          }
+                        ),
+                        /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { className: "flex-1 min-w-0 text-[length:var(--text-12)] text-muted-foreground hover:text-foreground transition-colors font-[family-name:var(--font-mono-family)] uppercase tracking-wider whitespace-nowrap opacity-80 pr-2", children: sub.label })
+                      ]
+                    },
+                    sub.id
+                  ))
+                }
+              ) })
+            ] }, s.id);
+          })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("div", { className: "shrink-0 border-t border-border", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
+            import_link7.default,
+            {
+              href: "/profile",
+              onClick: (e) => guardedClick(e, "/profile"),
+              className: "w-full flex items-center hover:bg-rm-gray-2/50 transition-colors cursor-pointer",
+              style: { height: 40 },
+              "aria-label": "\u041C\u043E\u0439 \u043F\u0440\u043E\u0444\u0438\u043B\u044C",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                  "div",
+                  {
+                    className: "shrink-0 flex items-center justify-center text-muted-foreground",
+                    style: { width: RAIL_W },
+                    children: /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(import_lucide_react16.UserCircle, { size: 15 })
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { className: "flex-1 min-w-0 text-left text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider whitespace-nowrap text-muted-foreground truncate pr-2", children: user ? `${user.firstName} ${user.lastName}` : "\u041C\u043E\u0439 \u043F\u0440\u043E\u0444\u0438\u043B\u044C" })
+              ]
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
+            "button",
+            {
+              type: "button",
+              onClick: () => setTheme(isDark ? "light" : "dark"),
+              className: "w-full flex items-center hover:bg-rm-gray-2/50 transition-colors cursor-pointer",
+              style: { height: 40 },
+              "aria-label": isDark ? "\u0421\u0432\u0435\u0442\u043B\u0430\u044F \u0442\u0435\u043C\u0430" : "\u0422\u0451\u043C\u043D\u0430\u044F \u0442\u0435\u043C\u0430",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                  "div",
+                  {
+                    className: "shrink-0 flex items-center justify-center text-muted-foreground",
+                    style: { width: RAIL_W },
+                    children: isDark ? /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(import_lucide_react16.Moon, { size: 15 }) : /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(import_lucide_react16.Sun, { size: 15 })
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { className: "flex-1 min-w-0 text-left text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider whitespace-nowrap text-muted-foreground", children: isDark ? "\u0422\u0451\u043C\u043D\u0430\u044F \u0442\u0435\u043C\u0430" : "\u0421\u0432\u0435\u0442\u043B\u0430\u044F \u0442\u0435\u043C\u0430" })
+              ]
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)(
+            "button",
+            {
+              type: "button",
+              onClick: onLogout,
+              className: "w-full flex items-center hover:bg-rm-gray-2/50 transition-colors cursor-pointer",
+              style: { height: 40 },
+              "aria-label": "\u0412\u044B\u0439\u0442\u0438",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(
+                  "div",
+                  {
+                    className: "shrink-0 flex items-center justify-center text-muted-foreground",
+                    style: { width: RAIL_W },
+                    children: /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(import_lucide_react16.LogOut, { size: 15 })
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("span", { className: "flex-1 min-w-0 text-left text-[length:var(--text-12)] font-[family-name:var(--font-mono-family)] uppercase tracking-wider whitespace-nowrap text-muted-foreground", children: "\u0412\u044B\u0439\u0442\u0438" })
+              ]
+            }
+          )
+        ] })
+      ] })
+    }
+  );
+}
+function AdminShell({ children, ...sidebarProps }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("div", { className: "fixed inset-0 flex flex-col overflow-hidden bg-background", children: /* @__PURE__ */ (0, import_jsx_runtime69.jsxs)("div", { className: "flex flex-1 overflow-hidden", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime69.jsx)(AdminSidebar, { ...sidebarProps }),
+    /* @__PURE__ */ (0, import_jsx_runtime69.jsx)("main", { className: "flex flex-1 flex-col overflow-y-auto", children })
+  ] }) });
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AccordionFAQ,
+  AdminShell,
+  AdminSidebar,
   ArticleBody,
   ArticleCard,
   ArticleNav,

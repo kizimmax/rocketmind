@@ -16,6 +16,7 @@ import { ToasterProps } from 'sonner';
 import { Switch as Switch$1 } from '@base-ui/react/switch';
 import { Tabs as Tabs$1 } from '@base-ui/react/tabs';
 import { Tooltip as Tooltip$1 } from '@base-ui/react/tooltip';
+import { LucideIcon } from 'lucide-react';
 export { X as DialogCloseIcon } from 'lucide-react';
 
 declare function cn(...inputs: ClassValue[]): string;
@@ -1474,4 +1475,56 @@ type SiteHeaderProps = {
 };
 declare function SiteHeader({ basePath, className, nav, cta, }: SiteHeaderProps): react_jsx_runtime.JSX.Element;
 
-export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardTypeBadgeColor, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, ArticlePagination, type ArticlePaginationLink, type ArticlePaginationProps, type ArticleTableData, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionMini, type CTASectionMiniProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, DynamicForm, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type FactoidCardData, FactoidGrid, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, type FormChipsConfig, type FormConsentConfig, type FormConsentLink, type FormEntity, type FormFieldsConfig, type FormSuccessGift, type GlossaryIndex, type GlossaryIndexEntry, GlossaryList, type GlossaryListProps, GlossaryPopularRow, type GlossaryPopularRowProps, type GlossaryRenderConfig, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type ListCardData, ListCardGrid, type ListItemData, type LogoMarqueeItem, MaxIcon, MobileNav, ModalProvider, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderCta, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, applyGlossaryLinks, avatarVariants, badgeVariants, buildGlossaryRegex, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants, useFormModal };
+interface AdminShellSubSection {
+    id: string;
+    label: string;
+}
+interface AdminShellSection {
+    id: string;
+    href: string;
+    label: string;
+    Icon: LucideIcon;
+    subsections?: AdminShellSubSection[];
+    /** External link (renders with external icon, opens via href without client-side routing) */
+    external?: boolean;
+}
+interface AdminShellUser {
+    firstName: string;
+    lastName: string;
+}
+interface AdminSidebarProps {
+    /** Brand label shown in top bar (e.g. "CMS") */
+    brand: string;
+    /** Path to icon for dark-background (light icon) */
+    iconDarkPath: string;
+    /** Path to icon for light-background (dark icon) */
+    iconLightPath: string;
+    /** Navigation sections (already permission-filtered) */
+    sections: AdminShellSection[];
+    /** Current pathname (pass from `usePathname()`) */
+    pathname: string;
+    /** Authenticated user, or null while loading */
+    user: AdminShellUser | null;
+    /** Logout callback */
+    onLogout: () => void;
+    /** Guard navigation (return false to cancel). Optional. */
+    tryNavigate?: (href: string) => boolean;
+    /** Key used to persist pinned state in localStorage */
+    pinKey?: string;
+}
+declare function AdminSidebar({ brand, iconDarkPath, iconLightPath, sections, pathname, user, onLogout, tryNavigate, pinKey, }: AdminSidebarProps): react_jsx_runtime.JSX.Element;
+interface AdminShellProps {
+    brand: string;
+    iconDarkPath: string;
+    iconLightPath: string;
+    sections: AdminShellSection[];
+    pathname: string;
+    user: AdminShellUser | null;
+    onLogout: () => void;
+    tryNavigate?: (href: string) => boolean;
+    pinKey?: string;
+    children: ReactNode;
+}
+declare function AdminShell({ children, ...sidebarProps }: AdminShellProps): react_jsx_runtime.JSX.Element;
+
+export { AccordionFAQ, type AccordionFAQItem, type AccordionFAQProps, AdminShell, type AdminShellProps, type AdminShellSection, type AdminShellSubSection, type AdminShellUser, AdminSidebar, type AdminSidebarProps, ArticleBody, type ArticleBodyBlock, type ArticleBodyBlockType, type ArticleBodyProps, ArticleCard, type ArticleCardProps, type ArticleCardTypeBadgeColor, type ArticleCardVariant, type ArticleGalleryItem, ArticleNav, type ArticleNavItem, type ArticleNavProps, ArticlePagination, type ArticlePaginationLink, type ArticlePaginationProps, type ArticleTableData, Author, type AuthorProps, Avatar, AvatarFallback, AvatarImage, Badge, type BadgeSize, type BadgeVariant, type BreadcrumbItem, Breadcrumbs, type BreadcrumbsProps, Button, CTASectionDark, type CTASectionDarkProps, CTASectionMini, type CTASectionMiniProps, CTASectionYellow, type CTASectionYellowProps, Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, type ContactCard, type ContactCardItem, type ContactPersonData, type ContactSocial, ContactsSection, type ContactsSectionProps, DOT_GRID_LENS_DEFAULTS, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DotGridLens, type DotGridLensProps, DottedSurface, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuTrigger, DynamicForm, type Expert, type ExpertQuoteItem, ExpertQuoteStack, type ExpertQuoteStackProps, ExpertsSection, type ExpertsSectionProps, type FactoidCardData, FactoidGrid, type ForWhomFact, ForWhomSection, type ForWhomSectionProps, type FormChipsConfig, type FormConsentConfig, type FormConsentLink, type FormEntity, type FormFieldsConfig, type FormSuccessGift, type GlossaryIndex, type GlossaryIndexEntry, GlossaryList, type GlossaryListProps, GlossaryPopularRow, type GlossaryPopularRowProps, type GlossaryRenderConfig, type GlossaryScript, GlossaryScriptToggle, type GlossaryScriptToggleProps, type GlossaryTermItem, GlossaryWidget, type GlossaryWidgetProps, GlowingEffect, type HeroExpert, HeroExperts, type HeroExpertsProps, InfiniteLogoMarquee, type InfiniteLogoMarqueeProps, Input, InputOTP, type InputOTPProps, KeyThoughts, type KeyThoughtsProps, type ListCardData, ListCardGrid, type ListItemData, type LogoMarqueeItem, MaxIcon, MobileNav, ModalProvider, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, Note, NoteDescription, NoteEyebrow, NoteTitle, PartnershipBlock, type PartnershipBlockProps, type PartnershipLogo, type PartnershipPhoto, type ProcessDescriptionParagraph, type ProcessParticipant, ProcessSection, type ProcessSectionProps, type ProcessStep, ProductCard, type ProductCardExpert, type ProductCardProps, ProductImageCard, type ProductImageCardFactoid, type ProductImageCardProps, Radio, type ResultCard, ResultsSection, type ResultsSectionProps, RichText, type RichTextProps, RocketmindMenu, ScrollArea, ScrollBar, SearchCombobox, type SearchComboboxOption, SectionAsideChip, type SectionAsideChipCropMode, type SectionAsideChipProps, SectionAsideProductCard, type SectionAsideProductCardExpert, type SectionAsideProductCardProps, Separator, type ServiceCardData, ServicesSection, type ServicesSectionProps, ShowMore, ShowMorePanel, type ShowMorePanelProps, type ShowMoreProps, SiteFooter, type SiteFooterProps, SiteHeader, type SiteHeaderCta, type SiteHeaderProps, Skeleton, Slider, type SliderProps, type SocialKind, type StyledParagraph, type StyledParagraphColor, StyledParagraphs, type StyledParagraphsProps, type StyledParagraphsSize, type StyledParagraphsTheme, Switch, Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow, Tabs, TabsContent, TabsList, TabsTrigger, Tag, type TagProps, type TagSize, type TagState, TelegramIcon, Textarea, ThemeProvider, Toaster, type ToolCard, ToolsSection, type ToolsSectionProps, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, VideoPlayer, type VideoPlayerProps, VkIcon, WaveAnimation, type WaveAnimationProps, applyGlossaryLinks, avatarVariants, badgeVariants, buildGlossaryRegex, buttonVariants, checkboxBaseClassName, cn, getGlossaryTermLetter, getGlossaryTermScript, inputVariants, noteVariants, radioBaseClassName, repackBento, resolveStyledParagraphs, HEADER_NAV as rocketmindMenuItems, slugify as slugifyArticleHeading, styledParagraphClassName, tabsListVariants, tagVariants, textareaVariants, useFormModal };
