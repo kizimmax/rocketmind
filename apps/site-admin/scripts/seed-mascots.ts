@@ -9,16 +9,19 @@
  * идемпотентен: уже импортированные строки определяются по уникальному
  * imagePath и пропускаются.
  *
- * Запуск:
- *   cd apps/site-admin && \
- *   DATABASE_URL='...' npx tsx scripts/seed-mascots.ts
+ * Запуск (из apps/site-admin):
+ *   set -a && source .env.local && set +a && npx tsx scripts/seed-mascots.ts
  */
 
 import { readdirSync, statSync } from "node:fs";
 import path from "node:path";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 const MASCOTS_ROOT = path.resolve(__dirname, "..", "public", "ai-mascots");
 
@@ -72,4 +75,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });
