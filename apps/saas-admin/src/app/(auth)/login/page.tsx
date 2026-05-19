@@ -37,7 +37,7 @@ export default function LoginPage() {
     setError("");
     const result = await login(loginValue.trim(), password);
     if (result.ok) {
-      router.replace("/pages");
+      router.replace("/ai-agents");
     } else {
       setError(errorMessage(result.error));
       setPassword("");

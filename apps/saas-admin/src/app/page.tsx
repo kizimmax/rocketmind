@@ -10,7 +10,7 @@ export default function RootPage() {
 
   useEffect(() => {
     if (!isLoading) {
-      router.replace(isAuthed ? "/pages" : "/login");
+      router.replace(isAuthed ? "/ai-agents" : "/login");
     }
   }, [isAuthed, isLoading, router]);
 
