@@ -123,41 +123,34 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── Left column: основные поля ── */}
         <div className="space-y-4">
-          {/* Avatar */}
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setPicker(true)}
-              className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40 transition-colors hover:border-foreground/40"
-            >
-              {avatarUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <UserCircle className="h-10 w-10 text-muted-foreground" />
-              )}
-            </button>
-            <div className="flex flex-col gap-1 text-[length:var(--text-12)] text-muted-foreground">
-              <span>Аватар — маскот из библиотеки</span>
+          {/* Avatar + крупный инпут имени */}
+          <div className="flex items-start gap-4">
+            <div className="flex flex-col items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setPicker(true)}
-                className="text-foreground underline-offset-2 hover:underline"
+                className="flex h-20 w-20 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40 transition-colors hover:border-foreground/40"
+              >
+                {avatarUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <UserCircle className="h-10 w-10 text-muted-foreground" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPicker(true)}
+                className="text-[length:var(--text-12)] text-foreground underline-offset-2 hover:underline"
               >
                 Выбрать
               </button>
             </div>
-          </div>
-
-          {/* Name */}
-          <div>
-            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-              Имя
-            </label>
             <Input
               value={state.name}
               onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
-              placeholder="напр. Бизнес-наставник"
+              placeholder="Имя AI-эксперта"
+              className="h-20 flex-1 text-[length:var(--text-24)] font-bold uppercase tracking-tight"
             />
           </div>
 
