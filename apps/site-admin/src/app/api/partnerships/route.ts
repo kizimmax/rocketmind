@@ -14,9 +14,28 @@ interface PartnershipsData {
 
 const DEFAULT_DATA: PartnershipsData = { caption: "Партнёрства", title: "", description: "", logos: [], photos: [] };
 
+function hasContent(d: Partial<PartnershipsData> | null | undefined): boolean {
+  if (!d) return false;
+  return Boolean(
+    (d.title && d.title.trim()) ||
+      (d.description && d.description.trim()) ||
+      (Array.isArray(d.logos) && d.logos.length > 0) ||
+      (Array.isArray(d.photos) && d.photos.length > 0),
+  );
+}
+
 export async function GET() {
-  const data = readConfig<PartnershipsData>("partnerships.json") ?? DEFAULT_DATA;
-  return NextResponse.json(data);
+  // DB — primary source (sync с публичным сайтом, который читает оттуда).
+  // File config — fallback, если в DB пусто.
+  const dbRow = await prisma.systemConfig
+    .findUnique({ where: { key: "partnerships" } })
+    .catch(() => null);
+  const dbData = (dbRow?.value as Partial<PartnershipsData> | null) ?? null;
+  if (hasContent(dbData)) {
+    return NextResponse.json({ ...DEFAULT_DATA, ...dbData });
+  }
+  const fileData = readConfig<PartnershipsData>("partnerships.json") ?? DEFAULT_DATA;
+  return NextResponse.json(fileData);
 }
 
 export async function PUT(request: Request) {

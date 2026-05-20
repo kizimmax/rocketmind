@@ -19,6 +19,7 @@ export type BlockType =
   | "services"
   | "experts"
   | "partnerships"
+  | "partnershipsMini"
   | "aboutRocketmind"
   | "pageBottom"
   | "customSection"

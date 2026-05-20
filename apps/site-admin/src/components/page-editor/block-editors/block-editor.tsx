@@ -17,6 +17,7 @@ import { ProcessEditor } from "./process-editor";
 import { ServicesEditor } from "./services-editor";
 import { ExpertsEditor } from "./experts-editor";
 import { PartnershipsEditor } from "./partnerships-editor";
+import { PartnershipsMiniEditor } from "./partnerships-mini-editor";
 import { LogoMarqueeEditor } from "./logo-marquee-editor";
 import { AboutRocketmindEditor } from "./about-rocketmind-editor";
 import { CaseCardEditor } from "./case-card-editor";
@@ -71,6 +72,8 @@ export function BlockEditor({ block, sectionId, hasExperts, experts, onUpdate }:
       return <ExpertsEditor data={block.data} onUpdate={onUpdate} />;
     case "partnerships":
       return <PartnershipsEditor data={block.data} onUpdate={onUpdate} />;
+    case "partnershipsMini":
+      return <PartnershipsMiniEditor data={block.data} onUpdate={onUpdate} />;
     case "logoMarquee":
       return <LogoMarqueeEditor data={block.data} onUpdate={onUpdate} />;
     case "aboutRocketmind":

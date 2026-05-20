@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, Textarea, Checkbox } from "@rocketmind/ui";
+import { Button, Input, Textarea } from "@rocketmind/ui";
 import { apiFetch } from "@/lib/api-client";
 import { toast } from "sonner";
 import { UserCircle, Loader2, Trash2, AlertTriangle } from "lucide-react";
@@ -17,7 +17,10 @@ export type Agent = {
   avatarMascotId: string | null;
   avatarMascot: Mascot | null;
   avatarPath: string | null;
+  /** «Обучающие» ↔ targets ∋ "saas-teacher"; «Акселератор» ↔ targets ∋ "saas". */
   targets: string[];
+  /** Порядковый номер — определяет порядок в админке и в сайдбаре saas-teacher. */
+  serial: number;
   n8nWebhookUrl: string;
   n8nSecret: string | null;
   systemPrompt: string | null;
@@ -40,6 +43,7 @@ const EMPTY: Omit<Agent, "id" | "slug"> = {
   avatarMascot: null,
   avatarPath: null,
   targets: ["saas-teacher"],
+  serial: 0,
   n8nWebhookUrl: "",
   n8nSecret: null,
   systemPrompt: null,
@@ -54,15 +58,6 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
   const [picker, setPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-
-  function toggleTarget(t: string) {
-    setState((s) => ({
-      ...s,
-      targets: s.targets.includes(t)
-        ? s.targets.filter((x) => x !== t)
-        : [...s.targets, t],
-    }));
-  }
 
   async function handleSave() {
     if (!state.name.trim()) {
@@ -79,6 +74,7 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
         avatarMascotId: state.avatarMascotId,
         avatarPath: state.avatarPath,
         targets: state.targets,
+        serial: state.serial,
         n8nWebhookUrl: state.n8nWebhookUrl,
         n8nSecret: state.n8nSecret,
         systemPrompt: state.systemPrompt,
@@ -181,27 +177,29 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
             />
           </div>
 
-          {/* Targets */}
+          {/* Serial — порядковый номер для сортировки в списках. */}
           <div>
-            <div className="mb-1 text-[length:var(--text-12)] text-muted-foreground">
-              Привязка к SaaS
-            </div>
-            <div className="flex gap-4">
-              <label className="flex cursor-pointer items-center gap-2">
-                <Checkbox
-                  checked={state.targets.includes("saas-teacher")}
-                  onChange={() => toggleTarget("saas-teacher")}
-                />
-                <span className="text-[length:var(--text-14)]">saas-teacher</span>
-              </label>
-              <label className="flex cursor-pointer items-center gap-2">
-                <Checkbox
-                  checked={state.targets.includes("saas")}
-                  onChange={() => toggleTarget("saas")}
-                />
-                <span className="text-[length:var(--text-14)]">saas (R-акселератор)</span>
-              </label>
-            </div>
+            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
+              Порядковый номер
+            </label>
+            <Input
+              type="number"
+              min={0}
+              step={1}
+              value={state.serial}
+              onChange={(e) =>
+                setState((s) => ({
+                  ...s,
+                  serial: Number.isFinite(e.target.valueAsNumber)
+                    ? e.target.valueAsNumber
+                    : 0,
+                }))
+              }
+              className="max-w-[140px]"
+            />
+            <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground/70">
+              Определяет порядок в админке и в сайдбаре saas-teacher. По возрастанию.
+            </p>
           </div>
 
           {/* Webhook */}

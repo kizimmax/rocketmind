@@ -26,6 +26,13 @@ export async function GET() {
 
   const agents = program.agents
     .filter((row) => row.agent.targets.includes("saas-teacher"))
+    .sort((a, b) => {
+      // Сортируем по serial (по возрастанию). При равенстве — по имени.
+      const sa = a.agent.serial ?? 0;
+      const sb = b.agent.serial ?? 0;
+      if (sa !== sb) return sa - sb;
+      return a.agent.name.localeCompare(b.agent.name);
+    })
     .map((row) => ({
       id: row.agent.id,
       slug: row.agent.slug,

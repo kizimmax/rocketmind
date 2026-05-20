@@ -10,19 +10,22 @@ import { requirePermission } from "@/lib/auth";
 type BlockData = Record<string, unknown>;
 type Block = { id: string; type: string; enabled: boolean; order: number; data: BlockData };
 
-function buildBlocks(sectionId: string, slug: string, data: Record<string, unknown>): Block[] {
+function buildBlocks(
+  sectionId: string,
+  slug: string,
+  data: Record<string, unknown>,
+  partnerships: Record<string, unknown> | null,
+): Block[] {
   const blockTypesForSection: string[] =
     sectionId === "unique"
       ? slug === "home"
-        ? ["homeHero", "methodology", "homeSections"]
+        ? ["homeHero", "methodology", "homeSections", "partnershipsMini"]
         : slug === "cases-index"
         ? ["hero", "about"]
         : ["hero", "about", "tools", "projects", "process", "experts", "aboutRocketmind", "contacts", "pageBottom"]
       : sectionId === "cases"
       ? ["caseCard"]
       : DEFAULT_BLOCK_TYPES;
-
-  const partnerships = readConfig<Record<string, unknown>>("partnerships.json");
 
   const blocks = blockTypesForSection.map((type: string, i: number): Block => {
     let blockData: BlockData = {};
@@ -93,6 +96,21 @@ function buildBlocks(sectionId: string, slug: string, data: Record<string, unkno
         if (data.homeSections && typeof data.homeSections === "object") { blockData = data.homeSections as BlockData; enabled = true; }
         else { enabled = false; }
         break;
+      case "partnershipsMini": {
+        const pm = data.partnershipsMini;
+        if (pm === false) {
+          enabled = false;
+          blockData = {};
+        } else if (pm && typeof pm === "object") {
+          blockData = pm as BlockData;
+          enabled = true;
+        } else {
+          // default: блок включён, дефолтные тексты подставит UI-компонент
+          enabled = true;
+          blockData = {};
+        }
+        break;
+      }
       case "caseCard":
         if (data.caseCard && typeof data.caseCard === "object") { blockData = data.caseCard as BlockData; enabled = true; }
         else { enabled = false; }
@@ -136,14 +154,18 @@ function buildBlocks(sectionId: string, slug: string, data: Record<string, unkno
   return finalBlocks;
 }
 
-function pageToDto(p: {
-  id: string; slug: string; url: string; category: string; status: string; sortOrder: number;
-  content: unknown; menuTitle: string; menuDescription: string; cardTitle: string; cardDescription: string;
-  metaTitle: string; metaDescription: string; createdAt: Date; updatedAt: Date;
-}, index?: number) {
+function pageToDto(
+  p: {
+    id: string; slug: string; url: string; category: string; status: string; sortOrder: number;
+    content: unknown; menuTitle: string; menuDescription: string; cardTitle: string; cardDescription: string;
+    metaTitle: string; metaDescription: string; createdAt: Date; updatedAt: Date;
+  },
+  partnerships: Record<string, unknown> | null,
+  index?: number,
+) {
   const data = (p.content ?? {}) as Record<string, unknown>;
   const sectionId = p.category;
-  const blocks = buildBlocks(sectionId, p.slug, data);
+  const blocks = buildBlocks(sectionId, p.slug, data, partnerships);
 
   return {
     id: p.url.startsWith("/") ? p.url.slice(1) : p.url,
@@ -172,7 +194,25 @@ function pageToDto(p: {
 export async function GET(request: Request) {
   const gate = await requirePermission(request, "pages", "VIEW");
   if (gate instanceof NextResponse) return gate;
-  const allPages = await prisma.page.findMany({ orderBy: [{ category: "asc" }, { sortOrder: "asc" }] });
+
+  // Partnerships подгружаем ОДИН РАЗ на весь запрос. DB → file fallback.
+  // Раньше делалось на каждой странице внутри buildBlocks — это давало
+  // N последовательных запросов к одному и тому же systemConfig ряду
+  // и роняло время отклика админки в локалке.
+  const [allPages, partnershipsDbRow] = await Promise.all([
+    prisma.page.findMany({ orderBy: [{ category: "asc" }, { sortOrder: "asc" }] }),
+    prisma.systemConfig.findUnique({ where: { key: "partnerships" } }).catch(() => null),
+  ]);
+  const partnershipsFromDb = partnershipsDbRow?.value as Record<string, unknown> | null;
+  const partnershipsFromFile = readConfig<Record<string, unknown>>("partnerships.json");
+  const partnerships: Record<string, unknown> | null =
+    partnershipsFromDb &&
+    ((Array.isArray(partnershipsFromDb.logos) && (partnershipsFromDb.logos as unknown[]).length > 0) ||
+      (Array.isArray(partnershipsFromDb.photos) && (partnershipsFromDb.photos as unknown[]).length > 0) ||
+      (typeof partnershipsFromDb.title === "string" && partnershipsFromDb.title.trim()))
+      ? partnershipsFromDb
+      : (partnershipsFromFile ?? null);
+
   const grouped = new Map<string, typeof allPages>();
   for (const p of allPages) {
     if (!grouped.has(p.category)) grouped.set(p.category, []);
@@ -181,9 +221,9 @@ export async function GET(request: Request) {
 
   const result: ReturnType<typeof pageToDto>[] = [];
   for (const [, pages] of grouped) {
-    pages.forEach((p, index) => {
+    pages.forEach((p, i) => {
       try {
-        result.push(pageToDto(p, index));
+        result.push(pageToDto(p, partnerships, i));
       } catch { /* skip malformed */ }
     });
   }
@@ -232,5 +272,7 @@ export async function POST(request: Request) {
       content: content as Prisma.InputJsonValue,
     },
   });
-  return NextResponse.json(pageToDto(page, 0), { status: 201 });
+  // POST: создаём страницу, partnerships не нужен для новой пустой —
+  // буферный shared config подтянется при следующем GET.
+  return NextResponse.json(pageToDto(page, null, 0), { status: 201 });
 }

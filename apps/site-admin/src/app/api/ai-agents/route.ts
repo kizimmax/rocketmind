@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   const agents = await prisma.aiAgent.findMany({
     where,
     include: { avatarMascot: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ serial: "asc" }, { createdAt: "desc" }],
   });
   return NextResponse.json(agents);
 }
@@ -53,6 +53,7 @@ export async function POST(request: Request) {
       avatarMascotId: body.avatarMascotId || null,
       avatarPath: body.avatarPath || null,
       targets,
+      serial: Number.isFinite(Number(body.serial)) ? Number(body.serial) : 0,
       n8nWebhookUrl,
       n8nSecret: body.n8nSecret || null,
       systemPrompt: body.systemPrompt || null,

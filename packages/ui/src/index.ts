@@ -41,6 +41,7 @@ export * from './components/ui/slider';
 export * from './components/ui/tooltip';
 
 export * from './components/ui/partnership-block';
+export * from './components/ui/partnerships-mini';
 export * from './components/ui/product-card';
 export * from './components/ui/product-image-card';
 

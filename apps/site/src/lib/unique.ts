@@ -73,8 +73,16 @@ export type HomeSectionItem = {
   mobileTitle: string; description: string; catalogLabel: string; hiddenCardSlugs: string[];
 };
 export type HomeSectionsData = { sections: HomeSectionItem[] };
+export type HomePartnershipsMiniData = {
+  title: string;
+  description: string;
+  logos: Array<{ src: string; alt: string }>;
+};
 export type HomePageData = {
-  hero: HomeHeroData | null; methodology: HomeMethodologyData | null; sections: HomeSectionsData | null;
+  hero: HomeHeroData | null;
+  methodology: HomeMethodologyData | null;
+  sections: HomeSectionsData | null;
+  partnershipsMini: HomePartnershipsMiniData | null;
 };
 
 // ── Parsers ────────────────────────────────────────────────────────────────────
@@ -276,10 +284,23 @@ const HOME_HERO_DEFAULTS: HomeHeroData = {
   ],
 };
 
+const PARTNERSHIPS_MINI_DEFAULTS: HomePartnershipsMiniData = {
+  title: "Программы с ведущими бизнес-школами",
+  description:
+    "Обучаем топ-менеджеров крупных компаний, помогаем трансформировать бизнес с помощью бизнес-дизайна",
+  logos: [],
+};
+
 export async function getHomePage(): Promise<HomePageData> {
   try {
     const page = await prisma.page.findFirst({ where: { category: "unique", slug: "home", status: "published" } });
-    if (!page) return { hero: HOME_HERO_DEFAULTS, methodology: null, sections: null };
+    if (!page)
+      return {
+        hero: HOME_HERO_DEFAULTS,
+        methodology: null,
+        sections: null,
+        partnershipsMini: PARTNERSHIPS_MINI_DEFAULTS,
+      };
 
     const data = (page.content && typeof page.content === "object" ? page.content : {}) as Record<string, unknown>;
 
@@ -310,8 +331,40 @@ export async function getHomePage(): Promise<HomePageData> {
       })) : [],
     } : null;
 
-    return { hero, methodology, sections };
+    // partnershipsMini: false = блок выключен, объект = данные, отсутствие = дефолты.
+    const pmRaw = data.partnershipsMini;
+    let partnershipsMini: HomePartnershipsMiniData | null;
+    if (pmRaw === false) {
+      partnershipsMini = null;
+    } else if (pmRaw && typeof pmRaw === "object") {
+      const o = pmRaw as Record<string, unknown>;
+      partnershipsMini = {
+        title: typeof o.title === "string" && o.title.trim()
+          ? o.title
+          : PARTNERSHIPS_MINI_DEFAULTS.title,
+        description: typeof o.description === "string" && o.description.trim()
+          ? o.description
+          : PARTNERSHIPS_MINI_DEFAULTS.description,
+        logos: Array.isArray(o.logos)
+          ? (o.logos as Array<Record<string, unknown>>)
+              .map((l) => ({
+                src: typeof l.src === "string" ? l.src : "",
+                alt: typeof l.alt === "string" ? l.alt : "",
+              }))
+              .filter((l) => l.src.length > 0)
+          : [],
+      };
+    } else {
+      partnershipsMini = PARTNERSHIPS_MINI_DEFAULTS;
+    }
+
+    return { hero, methodology, sections, partnershipsMini };
   } catch {
-    return { hero: HOME_HERO_DEFAULTS, methodology: null, sections: null };
+    return {
+      hero: HOME_HERO_DEFAULTS,
+      methodology: null,
+      sections: null,
+      partnershipsMini: PARTNERSHIPS_MINI_DEFAULTS,
+    };
   }
 }

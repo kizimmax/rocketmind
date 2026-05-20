@@ -281,12 +281,21 @@ components:
         targets:
           type: array
           description: |
-            В какие SaaS-продукты агент подключён. Фронт фильтрует по этому массиву:
-            saas-teacher показывает только агентов с `targets ∋ saas-teacher`. Чекбоксы
-            в редакторе агента позволяют подключить одного агента к нескольким продуктам.
+            В какие SaaS-продукты агент подключён. **В UI чекбоксов больше нет** —
+            определяется подразделом «Обучающие» (`targets ∋ saas-teacher`) или
+            «Акселератор» (`targets ∋ saas`) в админке. Фронт фильтрует список по
+            этому массиву.
           items:
             type: string
-            enum: [saas-teacher, saas-akselerator]
+            enum: [saas-teacher, saas]
+        serial:
+          type: integer
+          minimum: 0
+          default: 0
+          description: |
+            **Порядковый номер** для сортировки в списках админки и в сайдбаре
+            saas-teacher. По возрастанию (0 = верх). Алексей задаёт вручную при
+            создании/редактировании.
         avatarMascotId:
           type: string
           nullable: true

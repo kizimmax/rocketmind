@@ -89,6 +89,7 @@ export const BLOCK_TYPES: Record<BlockType, { label: string; description: string
   services: { label: "Услуги", description: "Бенто-сетка карточек услуг" },
   experts: { label: "Эксперты", description: "Карточки экспертов продукта" },
   partnerships: { label: "Партнёрства", description: "Блок партнёрств с бизнес-школами (общий)" },
+  partnershipsMini: { label: "Партнёрства (мини)", description: "Жёлтая полоса с заголовком, подписью и логотипами — на главной" },
   aboutRocketmind: { label: "О Rocketmind", description: "Блок о компании с AI-агентами" },
   pageBottom: { label: "Кейсы + CTA", description: "Секция кейсов и финальный CTA" },
   customSection: { label: "Произвольный блок", description: "Универсальный блок на основе «О продукте»" },

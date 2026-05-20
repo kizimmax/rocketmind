@@ -39,6 +39,7 @@ const BLOCK_LABELS: Record<string, string> = {
   process: "Процесс",
   experts: "Эксперты",
   aboutRocketmind: "О Rocketmind",
+  partnershipsMini: "Партнёрства (мини)",
   pageBottom: "Низ страницы",
 };
 

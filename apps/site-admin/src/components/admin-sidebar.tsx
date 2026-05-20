@@ -42,15 +42,12 @@ const allSections: SiteAdminSection[] = [
   { id: "testimonials", href: "/testimonials", label: "Отзывы", Icon: MessageSquareQuote, permissionPath: "testimonials" },
   { id: "cta-forms", href: "/cta-forms", label: "CTA и формы", Icon: MousePointerClick, permissionPath: "cta-forms" },
   { id: "submissions", href: "/submissions", label: "Заявки", Icon: Inbox, permissionPath: "submissions" },
-  { id: "ai-agents", href: "/ai-agents", label: "AI-эксперты", Icon: Bot, permissionPath: "ai-agents" },
-  { id: "programs", href: "/programs", label: "Программы", Icon: CalendarDays, permissionPath: "programs" },
   { id: "users", href: "/users", label: "Доступы к CMS сайта", Icon: ShieldCheck, rolesAllowed: ["SUPER_ADMIN", "ADMIN"] },
   { id: "audit-log", href: "/audit-log", label: "Аудит-лог", Icon: ScrollText, rolesAllowed: ["SUPER_ADMIN"] },
   { id: "system", href: "/system", label: "Системные", Icon: Settings, permissionPath: "system" },
   { id: "redirects", href: "/redirects", label: "Редиректы", Icon: ArrowLeftRight, permissionPath: "redirects" },
-  // Cross-links to SaaS admin (visible only to SUPER_ADMIN). After site-admin
-  // SaaS cleanup, the local /ai-agents and /programs entries above will be
-  // removed; only these cross-links will remain as the way to manage SaaS data.
+  // SaaS admin cross-links (видны только SUPER_ADMIN). Управление AI-экспертами
+  // и программами теперь живёт в saas-admin — отсюда только переходы.
   {
     id: "saas-ai-agents",
     href: `${SAAS_ADMIN_URL}/ai-agents`,

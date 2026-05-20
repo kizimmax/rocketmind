@@ -60,6 +60,10 @@ export async function PATCH(
   if ("n8nSecret" in body) data.n8nSecret = body.n8nSecret || null;
   if ("systemPrompt" in body) data.systemPrompt = body.systemPrompt || null;
   if ("notes" in body) data.notes = body.notes || null;
+  if ("serial" in body) {
+    const n = Number(body.serial);
+    if (Number.isFinite(n)) data.serial = Math.trunc(n);
+  }
 
   const targets = validateTargets(body.targets);
   if (targets !== null) {

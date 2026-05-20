@@ -787,7 +787,7 @@ export function AsideLogosEditor({
 
 // ── Picker-диалог: библиотека + загрузка SVG ────────────────────────────────
 
-function LogoPickerDialog({
+export function LogoPickerDialog({
   open,
   onOpenChange,
   onPick,

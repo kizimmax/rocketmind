@@ -7,6 +7,7 @@ import { Button, Input, Textarea } from "@rocketmind/ui";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-dialog";
 import { NbspInput } from "@/components/system/nbsp-input";
+import { PartnershipsEditor } from "@/components/page-editor/block-editors/partnerships-editor";
 
 const CATEGORY_DEFS: Array<{ id: CategoryId; label: string; route: string }> = [
   {
@@ -77,13 +78,19 @@ export function ProductCategoriesEditor() {
   const [saved, setSaved] = useState<Record<CategoryId, Required<CategorySeo>>>(
     draft,
   );
+  // Partnerships block — общий с academy product page editor, сохраняется
+  // через `/api/partnerships` (DB + file).
+  const [partnershipsDraft, setPartnershipsDraft] = useState<Record<string, unknown>>({});
+  const [partnershipsSaved, setPartnershipsSaved] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   const [showUnsaved, setShowUnsaved] = useState(false);
   const [navigateTarget, setNavigateTarget] = useState<string | null>(null);
 
-  const isDirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  const isDirty =
+    JSON.stringify(draft) !== JSON.stringify(saved) ||
+    JSON.stringify(partnershipsDraft) !== JSON.stringify(partnershipsSaved);
 
   useEffect(() => {
     void load();
@@ -117,18 +124,27 @@ export function ProductCategoriesEditor() {
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/product-categories");
-      const data = (await res.json()) as {
+      const [catRes, partRes] = await Promise.all([
+        fetch("/api/product-categories"),
+        fetch("/api/partnerships"),
+      ]);
+      const catData = (await catRes.json()) as {
         categories?: Array<{ id: CategoryId; seo?: CategorySeo }>;
       };
       const next = Object.fromEntries(
         CATEGORY_DEFS.map((c) => {
-          const found = (data.categories ?? []).find((x) => x.id === c.id);
+          const found = (catData.categories ?? []).find((x) => x.id === c.id);
           return [c.id, fromServer(found?.seo)];
         }),
       ) as Record<CategoryId, Required<CategorySeo>>;
       setDraft(next);
       setSaved(next);
+
+      if (partRes.ok) {
+        const partData = (await partRes.json()) as Record<string, unknown>;
+        setPartnershipsDraft(partData);
+        setPartnershipsSaved(partData);
+      }
     } catch {
       showToast("error", "Не удалось загрузить категории");
     } finally {
@@ -139,20 +155,33 @@ export function ProductCategoriesEditor() {
   async function handleSave(): Promise<boolean> {
     setSaving(true);
     try {
-      const payload = {
+      const catPayload = {
         categories: CATEGORY_DEFS.map((c) => ({
           id: c.id,
           seo: toServer(draft[c.id]),
         })),
       };
-      const res = await fetch("/api/product-categories", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      const partnershipsDirty =
+        JSON.stringify(partnershipsDraft) !== JSON.stringify(partnershipsSaved);
+      const [catRes, partRes] = await Promise.all([
+        fetch("/api/product-categories", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(catPayload),
+        }),
+        partnershipsDirty
+          ? fetch("/api/partnerships", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(partnershipsDraft),
+            })
+          : Promise.resolve(null),
+      ]);
+      if (!catRes.ok) throw new Error(await catRes.text());
+      if (partRes && !partRes.ok) throw new Error(await partRes.text());
       setSaved(draft);
-      showToast("success", "Категории сохранены");
+      setPartnershipsSaved(partnershipsDraft);
+      showToast("success", "Сохранено");
       return true;
     } catch {
       showToast("error", "Ошибка при сохранении");
@@ -164,6 +193,11 @@ export function ProductCategoriesEditor() {
 
   function handleReset() {
     setDraft(saved);
+    setPartnershipsDraft(partnershipsSaved);
+  }
+
+  function handlePartnershipsUpdate(patch: Record<string, unknown>) {
+    setPartnershipsDraft((prev) => ({ ...prev, ...patch }));
   }
 
   // ── Unsaved-changes dialog handlers ───────────────────────────────────────
@@ -280,6 +314,12 @@ export function ProductCategoriesEditor() {
                   />
                 </label>
               </div>
+              {cat.id === "academy" && (
+                <PartnershipsAcademyWidget
+                  data={partnershipsDraft}
+                  onUpdate={handlePartnershipsUpdate}
+                />
+              )}
             </div>
           );
         })}
@@ -324,6 +364,33 @@ export function ProductCategoriesEditor() {
         onDiscard={handleDiscardAndNavigate}
         onSave={handleSaveAndNavigate}
       />
+    </div>
+  );
+}
+
+// ── Partnerships widget (под секцией «Онлайн-школа») ────────────────────────
+// Обёртка над общим PartnershipsEditor: переиспользует ту же UI-логику, что
+// и редактор блока на странице продукта academy. Сохраняется через общий
+// save в ProductCategoriesEditor (→ /api/partnerships, DB + file).
+
+function PartnershipsAcademyWidget({
+  data,
+  onUpdate,
+}: {
+  data: Record<string, unknown>;
+  onUpdate: (patch: Record<string, unknown>) => void;
+}) {
+  return (
+    <div className="mt-2 flex flex-col gap-3 rounded-sm border border-border bg-[#0A0A0A]/30 p-4">
+      <div className="flex items-baseline justify-between gap-3">
+        <h4 className="text-[length:var(--text-13)] font-semibold text-foreground">
+          Партнёрства (общий блок)
+        </h4>
+        <span className="text-[length:var(--text-11)] text-muted-foreground">
+          Используется на всех страницах академии
+        </span>
+      </div>
+      <PartnershipsEditor data={data} onUpdate={onUpdate} />
     </div>
   );
 }

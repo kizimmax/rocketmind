@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Download, Loader2, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@rocketmind/ui";
 
 // react-pdf тянет pdfjs worker и DOMMatrix — только в клиенте и только
@@ -16,9 +17,9 @@ const PdfGallery = dynamic(() => import("./pdf-gallery").then((m) => m.PdfGaller
 });
 
 export interface FilePreviewFile {
-  /** Прямая ссылка на файл (например `/media/uploads/<slug>/<hash>.pdf`). */
+  /** Прямая ссылка на файл (например `/uploads/<slug>/<hash>.pdf`). */
   url: string;
-  /** Оригинальное имя файла (для скачивания и заголовка окна). */
+  /** Оригинальное имя файла. */
   fileName: string;
   /** Отображаемое имя (fallback → fileName). */
   displayName?: string;
@@ -29,17 +30,42 @@ interface Props {
   onClose: () => void;
 }
 
-function detectKind(url: string): "pdf" | "image" | "other" {
+type Kind = "pdf" | "image" | "office" | "other";
+
+const IMAGE_EXTS = ["jpg", "jpeg", "png", "webp", "gif", "avif", "svg"];
+const OFFICE_EXTS = ["doc", "docx", "xls", "xlsx", "ppt", "pptx"];
+
+function detectKind(url: string): Kind {
   const ext = (url.split("?")[0].split("#")[0].split(".").pop() || "").toLowerCase();
   if (ext === "pdf") return "pdf";
-  if (["jpg", "jpeg", "png", "webp", "gif", "avif", "svg"].includes(ext)) return "image";
+  if (IMAGE_EXTS.includes(ext)) return "image";
+  if (OFFICE_EXTS.includes(ext)) return "office";
   return "other";
+}
+
+/**
+ * Office Online Viewer требует абсолютный публичный URL — на localhost он
+ * не сможет дотянуться до файла. Возвращаем embed URL только когда мы на
+ * не-localhost origin'е.
+ */
+function buildOfficeEmbed(fileUrl: string, origin: string): string | null {
+  if (!origin) return null;
+  if (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)/i.test(origin)) return null;
+  const abs = fileUrl.startsWith("http") ? fileUrl : `${origin}${fileUrl}`;
+  return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(abs)}`;
 }
 
 export function FilePreviewModal({ file, onClose }: Props) {
   const open = file !== null;
   const title = file ? file.displayName || file.fileName : "";
   const kind = file ? detectKind(file.url) : "other";
+
+  const [origin, setOrigin] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") setOrigin(window.location.origin);
+  }, []);
+
+  const officeEmbed = file && kind === "office" ? buildOfficeEmbed(file.url, origin) : null;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -55,29 +81,14 @@ export function FilePreviewModal({ file, onClose }: Props) {
           <h2 className="truncate font-[family-name:var(--font-mono-family)] text-[length:var(--text-14)] uppercase tracking-[0.02em]">
             {title || "Файл"}
           </h2>
-          <div className="flex items-center gap-2 shrink-0">
-            {file && (
-              <a
-                href={file.url}
-                download={file.fileName || undefined}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Скачать"
-                className="flex h-8 items-center gap-1.5 rounded-sm border border-[#404040] bg-transparent px-2.5 text-[length:var(--text-12)] text-[color:var(--rm-gray-fg-main)] transition-colors hover:border-[color:var(--rm-yellow-100)] hover:text-[color:var(--rm-yellow-100)]"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Скачать
-              </a>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              title="Закрыть"
-              className="flex h-8 w-8 items-center justify-center rounded-sm text-[color:var(--rm-gray-fg-main)] transition-colors hover:bg-[#1A1A1A]"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            title="Закрыть"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-[color:var(--rm-gray-fg-main)] transition-colors hover:bg-[#1A1A1A]"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </header>
 
         <div className="bg-[#000000]">
@@ -92,19 +103,26 @@ export function FilePreviewModal({ file, onClose }: Props) {
               />
             </div>
           )}
-          {file && kind === "other" && (
+          {file && kind === "office" && officeEmbed && (
+            <iframe
+              key={officeEmbed}
+              src={officeEmbed}
+              title={title}
+              className="h-[80vh] w-full border-0 bg-[#0A0A0A]"
+            />
+          )}
+          {file && kind === "office" && !officeEmbed && (
             <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
               <p className="text-[length:var(--text-14)] leading-[1.4] text-[color:var(--rm-gray-fg-sub)]">
-                Предпросмотр для этого типа файла недоступен — скачайте и откройте в родном приложении.
+                Предпросмотр Office-документов доступен только на опубликованном сайте.
               </p>
-              <a
-                href={file.url}
-                download={file.fileName || undefined}
-                className="flex h-9 items-center gap-2 rounded-sm bg-[color:var(--rm-yellow-100)] px-3 text-[length:var(--text-13)] font-medium text-[color:var(--rm-yellow-fg)] transition-colors hover:bg-[color:var(--rm-yellow-700)]"
-              >
-                <Download className="h-4 w-4" />
-                Скачать
-              </a>
+            </div>
+          )}
+          {file && kind === "other" && (
+            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+              <p className="text-[length:var(--text-14)] leading-[1.4] text-[color:var(--rm-gray-fg-sub)]">
+                Предпросмотр для этого типа файла недоступен.
+              </p>
             </div>
           )}
         </div>

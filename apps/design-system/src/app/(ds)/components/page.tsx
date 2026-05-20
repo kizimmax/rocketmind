@@ -1116,13 +1116,13 @@ export default function ComponentsPage() {
               </div>
             </div>
             <div className={`px-4 py-2 bg-[var(--rm-gray-1)] border-b border-t border-border`}>
-              <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Slim white 2px · <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)] normal-case">.rm-scrollbar-white-2</code></p>
+              <p className={`text-[10px] ${mono} uppercase tracking-wider text-muted-foreground`}>Invisible scrollbar · <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)] normal-case">.rm-scrollbar-invisible</code></p>
             </div>
             <div className="p-6">
               <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-wider text-muted-foreground mb-3`}>
-                Используется на акцентных aside-панелях (см. GlossaryWidget на /media). 2px полоска цвета <code className="px-1 py-0.5 bg-rm-gray-2 rounded-sm text-[length:var(--text-12)]">--rm-white</code>, прибита к правому краю плашки.
+                Скролл работает (wheel/touch/keyboard), но визуально полоски нет. Используется в GlossaryWidget на /media и других aside-панелях, где DS не хочет видимой полосы.
               </p>
-              <div className="rm-scrollbar-white-2 h-48 overflow-y-auto rounded-sm bg-[var(--rm-gray-1)] p-4">
+              <div className="rm-scrollbar-invisible h-48 overflow-y-auto rounded-sm bg-[var(--rm-gray-1)] p-4">
                 <div className="space-y-2">
                   {Array.from({ length: 30 }, (_, i) => (
                     <p key={i} className="text-[length:var(--text-14)] text-foreground">

@@ -192,6 +192,12 @@ export async function PUT(
     homeHero: enabled(block("homeHero")),
     methodology: enabled(block("methodology")),
     homeSections: enabled(block("homeSections")),
+    partnershipsMini: (() => {
+      const b = block("partnershipsMini");
+      if (b?.enabled === false) return false;
+      const d = (b?.data ?? {}) as Record<string, unknown>;
+      return Object.keys(d).length > 0 ? d : null;
+    })(),
     hero: enabled(heroBlock),
     logoMarquee: block("logoMarquee")?.enabled === false ? false : null,
     about: enabled(aboutBlock),

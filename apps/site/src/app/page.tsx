@@ -1,5 +1,6 @@
 import { HeroSection } from "@/components/sections/HeroSection";
 import { PageBottom } from "@/components/sections/PageBottom";
+import { PartnershipsMiniSection } from "@/components/sections/PartnershipsMiniSection";
 import { PlatformOverview } from "@/components/sections/PlatformOverview";
 import { ServicesGrid } from "@/components/sections/ServicesGrid";
 
@@ -15,6 +16,7 @@ export default function RocketmindPage() {
       <HeroSection />
       <PlatformOverview />
       <ServicesGrid />
+      <PartnershipsMiniSection />
       <PageBottom />
     </>
   );

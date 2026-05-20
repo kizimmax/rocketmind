@@ -1,13 +1,14 @@
 "use client";
 
-import { useRef } from "react";
-import { Upload, ImagePlus } from "lucide-react";
+import { useRef, useState } from "react";
+import { Upload, ImagePlus, X, Plus, Image as ImageIcon } from "lucide-react";
 import { InlineEdit } from "@/components/inline-edit";
 import {
   ParagraphsEditor,
   resolveParagraphs,
   type StyledParagraph,
 } from "@/components/paragraphs-editor";
+import { LogoPickerDialog } from "@/components/media/aside-item-editors";
 
 interface PartnershipsEditorProps {
   data: Record<string, unknown>;
@@ -19,6 +20,7 @@ type Photo = { src: string; alt?: string };
 
 export function PartnershipsEditor({ data, onUpdate }: PartnershipsEditorProps) {
   const photoInputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
+  const [pickerOpenIndex, setPickerOpenIndex] = useState<number | null>(null);
 
   const caption = (data.caption as string) || "Партнёрства";
   const title = (data.title as string) || "Программы с ведущими бизнес-школами";
@@ -56,6 +58,51 @@ export function PartnershipsEditor({ data, onUpdate }: PartnershipsEditorProps) 
     e.target.value = "";
   }
 
+  function handlePhotoRemove(index: number) {
+    const updated = [...photoSlots];
+    updated[index] = null;
+    onUpdate({ photos: updated.filter((p): p is Photo => p !== null && Boolean(p.src)) });
+  }
+
+  // ── Logo grid: 2 columns, multiple rows ─────────────────────────────────
+  // Логотипы хранятся плоским массивом, отображаются по 2 в ряд.
+  // `minRows` — минимальное число рядов, видимых в редакторе. Растёт по
+  // клику «Добавить ряд» (даёт пустые слоты под выбор). Сжимается при
+  // удалении ряда. Базово ≥1, чтобы пустой блок всё равно показывал слоты.
+  const [minRows, setMinRows] = useState(1);
+  const rowsFromLogos = Math.ceil(logos.length / 2);
+  const totalRows = Math.max(minRows, rowsFromLogos, 1);
+  const visibleSlotCount = totalRows * 2;
+  const visibleSlots: (Logo | null)[] = [];
+  for (let i = 0; i < visibleSlotCount; i++) {
+    visibleSlots.push(logos[i] || null);
+  }
+
+  function setLogoAt(index: number, src: string) {
+    const next = [...visibleSlots];
+    next[index] = { src, alt: "" };
+    onUpdate({ logos: next.filter((l): l is Logo => l !== null && Boolean(l.src)) });
+  }
+
+  function clearLogoAt(index: number) {
+    const next = [...visibleSlots];
+    next[index] = null;
+    onUpdate({ logos: next.filter((l): l is Logo => l !== null && Boolean(l.src)) });
+  }
+
+  function addLogoRow() {
+    setMinRows(totalRows + 1);
+  }
+
+  function removeRow(rowIndex: number) {
+    const start = rowIndex * 2;
+    const next = [...visibleSlots];
+    next.splice(start, 2);
+    const filled = next.filter((l): l is Logo => l !== null && Boolean(l.src));
+    onUpdate({ logos: filled });
+    setMinRows((r) => Math.max(1, r - 1));
+  }
+
   return (
     <div className="rounded-sm bg-[#0A0A0A] px-5 py-10 md:px-8 xl:px-14">
       {/* Shared badge */}
@@ -68,10 +115,10 @@ export function PartnershipsEditor({ data, onUpdate }: PartnershipsEditorProps) 
         </span>
       </div>
 
-      {/* ── Design-faithful layout ── */}
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-10">
-        {/* Left: text content */}
-        <div className="flex flex-col gap-8 lg:max-w-[560px]">
+      {/* ── Design-faithful layout — 50/50 like AboutProduct ── */}
+      <div className="flex flex-col lg:flex-row lg:items-start gap-10">
+        {/* Left: text content (1/2 ширины, контент капится 560px) */}
+        <div className="flex flex-col gap-8 lg:w-1/2 lg:shrink-0 lg:max-w-[560px]">
           {/* Caption + Title + Description — inline editable */}
           <div className="flex flex-col gap-2">
             <InlineEdit
@@ -106,23 +153,55 @@ export function PartnershipsEditor({ data, onUpdate }: PartnershipsEditorProps) 
             </div>
           </div>
 
-          {/* Partner logos — static display */}
-          {logos.length > 0 && (
-            <div className="flex items-center gap-8">
-              {logos.map((logo, i) => (
-                <img
-                  key={i}
-                  src={logo.src}
-                  alt={logo.alt}
-                  className="h-auto w-auto max-h-[56px] max-w-[45%] object-contain"
-                />
-              ))}
+          {/* ── Editable logo grid (2 columns, multiple rows) ───────────── */}
+          <div className="flex flex-col gap-3">
+            <span className="font-[family-name:var(--font-mono-family)] text-[length:var(--text-11)] uppercase tracking-[0.08em] text-[#939393]">
+              Логотипы партнёров
+            </span>
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: totalRows }).map((_, rowIdx) => {
+                const left = visibleSlots[rowIdx * 2] || null;
+                const right = visibleSlots[rowIdx * 2 + 1] || null;
+                return (
+                  <div
+                    key={rowIdx}
+                    className="group/logo-row grid grid-cols-[1fr_1fr_auto] items-center gap-4"
+                  >
+                    <LogoSlot
+                      logo={left}
+                      onPick={() => setPickerOpenIndex(rowIdx * 2)}
+                      onClear={() => clearLogoAt(rowIdx * 2)}
+                    />
+                    <LogoSlot
+                      logo={right}
+                      onPick={() => setPickerOpenIndex(rowIdx * 2 + 1)}
+                      onClear={() => clearLogoAt(rowIdx * 2 + 1)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeRow(rowIdx)}
+                      title="Удалить ряд"
+                      className="flex h-7 w-7 items-center justify-center rounded-sm text-[#939393] opacity-0 transition-all hover:bg-[#ED4843]/10 hover:text-[#ED4843] group-hover/logo-row:opacity-100"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+              <button
+                type="button"
+                onClick={addLogoRow}
+                className="flex items-center justify-center gap-1.5 border border-dashed border-[#404040] py-2.5 text-[length:var(--text-12)] text-[#939393] transition-colors hover:border-[#FFCC00] hover:text-[#FFCC00]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Добавить ряд
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Right: 2×2 photo grid — replaceable on hover */}
-        <div className="grid grid-cols-2 gap-4 lg:w-[696px] shrink-0">
+        {/* Right: 2×2 photo grid — 1/2 ширины, кап 696px */}
+        <div className="grid grid-cols-2 gap-4 lg:w-1/2 lg:max-w-[696px]">
           {photoSlots.map((photo, i) => (
             <div key={i} className="group/photo relative aspect-[340/252] overflow-hidden">
               {photo?.src ? (
@@ -132,17 +211,25 @@ export function PartnershipsEditor({ data, onUpdate }: PartnershipsEditorProps) 
                     alt={photo.alt || ""}
                     className="h-full w-full object-cover"
                   />
-                  {/* Replace overlay on hover */}
-                  <button
-                    type="button"
-                    onClick={() => photoInputRefs.current[i]?.click()}
-                    className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover/photo:opacity-100"
-                  >
-                    <div className="flex items-center gap-1.5 rounded-sm bg-[#1a1a1a]/90 px-3 py-1.5 text-[#F0F0F0] backdrop-blur">
+                  {/* Hover-оверлей: заменить + удалить */}
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/55 opacity-0 transition-opacity group-hover/photo:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => photoInputRefs.current[i]?.click()}
+                      className="flex items-center gap-1.5 rounded-sm bg-[#1a1a1a]/90 px-3 py-1.5 text-[#F0F0F0] backdrop-blur transition-colors hover:bg-[#252525]"
+                    >
                       <Upload className="h-3.5 w-3.5" />
                       <span className="text-[length:var(--text-12)]">Заменить</span>
-                    </div>
-                  </button>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePhotoRemove(i)}
+                      title="Удалить фото"
+                      className="flex h-8 w-8 items-center justify-center rounded-sm bg-[#1a1a1a]/90 text-[#F0F0F0] backdrop-blur transition-colors hover:bg-[#ED4843]/20 hover:text-[#ED4843]"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </>
               ) : (
                 <button
@@ -167,6 +254,72 @@ export function PartnershipsEditor({ data, onUpdate }: PartnershipsEditorProps) 
           ))}
         </div>
       </div>
+
+      <LogoPickerDialog
+        open={pickerOpenIndex !== null}
+        onOpenChange={(v) => !v && setPickerOpenIndex(null)}
+        onPick={(src) => {
+          if (pickerOpenIndex !== null) {
+            setLogoAt(pickerOpenIndex, src);
+            setPickerOpenIndex(null);
+          }
+        }}
+      />
     </div>
+  );
+}
+
+// ── Logo slot subcomponent ──────────────────────────────────────────────────
+
+function LogoSlot({
+  logo,
+  onPick,
+  onClear,
+}: {
+  logo: Logo | null;
+  onPick: () => void;
+  onClear: () => void;
+}) {
+  if (logo?.src) {
+    return (
+      <div className="group/logo-slot relative flex h-14 items-center justify-start">
+        <img
+          src={logo.src}
+          alt={logo.alt || ""}
+          className="h-auto max-h-[56px] w-auto max-w-full object-contain"
+        />
+        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/55 opacity-0 transition-opacity group-hover/logo-slot:opacity-100">
+          <button
+            type="button"
+            onClick={onPick}
+            title="Заменить логотип"
+            className="flex h-7 items-center gap-1.5 rounded-sm bg-[#1a1a1a]/90 px-2.5 text-[length:var(--text-11)] text-[#F0F0F0] backdrop-blur transition-colors hover:bg-[#252525]"
+          >
+            <ImageIcon className="h-3 w-3" />
+            Заменить
+          </button>
+          <button
+            type="button"
+            onClick={onClear}
+            title="Очистить"
+            className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#1a1a1a]/90 text-[#F0F0F0] backdrop-blur transition-colors hover:bg-[#ED4843]/20 hover:text-[#ED4843]"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      className="flex h-14 items-center justify-center border border-dashed border-[#404040] text-[#939393] transition-colors hover:border-[#FFCC00] hover:text-[#FFCC00]"
+    >
+      <div className="flex items-center gap-1.5">
+        <ImageIcon className="h-3.5 w-3.5" />
+        <span className="text-[length:var(--text-11)]">Выбрать логотип</span>
+      </div>
+    </button>
   );
 }

@@ -2,20 +2,39 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
 import { Button, Input } from "@rocketmind/ui";
 import { Plus, UserCircle, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { Agent } from "./agent-form";
 
+type AgentSection = "teaching" | "akselerator";
+const SECTION_TARGET: Record<AgentSection, string> = {
+  teaching: "saas-teacher",
+  akselerator: "saas",
+};
+const SECTION_LABEL: Record<AgentSection, string> = {
+  teaching: "Обучающие",
+  akselerator: "Акселератор",
+};
+
 export default function AiAgentsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sectionParam = searchParams?.get("section");
+  const section: AgentSection =
+    sectionParam === "akselerator" ? "akselerator" : "teaching";
+
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
+
+  // Фильтр по таргетам — Обучающие = "saas-teacher", Акселератор = "saas".
+  const targetForSection = SECTION_TARGET[section];
+  const filtered = agents.filter((a) => a.targets.includes(targetForSection));
 
   function load() {
     setLoading(true);
@@ -38,7 +57,12 @@ export default function AiAgentsPage() {
       const res = await apiFetch("/api/ai-agents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, targets: ["saas-teacher"], n8nWebhookUrl: "" }),
+        body: JSON.stringify({
+          name,
+          // Категория определяется текущим подразделом — чекбокса больше нет.
+          targets: [targetForSection],
+          n8nWebhookUrl: "",
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -58,7 +82,7 @@ export default function AiAgentsPage() {
 
   return (
     <div className="flex flex-1 flex-col p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase tracking-tight text-foreground">
           AI-эксперты
         </h1>
@@ -68,6 +92,26 @@ export default function AiAgentsPage() {
             Маскоты
           </Button>
         </Link>
+      </div>
+
+      {/* Sub-section tabs: Обучающие / Акселератор */}
+      <div className="mb-6 flex gap-1 border-b border-border">
+        {(["teaching", "akselerator"] as const).map((s) => {
+          const active = s === section;
+          return (
+            <Link
+              key={s}
+              href={`/ai-agents?section=${s}`}
+              className={`px-4 py-2 text-[length:var(--text-14)] font-medium transition-colors border-b-2 -mb-px ${
+                active
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {SECTION_LABEL[s]}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Create — inline name-only flow */}
@@ -106,20 +150,20 @@ export default function AiAgentsPage() {
         ) : (
           <Button variant="outline" size="sm" onClick={() => setIsCreating(true)}>
             <Plus className="mr-1 h-4 w-4" />
-            Добавить AI-эксперта
+            Добавить в «{SECTION_LABEL[section]}»
           </Button>
         )}
       </div>
 
       {loading ? (
         <p className="py-12 text-center text-muted-foreground">Загрузка…</p>
-      ) : agents.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <p className="py-12 text-center text-[length:var(--text-14)] text-muted-foreground">
-          Нет AI-экспертов. Добавьте первого.
+          В разделе «{SECTION_LABEL[section]}» пока нет AI-экспертов. Добавьте первого.
         </p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {agents.map((agent) => (
+          {filtered.map((agent) => (
             <Link key={agent.id} href={`/ai-agents/${agent.id}`} className="block">
               <AgentCard agent={agent} />
             </Link>
@@ -154,22 +198,14 @@ function AgentCard({ agent }: { agent: Agent }) {
             {agent.role}
           </span>
         )}
-        <div className="mt-1 flex flex-wrap items-center gap-1">
-          {webhookMissing && (
+        {webhookMissing && (
+          <div className="mt-1">
             <span className="inline-flex items-center gap-1 rounded-sm bg-destructive/15 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-destructive">
               <AlertTriangle className="h-3 w-3" />
               Не подключен
             </span>
-          )}
-          {agent.targets.map((t) => (
-            <span
-              key={t}
-              className="rounded-sm bg-foreground/10 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium text-foreground"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
+          </div>
+        )}
         {agent.valueDescription && (
           <p className="mt-1 line-clamp-2 text-[length:var(--text-12)] text-muted-foreground">
             {agent.valueDescription}

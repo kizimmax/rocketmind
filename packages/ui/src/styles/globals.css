@@ -89,9 +89,6 @@
   --radius-3xl: 1.25rem;
   --radius-4xl: 1.5rem;
 
-  /* Rocketmind pure white (theme-independent accent) */
-  --color-rm-white: var(--rm-white);
-
   /* Rocketmind gray scale */
   --color-rm-gray-1: var(--rm-gray-1);
   --color-rm-gray-2: var(--rm-gray-2);
@@ -219,10 +216,6 @@
   --rm-gray-4:  #A3A3A3;   /* hover border */
   --rm-gray-fg-sub:  #666666;   /* secondary text */
   --rm-gray-fg-main: #2D2D2D;   /* primary text */
-
-  /* Pure white — independent of theme; used by accent UI like the
-     2px slim scrollbar on the glossary aside. */
-  --rm-white: #FFFFFF;
 
   /* === Gray Alpha (overlay / glass effects) === */
   --rm-gray-alpha-100: rgba(0, 0, 0, 0.06);   /* subtle tint */
@@ -431,9 +424,6 @@ code {
   --rm-gray-4:  #5C5C5C;
   --rm-gray-fg-sub:  #939393;
   --rm-gray-fg-main: #F0F0F0;
-
-  /* Pure white — same value in dark theme (accent on dark surface). */
-  --rm-white: #FFFFFF;
 
   /* === Gray Alpha (dark) === */
   --rm-gray-alpha-100: rgba(255, 255, 255, 0.06);
@@ -909,39 +899,16 @@ code {
   display: none;
 }
 
-/* ── Slim white scrollbar (2px, accent on aside panels) ──
-   Used by GlossaryWidget когда колонка ограничена по высоте
-   колонкой со статьями и контенту нужен внутренний скролл.
-   Полоска прибита к правому краю контейнера (без отступа).
-
-   `-webkit-appearance: none` обязателен на macOS — иначе WebKit
-   рисует системный overlay-скроллбар и игнорирует width/color. */
-.rm-scrollbar-white-2 {
-  scrollbar-width: thin;
-  scrollbar-color: var(--rm-white) transparent;
+/* ── Invisible scrollbar ──
+   Полностью прозрачный/скрытый скроллбар — скролл работает (wheel/touch/
+   keyboard), но визуально никакой полоски нет. Используется в
+   GlossaryWidget когда колонка ограничена по высоте колонкой со статьями
+   и контенту нужен внутренний скролл, но видимая полоса в DS не нужна. */
+.rm-scrollbar-invisible {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.rm-scrollbar-white-2::-webkit-scrollbar {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 2px;
-  height: 2px;
-  background: transparent;
-}
-.rm-scrollbar-white-2::-webkit-scrollbar-track {
-  background: transparent;
-  border: none;
-}
-.rm-scrollbar-white-2::-webkit-scrollbar-thumb {
-  background-color: var(--rm-white);
-  background-clip: padding-box;
-  border: none;
-  border-radius: 0;
-  min-height: 24px;
-}
-.rm-scrollbar-white-2::-webkit-scrollbar-corner {
-  background: transparent;
-}
-.rm-scrollbar-white-2::-webkit-scrollbar-button {
+.rm-scrollbar-invisible::-webkit-scrollbar {
   display: none;
   width: 0;
   height: 0;

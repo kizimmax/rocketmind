@@ -87,7 +87,8 @@ export interface GlossaryWidgetProps extends React.HTMLAttributes<HTMLElement> {
    * — содержимое глоссария скроллится ВНУТРИ aside (а не вместе со страницей);
    * — шапка (название + ссылка + поиск) остаётся `sticky` на `top: 0`
    *   внутреннего скролл-контейнера, поэтому всегда видна;
-   * — справа отрисовывается кастомный 2px скроллбар цвета `--rm-white`.
+   * — скроллбар визуально скрыт (`.rm-scrollbar-invisible`); направление
+   *   читается по top/bottom фейдам.
    *
    * Значение `stickyTop` оставлено для обратной совместимости с предыдущим
    * page-scroll режимом, но в новом режиме игнорируется — шапка прибивается
@@ -212,7 +213,7 @@ export function GlossaryWidget({
 //   • Шапка (название + ссылка + поиск) `sticky` к скроллу СТРАНИЦЫ
 //     (top = `stickyTop`, обычно 4rem чтобы упереться в фикс-хедер сайта).
 //   • Тело (лента терминов) — отдельный внутренний scroll-контейнер с
-//     `.rm-scrollbar-white-2`.
+//     `.rm-scrollbar-invisible`.
 //   • Top-фейд виден когда:
 //       – внутренний `scrollTop > 0` (тело прокручено внутри), ИЛИ
 //       – шапка `pinned` к фикс-хедеру (страница прокручена через aside).
@@ -320,7 +321,7 @@ function GlossaryStickyShell({
         <div
           ref={scrollRef}
           onScroll={updateInternal}
-          className="rm-scrollbar-white-2 relative z-0 -mt-10 flex-1 min-h-0 overflow-y-auto rounded-b-sm bg-[color:var(--rm-gray-1)] px-6 pt-1 pb-6"
+          className="rm-scrollbar-invisible relative z-0 -mt-10 flex-1 min-h-0 overflow-y-auto rounded-b-sm bg-[color:var(--rm-gray-1)] px-6 pt-1 pb-6"
         >
           {body}
         </div>

@@ -3242,22 +3242,19 @@ className="
 - Горизонтальный скролл допускается только для таблиц и кода.
 - Для чата: автоматический scroll-to-bottom при новом сообщении.
 
-#### Вариант · Slim white 2px (`.rm-scrollbar-white-2`)
+#### Вариант · Invisible (`.rm-scrollbar-invisible`)
 
-Тонкая 2px полоска цвета `--rm-white`, прибитая к правому краю контейнера без трека. Используется на акцентных aside-панелях, когда aside ограничен по высоте соседней колонкой и его контент скроллится внутри. Сейчас единственное место применения — `GlossaryWidget` в режиме «прибитой» колонки на `/media`.
+Полностью скрытый скроллбар: скролл работает (wheel/touch/keyboard), но визуально никакой полоски нет. Используется на акцентных aside-панелях, когда aside ограничен по высоте соседней колонкой и его контент скроллится внутри, но видимая полоса прокрутки в DS не нужна — направление скролла читается по двум фейдам сверху/снизу. Сейчас единственное место применения — `GlossaryWidget` в режиме «прибитой» колонки на `/media`.
 
 | Часть | Значение |
 |-------|----------|
-| Scrollbar width | `2px` |
-| Scrollbar radius | `0` (прямоугольная полоска) |
-| Track bg | `transparent` |
-| Thumb bg | `var(--rm-white)` |
-| Thumb hover | `var(--rm-white)` (без отдельного состояния) |
-| Привязка | вплотную к правому краю scroll-контейнера |
+| Firefox | `scrollbar-width: none` |
+| WebKit | `::-webkit-scrollbar { display: none; }` |
+| Trident/IE legacy | `-ms-overflow-style: none` |
 
 ```tsx
 // Container — должен сам быть скролл-контейнером
-className="rm-scrollbar-white-2 overflow-y-auto"
+className="rm-scrollbar-invisible overflow-y-auto"
 ```
 
 Класс определён в `packages/ui/src/styles/globals.css` и доступен во всех приложениях через `@import "@rocketmind/ui/styles"`.
@@ -5552,9 +5549,9 @@ case-insensitive substring по `title`.
 - **Высота** aside равна высоте колонки со статьями (grid row stretch). Если глоссарий короче — нижняя кромка совпадает; если длиннее — лишние термины уходят под внутренний скролл.
 - **Шапка** (название + ссылка на полный глоссарий + поле поиска) — `sticky` к скроллу СТРАНИЦЫ, `top` = высоте фикс-хедера сайта (обычно `4rem`). Пока пользователь скроллит страницу через колонку, шапка остаётся видна и упирается в фикс-хедер сайта.
 - **Тело** с лентой терминов — отдельный внутренний scroll-контейнер. Включается автоматически, когда контент терминов выше доступной высоты тела (`aside_height − header_height`).
-- **Скроллбар** — `.rm-scrollbar-white-2` (см. 6.3.5): 2px белая полоска `--rm-white` вплотную к правому краю плашки.
+- **Скроллбар** — `.rm-scrollbar-invisible` (см. 6.3.5): визуально скрыт, направление скролла читается по верхнему/нижнему фейдам.
 - **Фейды top/bottom** реактивны к ВНУТРЕННЕМУ скроллу тела: top-фейд появляется при `scrollTop > 0`, bottom-фейд — при `scrollTop + clientHeight < scrollHeight`. Когда контент влезает целиком, оба фейда скрыты — резких срезов нет.
-- Реализация: `<aside class="relative h-full">` → `<div class="absolute inset-0 flex flex-col">` (НЕ scroll-контейнер) → `sticky` header (трекает page scroll) + `flex-1 overflow-y-auto rm-scrollbar-white-2` body. `absolute` убирает aside из обычного потока row-sizing, поэтому высоту строки диктует соседняя колонка со статьями.
+- Реализация: `<aside class="relative h-full">` → `<div class="absolute inset-0 flex flex-col">` (НЕ scroll-контейнер) → `sticky` header (трекает page scroll) + `flex-1 overflow-y-auto rm-scrollbar-invisible` body. `absolute` убирает aside из обычного потока row-sizing, поэтому высоту строки диктует соседняя колонка со статьями.
 - Применяется на всех breakpoints, где колонка глоссария видна (`lg` и выше). На мобильных глоссарий скрыт — режим не задействован.
 
 ---

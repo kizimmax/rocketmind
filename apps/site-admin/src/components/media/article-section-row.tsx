@@ -266,10 +266,9 @@ export function ArticleSectionRow({
                 onChange={updateFactoids}
                 cols={section.factoidCols}
                 onColsChange={updateFactoidCols}
-                onRemoveAll={() => {
-                  updateFactoids([]);
-                  updateFactoidCols(undefined);
-                }}
+                onRemoveAll={() =>
+                  onChange({ ...section, factoids: [], factoidCols: undefined })
+                }
               />
             </div>
           ) : (
@@ -281,10 +280,9 @@ export function ArticleSectionRow({
                 onChange={updateListCards}
                 onTypeChange={updateListType}
                 onColsChange={updateListCols}
-                onRemoveAll={() => {
-                  updateListCards([]);
-                  updateListCols(undefined);
-                }}
+                onRemoveAll={() =>
+                  onChange({ ...section, listCards: [], listCols: undefined })
+                }
               />
             </div>
           )}
