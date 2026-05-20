@@ -3242,19 +3242,15 @@ function GlossaryWidget({
     groups.map((g) => /* @__PURE__ */ jsx40(LetterGroupBlock, { group: g }, g.letter))
   ] });
   if (stickyTop !== void 0) {
-    return /* @__PURE__ */ jsxs20("aside", { className: cn("isolate flex flex-col", className), ...props, children: [
-      /* @__PURE__ */ jsxs20("div", { className: "sticky z-20", style: { top: stickyTop }, children: [
-        /* @__PURE__ */ jsx40("div", { className: "flex flex-col gap-5 rounded-sm bg-[color:var(--rm-gray-1)] p-6", children: headContent }),
-        /* @__PURE__ */ jsx40(
-          "div",
-          {
-            "aria-hidden": true,
-            className: "pointer-events-none h-10 bg-gradient-to-b from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsx40("div", { className: "relative z-0 -mt-10 rounded-sm bg-[color:var(--rm-gray-1)] p-6", children: groupsList })
-    ] });
+    return /* @__PURE__ */ jsx40(
+      GlossaryStickyShell,
+      {
+        className,
+        head: headContent,
+        body: groupsList,
+        ...props
+      }
+    );
   }
   return /* @__PURE__ */ jsxs20(
     "aside",
@@ -3270,6 +3266,83 @@ function GlossaryWidget({
         headContent,
         groupsList
       ]
+    }
+  );
+}
+function GlossaryStickyShell({
+  head,
+  body,
+  className,
+  ...props
+}) {
+  const scrollRef = React14.useRef(null);
+  const [fade, setFade] = React14.useState({
+    top: false,
+    bottom: false
+  });
+  const update = React14.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const overflows = scrollHeight - clientHeight > 1;
+    const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+    setFade({
+      top: overflows && scrollTop > 1,
+      bottom: overflows && !atBottom
+    });
+  }, []);
+  React14.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    const mo = new MutationObserver(update);
+    mo.observe(el, { childList: true, subtree: true, characterData: true });
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+    };
+  }, [update]);
+  return /* @__PURE__ */ jsx40(
+    "aside",
+    {
+      className: cn("relative isolate h-full min-h-[200px]", className),
+      ...props,
+      children: /* @__PURE__ */ jsxs20(
+        "div",
+        {
+          ref: scrollRef,
+          onScroll: update,
+          className: "rm-scrollbar-white-2 absolute inset-0 overflow-y-auto rounded-sm",
+          children: [
+            /* @__PURE__ */ jsxs20("div", { className: "sticky top-0 z-20", children: [
+              /* @__PURE__ */ jsx40("div", { className: "flex flex-col gap-5 rounded-t-sm bg-[color:var(--rm-gray-1)] px-6 pt-6 pb-5", children: head }),
+              /* @__PURE__ */ jsx40(
+                "div",
+                {
+                  "aria-hidden": true,
+                  className: cn(
+                    "pointer-events-none h-10 bg-gradient-to-b from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
+                    fade.top ? "opacity-100" : "opacity-0"
+                  )
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx40("div", { className: "relative z-0 -mt-10 rounded-b-sm bg-[color:var(--rm-gray-1)] px-6 pb-6 pt-1", children: body }),
+            /* @__PURE__ */ jsx40(
+              "div",
+              {
+                "aria-hidden": true,
+                className: cn(
+                  "pointer-events-none sticky bottom-0 -mt-10 z-10 h-10 bg-gradient-to-t from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
+                  fade.bottom ? "opacity-100" : "opacity-0"
+                )
+              }
+            )
+          ]
+        }
+      )
     }
   );
 }

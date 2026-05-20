@@ -82,10 +82,17 @@ export interface GlossaryWidgetProps extends React.HTMLAttributes<HTMLElement> {
   /** Максимум терминов всего. По дефолту показываем все. */
   maxItems?: number
   /**
-   * Если задано — шапка (название + ссылка + поиск) закрепляется `sticky`
-   * на указанном значении `top` (CSS value, напр. "7rem"). Список терминов
-   * прокручивается вместе со страницей и уходит в фейд под шапкой через
-   * gradient-хвост. Если не задано — классическая раскладка одной карточкой.
+   * Если задано — включается режим «прибитой» колонки:
+   * — высота aside равна высоте соседней колонки в grid (карточек статей);
+   * — содержимое глоссария скроллится ВНУТРИ aside (а не вместе со страницей);
+   * — шапка (название + ссылка + поиск) остаётся `sticky` на `top: 0`
+   *   внутреннего скролл-контейнера, поэтому всегда видна;
+   * — справа отрисовывается кастомный 2px скроллбар цвета `--rm-white`.
+   *
+   * Значение `stickyTop` оставлено для обратной совместимости с предыдущим
+   * page-scroll режимом, но в новом режиме игнорируется — шапка прибивается
+   * к верху внутреннего scroll-контейнера. Передавайте любое истинное
+   * значение, чтобы включить режим (например, `"0"` или `"4rem"`).
    */
   stickyTop?: string
 }
@@ -169,30 +176,13 @@ export function GlossaryWidget({
   )
 
   if (stickyTop !== undefined) {
-    // Split-режим: sticky-шапка (карточка с bg) + gradient-хвост + прокручи-
-    // ваемый список. `stickyTop` должен равняться высоте fixed-шапки сайта
-    // (обычно 4rem = h-16), чтобы шапка виджета упиралась в неё — тогда над
-    // виджетом нет «полоски» viewport, куда скроллящийся список мог бы
-    // высунуться.
-    //
-    // `isolate` на aside создаёт собственный stacking-context, z-20 на шапке
-    // и z-0 на списке гарантируют, что текст, заезжающий под шапку при скролле,
-    // полностью перекрывается непрозрачным bg карточки и gradient-хвостом.
     return (
-      <aside className={cn("isolate flex flex-col", className)} {...props}>
-        <div className="sticky z-20" style={{ top: stickyTop }}>
-          <div className="flex flex-col gap-5 rounded-sm bg-[color:var(--rm-gray-1)] p-6">
-            {headContent}
-          </div>
-          <div
-            aria-hidden
-            className="pointer-events-none h-10 bg-gradient-to-b from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent"
-          />
-        </div>
-        <div className="relative z-0 -mt-10 rounded-sm bg-[color:var(--rm-gray-1)] p-6">
-          {groupsList}
-        </div>
-      </aside>
+      <GlossaryStickyShell
+        className={className}
+        head={headContent}
+        body={groupsList}
+        {...props}
+      />
     )
   }
 
@@ -208,6 +198,99 @@ export function GlossaryWidget({
     >
       {headContent}
       {groupsList}
+    </aside>
+  )
+}
+
+// ── GlossaryStickyShell ────────────────────────────────────────────────────
+//
+// Column-matched режим: высота aside равна высоте соседней grid-колонки со
+// статьями (внешний <aside> ничего не «толкает» в grid, всё содержимое внутри
+// `absolute inset-0`). Внутренний контейнер скроллится, шапка sticky к
+// top:0 этого контейнера, кастомный 2px белый скроллбар — `.rm-scrollbar-white-2`.
+//
+// Top/bottom fade'ы реактивны от позиции скролла:
+//   • top fade виден только когда `scrollTop > 0`
+//   • bottom fade виден только когда `scrollTop + clientHeight < scrollHeight`
+// Так что когда контент влезает целиком — оба фейда скрыты, рез нет.
+
+type GlossaryStickyShellProps = React.HTMLAttributes<HTMLElement> & {
+  head: React.ReactNode
+  body: React.ReactNode
+}
+
+function GlossaryStickyShell({
+  head,
+  body,
+  className,
+  ...props
+}: GlossaryStickyShellProps) {
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [fade, setFade] = React.useState<{ top: boolean; bottom: boolean }>({
+    top: false,
+    bottom: false,
+  })
+
+  const update = React.useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const { scrollTop, scrollHeight, clientHeight } = el
+    const overflows = scrollHeight - clientHeight > 1
+    const atBottom = scrollTop + clientHeight >= scrollHeight - 1
+    setFade({
+      top: overflows && scrollTop > 1,
+      bottom: overflows && !atBottom,
+    })
+  }, [])
+
+  React.useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    // Дети меняются при фильтрации/поиске — наблюдаем за content size тоже.
+    const mo = new MutationObserver(update)
+    mo.observe(el, { childList: true, subtree: true, characterData: true })
+    return () => {
+      ro.disconnect()
+      mo.disconnect()
+    }
+  }, [update])
+
+  return (
+    <aside
+      className={cn("relative isolate h-full min-h-[200px]", className)}
+      {...props}
+    >
+      <div
+        ref={scrollRef}
+        onScroll={update}
+        className="rm-scrollbar-white-2 absolute inset-0 overflow-y-auto rounded-sm"
+      >
+        <div className="sticky top-0 z-20">
+          <div className="flex flex-col gap-5 rounded-t-sm bg-[color:var(--rm-gray-1)] px-6 pt-6 pb-5">
+            {head}
+          </div>
+          <div
+            aria-hidden
+            className={cn(
+              "pointer-events-none h-10 bg-gradient-to-b from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
+              fade.top ? "opacity-100" : "opacity-0",
+            )}
+          />
+        </div>
+        <div className="relative z-0 -mt-10 rounded-b-sm bg-[color:var(--rm-gray-1)] px-6 pb-6 pt-1">
+          {body}
+        </div>
+        <div
+          aria-hidden
+          className={cn(
+            "pointer-events-none sticky bottom-0 -mt-10 z-10 h-10 bg-gradient-to-t from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
+            fade.bottom ? "opacity-100" : "opacity-0",
+          )}
+        />
+      </div>
     </aside>
   )
 }

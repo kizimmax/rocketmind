@@ -90,163 +90,354 @@ components:
     Role:
       type: string
       enum: [SUPER_ADMIN, ADMIN, EDITOR]
+      description: |
+        Роль админа в saas-admin:
+          • SUPER_ADMIN — всё (управление другими админами, программами, агентами, всеми данными). Один на систему (по сути Алексей).
+          • ADMIN — управление программами/агентами/пользователями, без создания других админов.
+          • EDITOR — видит и редактирует только то, что супер-админ явно открыл через `permissions[]`.
     Error:
       type: object
       required: [error]
       properties:
         error:
           type: string
-          description: Machine-readable код ошибки.
-          examples: [unauthorized, not_found, validation_failed]
+          description: Machine-readable код ошибки. Фронт по нему рендерит локализованные тексты.
+          examples: [unauthorized, not_found, validation_failed, program_closed, agent_not_available, slug_exists]
         message:
           type: string
-          description: Человекочитаемое описание (опционально).
+          description: Человекочитаемое описание (опционально, для дебага).
 
     # ───── Admin user (коллекция `admin_users`) ─────
     AdminUser:
       type: object
+      description: |
+        Аккаунт админа saas-admin. **Отдельная** от Student коллекция — это сотрудник
+        Рокетмайнда, не ученик. Логин по email+пароль (bcrypt), сессия в JWT cookie
+        `rm_admin_token`. Учётки заводит super-admin через `POST /api/admin/users`,
+        сервер генерирует временный пароль и шлёт на email; первый вход — обязательная
+        смена пароля.
       required: [id, email, firstName, lastName, role, isActive, createdAt]
       properties:
-        id: { type: string }
-        email: { type: string, format: email }
-        firstName: { type: string }
-        lastName: { type: string }
-        role: { $ref: '#/components/schemas/Role' }
-        isActive: { type: boolean }
-        # Permission tree — путь от sections.ts. Не применяется к SUPER_ADMIN.
+        id:
+          type: string
+          description: Идентификатор записи (Mongo ObjectId или UUID на выбор Ивана).
+        email:
+          type: string
+          format: email
+          description: Уникальный email. Используется как логин и для писем (сброс пароля, временный пароль при создании).
+        firstName:
+          type: string
+          description: Имя. Отображается в сайдбаре «Имя Фамилия».
+        lastName:
+          type: string
+          description: Фамилия.
+        role:
+          $ref: '#/components/schemas/Role'
+        isActive:
+          type: boolean
+          description: |
+            Свитч «аккаунт активен». false → не пускаем на /login (даже с верным паролем —
+            возвращаем 403 `account_disabled`). Используется когда сотрудник уходит,
+            но историю audit-log нужно сохранить.
         permissions:
           type: array
+          description: |
+            Гранулированный доступ для роли EDITOR — список путей пермиссионного дерева
+            (см. `permissions/sections.ts` в коде фронта). Для SUPER_ADMIN и ADMIN
+            игнорируется (у них доступ по роли). Пример: `[{path: "ai-agents", access: "EDIT"}, {path: "programs.list", access: "VIEW"}]`.
+            Путь может быть статическим узлом или конкретной сущностью (`programs.list.<programId>`).
           items:
             type: object
             properties:
-              path: { type: string, examples: ['ai-agents', 'programs.list'] }
-              access: { type: string, enum: [VIEW, EDIT] }
+              path:
+                type: string
+                description: Точечный путь в дереве разделов.
+                examples: ['ai-agents', 'programs.list', 'programs.list.abc-123']
+              access:
+                type: string
+                enum: [VIEW, EDIT]
+                description: Уровень доступа. VIEW = только просмотр. EDIT = читать+писать+удалять.
         passwordHash:
           type: string
-          description: bcrypt hash. НИКОГДА не возвращается в API.
+          description: bcrypt-хеш пароля (cost=12). **Никогда** не возвращается из API наружу. Только для записи (создание/смена пароля).
           writeOnly: true
-        lastLoginAt: { type: string, format: date-time, nullable: true }
+        lastLoginAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Время последнего успешного входа. Обновляется в `POST /api/admin/login`.
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
     # ───── Place (коллекция `places`) ─────
     Place:
       type: object
+      description: |
+        Место проведения программы — переиспользуемый справочник. Алексей заводит
+        город+площадку один раз, потом выбирает её из выпадающего списка при создании
+        новых программ. Чистый lookup-словарь, никаких связанных данных кроме `Program.placeId`.
       required: [id, name]
       properties:
         id: { type: string }
-        name: { type: string, examples: ['Москва, Цифровое деловое пространство'] }
-        address: { type: string, nullable: true }
+        name:
+          type: string
+          examples: ['Москва, Цифровое деловое пространство']
+          description: Название места — то, что видят админы в списке. Может включать город+площадку одной строкой.
+        address:
+          type: string
+          nullable: true
+          description: Полный адрес (опц.). Используется для печати/отчётности.
         createdAt: { type: string, format: date-time }
 
     # ───── Program (коллекция `programs`) ─────
     Program:
       type: object
+      description: |
+        Программа Teacher — конкретный поток обучения (например «Бизнес-моделирование, апрель 2026»).
+        У программы есть набор привязанных AI-агентов (через `ProgramAgent`) и набор учеников
+        (`Student.programId`). Жизненный цикл:
+          1. Алексей создаёт программу → `joinToken=null` (QR ещё нет).
+          2. Жмёт «Сгенерировать QR» → `POST /api/programs/{id}/regenerate-qr` → сервер
+             создаёт `joinToken` (24 random bytes base64url) → QR-код рисуется на фронте.
+          3. Ученики сканируют QR → переходят на `https://teacher.rocketmind.*/join?p={id}&t={joinToken}`.
+          4. Каждый день программы Алексей включает свитчи `ProgramAgent.isAvailable` для агентов.
+          5. По окончании курса Алексей выключает `isActive=false` → ученики видят модалку
+             «программа завершена» и могут читать чаты только по подписке.
       required: [id, title, startsAt, endsAt, isActive, createdAt]
       properties:
         id: { type: string }
-        title: { type: string, examples: ['Бизнес-моделирование, апрель 2026'] }
-        startsAt: { type: string, format: date-time }
-        endsAt: { type: string, format: date-time }
-        # Свитч «программа активна». false → ученик видит модалку «программа
-        # завершена» и read-only-чат с плашкой подписки.
-        isActive: { type: boolean }
+        title:
+          type: string
+          examples: ['Бизнес-моделирование, апрель 2026']
+          description: Название программы — отображается у Алексея в админке и у учеников в Teacher.
+        startsAt:
+          type: string
+          format: date-time
+          description: Дата начала программы. Пока — только для отчётности и сортировки.
+        endsAt:
+          type: string
+          format: date-time
+          description: Дата окончания. На фронте используется только для отображения.
+        isActive:
+          type: boolean
+          description: |
+            **Свитч «программа активна»** — закрывает бесплатный доступ для учеников.
+            Когда `false`: участники видят модалку «программа завершена», чат уходит в
+            read-only, на попытку отправить сообщение возвращаем 403 `program_closed`
+            и фронт показывает плашку «оформите подписку». Изначально `true`.
         place:
           oneOf:
             - $ref: '#/components/schemas/Place'
             - type: 'null'
-        placeId: { type: string, nullable: true }
-        # QR token (24 random bytes base64url). Используется в URL /join.
-        joinToken: { type: string, nullable: true }
-        joinTokenRotatedAt: { type: string, format: date-time, nullable: true }
+          description: Эмбеддед-объект места (для удобства фронта). Может быть null.
+        placeId:
+          type: string
+          nullable: true
+          description: FK на Place — используется при создании/обновлении.
+        joinToken:
+          type: string
+          nullable: true
+          description: |
+            Криптостойкий токен для QR-входа (24 random bytes base64url). `null` пока
+            QR не сгенерирован. При обновлении старый токен инвалидируется — старый QR
+            перестаёт пускать **новых** учеников (уже привязанные продолжают работать
+            через свой JWT `rm_student_token`).
+        joinTokenRotatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Время последней ротации. Для аналитики и отчётности.
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
     # ───── AiAgent (коллекция `ai_agents`) ─────
     AiAgent:
       type: object
+      description: |
+        AI-агент — обучающий наставник в saas-teacher (и/или saas-akselerator).
+        Каталог общий для всех SaaS-продуктов, в какие именно агент подключается —
+        контролирует массив `targets[]`. Сам промпт и логика агента живут в n8n у Ивана;
+        фронт обращается к агенту через `n8nWebhookUrl` и стримит ответ.
       required: [id, slug, name, targets, n8nWebhookUrl, createdAt]
       properties:
         id: { type: string }
-        slug: { type: string, examples: ['business-modeling'] }
-        name: { type: string, examples: ['Бизнес-моделирование'] }
-        role: { type: string, examples: ['Наставник по бизнес-модели'] }
+        slug:
+          type: string
+          examples: ['business-modeling']
+          description: Уникальный машинный slug (lowercase, dash-case). Используется в URL и для дебага. На создании генерится из имени, если не передан явно. При повторе — 409 `slug_exists`.
+        name:
+          type: string
+          examples: ['Бизнес-моделирование']
+          description: Имя агента для UI — то что увидит ученик в списке.
+        role:
+          type: string
+          examples: ['Наставник по бизнес-модели']
+          description: Под-заголовок/специализация. Опционально, для UI.
         valueDescription:
           type: string
-          description: Текст приветствия и описание пользы агента.
-        # Каталог общий — `targets[]` определяет в какие SaaS-продукты агент
-        # отображается. Фронт фильтрует по этому массиву.
+          description: |
+            Текст-приветствие, которым агент представляется при первом сообщении в чате.
+            Отображается в saas-teacher при открытии сессии до первого ответа.
         targets:
           type: array
+          description: |
+            В какие SaaS-продукты агент подключён. Фронт фильтрует по этому массиву:
+            saas-teacher показывает только агентов с `targets ∋ saas-teacher`. Чекбоксы
+            в редакторе агента позволяют подключить одного агента к нескольким продуктам.
           items:
             type: string
             enum: [saas-teacher, saas-akselerator]
-        avatarMascotId: { type: string, nullable: true }
-        # URL картинки маскота (резолвится saas-admin из site-admin /api/mascots).
-        avatarUrl: { type: string, nullable: true }
+        avatarMascotId:
+          type: string
+          nullable: true
+          description: FK на Mascot (картинка из общей библиотеки маскотов). Может быть null.
+        avatarUrl:
+          type: string
+          nullable: true
+          description: |
+            Резолвленный URL аватара — для удобства фронта (чтобы не делать второй
+            запрос). Бэк может склеить из `avatarMascot.imagePath` или из локального
+            `avatarPath`, если маскот не из библиотеки.
         n8nWebhookUrl:
           type: string
-          description: Хост Ивана (Amvera). Фронт шлёт сообщения сюда.
+          description: |
+            URL вебхука n8n у Ивана (Amvera). Сюда saas-teacher шлёт `POST` с
+            `{ projectId, agentId, content, context }` и стримит ответ обратно через SSE.
+            Если поле пустое — агент помечается как «Не подключен», диалог с ним
+            возвращает 503/400.
         n8nSecret:
           type: string
-          description: HMAC-секрет для подписи запросов в n8n. writeOnly.
+          description: |
+            Опциональный shared secret для HMAC-подписи запросов. Если задан — фронт
+            считает SHA-256 HMAC от тела запроса и кладёт в заголовок `X-Signature`,
+            n8n проверяет на своей стороне. **Не возвращается из API** (writeOnly).
           writeOnly: true
         systemPrompt:
           type: string
           nullable: true
           description: |
-            Черновик системного промпта — для отображения в админке. На
-            реальное поведение не влияет (промпт живёт в n8n).
-        notes: { type: string, nullable: true }
+            Черновик системного промпта — на behavior агента ПОКА не влияет (реальный
+            промпт живёт в workflow n8n). Поле существует чтобы Алексей мог хранить
+            и редактировать черновик прямо в админке. Когда подключим передачу промпта
+            из БД в n8n — пометку «В разработке» снимем и поле станет load-bearing.
+        notes:
+          type: string
+          nullable: true
+          description: Свободные заметки для админов (внутренний контекст по агенту, кто настраивал, чем занят, и т.д.).
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
     # ───── ProgramAgent (коллекция `program_agents` — M:N) ─────
     ProgramAgent:
       type: object
+      description: |
+        Линк-таблица программы и AI-агента. Один агент может быть подключён к нескольким
+        программам, одна программа может содержать нескольких агентов. Существование
+        записи означает «агент привязан к программе»; свитч `isAvailable` определяет
+        видят ли ученики его прямо сейчас. Алексей по ходу курса включает агентов в
+        нужный день — фронт отдаёт ученикам только тех, у кого `isAvailable=true`.
       required: [programId, agentId, isAvailable]
       properties:
-        programId: { type: string }
-        agentId: { type: string }
-        # Свитч «агент открыт для этой программы».
-        isAvailable: { type: boolean }
-        availableSince: { type: string, format: date-time, nullable: true }
+        programId:
+          type: string
+          description: FK на Program.
+        agentId:
+          type: string
+          description: FK на AiAgent.
+        isAvailable:
+          type: boolean
+          description: |
+            **Свитч «агент открыт для этой программы»**. true → ученики видят агента
+            в сайдбаре и могут общаться. false → агент скрыт. При отправке сообщения
+            к закрытому агенту бэк возвращает 403 `agent_not_available`.
+        availableSince:
+          type: string
+          format: date-time
+          nullable: true
+          description: Метка времени когда агента ПОСЛЕДНИЙ раз включили. Для аналитики «когда Алексей открыл агента в курсе».
 
     # ───── Student (коллекция `students`) — SaaS-пользователи ─────
     Student:
       type: object
+      description: |
+        Ученик — конечный пользователь saas-teacher. Один email = один Student
+        (пересечения курсов разруливаем руками). Привязка к программе через
+        `programId` — один Student к одной программе. Аутентификация по OTP
+        (email-код, 6 цифр, 10 мин TTL, bcrypt-хеш). После верификации сервер
+        выдаёт JWT в HttpOnly cookie `rm_student_token` (90 дней).
       required: [id, email, isActive, joinedAt]
       properties:
         id: { type: string }
-        email: { type: string, format: email }
-        firstName: { type: string, nullable: true }
-        lastName: { type: string, nullable: true }
-        # «Роль в бизнесе» — UI label обновлён.
-        role: { type: string, nullable: true, examples: ['Генеральный директор'] }
-        # «Сфера деятельности»
-        industry: { type: string, nullable: true, examples: ['Производство'] }
-        # «Регион»
-        region: { type: string, nullable: true, examples: ['Московская область'] }
-        # Свитч от админа — отключённый ученик не может войти.
-        isActive: { type: boolean }
-        programId: { type: string, nullable: true }
+        email:
+          type: string
+          format: email
+          description: Уникальный идентификатор ученика. Используется для OTP-логина.
+        firstName:
+          type: string
+          nullable: true
+          description: Имя. Заполняется самим учеником в онбординге или профиле.
+        lastName:
+          type: string
+          nullable: true
+          description: Фамилия. Заполняется самим учеником.
+        role:
+          type: string
+          nullable: true
+          examples: ['Генеральный директор']
+          description: |
+            **«Роль в бизнесе»** — поле анкеты. Идёт в payload каждого запроса к AI-агенту
+            как часть `context.student`, чтобы агент понимал кому отвечает (тон, лексика).
+        industry:
+          type: string
+          nullable: true
+          examples: ['Производство']
+          description: |
+            **«Сфера деятельности»** — поле анкеты. Идёт в `context.student` для AI-агентов:
+            наставник должен понимать индустрию ученика.
+        region:
+          type: string
+          nullable: true
+          examples: ['Московская область']
+          description: |
+            **«Регион»** — поле анкеты. Идёт в `context.student` (для AI-агентов важен
+            географический контекст бизнеса).
+        isActive:
+          type: boolean
+          description: |
+            Свитч от админа. false → ученик не может залогиниться (403 `account_disabled`)
+            и не может отправлять сообщения. Используется для бана без удаления данных.
+        programId:
+          type: string
+          nullable: true
+          description: FK на Program — программа, в которой ученик зарегистрирован. Один ученик = одна программа в MVP.
         program:
           oneOf:
             - $ref: '#/components/schemas/StudentProgramSummary'
             - type: 'null'
-        joinedAt: { type: string, format: date-time }
-        joinedVia: { type: string, nullable: true, examples: ['qr'] }
+          description: Эмбед-объект программы для удобства фронта.
+        joinedAt:
+          type: string
+          format: date-time
+          description: Когда ученик впервые залогинился через OTP.
+        joinedVia:
+          type: string
+          nullable: true
+          examples: ['qr']
+          description: Способ присоединения. Сейчас всегда 'qr' (других путей пока нет).
         updatedAt: { type: string, format: date-time }
 
     StudentProgramSummary:
       type: object
+      description: Облегчённая версия Program — вкладывается в Student.program для фронта.
       required: [id, title, startsAt, endsAt, isActive]
       properties:
         id: { type: string }
         title: { type: string }
         startsAt: { type: string, format: date-time }
         endsAt: { type: string, format: date-time }
-        isActive: { type: boolean }
+        isActive:
+          type: boolean
+          description: Важно — фронт teacher по этому полю триггерит модалку «программа завершена».
         place:
           oneOf:
             - $ref: '#/components/schemas/Place'
@@ -255,87 +446,195 @@ components:
     # ───── StudentProject (коллекция `student_projects`) ─────
     StudentProject:
       type: object
+      description: |
+        Проект ученика — единица работы в Teacher. В MVP один проект на ученика.
+        Создаётся на 3-м шаге онбординга. Артефакты, сессии с агентами — всё
+        привязано к проекту, не к ученику напрямую (на будущее, когда добавим
+        несколько проектов на ученика).
       required: [id, studentId, name, createdAt]
       properties:
         id: { type: string }
-        studentId: { type: string }
-        name: { type: string, examples: ['Бизнес-модель AI-консалтинга'] }
-        # JSON-блок дополнительных полей (опц). Заполняется самим учеником
-        # или агентом через события.
-        profile: { type: object, additionalProperties: true, nullable: true }
+        studentId: { type: string, description: FK на Student. }
+        name:
+          type: string
+          examples: ['Бизнес-модель AI-консалтинга']
+          description: Название проекта — что ученик хочет проработать в программе.
+        profile:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: |
+            Свободный JSON для произвольных полей проекта. Заполняется самим учеником
+            (если решим расширить онбординг) или агентом через события (агент пишет
+            «целевая аудитория = X», «текущая выручка = Y» — это попадает в profile).
+            На MVP пустой `null`.
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
     # ───── StudentSession (коллекция `student_sessions`) ─────
-    # Уникальная пара (projectId, agentId). Threads не пересекаются.
     StudentSession:
       type: object
+      description: |
+        Тред общения с конкретным агентом по конкретному проекту. **Unique по паре
+        (projectId, agentId)** — у одной пары ровно один thread, не пересекается с
+        другими агентами. Создаётся upsert'ом на первом сообщении.
       required: [id, studentId, projectId, agentId]
       properties:
         id: { type: string }
-        studentId: { type: string }
-        projectId: { type: string }
-        agentId: { type: string }
-        threadId: { type: string, nullable: true }
+        studentId: { type: string, description: FK на Student. Денормализация для скорости. }
+        projectId: { type: string, description: FK на StudentProject. }
+        agentId: { type: string, description: FK на AiAgent. }
+        threadId:
+          type: string
+          nullable: true
+          description: Опциональный ID внешнего thread'а (например в n8n / OpenAI), если бэк ведёт долгоживущий контекст на стороне агента.
         summary:
           type: string
           nullable: true
-          description: Авто-сводка от агента, идёт другим агентам в context.summaries.
-        lastMessageAt: { type: string, format: date-time, nullable: true }
+          description: |
+            Авто-сводка от агента (что обсуждали). Передаётся другим агентам этого
+            проекта в `context.summaries[]`, чтобы наставники видели «общую картину»
+            не залезая в чужие переписки. Агент сам решает когда обновить — событие
+            `summary` в SSE-стриме.
+        lastMessageAt: { type: string, format: date-time, nullable: true, description: Время последнего сообщения в треде. }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
     # ───── StudentMessage (коллекция `student_messages`) ─────
     StudentMessage:
       type: object
+      description: |
+        Одно сообщение в треде сессии. `role=user` — от ученика, `role=assistant` —
+        ответ агента (склеенный из delta-чанков SSE-стрима по окончании).
       required: [id, sessionId, role, content, createdAt]
       properties:
         id: { type: string }
-        sessionId: { type: string }
-        role: { type: string, enum: [user, assistant] }
-        content: { type: string }
+        sessionId: { type: string, description: FK на StudentSession. }
+        role:
+          type: string
+          enum: [user, assistant]
+          description: Кто отправил. `user` = ученик; `assistant` = AI-агент.
+        content:
+          type: string
+          description: Текст сообщения. Plain text (markdown допустим — фронт рендерит).
         createdAt: { type: string, format: date-time }
 
     # ───── StudentArtifact (коллекция `student_artifacts`) ─────
-    # «Общая доска» проекта — артефакты видят все агенты этого проекта.
     StudentArtifact:
       type: object
+      description: |
+        Артефакт проекта — структурированный результат работы агента (канвас,
+        документ, список и т.д.). «Общая доска» проекта: артефакты видят ВСЕ
+        агенты этого проекта через `context.artifacts[]`, не только тот, кто
+        создал. Так наставники работают в одной комнате без явной передачи
+        контекста.
       required: [id, projectId, kind, content, createdAt]
       properties:
         id: { type: string }
-        projectId: { type: string }
-        agentId: { type: string, nullable: true }
-        kind: { type: string, examples: ['canvas', 'doc', 'list'] }
-        title: { type: string, nullable: true }
-        content: { type: object, additionalProperties: true }
+        projectId: { type: string, description: FK на StudentProject. }
+        agentId:
+          type: string
+          nullable: true
+          description: Какой агент создал артефакт. null = создан вручную (резерв на будущее).
+        kind:
+          type: string
+          examples: ['canvas', 'doc', 'list']
+          description: |
+            Тип артефакта. Не enum — агент решает сам какие типы порождать.
+            Известные: `canvas` (бизнес-канвас), `doc` (документ), `list` (список).
+        title:
+          type: string
+          nullable: true
+          description: Опциональный заголовок артефакта для отображения в UI.
+        content:
+          type: object
+          additionalProperties: true
+          description: |
+            Произвольный JSON со структурой артефакта — для канваса это сетка ячеек,
+            для документа — markdown-тело, для списка — массив пунктов. Фронт
+            рендерит по `kind`.
         createdAt: { type: string, format: date-time }
 
     # ───── OtpCode (коллекция `otp_codes`) ─────
     OtpCode:
       type: object
+      description: |
+        Одноразовый код для входа ученика по email. Жизненный цикл:
+          1. Ученик вводит email на /login → `POST /api/auth/request-code`.
+          2. Сервер генерит 6-значный код, хеширует bcrypt'ом, кладёт в эту коллекцию
+             с `expiresAt = now + 10min`. Если есть SMTP — шлёт на email; в dev без SMTP
+             пишет код в stdout.
+          3. Ученик вводит код → `POST /api/auth/verify-code` → сервер находит
+             последний не-погашенный код для email, сверяет bcrypt'ом, помечает
+             `consumedAt = now`.
+          4. Сразу апсёртит Student и подписывает JWT.
+        Старые/просроченные коды можно чистить cron'ом — они не нужны после использования.
       required: [id, email, codeHash, expiresAt, createdAt]
       properties:
         id: { type: string }
-        email: { type: string, format: email }
-        codeHash: { type: string, writeOnly: true }
-        programId: { type: string, nullable: true }
-        expiresAt: { type: string, format: date-time }
-        consumedAt: { type: string, format: date-time, nullable: true }
+        email: { type: string, format: email, description: Email, на который выслан код. }
+        codeHash:
+          type: string
+          writeOnly: true
+          description: bcrypt-хеш кода (cost=10). Сравниваем с тем что ввёл ученик.
+        programId:
+          type: string
+          nullable: true
+          description: |
+            Программа из `rm_program_intent` cookie (выставляется на /join при сканировании
+            QR). После verify ученик привязывается к этой программе.
+        expiresAt:
+          type: string
+          format: date-time
+          description: Срок жизни кода (now + 10min).
+        consumedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Когда код был погашен (использован). null = ещё не использован.
         createdAt: { type: string, format: date-time }
 
     # ───── AuditLogEntry (коллекция `audit_log`, фаза 2) ─────
     AuditLogEntry:
       type: object
+      description: |
+        Запись лога админских действий. **В MVP-1 не делаем** — этот блок здесь чтобы
+        зафиксировать формат на будущее. Пишем при критичных операциях: просмотр
+        чужих анкет/чатов, изменение программ/агентов, удаление сущностей.
+        Для аналитики «кто что когда менял» и для GDPR-комплаенса.
       required: [id, actorId, action, target, createdAt]
       properties:
         id: { type: string }
-        actorId: { type: string }
-        actorEmail: { type: string, format: email }
-        action: { type: string, examples: ['student.view', 'program.update', 'agent.delete'] }
-        target: { type: string, examples: ['student:abc-123', 'program:xyz-456'] }
-        meta: { type: object, additionalProperties: true, nullable: true }
-        ip: { type: string, nullable: true }
-        userAgent: { type: string, nullable: true }
+        actorId:
+          type: string
+          description: FK на AdminUser — кто совершил действие.
+        actorEmail:
+          type: string
+          format: email
+          description: Денормализация — email актора, чтобы лог читался даже после удаления админа.
+        action:
+          type: string
+          examples: ['student.view', 'program.update', 'agent.delete']
+          description: |
+            Тип действия в формате `<entity>.<verb>`. Сторона бэка решает что логировать,
+            без жёсткого enum'а (легко добавлять новые).
+        target:
+          type: string
+          examples: ['student:abc-123', 'program:xyz-456']
+          description: На что подействовали — `<entity>:<id>`. Удобно для фильтра «все действия с таким-то учеником».
+        meta:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: Произвольный JSON с деталями (например diff для update-действий).
+        ip:
+          type: string
+          nullable: true
+          description: IP адрес актора (из request headers — X-Forwarded-For / X-Real-IP).
+        userAgent:
+          type: string
+          nullable: true
+          description: User-Agent браузера актора.
         createdAt: { type: string, format: date-time }
 
   # ───────────────────────────────────────────────────────────────────────────
@@ -928,10 +1227,45 @@ paths:
   /api/chat:
     post:
       tags: [chat]
-      summary: |
-        Отправка сообщения агенту. Стримит ответ через SSE.
-        Возвращает 403 `program_closed` если программа учеником закрыта
-        (saas-teacher показывает плашку подписки).
+      summary: Отправка сообщения AI-агенту, ответ стримится через SSE.
+      description: |
+        ## Алгоритм работы
+        1. Сервер проверяет JWT ученика → если нет, 401.
+        2. Проверяет что `projectId` принадлежит этому Student.
+        3. Проверяет `Program.isActive` → если false, **403 `program_closed`**
+           (saas-teacher показывает плашку «оформите подписку»).
+        4. Проверяет `ProgramAgent.isAvailable` для (program, agent) → если false,
+           **403 `agent_not_available`**.
+        5. Апсёртит `StudentSession` по уникальной паре (projectId, agentId).
+        6. Сохраняет входящее сообщение как `StudentMessage(role=user)`.
+        7. Собирает `context` (см. ниже) и зовёт n8n webhook агента.
+        8. Стримит delta-чанки SSE-ответом в браузер.
+        9. По окончании сохраняет `StudentMessage(role=assistant)` + опционально
+           обновляет `summary` и пишет `StudentArtifact`-ы.
+
+        ## Payload в n8n
+        Бэк формирует и шлёт в `agent.n8nWebhookUrl`:
+        ```
+        {
+          "content": "...сообщение ученика...",
+          "context": {
+            "project": { "name": "...", "profile": {...} },
+            "student": { "firstName": "...", "lastName": "...", "email": "...",
+                         "role": "...", "industry": "...", "region": "..." },
+            "history": [ {role, content}, ... ],  // последние 50 в этом треде
+            "artifacts": [ ... ],                 // последние 20 артефактов проекта
+            "summaries": [ { agentSlug, summary } ] // сводки от ДРУГИХ агентов
+          }
+        }
+        ```
+        Если у агента задан `n8nSecret` — добавить `X-Signature: sha256=<HMAC>` header.
+
+        ## SSE event-схема
+        Каждое событие в формате `event: <name>\ndata: <json>\n\n`:
+        - `delta` — `{ text: "следующий чанк" }` — текст ответа, склеивается на фронте.
+        - `summary` — `{ summary: "..." }` — обновить `StudentSession.summary`.
+        - `artifact` — `{ kind, title, content }` — создать `StudentArtifact`.
+        - `done` — `{}` — стрим завершён, фронт коммитит финальный `StudentMessage`.
       security: [{ StudentJWT: [] }]
       requestBody:
         required: true
@@ -941,24 +1275,29 @@ paths:
               type: object
               required: [projectId, agentId, content]
               properties:
-                projectId: { type: string }
-                agentId: { type: string }
-                content: { type: string, minLength: 1 }
+                projectId:
+                  type: string
+                  description: ID проекта, в контексте которого идёт диалог.
+                agentId:
+                  type: string
+                  description: ID агента, кому отправляется сообщение.
+                content:
+                  type: string
+                  minLength: 1
+                  description: Текст сообщения от ученика.
       responses:
         '200':
-          description: SSE-стрим (`text/event-stream`)
+          description: SSE-стрим (`text/event-stream`) — см. event-схему в description.
           content:
             text/event-stream:
               schema:
                 type: string
-                description: |
-                  События: `delta` (текст-чанк), `summary`, `artifact`, `done`.
-                  Каждое — JSON в формате `event: <name>\ndata: <json>\n\n`.
         '403':
           description: |
-            Доступ закрыт. Причины:
-              - `program_closed` — программа выключена админом
-              - `agent_not_available` — агент не открыт для этой программы
+            Доступ закрыт. Причины (в поле `error`):
+              - `program_closed` — программа выключена админом → фронт показывает плашку подписки
+              - `agent_not_available` — агент не открыт для этой программы → фронт перезагружает список агентов
+              - `account_disabled` — админ отключил ученика → фронт идёт на /login
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }

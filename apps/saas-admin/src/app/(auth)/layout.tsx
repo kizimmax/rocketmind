@@ -14,7 +14,7 @@ export default function AuthLayout({
 
   useEffect(() => {
     if (!isLoading && isAuthed) {
-      router.replace("/pages");
+      router.replace("/ai-agents");
     }
   }, [isAuthed, isLoading, router]);
 
