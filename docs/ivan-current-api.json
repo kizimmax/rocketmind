@@ -1,0 +1,1656 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Rocketmind API",
+    "version": "1.0.0",
+    "description": "API платформы Rocketmind"
+  },
+  "servers": [
+    {
+      "url": "https://r-accel-back-rocketmind.amvera.io/api/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "accessToken"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "profession": {
+            "type": "string"
+          },
+          "fieldOfActivity": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "courseGroup": {
+            "$ref": "#/components/schemas/CourseGroup"
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isSystem": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CourseAgent": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string",
+            "format": "uri"
+          },
+          "openAiAssistantId": {
+            "type": "string"
+          },
+          "baseMessages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "CourseGroup": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "agents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseAgent"
+            }
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "qrCode": {
+            "type": "string"
+          }
+        }
+      },
+      "CourseMessage": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "messageText": {
+            "type": "string"
+          },
+          "user": {
+            "type": "string"
+          },
+          "agent": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OpenAiAssistant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "Текущая страница",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Количество элементов на странице",
+            "example": 10
+          },
+          "total": {
+            "type": "integer",
+            "description": "Общее количество элементов",
+            "example": 42
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Общее количество страниц",
+            "example": 5
+          },
+          "hasMore": {
+            "type": "boolean",
+            "description": "Есть ли ещё страницы",
+            "example": true
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "cookieAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Отправить код подтверждения на email",
+        "description": "Отправляет 6-значный код на указанный email. Создаёт пользователя, если он не существует.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Код отправлен"
+          },
+          "429": {
+            "description": "Код уже был отправлен, подождите перед повторной отправкой"
+          }
+        }
+      }
+    },
+    "/auth/verify": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Подтвердить код и получить токены",
+        "description": "Верифицирует код, устанавливает accessToken и refreshToken в cookies.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "code"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "code": {
+                    "type": "string",
+                    "example": "123456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Авторизация прошла успешно"
+          },
+          "400": {
+            "description": "Неверный или истёкший код"
+          },
+          "429": {
+            "description": "Превышено количество попыток"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Обновить access token",
+        "description": "Использует refreshToken из cookie для выдачи новой пары токенов.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Токены обновлены"
+          },
+          "401": {
+            "description": "Недействительный refresh token"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Выйти из аккаунта",
+        "description": "Очищает cookies с токенами.",
+        "responses": {
+          "200": {
+            "description": "Выход выполнен"
+          }
+        }
+      }
+    },
+    "/course/agents/assistants": {
+      "get": {
+        "tags": [
+          "Course / Agents"
+        ],
+        "summary": "Список ассистентов OpenAI",
+        "description": "Возвращает id и имя каждого ассистента из OpenAI для привязки к агенту. Требует право `assistants.read`.",
+        "responses": {
+          "200": {
+            "description": "Список ассистентов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OpenAiAssistant"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          }
+        }
+      }
+    },
+    "/course/agents/accessible": {
+      "get": {
+        "tags": [
+          "Course / Agents"
+        ],
+        "summary": "Доступные агенты текущего пользователя",
+        "description": "Возвращает агентов из активной группы пользователя. Не требует прав администратора.",
+        "responses": {
+          "200": {
+            "description": "Список доступных агентов (пустой массив, если нет группы или группа неактивна)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CourseAgent"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/course/agents": {
+      "get": {
+        "tags": [
+          "Course / Agents"
+        ],
+        "summary": "Список всех агентов",
+        "description": "Требует право `agents.read`.",
+        "responses": {
+          "200": {
+            "description": "Список агентов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CourseAgent"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Course / Agents"
+        ],
+        "summary": "Создать агента",
+        "description": "Требует право `agents.create`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "description",
+                  "avatar",
+                  "openAiAssistantId"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "avatar": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "openAiAssistantId": {
+                    "type": "string"
+                  },
+                  "baseMessages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Агент создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseAgent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации"
+          }
+        }
+      }
+    },
+    "/course/agents/{id}": {
+      "get": {
+        "tags": [
+          "Course / Agents"
+        ],
+        "summary": "Получить агента по ID",
+        "description": "Требует право `agents.read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Агент получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseAgent"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Агент не найден"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Course / Agents"
+        ],
+        "summary": "Обновить агента",
+        "description": "Требует право `agents.update`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "avatar": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "openAiAssistantId": {
+                    "type": "string"
+                  },
+                  "baseMessages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Агент обновлён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseAgent"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Агент не найден"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Course / Agents"
+        ],
+        "summary": "Удалить агента",
+        "description": "Требует право `agents.delete`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Агент удалён"
+          },
+          "404": {
+            "description": "Агент не найден"
+          }
+        }
+      }
+    },
+    "/course/groups/join": {
+      "post": {
+        "tags": [
+          "Course / Groups"
+        ],
+        "summary": "Вступить в группу по QR-коду",
+        "description": "Привязывает текущего пользователя к группе по её секретному QR-коду. Группа должна быть активна.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "qrCode"
+                ],
+                "properties": {
+                  "qrCode": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Вы добавлены в группу"
+          },
+          "404": {
+            "description": "Группа не найдена или неактивна"
+          }
+        }
+      }
+    },
+    "/course/groups": {
+      "get": {
+        "tags": [
+          "Course / Groups"
+        ],
+        "summary": "Список всех групп",
+        "description": "Требует право `course_groups.read`.",
+        "responses": {
+          "200": {
+            "description": "Список групп с популяцией агентов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CourseGroup"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Course / Groups"
+        ],
+        "summary": "Создать группу",
+        "description": "Требует право `course_groups.create`. QR-код генерируется автоматически.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "agents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Массив ID агентов"
+                  },
+                  "active": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Группа создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseGroup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации"
+          }
+        }
+      }
+    },
+    "/course/groups/{id}": {
+      "get": {
+        "tags": [
+          "Course / Groups"
+        ],
+        "summary": "Получить группу по ID",
+        "description": "Требует право `course_groups.read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Группа получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseGroup"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Группа не найдена"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Course / Groups"
+        ],
+        "summary": "Обновить группу",
+        "description": "Требует право `course_groups.update`. Передайте updateQRCode=true для генерации нового QR-кода.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "agents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "updateQRCode": {
+                    "type": "boolean",
+                    "description": "Пересоздать QR-код"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Группа обновлена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseGroup"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Группа не найдена"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Course / Groups"
+        ],
+        "summary": "Удалить группу",
+        "description": "Требует право `course_groups.delete`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Группа удалена"
+          },
+          "404": {
+            "description": "Группа не найдена"
+          }
+        }
+      }
+    },
+    "/course/messages": {
+      "get": {
+        "tags": [
+          "Course / Messages"
+        ],
+        "summary": "История сообщений с агентом (с пагинацией)",
+        "description": "Возвращает сообщения текущего пользователя с указанным агентом, отсортированные по возрастанию даты.\nПоддерживает постраничную загрузку (по 10 сообщений) для реализации бесконечного скролла на клиенте.\nПри достижении последней страницы поле `hasMore` вернёт `false`.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "agentId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID агента"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Номер страницы"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            },
+            "description": "Количество сообщений на странице"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список сообщений с метаданными пагинации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CourseMessage"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации (agentId не передан или некорректен)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Course / Messages"
+        ],
+        "summary": "Отправить сообщение агенту",
+        "description": "Отправляет сообщение агенту через OpenAI Assistants API и сохраняет оба сообщения (пользователя и агента) в БД.\nПри первом обращении создаётся OpenAI thread для пользователя.\nПользователь должен состоять в активной группе, в которую входит выбранный агент.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "agentId",
+                  "messageText"
+                ],
+                "properties": {
+                  "agentId": {
+                    "type": "string"
+                  },
+                  "messageText": {
+                    "type": "string",
+                    "maxLength": 4000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Сообщение отправлено, ответ агента получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "userMessage": {
+                      "$ref": "#/components/schemas/CourseMessage"
+                    },
+                    "agentMessage": {
+                      "$ref": "#/components/schemas/CourseMessage"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации данных",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Нет доступа к агенту или группа неактивна",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Агент не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/file/upload": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Загрузить файл или изображение",
+        "description": "Загружает файл в Yandex Cloud S3. Максимальный размер — 10 МБ.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Файл загружен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "example": "https://storage.yandexcloud.net/bucket/uuid.jpg"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Файл не передан"
+          }
+        }
+      }
+    },
+    "/profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Получить профиль текущего пользователя",
+        "responses": {
+          "200": {
+            "description": "Профиль получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Требуется авторизация"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Обновить профиль текущего пользователя",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "profession": {
+                    "type": "string"
+                  },
+                  "fieldOfActivity": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Профиль обновлён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Требуется авторизация"
+          }
+        }
+      }
+    },
+    "/roles": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Список всех ролей",
+        "description": "Требует право `roles.read`.",
+        "responses": {
+          "200": {
+            "description": "Список ролей",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Role"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Создать роль",
+        "description": "Требует право `roles.create`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "permissions"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "agents.read",
+                      "course_groups.read"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Роль создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации"
+          }
+        }
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Получить роль по ID",
+        "description": "Требует право `roles.read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Роль получена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Роль не найдена"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Обновить роль",
+        "description": "Требует право `roles.update`. Системные роли (isSystem=true) нельзя изменить.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Роль обновлена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Role"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Системную роль нельзя изменить"
+          },
+          "404": {
+            "description": "Роль не найдена"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Удалить роль",
+        "description": "Требует право `roles.delete`. Системные роли (isSystem=true) нельзя удалить.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Роль удалена"
+          },
+          "403": {
+            "description": "Системную роль нельзя удалить"
+          },
+          "404": {
+            "description": "Роль не найдена"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Список пользователей с пагинацией и поиском",
+        "description": "Требует право `users.read`. Поддерживает пагинацию и поиск по email.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Номер страницы"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Количество пользователей на странице"
+          },
+          {
+            "in": "query",
+            "name": "email",
+            "schema": {
+              "type": "string",
+              "format": "email"
+            },
+            "description": "Фильтр по email (частичное совпадение, без учёта регистра)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список пользователей с метаданными пагинации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ошибка валидации параметров",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Недостаточно прав",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Получить пользователя по ID",
+        "description": "Требует право `users.read`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Пользователь получен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Обновить данные пользователя",
+        "description": "Требует право `users.update`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "profession": {
+                    "type": "string"
+                  },
+                  "fieldOfActivity": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "courseGroup": {
+                    "type": "string",
+                    "description": "ID группы (или null для сброса)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Пользователь обновлён",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Нельзя обновить системного пользователя",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/role": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Обновить роль пользователя",
+        "description": "Требует право `users.update`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "role"
+                ],
+                "properties": {
+                  "role": {
+                    "type": "string",
+                    "description": "ID роли"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Роль пользователя обновлена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Нельзя обновить системного пользователя",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Пользователь не найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервера",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": []
+}

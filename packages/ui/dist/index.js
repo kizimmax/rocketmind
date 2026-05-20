@@ -3248,6 +3248,7 @@ function GlossaryWidget({
         className,
         head: headContent,
         body: groupsList,
+        stickyTop,
         ...props
       }
     );
@@ -3269,24 +3270,33 @@ function GlossaryWidget({
     }
   );
 }
+function parseStickyTopPx(value) {
+  const m = value.trim().match(/^(-?\d*\.?\d+)(rem|em|px)?$/);
+  if (!m) return 0;
+  const n = parseFloat(m[1]);
+  return m[2] === "rem" || m[2] === "em" ? n * 16 : n;
+}
 function GlossaryStickyShell({
   head,
   body,
+  stickyTop,
   className,
   ...props
 }) {
   const scrollRef = React14.useRef(null);
-  const [fade, setFade] = React14.useState({
+  const sentinelRef = React14.useRef(null);
+  const [internal, setInternal] = React14.useState({
     top: false,
     bottom: false
   });
-  const update = React14.useCallback(() => {
+  const [pinned, setPinned] = React14.useState(false);
+  const updateInternal = React14.useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     const { scrollTop, scrollHeight, clientHeight } = el;
     const overflows = scrollHeight - clientHeight > 1;
     const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
-    setFade({
+    setInternal({
       top: overflows && scrollTop > 1,
       bottom: overflows && !atBottom
     });
@@ -3294,55 +3304,78 @@ function GlossaryStickyShell({
   React14.useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    update();
-    const ro = new ResizeObserver(update);
+    updateInternal();
+    const ro = new ResizeObserver(updateInternal);
     ro.observe(el);
-    const mo = new MutationObserver(update);
+    const mo = new MutationObserver(updateInternal);
     mo.observe(el, { childList: true, subtree: true, characterData: true });
     return () => {
       ro.disconnect();
       mo.disconnect();
     };
-  }, [update]);
-  return /* @__PURE__ */ jsx40(
+  }, [updateInternal]);
+  React14.useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const topPx = parseStickyTopPx(stickyTop);
+    const io = new IntersectionObserver(
+      ([entry]) => setPinned(!entry.isIntersecting),
+      { rootMargin: `-${topPx + 1}px 0px 0px 0px`, threshold: 0 }
+    );
+    io.observe(sentinel);
+    return () => io.disconnect();
+  }, [stickyTop]);
+  const showTopFade = internal.top || pinned;
+  const showBottomFade = internal.bottom;
+  return /* @__PURE__ */ jsxs20(
     "aside",
     {
       className: cn("relative isolate h-full min-h-[200px]", className),
       ...props,
-      children: /* @__PURE__ */ jsxs20(
-        "div",
-        {
-          ref: scrollRef,
-          onScroll: update,
-          className: "rm-scrollbar-white-2 absolute inset-0 overflow-y-auto rounded-sm",
-          children: [
-            /* @__PURE__ */ jsxs20("div", { className: "sticky top-0 z-20", children: [
-              /* @__PURE__ */ jsx40("div", { className: "flex flex-col gap-5 rounded-t-sm bg-[color:var(--rm-gray-1)] px-6 pt-6 pb-5", children: head }),
-              /* @__PURE__ */ jsx40(
-                "div",
-                {
-                  "aria-hidden": true,
-                  className: cn(
-                    "pointer-events-none h-10 bg-gradient-to-b from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
-                    fade.top ? "opacity-100" : "opacity-0"
-                  )
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsx40("div", { className: "relative z-0 -mt-10 rounded-b-sm bg-[color:var(--rm-gray-1)] px-6 pb-6 pt-1", children: body }),
+      children: [
+        /* @__PURE__ */ jsx40(
+          "div",
+          {
+            ref: sentinelRef,
+            "aria-hidden": true,
+            className: "pointer-events-none absolute left-0 top-0 h-px w-px"
+          }
+        ),
+        /* @__PURE__ */ jsxs20("div", { className: "absolute inset-0 flex flex-col", children: [
+          /* @__PURE__ */ jsxs20("div", { className: "sticky z-20", style: { top: stickyTop }, children: [
+            /* @__PURE__ */ jsx40("div", { className: "flex flex-col gap-5 rounded-t-sm bg-[color:var(--rm-gray-1)] px-6 pt-6 pb-5", children: head }),
             /* @__PURE__ */ jsx40(
               "div",
               {
                 "aria-hidden": true,
                 className: cn(
-                  "pointer-events-none sticky bottom-0 -mt-10 z-10 h-10 bg-gradient-to-t from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
-                  fade.bottom ? "opacity-100" : "opacity-0"
+                  "pointer-events-none h-10 bg-gradient-to-b from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
+                  showTopFade ? "opacity-100" : "opacity-0"
                 )
               }
             )
-          ]
-        }
-      )
+          ] }),
+          /* @__PURE__ */ jsx40(
+            "div",
+            {
+              ref: scrollRef,
+              onScroll: updateInternal,
+              className: "rm-scrollbar-white-2 relative z-0 -mt-10 flex-1 min-h-0 overflow-y-auto rounded-b-sm bg-[color:var(--rm-gray-1)] px-6 pt-1 pb-6",
+              children: body
+            }
+          ),
+          /* @__PURE__ */ jsx40(
+            "div",
+            {
+              "aria-hidden": true,
+              className: cn(
+                "pointer-events-none absolute inset-x-0 bottom-[-1px] z-10 h-10 rounded-b-sm bg-gradient-to-t from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
+                showBottomFade ? "opacity-100" : "opacity-0"
+              )
+            }
+          )
+        ] })
+      ]
     }
   );
 }

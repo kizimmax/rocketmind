@@ -181,6 +181,7 @@ export function GlossaryWidget({
         className={className}
         head={headContent}
         body={groupsList}
+        stickyTop={stickyTop}
         {...props}
       />
     )
@@ -204,40 +205,58 @@ export function GlossaryWidget({
 
 // ── GlossaryStickyShell ────────────────────────────────────────────────────
 //
-// Column-matched режим: высота aside равна высоте соседней grid-колонки со
-// статьями (внешний <aside> ничего не «толкает» в grid, всё содержимое внутри
-// `absolute inset-0`). Внутренний контейнер скроллится, шапка sticky к
-// top:0 этого контейнера, кастомный 2px белый скроллбар — `.rm-scrollbar-white-2`.
-//
-// Top/bottom fade'ы реактивны от позиции скролла:
-//   • top fade виден только когда `scrollTop > 0`
-//   • bottom fade виден только когда `scrollTop + clientHeight < scrollHeight`
-// Так что когда контент влезает целиком — оба фейда скрыты, рез нет.
+// Column-matched режим:
+//   • Высота aside равна высоте соседней grid-колонки со статьями — внешний
+//     <aside> ничего не «толкает» в grid, всё содержимое внутри
+//     `absolute inset-0`, row-sizing определяется соседом.
+//   • Шапка (название + ссылка + поиск) `sticky` к скроллу СТРАНИЦЫ
+//     (top = `stickyTop`, обычно 4rem чтобы упереться в фикс-хедер сайта).
+//   • Тело (лента терминов) — отдельный внутренний scroll-контейнер с
+//     `.rm-scrollbar-white-2`.
+//   • Top-фейд виден когда:
+//       – внутренний `scrollTop > 0` (тело прокручено внутри), ИЛИ
+//       – шапка `pinned` к фикс-хедеру (страница прокручена через aside).
+//     Pinned-состояние ловим через IntersectionObserver на sentinel’е,
+//     поставленном на верх aside с `rootMargin = -stickyTop`.
+//   • Bottom-фейд — абсолютный оверлей на низ aside (поверх scroll-контейнера),
+//     виден когда снизу остался контент во внутреннем скролле. Сдвинут на
+//     1px вниз чтобы не было субпиксельной щели под фейдом у скругления.
 
 type GlossaryStickyShellProps = React.HTMLAttributes<HTMLElement> & {
   head: React.ReactNode
   body: React.ReactNode
+  stickyTop: string
+}
+
+function parseStickyTopPx(value: string): number {
+  const m = value.trim().match(/^(-?\d*\.?\d+)(rem|em|px)?$/)
+  if (!m) return 0
+  const n = parseFloat(m[1])
+  return m[2] === "rem" || m[2] === "em" ? n * 16 : n
 }
 
 function GlossaryStickyShell({
   head,
   body,
+  stickyTop,
   className,
   ...props
 }: GlossaryStickyShellProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
-  const [fade, setFade] = React.useState<{ top: boolean; bottom: boolean }>({
+  const sentinelRef = React.useRef<HTMLDivElement>(null)
+  const [internal, setInternal] = React.useState<{ top: boolean; bottom: boolean }>({
     top: false,
     bottom: false,
   })
+  const [pinned, setPinned] = React.useState(false)
 
-  const update = React.useCallback(() => {
+  const updateInternal = React.useCallback(() => {
     const el = scrollRef.current
     if (!el) return
     const { scrollTop, scrollHeight, clientHeight } = el
     const overflows = scrollHeight - clientHeight > 1
     const atBottom = scrollTop + clientHeight >= scrollHeight - 1
-    setFade({
+    setInternal({
       top: overflows && scrollTop > 1,
       bottom: overflows && !atBottom,
     })
@@ -246,29 +265,47 @@ function GlossaryStickyShell({
   React.useEffect(() => {
     const el = scrollRef.current
     if (!el) return
-    update()
-    const ro = new ResizeObserver(update)
+    updateInternal()
+    const ro = new ResizeObserver(updateInternal)
     ro.observe(el)
-    // Дети меняются при фильтрации/поиске — наблюдаем за content size тоже.
-    const mo = new MutationObserver(update)
+    const mo = new MutationObserver(updateInternal)
     mo.observe(el, { childList: true, subtree: true, characterData: true })
     return () => {
       ro.disconnect()
       mo.disconnect()
     }
-  }, [update])
+  }, [updateInternal])
+
+  React.useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+    const topPx = parseStickyTopPx(stickyTop)
+    const io = new IntersectionObserver(
+      ([entry]) => setPinned(!entry.isIntersecting),
+      { rootMargin: `-${topPx + 1}px 0px 0px 0px`, threshold: 0 },
+    )
+    io.observe(sentinel)
+    return () => io.disconnect()
+  }, [stickyTop])
+
+  const showTopFade = internal.top || pinned
+  const showBottomFade = internal.bottom
 
   return (
     <aside
       className={cn("relative isolate h-full min-h-[200px]", className)}
       {...props}
     >
+      {/* Sentinel на верхней кромке aside — ловит page-sticky состояние. */}
       <div
-        ref={scrollRef}
-        onScroll={update}
-        className="rm-scrollbar-white-2 absolute inset-0 overflow-y-auto rounded-sm"
-      >
-        <div className="sticky top-0 z-20">
+        ref={sentinelRef}
+        aria-hidden
+        className="pointer-events-none absolute left-0 top-0 h-px w-px"
+      />
+      {/* absolute inset-0 без overflow — НЕ scroll-контейнер, поэтому
+          `sticky` шапки внутри отслеживает скролл СТРАНИЦЫ. */}
+      <div className="absolute inset-0 flex flex-col">
+        <div className="sticky z-20" style={{ top: stickyTop }}>
           <div className="flex flex-col gap-5 rounded-t-sm bg-[color:var(--rm-gray-1)] px-6 pt-6 pb-5">
             {head}
           </div>
@@ -276,18 +313,23 @@ function GlossaryStickyShell({
             aria-hidden
             className={cn(
               "pointer-events-none h-10 bg-gradient-to-b from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
-              fade.top ? "opacity-100" : "opacity-0",
+              showTopFade ? "opacity-100" : "opacity-0",
             )}
           />
         </div>
-        <div className="relative z-0 -mt-10 rounded-b-sm bg-[color:var(--rm-gray-1)] px-6 pb-6 pt-1">
+        <div
+          ref={scrollRef}
+          onScroll={updateInternal}
+          className="rm-scrollbar-white-2 relative z-0 -mt-10 flex-1 min-h-0 overflow-y-auto rounded-b-sm bg-[color:var(--rm-gray-1)] px-6 pt-1 pb-6"
+        >
           {body}
         </div>
+        {/* Bottom-фейд — абсолютный оверлей на низ aside, поверх scroll-body. */}
         <div
           aria-hidden
           className={cn(
-            "pointer-events-none sticky bottom-0 -mt-10 z-10 h-10 bg-gradient-to-t from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
-            fade.bottom ? "opacity-100" : "opacity-0",
+            "pointer-events-none absolute inset-x-0 bottom-[-1px] z-10 h-10 rounded-b-sm bg-gradient-to-t from-[color:var(--rm-gray-1)] via-[color:var(--rm-gray-1)]/70 to-transparent transition-opacity duration-150",
+            showBottomFade ? "opacity-100" : "opacity-0",
           )}
         />
       </div>

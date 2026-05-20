@@ -473,10 +473,11 @@ export function MediaListClient({
 
               {/* Glossary widget — правая колонка (desktop only), поднята на
                   уровень H1. Высота подгоняется под колонку со статьями,
-                  при переполнении — внутренний скролл со slim-white-2px
-                  скроллбаром. Шапка sticky внутри aside (top:0). */}
+                  при переполнении тела — внутренний скролл со slim-white-2px
+                  скроллбаром. Шапка sticky к скроллу страницы (top=4rem —
+                  упор в фикс-хедер сайта). */}
               <div className="hidden lg:block lg:h-full" style={stagger(2)}>
-                <GlossaryWidget items={glossaryTerms} stickyTop="0" />
+                <GlossaryWidget items={glossaryTerms} stickyTop="4rem" />
               </div>
             </div>
           </div>
