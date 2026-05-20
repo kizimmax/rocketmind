@@ -21,6 +21,7 @@ import { filterSlugInput } from "@/lib/slugify";
 import { useArticleEditor, getArticleChanges } from "@/lib/use-article-editor";
 import { useNavigationGuard } from "@/lib/navigation-guard";
 import { EditorToolbar } from "@/components/page-editor/editor-toolbar";
+import { BodyImportButtons } from "@/components/media/body-import-buttons";
 import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-dialog";
 import { ArticleHeroEditor } from "./article-hero-editor";
 import { ArticlePreviewCard } from "./article-preview-card";
@@ -174,6 +175,10 @@ function ArticleEditorInner({
             /media/{article.slug}
           </p>
         </div>
+        <BodyImportButtons
+          currentSections={article.body}
+          onImport={(sections) => update("body", sections)}
+        />
       </div>
 
       <div className="flex-1 overflow-y-auto px-6 py-6">

@@ -338,6 +338,11 @@ export function ArticlePageClient({
         const factoidsEl = body.querySelector<HTMLElement>(
           `[data-section-factoids="${id}"]`,
         );
+        // У секции есть asides ⇔ внутри wrap'а есть sticky-zone (см. рендер
+        // — `{section.asides.length > 0 && <div data-section-aside-sticky-zone>}`).
+        // Когда asides нет — wrap пуст, правая колонка визуально свободна и
+        // её можно отдать factoid-/list-card-сетке (negative marginRight).
+        const hasAsides = wrap.children.length > 0;
         let factoidOffset = 0;
         if (factoidsEl) {
           const grid = factoidsEl.querySelector<HTMLElement>(
@@ -355,15 +360,21 @@ export function ArticlePageClient({
               .trim();
             const cols = tpl ? tpl.split(/\s+/).length : 1;
 
-            // Col-4 overflow — только в 3-кол layout (≥1280).
+            // Col-4 overflow в двух случаях:
+            //   1) cols=3 и есть 3-я карточка — она визуально занимает col-4
+            //      (как wide-quote), aside сдвигаем paddingTop'ом ниже.
+            //   2) у секции нет asides — отдаём правую колонку самой сетке,
+            //      чтобы карточки получили дополнительные ~300px и длинные
+            //      number'ы (типа «5+ ЛЕТ») не переносились.
             const asideCol = document.querySelector<HTMLElement>(
               "[data-aside-col]",
             );
             const asideW = asideCol ? asideCol.offsetWidth : 0;
-            // 3-я карточка визуально полностью занимает col-4 (как wide-quote).
-            // Aside-контент НЕ накладывается потому, что мы сдвигаем его вниз
-            // через paddingTop на aside-inner (см. ниже).
-            if (cols >= 3 && asideW > 0 && cells.length >= 3) {
+            const overflowAside =
+              asideW > 0 &&
+              ((cols >= 3 && cells.length >= 3) ||
+                (!hasAsides && cells.length > 0));
+            if (overflowAside) {
               factoidsEl.style.marginRight = `-${asideW + 8}px`;
             } else {
               factoidsEl.style.marginRight = "";
@@ -431,7 +442,13 @@ export function ArticlePageClient({
               "[data-aside-col]",
             );
             const asideW = asideCol ? asideCol.offsetWidth : 0;
-            if (cols >= 3 && asideW > 0 && cells.length >= 3) {
+            // Та же логика, что и у factoids: или 3-я карточка в 3-кол layout,
+            // или секция без asides — отдаём правую колонку грид-сетке.
+            const overflowAside =
+              asideW > 0 &&
+              ((cols >= 3 && cells.length >= 3) ||
+                (!hasAsides && cells.length > 0));
+            if (overflowAside) {
               listCardsEl.style.marginRight = `-${asideW + 8}px`;
             } else {
               listCardsEl.style.marginRight = "";

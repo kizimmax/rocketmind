@@ -321,12 +321,14 @@ export function PageCard({ page, viewMode = "grid", onArchive, onRestore, onDele
           </span>
         </td>
 
-        {/* Cover path */}
+        {/* Видимость: меню / футер (как в grid-карточке).
+            VisibilityDots поддерживается только для продуктовых разделов;
+            у остальных — прочерк. */}
         <td className="hidden lg:table-cell py-2 px-2 align-middle">
-          {cover ? (
-            <span className="text-[length:var(--text-10)] font-mono text-muted-foreground/70 line-clamp-1">
-              {coverPath}
-            </span>
+          {page.sectionId === "consulting" ||
+          page.sectionId === "academy" ||
+          page.sectionId === "ai-products" ? (
+            <VisibilityDots page={page} />
           ) : (
             <span className="text-[length:var(--text-10)] text-muted-foreground/40">—</span>
           )}

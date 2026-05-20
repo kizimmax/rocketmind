@@ -138,11 +138,14 @@ function parseBody(
   md: string,
   expertNameToSlug: Map<string, string>,
 ): Section[] {
-  const text = md.replace(/\r\n?/g, "\n").trim();
+  let text = md.replace(/\r\n?/g, "\n").trim();
   if (!text) return [];
-  // Split by `## ` headers (sections)
+  // Strip leading/trailing stray quote chars (Sheets export sometimes wraps cells)
+  text = text.replace(/^["'`]+/, "").replace(/["'`]+$/, "").trim();
+  if (!text) return [];
+  // Split by `##` headers (allow no space: `##Title` and `## Title`)
   const chunks: { title: string; body: string }[] = [];
-  const re = /(^|\n)##\s+([^\n]+)\n([\s\S]*?)(?=(?:\n##\s)|$)/g;
+  const re = /(^|\n)##[ \t]*([^\n]+)\n([\s\S]*?)(?=(?:\n##[ \t]*[^\n])|$)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
     chunks.push({ title: m[2].trim(), body: m[3].trim() });
@@ -177,51 +180,105 @@ function parseBody(
     let bIdx = 0;
     let qIdx = 0;
 
+    // ── Quote state machine ─────────────────────────────────────────────────
+    // Поддерживаем два формата:
+    //  A) «ЦИТАТА — комментарий\nТекст…\nИмя\nДолжность» — один параграф без пустых строк
+    //  B) Маркер «ЦИТАТА» отдельной строкой → пустая строка → текст в следующих
+    //     параграфах → закрытие маркером «КОММЕНТАРИЙ КЛИЕНТА» (анонимный)
+    //     ИЛИ ФИО + должность в одной из строк
+    let quoteOpen = false;
+    let quoteText: string[] = [];
+    let quoteName = "";
+    let quoteRole = "";
+    let quoteIsClientComment = false;
+
+    function finishQuote() {
+      if (!quoteOpen) return;
+      qIdx++;
+      const id = `${sectionId}_q${qIdx}`;
+      const text = quoteText.map((l) => l.trim()).filter(Boolean);
+      if (text.length === 0) {
+        // Бракованная цитата без текста — отбрасываем
+        quoteOpen = false; quoteText = []; quoteName = ""; quoteRole = ""; quoteIsClientComment = false;
+        return;
+      }
+      const slug = !quoteIsClientComment && quoteName
+        ? expertNameToSlug.get(quoteName.replace(/ё/g, "е").toLowerCase())
+        : undefined;
+      if (slug) {
+        quotes.push({ id, expertSlug: slug, paragraphs: text });
+      } else {
+        quotes.push({ id, name: "Комментарий клиента", paragraphs: text });
+      }
+      quoteOpen = false; quoteText = []; quoteName = ""; quoteRole = ""; quoteIsClientComment = false;
+    }
+
+    function looksLikeName(line: string): boolean {
+      const words = line.split(/\s+/);
+      if (words.length < 1 || words.length > 4) return false;
+      return words.every((w) => /^[А-ЯЁA-Z][\wА-Яа-яё-]{1,}$/.test(w));
+    }
+
     for (let pi = 0; pi < paragraphs.length; pi++) {
       const para = paragraphs[pi];
       const lines = para.split("\n").map((l) => l.trim()).filter((l) => l);
+      if (lines.length === 0) continue;
 
-      // Quote marker: «ЦИТАТА — …» — текст и автор внутри ЭТОГО же блока (paragraph),
-      // т.к. в CSV между маркером и текстом нет пустых строк.
-      if (lines.length > 0 && /^цитата\b/i.test(lines[0])) {
-        // lines[0] = marker; следующие 1+ строки = текст цитаты;
-        // последние 1-2 строки (имя, должность) — автор.
-        // Эвристика: имя — короткая строка из 2-3 слов с заглавных букв.
+      // Format A (inline marker with content in same paragraph)
+      if (!quoteOpen && /^цитата[\s—-]/i.test(lines[0])) {
         const rest = lines.slice(1);
-        if (rest.length === 0) continue;
-        // Найдём индекс первой строки, которая выглядит как ФИО (1-3 слова, каждое с заглавной).
-        const nameIdx = rest.findIndex((l) => {
-          const words = l.split(/\s+/);
-          if (words.length < 1 || words.length > 4) return false;
-          return words.every((w) => /^[А-ЯЁA-Z][\wА-Яа-яё-]{1,}$/.test(w));
-        });
-        let text: string[];
-        let nameLine = "";
-        let roleLine = "";
-        if (nameIdx > 0) {
-          text = rest.slice(0, nameIdx);
-          nameLine = rest[nameIdx];
-          roleLine = rest.slice(nameIdx + 1).join(" ").trim();
+        const nameIdx = rest.findIndex(looksLikeName);
+        if (nameIdx >= 0) {
+          quoteText = rest.slice(0, nameIdx);
+          quoteName = rest[nameIdx];
+          quoteRole = rest.slice(nameIdx + 1).join(" ");
         } else {
-          // Не нашли имени — весь rest — текст, без автора
-          text = rest;
+          quoteText = rest;
         }
-        qIdx++;
-        const slug = nameLine ? expertNameToSlug.get(nameLine.replace(/ё/g, "е").toLowerCase()) : undefined;
-        if (slug) {
-          quotes.push({
-            id: `${sectionId}_q${qIdx}`,
-            expertSlug: slug,
-            paragraphs: text,
-          });
-        } else {
-          // Комментарий клиента — без аватарки и slug
-          quotes.push({
-            id: `${sectionId}_q${qIdx}`,
-            name: "Комментарий клиента",
-            paragraphs: text,
-          });
+        quoteOpen = true;
+        finishQuote();
+        continue;
+      }
+
+      // Format B start: первая строка = «ЦИТАТА» (без описания после)
+      if (!quoteOpen && /^цитата\s*$/i.test(lines[0])) {
+        quoteOpen = true;
+        // Остальные строки этого параграфа (редко, но возможно) — текст цитаты
+        for (const l of lines.slice(1)) {
+          if (/^комментарий\s+клиента\s*$/i.test(l)) {
+            quoteIsClientComment = true;
+            finishQuote();
+            quoteOpen = false;
+            break;
+          }
+          quoteText.push(l);
         }
+        continue;
+      }
+
+      // Inside quote (Format B): paragraphs продолжают текст до закрытия
+      if (quoteOpen) {
+        let closed = false;
+        for (const l of lines) {
+          if (/^комментарий\s+клиента\s*$/i.test(l)) {
+            quoteIsClientComment = true;
+            finishQuote();
+            closed = true;
+            break;
+          }
+          if (looksLikeName(l) && quoteText.length > 0) {
+            // Имя автора — следующая строка (если есть) = должность
+            const idx = lines.indexOf(l);
+            quoteName = l;
+            quoteRole = lines.slice(idx + 1).join(" ");
+            finishQuote();
+            closed = true;
+            break;
+          }
+          quoteText.push(l);
+        }
+        if (closed) continue;
+        // Иначе ждём следующий параграф
         continue;
       }
 
@@ -286,6 +343,12 @@ function parseBody(
         type: "paragraph",
         data: { text: lines.join("\n") },
       });
+    }
+
+    // Если параграфы закончились а цитата осталась открытой — закрываем как client-comment
+    if (quoteOpen) {
+      quoteIsClientComment = true;
+      finishQuote();
     }
 
     return {

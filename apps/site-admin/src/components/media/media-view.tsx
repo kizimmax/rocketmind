@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  SortableTh,
+  compareValues,
+  type SortState,
+} from "@/components/sortable-th";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Plus,
@@ -54,7 +59,73 @@ export function MediaView() {
   const [newTitle, setNewTitle] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [filterTagId, setFilterTagId] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [viewLoaded, setViewLoaded] = useState(false);
+  useEffect(() => {
+    const stored = window.localStorage.getItem("cms_media_view");
+    if (stored === "grid" || stored === "list") setViewMode(stored);
+    setViewLoaded(true);
+  }, []);
+  useEffect(() => {
+    if (!viewLoaded) return;
+    window.localStorage.setItem("cms_media_view", viewMode);
+  }, [viewMode, viewLoaded]);
+
+  type ArticleSortField = "title" | "description" | "date" | "status" | "slug";
+  const [sort, setSort] = useState<SortState<ArticleSortField>>(null);
+  const [sortLoaded, setSortLoaded] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("cms_media_sort");
+      if (raw) {
+        const parsed = JSON.parse(raw) as SortState<ArticleSortField>;
+        if (
+          parsed &&
+          ["title", "description", "date", "status", "slug"].includes(parsed.field) &&
+          (parsed.dir === "asc" || parsed.dir === "desc")
+        ) {
+          setSort(parsed);
+        }
+      }
+    } catch {}
+    setSortLoaded(true);
+  }, []);
+  useEffect(() => {
+    if (!sortLoaded) return;
+    if (sort) {
+      window.localStorage.setItem("cms_media_sort", JSON.stringify(sort));
+    } else {
+      window.localStorage.removeItem("cms_media_sort");
+    }
+  }, [sort, sortLoaded]);
+
+  /** Числовой ранг статуса: published сверху, archived снизу. */
+  function statusRank(s: string): number {
+    if (s === "published") return 0;
+    if (s === "hidden") return 1;
+    return 2;
+  }
+
+  function sortArticles<T extends { id: string; title: string; description: string; status: string; slug: string; publishedAt: string }>(items: T[]): T[] {
+    if (!sort) return items;
+    const copy = [...items];
+    copy.sort((a, b) => {
+      switch (sort.field) {
+        case "title":
+          return compareValues(a.title, b.title, sort.dir);
+        case "description":
+          return compareValues(a.description, b.description, sort.dir);
+        case "date":
+          return compareValues(a.publishedAt, b.publishedAt, sort.dir);
+        case "status":
+          return compareValues(statusRank(a.status), statusRank(b.status), sort.dir);
+        case "slug":
+          return compareValues(a.slug, b.slug, sort.dir);
+      }
+      return 0;
+    });
+    return copy;
+  }
 
   const sortedArticles = useMemo(
     () => [...articles].sort((a, b) => a.order - b.order),
@@ -81,6 +152,16 @@ export function MediaView() {
   const unpinnedArticles = useMemo(
     () => filteredActive.filter((a) => !a.pinned),
     [filteredActive],
+  );
+  // Отсортированные копии для list-режима. Закреплённые сортируем по
+  // pinnedOrder вне зависимости от sort (порядок задаётся вручную ↑/↓).
+  const sortedUnpinnedArticles = useMemo(
+    () => sortArticles(unpinnedArticles),
+    [unpinnedArticles, sort],   // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const sortedArchivedArticles = useMemo(
+    () => sortArticles(archivedArticles),
+    [archivedArticles, sort],   // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   function movePinned(id: string, delta: 1 | -1) {
@@ -376,8 +457,8 @@ export function MediaView() {
                     ))}
                   </div>
                 ) : (
-                  <ArticlesTable>
-                    {unpinnedArticles.map((a) => (
+                  <ArticlesTable sort={sort} onSortChange={setSort}>
+                    {sortedUnpinnedArticles.map((a) => (
                       <ArticleAdminCard
                         key={a.id}
                         article={a}
@@ -414,8 +495,8 @@ export function MediaView() {
                 </div>
               ) : (
                 <div className="opacity-60">
-                  <ArticlesTable>
-                    {archivedArticles.map((a) => (
+                  <ArticlesTable sort={sort} onSortChange={setSort}>
+                    {sortedArchivedArticles.map((a) => (
                       <ArticleAdminCard
                         key={a.id}
                         article={a}
@@ -457,14 +538,25 @@ export function MediaView() {
 
 // ── Таблица для list-режима ────────────────────────────────────────────────
 
+type ArticleSortField = "title" | "description" | "date" | "status" | "slug";
+
 function ArticlesTable({
   children,
   hasPinCol = false,
+  sort,
+  onSortChange,
 }: {
   children: React.ReactNode;
   /** Показать ведущую колонку для ↑/↓ (только для закреплённых). */
   hasPinCol?: boolean;
+  /**
+   * Sort-управление шапкой. Если не передано (например, для закреплённых,
+   * где порядок задаётся вручную) — рендерим плэйновые `<th>` без иконок.
+   */
+  sort?: SortState<ArticleSortField>;
+  onSortChange?: (next: SortState<ArticleSortField>) => void;
 }) {
+  const sortable = !!onSortChange;
   return (
     <div className="overflow-hidden rounded-sm border border-border">
       <table className="w-full text-left">
@@ -472,12 +564,60 @@ function ArticlesTable({
           <tr className="border-b border-border bg-muted/50 text-[length:var(--text-11)] font-medium uppercase tracking-wider text-muted-foreground">
             {hasPinCol && <th className="w-12 py-2 pl-3 pr-1"></th>}
             <th className="w-12 py-2 pl-3 pr-1"></th>
-            <th className="py-2 px-2">Название</th>
-            <th className="hidden md:table-cell py-2 px-2">Описание</th>
-            <th className="hidden lg:table-cell py-2 px-2">Теги</th>
-            <th className="hidden sm:table-cell py-2 px-2">Дата</th>
-            <th className="py-2 px-2">Статус</th>
-            <th className="hidden xl:table-cell py-2 px-2">Путь</th>
+            {sortable ? (
+              <>
+                <SortableTh
+                  field="title"
+                  active={sort ?? null}
+                  onChange={onSortChange!}
+                  className="py-2 px-2"
+                >
+                  Название
+                </SortableTh>
+                <SortableTh
+                  field="description"
+                  active={sort ?? null}
+                  onChange={onSortChange!}
+                  className="hidden md:table-cell py-2 px-2"
+                >
+                  Описание
+                </SortableTh>
+                <th className="hidden lg:table-cell py-2 px-2">Теги</th>
+                <SortableTh
+                  field="date"
+                  active={sort ?? null}
+                  onChange={onSortChange!}
+                  className="hidden sm:table-cell py-2 px-2"
+                >
+                  Дата
+                </SortableTh>
+                <SortableTh
+                  field="status"
+                  active={sort ?? null}
+                  onChange={onSortChange!}
+                  className="py-2 px-2"
+                >
+                  Статус
+                </SortableTh>
+                <SortableTh
+                  field="slug"
+                  active={sort ?? null}
+                  onChange={onSortChange!}
+                  className="hidden xl:table-cell py-2 px-2"
+                >
+                  Путь
+                </SortableTh>
+              </>
+            ) : (
+              <>
+                <th className="py-2 px-2">Название</th>
+                <th className="hidden md:table-cell py-2 px-2">Описание</th>
+                <th className="hidden lg:table-cell py-2 px-2">Теги</th>
+                <th className="hidden sm:table-cell py-2 px-2">Дата</th>
+                <th className="py-2 px-2">Статус</th>
+                <th className="hidden xl:table-cell py-2 px-2">Путь</th>
+              </>
+            )}
             <th className="w-8 py-2 pr-3 pl-1"></th>
           </tr>
         </thead>

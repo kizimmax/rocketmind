@@ -1,8 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Plus, LayoutGrid, List } from "lucide-react";
+import {
+  SortableTh,
+  compareValues,
+  type SortState,
+} from "@/components/sortable-th";
 import {
   Tabs,
   TabsList,
@@ -63,7 +68,90 @@ export function PagesView({ title, sections, defaultSection }: Props) {
    */
   const [pendingCaseKind, setPendingCaseKind] = useState<"big" | "mini">("big");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [viewLoaded, setViewLoaded] = useState(false);
+  // Подгружаем сохранённый режим из localStorage после mount — нельзя в lazy
+  // init из-за SSR (state бы зафиксировался дефолтом и не обновился).
+  useEffect(() => {
+    const stored = window.localStorage.getItem("cms_pages_view");
+    if (stored === "grid" || stored === "list") setViewMode(stored);
+    setViewLoaded(true);
+  }, []);
+  useEffect(() => {
+    if (!viewLoaded) return;
+    window.localStorage.setItem("cms_pages_view", viewMode);
+  }, [viewMode, viewLoaded]);
+
+  type PageSortField = "title" | "description" | "status" | "slug";
+  const [sort, setSort] = useState<SortState<PageSortField>>(null);
+  const [sortLoaded, setSortLoaded] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("cms_pages_sort");
+      if (raw) {
+        const parsed = JSON.parse(raw) as SortState<PageSortField>;
+        if (
+          parsed &&
+          ["title", "description", "status", "slug"].includes(parsed.field) &&
+          (parsed.dir === "asc" || parsed.dir === "desc")
+        ) {
+          setSort(parsed);
+        }
+      }
+    } catch {}
+    setSortLoaded(true);
+  }, []);
+  useEffect(() => {
+    if (!sortLoaded) return;
+    if (sort) {
+      window.localStorage.setItem("cms_pages_sort", JSON.stringify(sort));
+    } else {
+      window.localStorage.removeItem("cms_pages_sort");
+    }
+  }, [sort, sortLoaded]);
+
+  /** Числовой ранг статуса для сортировки: published сверху, archived снизу. */
+  function statusRank(s: string): number {
+    if (s === "published") return 0;
+    if (s === "hidden") return 1;
+    return 2; // archived и неизвестные
+  }
+
+  const sortPages = useCallback(
+    <T extends { id: string; status: string; slug: string; sectionId: string; menuTitle: string; cardTitle: string; menuDescription: string; cardDescription: string; order: number }>(items: T[]): T[] => {
+      if (!sort) return items;
+      const copy = [...items];
+      copy.sort((a, b) => {
+        if (sort.field === "title") {
+          return compareValues(
+            a.menuTitle || a.cardTitle || "",
+            b.menuTitle || b.cardTitle || "",
+            sort.dir,
+          );
+        }
+        if (sort.field === "description") {
+          return compareValues(
+            a.menuDescription || a.cardDescription || "",
+            b.menuDescription || b.cardDescription || "",
+            sort.dir,
+          );
+        }
+        if (sort.field === "status") {
+          return compareValues(statusRank(a.status), statusRank(b.status), sort.dir);
+        }
+        if (sort.field === "slug") {
+          return compareValues(
+            `/${a.sectionId}/${a.slug}`,
+            `/${b.sectionId}/${b.slug}`,
+            sort.dir,
+          );
+        }
+        return 0;
+      });
+      return copy;
+    },
+    [sort],
+  );
 
   const pages = getPagesBySection(activeSection);
   const activePages = pages.filter((p) => p.status !== "archived");
@@ -93,6 +181,54 @@ export function PagesView({ title, sections, defaultSection }: Props) {
   );
 
   const dnd = useItemDnd(activePages, handleReorder);
+
+  // Отсортированные копии — для отображения в list-режиме. Источник для DnD
+  // (`activePages`) при этом остаётся неизменным. Когда sort активна — grip
+  // и стрелки в строках не показываем (см. ниже): порядок в render
+  // отличается от хранимого, и попытка переставить даст неожиданный результат.
+  const sortedActivePages = useMemo(
+    () => sortPages(activePages),
+    [activePages, sortPages],
+  );
+  const sortedArchivedPages = useMemo(
+    () => sortPages(archivedPages),
+    [archivedPages, sortPages],
+  );
+  // Article-кейсы шарят те же поля (title как menuTitle), оборачиваем для
+  // переиспользования sortPages.
+  const sortedActiveArticleCases = useMemo(() => {
+    if (!sort) return activeArticleCases;
+    const wrapped = activeArticleCases.map((a) => ({
+      ref: a,
+      id: a.id,
+      status: a.status,
+      slug: a.slug,
+      sectionId: "cases",
+      menuTitle: a.title,
+      cardTitle: a.title,
+      menuDescription: a.description,
+      cardDescription: a.description,
+      order: a.order,
+    }));
+    return sortPages(wrapped).map((w) => w.ref);
+  }, [activeArticleCases, sort, sortPages]);
+  const sortedArchivedArticleCases = useMemo(() => {
+    if (!sort) return archivedArticleCases;
+    const wrapped = archivedArticleCases.map((a) => ({
+      ref: a,
+      id: a.id,
+      status: a.status,
+      slug: a.slug,
+      sectionId: "cases",
+      menuTitle: a.title,
+      cardTitle: a.title,
+      menuDescription: a.description,
+      cardDescription: a.description,
+      order: a.order,
+    }));
+    return sortPages(wrapped).map((w) => w.ref);
+  }, [archivedArticleCases, sort, sortPages]);
+  const sortActive = sort !== null;
 
   async function handleCreate() {
     if (!newTitle.trim()) return;
@@ -329,7 +465,7 @@ export function PagesView({ title, sections, defaultSection }: Props) {
             <div className="overflow-hidden rounded-sm border border-border">
               <table className="w-full text-left">
                 <tbody>
-                  {activeArticleCases.map((article) => (
+                  {sortedActiveArticleCases.map((article) => (
                     <ArticleAdminCard
                       key={article.id}
                       article={article}
@@ -409,16 +545,44 @@ export function PagesView({ title, sections, defaultSection }: Props) {
               <tr className="border-b border-border bg-muted/50 text-[length:var(--text-11)] font-medium uppercase tracking-wider text-muted-foreground">
                 <th className="py-2 pl-3 pr-1 w-8">#</th>
                 <th className="py-2 px-1 w-10"></th>
-                <th className="py-2 px-2">Название</th>
-                <th className="hidden md:table-cell py-2 px-2">Описание</th>
-                <th className="hidden lg:table-cell py-2 px-2">Обложка</th>
-                <th className="py-2 px-2">Статус</th>
-                <th className="hidden sm:table-cell py-2 px-2">Путь</th>
+                <SortableTh
+                  field="title"
+                  active={sort}
+                  onChange={setSort}
+                  className="py-2 px-2"
+                >
+                  Название
+                </SortableTh>
+                <SortableTh
+                  field="description"
+                  active={sort}
+                  onChange={setSort}
+                  className="hidden md:table-cell py-2 px-2"
+                >
+                  Описание
+                </SortableTh>
+                <th className="hidden lg:table-cell py-2 px-2">Видимость</th>
+                <SortableTh
+                  field="status"
+                  active={sort}
+                  onChange={setSort}
+                  className="py-2 px-2"
+                >
+                  Статус
+                </SortableTh>
+                <SortableTh
+                  field="slug"
+                  active={sort}
+                  onChange={setSort}
+                  className="hidden sm:table-cell py-2 px-2"
+                >
+                  Путь
+                </SortableTh>
                 <th className="py-2 pr-3 pl-1 w-20"></th>
               </tr>
             </thead>
             <tbody>
-              {activePages.map((page, index) => {
+              {sortedActivePages.map((page, index) => {
                 if (section.id === "unique") {
                   return (
                     <PageCard
@@ -429,6 +593,23 @@ export function PagesView({ title, sections, defaultSection }: Props) {
                       onRestore={handleRestore}
                       onDelete={setDeleteTarget}
                       onTogglePublish={handleTogglePublish}
+                    />
+                  );
+                }
+                // При активной сортировке DnD/move отключаем — отображаемый
+                // порядок отличается от хранимого, перетаскивание приведёт
+                // к неожиданному результату.
+                if (sortActive) {
+                  return (
+                    <PageCard
+                      key={page.id}
+                      page={page}
+                      viewMode="list"
+                      onArchive={handleArchive}
+                      onRestore={handleRestore}
+                      onDelete={setDeleteTarget}
+                      onTogglePublish={handleTogglePublish}
+                      onToggleFeatured={section.id === "cases" ? handleToggleFeatured : undefined}
                     />
                   );
                 }
@@ -487,7 +668,7 @@ export function PagesView({ title, sections, defaultSection }: Props) {
             <div className="overflow-hidden rounded-sm border border-border opacity-60">
               <table className="w-full text-left">
                 <tbody>
-                  {archivedArticleCases.map((article) => (
+                  {sortedArchivedArticleCases.map((article) => (
                     <ArticleAdminCard
                       key={article.id}
                       article={article}
@@ -528,7 +709,7 @@ export function PagesView({ title, sections, defaultSection }: Props) {
             <div className="overflow-hidden rounded-sm border border-border opacity-60">
               <table className="w-full text-left">
                 <tbody>
-                  {archivedPages.map((page) => (
+                  {sortedArchivedPages.map((page) => (
                     <PageCard
                       key={page.id}
                       page={page}

@@ -16,6 +16,7 @@ import { useNavigationGuard } from "@/lib/navigation-guard";
 import { EditorToolbar } from "@/components/page-editor/editor-toolbar";
 import { UnsavedChangesDialog } from "@/components/page-editor/unsaved-changes-dialog";
 import { ArticleSectionsEditor } from "./article-sections-editor";
+import { BodyImportButtons } from "./body-import-buttons";
 import { GlossaryHeroEditor } from "./glossary-hero-editor";
 import { SlugRedirects } from "./slug-redirects";
 import { openPreview } from "@/lib/preview-client";
@@ -177,6 +178,10 @@ function Inner({
             /media/glossary/term/{term.slug}
           </p>
         </div>
+        <BodyImportButtons
+          currentSections={term.sections}
+          onImport={(sections) => update("sections", sections)}
+        />
         <Button
           variant={term.pinned ? "default" : "outline"}
           size="sm"
