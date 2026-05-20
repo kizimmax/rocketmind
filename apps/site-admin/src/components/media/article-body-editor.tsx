@@ -97,7 +97,19 @@ export function ArticleBodyEditor({ articleSlug, blocks, onChange }: Props) {
 
   const updateBlockType = useCallback(
     (id: string, type: ArticleBodyBlockType) => {
-      onChange(blocks.map((b) => (b.id === id ? { ...b, type } : b)));
+      // Media-блоки (image/video/gallery/table) имеют свой shape data — при смене
+      // на них или с них data должна сбрасываться, иначе остаётся paragraph-shape
+      // `{text:""}` без `src`, и upload не находит куда записать URL.
+      const MEDIA_TYPES: ReadonlySet<ArticleBodyBlockType> = new Set(["image", "video", "gallery", "table"]);
+      onChange(
+        blocks.map((b) => {
+          if (b.id !== id || b.type === type) return b;
+          if (MEDIA_TYPES.has(type) || MEDIA_TYPES.has(b.type)) {
+            return { ...makeBlock(type), id: b.id };
+          }
+          return { ...b, type };
+        }),
+      );
     },
     [blocks, onChange],
   );
