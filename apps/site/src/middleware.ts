@@ -3,6 +3,13 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
+// Префиксы, под которыми могут быть preview-страницы (article/page черновики).
+// Если pathname не попадает ни под один из них, а у юзера висит preview-кука
+// от давнего захода на черновик — куки сбрасываем, чтобы баннер не липнул.
+const PREVIEW_PATH_PREFIXES = [
+  "/media", "/cases", "/consulting", "/products", "/ai-products", "/academy",
+];
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -13,6 +20,23 @@ export async function middleware(request: NextRequest) {
     pathname.includes(".") // static files
   ) {
     return NextResponse.next();
+  }
+
+  // Авточистка прилипших preview-куки на не-preview страницах.
+  // (`/api/preview/*` уже исключены выше через startsWith("/api").)
+  const hasPreviewCookie =
+    request.cookies.has("previewDraftId") ||
+    request.cookies.has("__prerender_bypass");
+  const onPreviewablePath = PREVIEW_PATH_PREFIXES.some((p) =>
+    pathname === p || pathname.startsWith(p + "/"),
+  );
+  if (hasPreviewCookie && !onPreviewablePath) {
+    const res = NextResponse.next();
+    res.cookies.set("previewDraftId", "", { path: "/", expires: new Date(0) });
+    res.cookies.set("__prerender_bypass", "", { path: "/", expires: new Date(0) });
+    res.cookies.set("__next_preview_data", "", { path: "/", expires: new Date(0) });
+    res.headers.set("x-pathname", pathname);
+    return res;
   }
 
   // Browser-encoded путь (`/consulting/%D1%82%D0%B5%D1%81%D1%82`) и БД-вариант
@@ -40,7 +64,10 @@ export async function middleware(request: NextRequest) {
     // DB unavailable — let the request through rather than breaking the site
   }
 
-  return NextResponse.next();
+  // Пробрасываем pathname в server-component layout (там нет навигационного контекста).
+  const res = NextResponse.next();
+  res.headers.set("x-pathname", pathname);
+  return res;
 }
 
 export const config = {

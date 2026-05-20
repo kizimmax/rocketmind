@@ -14,6 +14,7 @@ import { SiteModalProvider } from "@/components/site-modal-provider";
 import { SITE_URL } from "@/lib/site-url";
 import { getAllForms } from "@/lib/forms";
 import { getSiteNav } from "@/lib/site-nav";
+import { headers } from "next/headers";
 import { readActivePreviewDraft } from "@/lib/preview-draft";
 import { PreviewBar } from "@/components/preview/PreviewBar";
 
@@ -46,9 +47,11 @@ export default async function RootLayout({
     url: l.href,
   }));
 
-  // Preview-режим: показываем подсказку слева снизу, что это черновик.
+  // Preview-режим: показываем подсказку слева снизу — только если активный
+  // draft соответствует текущему pathname (бар не липнет на чужих страницах).
   const activeDraft = await readActivePreviewDraft();
-  const showPreviewBar = activeDraft != null;
+  const currentPath = (await headers()).get("x-pathname") ?? "";
+  const showPreviewBar = activeDraft != null && activeDraft.publicUrl === currentPath;
   return (
     <html lang="ru" suppressHydrationWarning className={robotoMono.variable}>
       <body className="antialiased">
@@ -70,7 +73,7 @@ export default async function RootLayout({
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
-            {showPreviewBar && <PreviewBar />}
+            {showPreviewBar && <PreviewBar exitHref={`/api/preview/exit?back=${encodeURIComponent(currentPath || "/")}`} />}
           </SiteModalProvider>
         </ThemeProvider>
       </body>
