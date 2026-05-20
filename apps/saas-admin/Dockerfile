@@ -6,52 +6,44 @@ COPY . .
 
 RUN npm install --ignore-scripts && npm run postinstall
 
-# Build shared UI package first
+# Build shared UI package first (saas-admin импортирует @rocketmind/ui).
 RUN npm run build --workspace=packages/ui
 
-# Generate Prisma client (schema lives in apps/site/prisma)
+# Generate Prisma client (schema лежит в apps/site/prisma — общая на все апы).
 RUN npx prisma generate --schema=apps/site/prisma/schema.prisma
 
-# Build CMS (SSR)
-RUN npm run build --workspace=apps/site-admin
+# Build saas-admin (SSR).
+RUN npm run build --workspace=apps/saas-admin
 
-# Разыменовать симлинки в admin/public (next start не следует за ними).
-# apps/site-admin/public/{clip-logos,media} — симлинки в apps/site/public/.
-# Также подкладываем legacy /images, /ai-mascots, /forms, /pdf.worker — admin
-# отдаёт их со своего домена, а файлы исторически живут только в site/public.
+# Разыменовать симлинки в public (next start не следует за ними).
+# apps/saas-admin/public/ai-mascots → ../../site/public/ai-mascots
+# → ../../../assets/ai-mascots. `cp -RL` рекурсивно резолвит всю цепочку.
 RUN set -eux; \
-    cp -RL /app/apps/site-admin/public /app/apps/site-admin/public.real; \
-    for d in images ai-mascots clip-logos media forms avatars partners; do \
-      [ -d "/app/apps/site/public/$d" ] && cp -RL "/app/apps/site/public/$d" /app/apps/site-admin/public.real/ || true; \
-    done; \
-    rm -rf /app/apps/site-admin/public; \
-    mv /app/apps/site-admin/public.real /app/apps/site-admin/public
+    cp -RL /app/apps/saas-admin/public /app/apps/saas-admin/public.real; \
+    rm -rf /app/apps/saas-admin/public; \
+    mv /app/apps/saas-admin/public.real /app/apps/saas-admin/public
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Only CMS runtime artifacts + shared node_modules
-COPY --from=builder /app/apps/site-admin/.next            ./apps/site-admin/.next
-# public уже разыменован в builder (cp -RL), включает legacy /images, /media,
-# /clip-logos, /ai-mascots — те же файлы что у сайта.
-COPY --from=builder /app/apps/site-admin/public           ./apps/site-admin/public
-COPY --from=builder /app/apps/site-admin/package.json     ./apps/site-admin/package.json
-COPY --from=builder /app/apps/site-admin/next.config.ts   ./apps/site-admin/next.config.ts
-# Prisma config + schema + migrations нужны runtime'у для `prisma migrate deploy`
+# Только runtime-артефакты saas-admin + общие node_modules.
+COPY --from=builder /app/apps/saas-admin/.next            ./apps/saas-admin/.next
+COPY --from=builder /app/apps/saas-admin/public           ./apps/saas-admin/public
+COPY --from=builder /app/apps/saas-admin/package.json     ./apps/saas-admin/package.json
+COPY --from=builder /app/apps/saas-admin/next.config.ts   ./apps/saas-admin/next.config.ts
+# Prisma config + schema + миграции нужны runtime'у для `prisma migrate deploy`
 # при старте контейнера (шаг в entrypoint.sh).
-COPY --from=builder /app/apps/site-admin/prisma.config.ts ./apps/site-admin/prisma.config.ts
+COPY --from=builder /app/apps/saas-admin/prisma.config.ts ./apps/saas-admin/prisma.config.ts
 COPY --from=builder /app/apps/site/prisma                 ./apps/site/prisma
-# Scripts с миграциями данных (idempotent, безопасны для повторного запуска).
-COPY --from=builder /app/scripts                          ./scripts
 COPY --from=builder /app/node_modules                     ./node_modules
 COPY --from=builder /app/package.json                     ./package.json
 
-COPY apps/site-admin/docker/entrypoint.sh /entrypoint.sh
+COPY apps/saas-admin/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Upload files are persisted via Amvera volume mount at /data/uploads
+# Uploads persistent volume на Amvera (общая папка для маскотов / файлов).
 VOLUME ["/data"]
 
 EXPOSE 80
