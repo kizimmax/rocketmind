@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
-import { Button, Input } from "@rocketmind/ui";
+import { Button, Input, Tabs, TabsList, TabsTrigger } from "@rocketmind/ui";
 import { Plus, UserCircle, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { Agent } from "./agent-form";
@@ -94,25 +94,20 @@ export default function AiAgentsPage() {
         </Link>
       </div>
 
-      {/* Sub-section tabs: Обучающие / Акселератор */}
-      <div className="mb-6 flex gap-1 border-b border-border">
-        {(["teaching", "akselerator"] as const).map((s) => {
-          const active = s === section;
-          return (
-            <Link
-              key={s}
-              href={`/ai-agents?section=${s}`}
-              className={`px-4 py-2 text-[length:var(--text-14)] font-medium transition-colors border-b-2 -mb-px ${
-                active
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
-            >
+      {/* Sub-section tabs: Обучающие / Акселератор — same DS pattern as /pages. */}
+      <Tabs
+        value={section}
+        onValueChange={(v) => router.push(`/ai-agents?section=${v}`)}
+        className="mb-6"
+      >
+        <TabsList>
+          {(["teaching", "akselerator"] as const).map((s) => (
+            <TabsTrigger key={s} value={s}>
               {SECTION_LABEL[s]}
-            </Link>
-          );
-        })}
-      </div>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Create — inline name-only flow */}
       <div className="mb-6">
