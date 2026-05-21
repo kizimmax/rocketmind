@@ -1,40 +1,22 @@
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/lib/mailer";
+import { type NextRequest, NextResponse } from "next/server";
+import { ivanCall } from "@/lib/ivan-api";
 
-function generateOtp(): string {
-  // 6 digits
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export async function POST(request: Request) {
+// Прокси на POST /auth/login Ивана (отправка OTP-кода на email).
+// Привязку к программе по QR (programId) переносим в Phase 2 на
+// POST /course/groups/join — здесь больше не обрабатываем.
+export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const email = String(body.email ?? "").trim().toLowerCase();
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!email || !EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "email_invalid" }, { status: 400 });
   }
 
-  const code = generateOtp();
-  const codeHash = await bcrypt.hash(code, 8);
-
-  // Optional: read program intent cookie set by /join
-  const programId = body.programId ? String(body.programId) : null;
-
-  await prisma.otpCode.create({
-    data: {
-      email,
-      codeHash,
-      programId,
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-    },
-  });
-
-  await sendEmail({
-    to: email,
-    subject: "Код входа в Rocketmind Teacher",
-    text: `Ваш код: ${code}\n\nКод действителен 10 минут.`,
-  });
-
+  const r = await ivanCall({ method: "POST", path: "/auth/login", body: { email } });
+  if (!r.ok) {
+    const error = r.status === 429 ? "rate_limited" : "request_failed";
+    return NextResponse.json({ error }, { status: r.status || 502 });
+  }
   return NextResponse.json({ ok: true });
 }

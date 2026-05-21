@@ -1,31 +1,19 @@
-import { NextResponse } from "next/server";
-import { getCurrentStudent } from "@/lib/student-auth";
-import { prisma } from "@/lib/prisma";
+import { type NextRequest, NextResponse } from "next/server";
+import { applySetCookies } from "@/lib/ivan-api";
+import { fetchProfile, mapUserToStudent } from "@/lib/ivan-auth";
 
-export async function GET() {
-  const student = await getCurrentStudent();
-  if (!student) return NextResponse.json({ student: null });
+// GET /profile Ивана → наш {student} контракт. Если был auto-refresh —
+// relay'им обновлённые куки; на провал считаем разлогиненным.
+export async function GET(request: NextRequest) {
+  const cookie = request.headers.get("cookie");
+  if (!cookie) return NextResponse.json({ student: null });
 
-  const withProjects = await prisma.student.findUnique({
-    where: { id: student.id },
-    include: {
-      program: { include: { place: true } },
-      projects: { orderBy: { createdAt: "asc" }, take: 1 },
-    },
-  });
-
-  return NextResponse.json({
-    student: {
-      id: student.id,
-      email: student.email,
-      firstName: student.firstName,
-      lastName: student.lastName,
-      role: student.role,
-      industry: student.industry,
-      region: student.region,
-      isActive: student.isActive,
-      program: withProjects?.program ?? null,
-      project: withProjects?.projects?.[0] ?? null,
-    },
-  });
+  const r = await fetchProfile(cookie);
+  if (!r.ok || !r.data) {
+    return applySetCookies(NextResponse.json({ student: null }), r.setCookies);
+  }
+  return applySetCookies(
+    NextResponse.json({ student: mapUserToStudent(r.data) }),
+    r.setCookies,
+  );
 }
