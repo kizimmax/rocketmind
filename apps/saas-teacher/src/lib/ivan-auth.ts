@@ -51,9 +51,68 @@ export type TeacherAgent = {
   isAvailable: boolean;
 };
 
+/** Сообщение из спеки Ивана (CourseMessage). */
+export type IvanCourseMessage = {
+  _id: string;
+  messageText: string;
+  user: string;
+  agent: string;
+  author: "user" | "agent";
+  createdAt: string;
+};
+
+/** Сообщение в формате клиентского чата. */
+export type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  agentId: string | null;
+  createdAt: string;
+};
+
+export function mapMessage(m: IvanCourseMessage): ChatMessage {
+  return {
+    id: m._id,
+    role: m.author === "user" ? "user" : "assistant",
+    content: m.messageText,
+    agentId: m.agent ?? null,
+    createdAt: m.createdAt,
+  };
+}
+
 /** GET /profile с relay-куки и авто-refresh на 401. */
 export function fetchProfile(cookie: string | null): Promise<IvanResult<IvanUser>> {
   return ivanCall<IvanUser>({ path: "/profile", cookie, retryOn401: true });
+}
+
+/**
+ * Единая история юзера по всем агентам (решение Maxi: один тред на юзера).
+ * У Ивана GET /course/messages требует agentId, поэтому собираем по доступным
+ * агентам и мёржим по createdAt. TODO: попросить Ивана unified-эндпоинт без
+ * agentId, чтобы убрать N+1.
+ */
+export async function fetchUnifiedHistory(
+  cookie: string | null,
+): Promise<{ messages: ChatMessage[]; setCookies: string[] }> {
+  const ag = await ivanCall<IvanCourseAgent[]>({
+    path: "/course/agents/accessible",
+    cookie,
+    retryOn401: true,
+  });
+  const setCookies = [...ag.setCookies];
+  const ids = (Array.isArray(ag.data) ? ag.data : []).map((a) => a._id);
+
+  const all: ChatMessage[] = [];
+  for (const id of ids) {
+    const r = await ivanCall<{ messages: IvanCourseMessage[] }>({
+      path: `/course/messages?agentId=${encodeURIComponent(id)}&limit=200`,
+      cookie,
+    });
+    setCookies.push(...r.setCookies);
+    for (const m of r.data?.messages ?? []) all.push(mapMessage(m));
+  }
+  all.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  return { messages: all, setCookies };
 }
 
 /**

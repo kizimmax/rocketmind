@@ -86,13 +86,26 @@ async function rawCall(c: IvanCall): Promise<Response> {
   const headers: Record<string, string> = {};
   if (c.body !== undefined) headers["content-type"] = "application/json";
   if (c.cookie) headers["cookie"] = c.cookie;
-  return fetch(`${baseUrl()}${c.path}`, {
+  const init: RequestInit = {
     method: c.method ?? "GET",
     headers,
     body: c.body !== undefined ? JSON.stringify(c.body) : undefined,
     cache: "no-store",
     redirect: "manual",
-  });
+  };
+  const url = `${baseUrl()}${c.path}`;
+  // Amvera временами рвёт TLS (ECONNRESET) — ретраим сетевые сбои (не HTTP-статусы).
+  // Соединение падает до отправки запроса → повтор безопасен (без дублей).
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await fetch(url, init);
+    } catch (e) {
+      lastErr = e;
+      await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
+    }
+  }
+  throw lastErr;
 }
 
 /** Вызов API Ивана с relay-куки и опциональным auto-refresh на 401. */
@@ -121,4 +134,52 @@ export async function ivanCall<T = unknown>(c: IvanCall): Promise<IvanResult<T>>
 export function applySetCookies(res: NextResponse, setCookies: string[]): NextResponse {
   for (const sc of setCookies) res.headers.append("set-cookie", sc);
   return res;
+}
+
+/**
+ * Проксирует SSE-стрим Ивана НАСКВОЗЬ к браузеру (без буферизации тела).
+ * Используется для чата (POST /course/messages). На 401 один раз пытается
+ * refresh и переоткрывает стрим. relay-куки и SSE-заголовки ставятся до тела.
+ * Не-ok ответ конвертируем в одно SSE-событие `error`, чтобы клиент его показал.
+ */
+export async function ivanStream(opts: {
+  path: string;
+  method?: string;
+  body?: unknown;
+  cookie?: string | null;
+}): Promise<Response> {
+  const headers = new Headers();
+  headers.set("Content-Type", "text/event-stream");
+  headers.set("Cache-Control", "no-cache, no-transform");
+  headers.set("Connection", "keep-alive");
+
+  const call: IvanCall = { method: opts.method ?? "POST", path: opts.path, body: opts.body, cookie: opts.cookie ?? null };
+  try {
+    let res = await rawCall(call);
+    let relay = getSetCookies(res);
+
+    if (res.status === 401) {
+      const refresh = await rawCall({ method: "POST", path: "/auth/refresh", cookie: opts.cookie ?? null });
+      const refreshSet = getSetCookies(refresh);
+      if (refresh.ok && refreshSet.length) {
+        const newCookie = mergeCookies(opts.cookie ?? null, refreshSet);
+        res = await rawCall({ ...call, cookie: newCookie });
+        relay = [...refreshSet, ...getSetCookies(res)];
+      } else {
+        relay = refreshSet;
+      }
+    }
+
+    for (const sc of relay.map(rewriteSetCookie)) headers.append("set-cookie", sc);
+
+    if (!res.ok || !res.body) {
+      const data = JSON.stringify({ message: res.status === 403 ? "no_access_or_inactive" : "chat_failed", code: res.status });
+      return new Response(`event: error\ndata: ${data}\n\n`, { status: 200, headers });
+    }
+    return new Response(res.body, { status: 200, headers });
+  } catch {
+    // Сетевой сбой к Amvera (после ретраев) — отдаём error-событие, не 500.
+    const data = JSON.stringify({ message: "network", code: 502 });
+    return new Response(`event: error\ndata: ${data}\n\n`, { status: 200, headers });
+  }
 }

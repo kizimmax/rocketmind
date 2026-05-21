@@ -53,6 +53,26 @@ _Дата: 2026-05-21. Все гэпы закрыты Иваном. Сверен
 
 ---
 
+## 🔴 Раунд 2 — открыто (отправлено Ивану 2026-05-21)
+
+### Чат — стрим (Phase 3) — ✅ РЕШЕНО (Иван уже сделал SSE)
+`POST /course/messages` — теперь **SSE-стриминг** (тело `{agentId, messageText}`, messageText ≤4000). События:
+- `message_created` → `{ userMessage }` (сохранённое сообщение юзера, с _id)
+- `delta` → `{ text: "..." }` (фрагмент ответа агента)
+- `done` → `{ agentMessage }` (финальное сохранённое сообщение агента, с _id/createdAt)
+- `error` → `{ message, code }`
+Заголовки корректные (text/event-stream, no-cache, X-Accel-Buffering: no). Диалог по `(user, agent)`, без project; история `GET /course/messages?agentId&page&limit`.
+
+**Открытый дизайн-вопрос (отправлен Ивану):** thread один на пользователя, общий для ВСЕХ агентов (`user.openAiThreadId`, разные assistantId на одном thread). Следствия: (1) per-agent история расходится с реальным контекстом thread; (2) персона-бленд между агентами; (3) безлимитный рост thread. Уточняем: общий контекст by design или нужен thread per (user, agent).
+
+**Наша сторона (Phase 3):** BFF должен стримить SSE насквозь — текущий `ivanCall` буферит JSON, нужен отдельный стрим-путь (fetch → ReadableStream → NextResponse, форвард кук).
+
+### Роли и права (saas-admin)
+- `GET /profile` отдаёт `role` с populated `permissions[]`?
+- Какие роли есть (имена)? Как отличить админа от ученика (teacher пускает любого, admin — только админ-роли)? Системные роли (`isSystem`)?
+- Формат/словарь `Role.permissions[]` (строки вида `users.read`/`agents.write`?) — для гейтинга разделов админки.
+- `GET /roles` — список ролей с их `_id` (для `PUT /users/{id}/role`, который берёт roleId).
+
 ## 🟢 Этап 2 (отложено)
 - `audit-log` админских действий.
-- Модель проектов/сессий/артефактов ученика.
+- Модель сессий/артефактов ученика.
