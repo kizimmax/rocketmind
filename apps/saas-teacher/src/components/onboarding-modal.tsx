@@ -12,8 +12,7 @@ interface OnboardingModalProps {
 
 type Step =
   | { kind: "promo"; index: 0 | 1 | 2 | 3 }
-  | { kind: "profile" }
-  | { kind: "project" };
+  | { kind: "profile" };
 
 const PROMO_SLIDES: { title: string; body: string; image?: string }[] = [
   {
@@ -40,7 +39,7 @@ const PROMO_SLIDES: { title: string; body: string; image?: string }[] = [
 
 export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
   const [step, setStep] = useState<Step>(
-    student.firstName ? { kind: "project" } : { kind: "promo", index: 0 },
+    student.firstName ? { kind: "profile" } : { kind: "promo", index: 0 },
   );
 
   const [firstName, setFirstName] = useState(student.firstName ?? "");
@@ -48,7 +47,6 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
   const [role, setRole] = useState(student.role ?? "");
   const [industry, setIndustry] = useState(student.industry ?? "");
   const [region, setRegion] = useState(student.region ?? "");
-  const [projectName, setProjectName] = useState("");
   const [saving, setSaving] = useState(false);
 
   function nextPromo() {
@@ -70,7 +68,7 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
         body: JSON.stringify({ firstName, lastName, role, industry, region }),
       });
       if (!res.ok) throw new Error(await res.text());
-      setStep({ kind: "project" });
+      await onComplete();
     } catch (err) {
       console.error(err);
     } finally {
@@ -79,7 +77,7 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
   }
 
   async function skipProfile() {
-    // Save whatever is already filled (or nothing) and move on
+    // Save whatever is already filled (or nothing) and finish onboarding
     setSaving(true);
     try {
       if (firstName.trim() || lastName.trim() || role.trim() || industry.trim() || region.trim()) {
@@ -89,25 +87,7 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
           body: JSON.stringify({ firstName, lastName, role, industry, region }),
         }).catch(() => {});
       }
-      setStep({ kind: "project" });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function createProject() {
-    if (!projectName.trim()) return;
-    setSaving(true);
-    try {
-      const res = await fetch("/api/students/me/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: projectName }),
-      });
-      if (!res.ok) throw new Error(await res.text());
       await onComplete();
-    } catch (err) {
-      console.error(err);
     } finally {
       setSaving(false);
     }
@@ -209,34 +189,6 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
             >
               Заполнить позже
             </button>
-          </div>
-        )}
-
-        {step.kind === "project" && (
-          <div className="flex flex-col gap-5 py-2">
-            <div className="text-center">
-              <h2 className="font-[family-name:var(--font-heading-family)] text-[length:var(--text-24)] font-bold uppercase tracking-tight text-foreground">
-                Создать первый проект
-              </h2>
-              <p className="mt-1 text-[length:var(--text-14)] text-muted-foreground">
-                Над чем будете работать в программе?
-              </p>
-            </div>
-            <div>
-              <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-                Название проекта
-              </label>
-              <Input
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="напр. Бизнес-модель для AI-консалтинга"
-                autoFocus
-              />
-            </div>
-            <Button onClick={createProject} disabled={!projectName.trim() || saving}>
-              {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-              Создать
-            </Button>
           </div>
         )}
       </DialogContent>

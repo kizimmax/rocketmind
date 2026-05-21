@@ -1,57 +1,41 @@
-import { NextResponse } from "next/server";
-import { getCurrentStudent } from "@/lib/student-auth";
-import { prisma } from "@/lib/prisma";
+import { type NextRequest, NextResponse } from "next/server";
+import { applySetCookies, ivanCall } from "@/lib/ivan-api";
+import {
+  fetchProfile,
+  mapAgent,
+  mapGroupToProgram,
+  type IvanCourseAgent,
+} from "@/lib/ivan-auth";
 
 /**
  * GET /api/programs/active
  *
- * Возвращает программу студента и список её агентов с признаком доступности.
- * В сайдбаре saas-teacher показываем только агентов с isAvailable=true.
+ * Программа студента = его courseGroup (из /profile). Список агентов —
+ * GET /course/agents/accessible (агенты, доступные текущему юзеру; фильтрацию
+ * по target/доступности делает бэк Ивана). Сортировку по serial убрали —
+ * у Ивана такого поля нет, порядок отдаём как пришёл.
  */
-export async function GET() {
-  const student = await getCurrentStudent();
-  if (!student) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  if (!student.programId) return NextResponse.json({ program: null, agents: [] });
+export async function GET(request: NextRequest) {
+  const cookie = request.headers.get("cookie");
 
-  const program = await prisma.program.findUnique({
-    where: { id: student.programId },
-    include: {
-      place: true,
-      agents: {
-        include: { agent: { include: { avatarMascot: true } } },
-      },
-    },
+  const prof = await fetchProfile(cookie);
+  if (!prof.ok || !prof.data) {
+    return applySetCookies(
+      NextResponse.json({ error: "unauthorized" }, { status: prof.status || 401 }),
+      prof.setCookies,
+    );
+  }
+  const group = prof.data.courseGroup ?? null;
+
+  const ag = await ivanCall<IvanCourseAgent[]>({
+    path: "/course/agents/accessible",
+    cookie,
+    retryOn401: true,
   });
-  if (!program) return NextResponse.json({ program: null, agents: [] });
+  const agents = (Array.isArray(ag.data) ? ag.data : []).map(mapAgent);
 
-  const agents = program.agents
-    .filter((row) => row.agent.targets.includes("saas-teacher"))
-    .sort((a, b) => {
-      // Сортируем по serial (по возрастанию). При равенстве — по имени.
-      const sa = a.agent.serial ?? 0;
-      const sb = b.agent.serial ?? 0;
-      if (sa !== sb) return sa - sb;
-      return a.agent.name.localeCompare(b.agent.name);
-    })
-    .map((row) => ({
-      id: row.agent.id,
-      slug: row.agent.slug,
-      name: row.agent.name,
-      role: row.agent.role,
-      valueDescription: row.agent.valueDescription,
-      avatarUrl:
-        row.agent.avatarMascot?.imagePath ?? row.agent.avatarPath ?? null,
-      isAvailable: row.isAvailable,
-    }));
-
-  return NextResponse.json({
-    program: {
-      id: program.id,
-      title: program.title,
-      startsAt: program.startsAt,
-      endsAt: program.endsAt,
-      place: program.place,
-    },
-    agents,
-  });
+  return applySetCookies(
+    NextResponse.json({ program: group ? mapGroupToProgram(group) : null, agents }),
+    [...prof.setCookies, ...ag.setCookies],
+  );
 }

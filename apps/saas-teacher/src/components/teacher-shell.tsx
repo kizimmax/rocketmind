@@ -50,8 +50,9 @@ export function TeacherShell({ student }: TeacherShellProps) {
     setProgramClosedModalShown(true);
   }
 
-  const needsOnboarding =
-    !student.firstName || !student.project;
+  // Онбординг — только пока не заполнено имя. Шаг «создать проект» убран:
+  // у Ивана нет модели проектов, чат идёт напрямую к User+Group (Phase 3).
+  const needsOnboarding = !student.firstName;
 
   function loadAgents() {
     setLoading(true);
