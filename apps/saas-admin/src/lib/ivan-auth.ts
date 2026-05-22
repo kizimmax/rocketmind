@@ -189,6 +189,25 @@ export function mapRole(r: IvanRole): ClientRole {
   return { id: r._id, name: r.name, isSystem: !!r.isSystem };
 }
 
+/** Роль с правами — для страницы создания/редактирования. */
+export type ClientRoleDetail = ClientRole & { permissions: string[] };
+
+export function mapRoleDetail(r: IvanRole): ClientRoleDetail {
+  return {
+    id: r._id,
+    name: r.name,
+    isSystem: !!r.isSystem,
+    permissions: Array.isArray(r.permissions) ? r.permissions : [],
+  };
+}
+
+/** Ассистент OpenAI (для выпадающего списка в форме агента). */
+export type OpenAiAssistant = { id: string; name: string };
+
+/** Группа прав из GET /roles/permissions (key → бэк, label → UI). */
+export type PermissionAction = { key: string; label: string };
+export type PermissionGroup = { group: string; actions: PermissionAction[] };
+
 /** Тело PUT /users/{id} (edit данных). courseGroup — id группы (Иван добавил приём id). */
 export function userBody(body: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};

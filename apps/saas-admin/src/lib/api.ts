@@ -61,3 +61,36 @@ export async function apiCall<T = unknown>(path: string, opts: ApiOpts = {}): Pr
   }
   return json as T;
 }
+
+/**
+ * Загрузка файла (multipart) → POST /file/upload → S3, возвращает url.
+ * Content-Type не ставим вручную — браузер сам выставит boundary.
+ */
+export async function uploadFile(file: File): Promise<string> {
+  const send = () => {
+    const form = new FormData();
+    form.append("file", file);
+    return fetch(`${API_BASE}/file/upload`, {
+      method: "POST",
+      credentials: "include",
+      body: form,
+      cache: "no-store",
+    });
+  };
+  let res = await send();
+  if (res.status === 401) {
+    const refreshed = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (refreshed.ok) res = await send();
+  }
+  const json = (await res.json().catch(() => null)) as
+    | { success?: boolean; message?: string; data?: { url?: string }; url?: string }
+    | null;
+  if (!res.ok) throw new ApiError(res.status, json?.message ?? `HTTP ${res.status}`);
+  const data = json && "success" in json && "data" in json ? json.data : json;
+  const url = (data as { url?: string } | null)?.url;
+  if (!url) throw new ApiError(500, "upload: no url in response");
+  return url;
+}

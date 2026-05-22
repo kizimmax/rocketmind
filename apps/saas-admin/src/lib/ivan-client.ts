@@ -2,7 +2,7 @@
  * Типизированные прямые вызовы API Ивана из браузера (через lib/api.ts).
  * Раньше шло через BFF-роуты app/api/** — теперь напрямую.
  */
-import { apiCall } from "./api";
+import { apiCall, uploadFile } from "./api";
 import {
   agentBody,
   groupBody,
@@ -11,6 +11,7 @@ import {
   mapGroupDetail,
   mapGroupList,
   mapRole,
+  mapRoleDetail,
   mapStudent,
   userBody,
   type ClientAdminUser,
@@ -18,13 +19,18 @@ import {
   type ClientGroupDetail,
   type ClientGroupListItem,
   type ClientRole,
+  type ClientRoleDetail,
   type ClientStudent,
   type IvanCourseAgent,
   type IvanCourseGroup,
   type IvanRole,
   type IvanUser,
+  type OpenAiAssistant,
+  type PermissionGroup,
 } from "./ivan-auth";
 import type { CurrentUser } from "./auth-context";
+
+export { uploadFile };
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -92,6 +98,13 @@ export async function deleteAgent(id: string): Promise<void> {
   await apiCall(`/course/agents/${id}`, { method: "DELETE" });
 }
 
+/** Ассистенты OpenAI для выпадающего списка в форме агента. */
+export function getAssistants(): Promise<OpenAiAssistant[]> {
+  return apiCall<OpenAiAssistant[]>("/course/agents/assistants").then((a) =>
+    Array.isArray(a) ? a : [],
+  );
+}
+
 // ── Программы (CourseGroup) ──────────────────────────────────────────────────────
 
 export function getGroups(): Promise<ClientGroupListItem[]> {
@@ -124,12 +137,12 @@ export async function deleteGroup(id: string): Promise<void> {
 
 // ── Пользователи / роли ──────────────────────────────────────────────────────────
 
-/** У Ивана /users пагинирован (limit ≤ 50). Собираем все страницы. */
+/** У Ивана /users пагинирован (limit ≤ 100). Собираем все страницы. */
 async function fetchAllUsers(): Promise<IvanUser[]> {
   const all: IvanUser[] = [];
   for (let page = 1; page <= 100; page++) {
     const d = await apiCall<{ users?: IvanUser[]; pagination?: { hasMore?: boolean } } | IvanUser[]>(
-      `/users?page=${page}&limit=50`,
+      `/users?page=${page}&limit=100`,
     );
     const list = Array.isArray(d) ? d : (d?.users ?? []);
     all.push(...list);
@@ -153,6 +166,39 @@ export function getAdminUser(id: string): Promise<ClientAdminUser> {
 
 export function getRoles(): Promise<ClientRole[]> {
   return apiCall<IvanRole[]>("/roles").then((r) => (Array.isArray(r) ? r : []).map(mapRole));
+}
+
+// ── Роли: создание/редактирование с правами ──────────────────────────────────────
+
+/** Список доступных прав, сгруппированных (key → бэк, label → UI). */
+export function getPermissionGroups(): Promise<PermissionGroup[]> {
+  return apiCall<PermissionGroup[]>("/roles/permissions").then((g) => (Array.isArray(g) ? g : []));
+}
+
+export function getRoleDetail(id: string): Promise<ClientRoleDetail> {
+  return apiCall<IvanRole>(`/roles/${id}`).then(mapRoleDetail);
+}
+
+export function createRole(name: string, permissions: string[]): Promise<ClientRoleDetail> {
+  return apiCall<IvanRole>("/roles", {
+    method: "POST",
+    body: { name: name.trim(), permissions },
+  }).then(mapRoleDetail);
+}
+
+export function updateRole(
+  id: string,
+  name: string,
+  permissions: string[],
+): Promise<ClientRoleDetail> {
+  return apiCall<IvanRole>(`/roles/${id}`, {
+    method: "PUT",
+    body: { name: name.trim(), permissions },
+  }).then(mapRoleDetail);
+}
+
+export async function deleteRole(id: string): Promise<void> {
+  await apiCall(`/roles/${id}`, { method: "DELETE" });
 }
 
 /**
