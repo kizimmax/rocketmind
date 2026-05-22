@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Input, Textarea } from "@rocketmind/ui";
-import { createAgent, updateAgent, deleteAgent } from "@/lib/ivan-client";
+import {
+  createAgent,
+  updateAgent,
+  deleteAgent,
+  getAssistants,
+  uploadFile,
+} from "@/lib/ivan-client";
 import { ApiError } from "@/lib/api";
+import type { OpenAiAssistant } from "@/lib/ivan-auth";
 import { toast } from "sonner";
-import { UserCircle, Loader2, Trash2 } from "lucide-react";
+import { UserCircle, Loader2, Trash2, Upload } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export type Agent = {
@@ -43,6 +50,31 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
   const [systemPrompt, setSystemPrompt] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [assistants, setAssistants] = useState<OpenAiAssistant[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    getAssistants()
+      .then(setAssistants)
+      .catch(() => toast.error("Не удалось загрузить список ассистентов"));
+  }, []);
+
+  async function handlePickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // сброс — чтобы повторный выбор того же файла триггерил change
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadFile(file);
+      setState((s) => ({ ...s, avatarUrl: url }));
+      toast.success("Фото загружено");
+    } catch (err) {
+      toast.error(`Не удалось загрузить фото${err instanceof ApiError ? `: ${err.message}` : ""}`);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleSave() {
     if (!state.name.trim()) {
@@ -86,32 +118,42 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ── Left column ── */}
         <div className="space-y-4">
-          {/* Avatar (URL) + крупный инпут имени */}
+          {/* Avatar (загрузка с устройства → /file/upload → S3) + имя */}
           <div className="flex items-start gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40">
-              {state.avatarUrl ? (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              title="Загрузить фото"
+              className="group relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40 transition-colors hover:border-foreground/30 disabled:opacity-60"
+            >
+              {uploading ? (
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              ) : state.avatarUrl ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={state.avatarUrl} alt="" className="h-full w-full object-cover" />
               ) : (
                 <UserCircle className="h-10 w-10 text-muted-foreground" />
               )}
-            </div>
+              {!uploading && (
+                <span className="absolute inset-0 hidden flex-col items-center justify-center gap-1 bg-black/55 text-[length:var(--text-10)] font-medium text-white group-hover:flex">
+                  <Upload className="h-4 w-4" />
+                  Загрузить
+                </span>
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePickAvatar}
+            />
             <Input
               value={state.name}
               onChange={(e) => setState((s) => ({ ...s, name: e.target.value }))}
               placeholder="Имя AI-эксперта"
               className="h-20 flex-1 text-[length:var(--text-24)] font-bold uppercase tracking-tight"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-              Ссылка на аватар
-            </label>
-            <Input
-              value={state.avatarUrl ?? ""}
-              onChange={(e) => setState((s) => ({ ...s, avatarUrl: e.target.value || null }))}
-              placeholder="https://… (загрузка файлом — позже через /file/upload)"
             />
           </div>
 
@@ -138,13 +180,25 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
 
           <div>
             <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-              OpenAI Assistant ID
+              OpenAI Assistant
             </label>
-            <Input
+            <select
               value={state.openAiAssistantId}
               onChange={(e) => setState((s) => ({ ...s, openAiAssistantId: e.target.value }))}
-              placeholder="asst_…"
-            />
+              className="h-9 w-full rounded border border-border bg-background px-3 text-[length:var(--text-14)] text-foreground outline-none focus-visible:border-ring"
+            >
+              <option value="">— выберите ассистента —</option>
+              {/* Текущий id, которого нет в списке (легаси) — показываем как есть */}
+              {state.openAiAssistantId &&
+                !assistants.some((a) => a.id === state.openAiAssistantId) && (
+                  <option value={state.openAiAssistantId}>{state.openAiAssistantId}</option>
+                )}
+              {assistants.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

@@ -14,6 +14,7 @@ import {
   Inbox,
   Settings,
   ArrowLeftRight,
+  KeyRound,
 } from "lucide-react";
 import {
   AdminSidebar as AdminSidebarShell,
@@ -38,6 +39,7 @@ const allSections: SaasAdminSection[] = [
   { id: "ai-agents", href: "/ai-agents", label: "AI-эксперты", Icon: Bot, permissionPath: "ai-agents" },
   { id: "programs", href: "/programs", label: "Программы", Icon: CalendarDays, permissionPath: "programs" },
   { id: "users", href: "/users", label: "Доступы к CMS SaaS", Icon: ShieldCheck, rolesAllowed: ["SUPER_ADMIN", "ADMIN"] },
+  { id: "roles", href: "/roles", label: "Роли", Icon: KeyRound, rolesAllowed: ["SUPER_ADMIN"] },
 
   // ── Cross-links на сайтовый CMS (видны только SUPER_ADMIN) ──
   // Иллюзия единого пульта: те же визуальные вкладки + ExternalLink-иконка.
