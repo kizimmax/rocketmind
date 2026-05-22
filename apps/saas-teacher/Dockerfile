@@ -1,4 +1,5 @@
 # ── Stage 1: Build ────────────────────────────────────────────────────────────
+# rebuild marker 2026-05-22: Prisma полностью убран (auth/данные на BACK_API).
 FROM node:20-alpine AS builder
 
 WORKDIR /app
