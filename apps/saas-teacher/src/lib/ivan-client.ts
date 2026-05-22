@@ -74,16 +74,49 @@ export function updateProfile(fields: ProfileFields): Promise<Student> {
 
 // ── Чат ──────────────────────────────────────────────────────────────────────
 
+export type Pagination = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+};
+
+export type HistoryPage = {
+  /** Сообщения страницы по возрастанию даты (oldest→newest). */
+  messages: ChatMessage[];
+  pagination: Pagination;
+};
+
+/** Лимит у Ивана ограничен сверху 50 (см. спеку). */
+export const HISTORY_PAGE_SIZE = 50;
+
+const EMPTY_PAGINATION: Pagination = {
+  page: 1,
+  limit: HISTORY_PAGE_SIZE,
+  total: 0,
+  totalPages: 1,
+  hasMore: false,
+};
+
 /**
- * История диалога с конкретным агентом (per-agent чат). У Ивана пагинация —
- * берём первую страницу (limit=200).
+ * Страница истории диалога с агентом (per-agent чат). Сортировка у Ивана —
+ * по возрастанию даты; page 1 = самые старые, новые — на последней странице.
  */
-export function getAgentHistory(agentId: string): Promise<ChatMessage[]> {
-  return apiCall<{ messages: IvanCourseMessage[] }>(
-    `/course/messages?agentId=${encodeURIComponent(agentId)}&limit=200`,
+export function getAgentHistory(
+  agentId: string,
+  page = 1,
+  limit = HISTORY_PAGE_SIZE,
+): Promise<HistoryPage> {
+  const safeLimit = Math.min(Math.max(1, limit), HISTORY_PAGE_SIZE);
+  return apiCall<{ messages: IvanCourseMessage[]; pagination?: Pagination }>(
+    `/course/messages?agentId=${encodeURIComponent(agentId)}&page=${page}&limit=${safeLimit}`,
   )
-    .then((d) => (d?.messages ?? []).map(mapMessage))
-    .catch(() => []);
+    .then((d) => ({
+      messages: (d?.messages ?? []).map(mapMessage),
+      pagination: d?.pagination ?? { ...EMPTY_PAGINATION, page, limit: safeLimit },
+    }))
+    .catch(() => ({ messages: [], pagination: { ...EMPTY_PAGINATION, page, limit: safeLimit } }));
 }
 
 /**

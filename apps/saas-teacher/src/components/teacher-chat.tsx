@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button, Textarea, DotGridLens, GlowingEffect } from "@rocketmind/ui";
 import { Loader2 } from "lucide-react";
 import type { TeacherAgent } from "./teacher-sidebar";
@@ -44,25 +44,45 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
   const [draft, setDraft] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Пагинация истории: у Ивана сортировка ASC (page 1 = самые старые), новые —
+  // на последней странице. Открываем последнюю, при скролле вверх грузим старее.
+  const oldestPageRef = useRef(1);
+  const hasOlderRef = useRef(false);
+  const loadingOlderRef = useRef(false);
+  // Якорь скролла при подгрузке старых сверху (чтобы лента не прыгала).
+  const prependRef = useRef<{ prevHeight: number; prevTop: number } | null>(null);
+  // Разово пропустить авто-скролл вниз (после prepend старых сообщений).
+  const skipBottomRef = useRef(false);
+
   const agentId = selectedAgent?.id ?? null;
   const canSend = draft.trim().length > 0 && !streaming && !!selectedAgent;
 
-  // История выбранного агента — перезагружаем при смене агента.
+  // История выбранного агента: грузим последнюю страницу (самые свежие),
+  // остальное — по скроллу вверх. Перезагружаем при смене агента.
   useEffect(() => {
     abortRef.current?.abort();
     setMessages([]);
+    oldestPageRef.current = 1;
+    hasOlderRef.current = false;
     if (!agentId) return;
     let cancelled = false;
     setLoadingHistory(true);
-    getAgentHistory(agentId)
-      .then((history) => {
-        if (!cancelled)
-          setMessages(history.map((m) => ({ id: m.id, role: m.role, content: m.content })));
-      })
+    (async () => {
+      const first = await getAgentHistory(agentId, 1);
+      const page =
+        first.pagination.totalPages > 1
+          ? await getAgentHistory(agentId, first.pagination.totalPages)
+          : first;
+      if (cancelled) return;
+      oldestPageRef.current = page.pagination.page;
+      hasOlderRef.current = page.pagination.page > 1;
+      setMessages(page.messages.map((m) => ({ id: m.id, role: m.role, content: m.content })));
+    })()
       .catch(() => {})
       .finally(() => !cancelled && setLoadingHistory(false));
     return () => {
@@ -70,7 +90,54 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
     };
   }, [agentId]);
 
+  // Подгрузка более старых сообщений (страница ниже текущей самой старой).
+  const loadOlder = useCallback(async () => {
+    if (!agentId || loadingOlderRef.current || !hasOlderRef.current) return;
+    const prevPage = oldestPageRef.current - 1;
+    if (prevPage < 1) return;
+    loadingOlderRef.current = true;
+    setLoadingOlder(true);
+    try {
+      const older = await getAgentHistory(agentId, prevPage);
+      const el = scrollRef.current;
+      if (el) prependRef.current = { prevHeight: el.scrollHeight, prevTop: el.scrollTop };
+      skipBottomRef.current = true;
+      setMessages((m) => {
+        const have = new Set(m.map((x) => x.id));
+        const fresh = older.messages
+          .filter((x) => !have.has(x.id))
+          .map((x) => ({ id: x.id, role: x.role, content: x.content }));
+        return [...fresh, ...m];
+      });
+      oldestPageRef.current = older.pagination.page;
+      hasOlderRef.current = older.pagination.page > 1;
+    } finally {
+      loadingOlderRef.current = false;
+      setLoadingOlder(false);
+    }
+  }, [agentId]);
+
+  function onScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (el.scrollTop < 80 && hasOlderRef.current && !loadingOlderRef.current) loadOlder();
+  }
+
+  // Перенос позиции скролла при prepend старых сообщений (до отрисовки).
+  useLayoutEffect(() => {
+    const p = prependRef.current;
+    if (!p) return;
+    prependRef.current = null;
+    const el = scrollRef.current;
+    if (el) el.scrollTop = el.scrollHeight - p.prevHeight + p.prevTop;
+  }, [messages]);
+
+  // Авто-скролл вниз (новые сообщения / стрим / первая загрузка). После prepend пропускаем.
   useEffect(() => {
+    if (skipBottomRef.current) {
+      skipBottomRef.current = false;
+      return;
+    }
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
@@ -165,7 +232,7 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
       />
 
       {/* Messages */}
-      <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto">
+      <div ref={scrollRef} onScroll={onScroll} className="relative z-10 flex-1 overflow-y-auto">
         {!selectedAgent ? (
           <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
             <p className="text-[length:var(--text-14)] text-muted-foreground">
@@ -207,6 +274,11 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
           </div>
         ) : (
           <div className="mx-auto max-w-2xl space-y-4 px-5 py-8">
+            {loadingOlder && (
+              <div className="flex justify-center py-2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
             {messages.map((msg) =>
               msg.role === "user" ? (
                 <div key={msg.id} className="flex justify-end">
