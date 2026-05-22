@@ -4,6 +4,17 @@ import path from "path";
 
 const UPLOADS_DIR = process.env.UPLOADS_DIR ?? "/data/uploads";
 
+// Пользовательские загрузки (обложки статей, логотипы, ассеты страниц) пишет
+// АДМИНКА в свой /data/uploads. В локальном docker-compose том общий, и сайт
+// читает файл напрямую. Но на Amvera у каждого приложения СВОЙ volume — общего
+// /data/uploads нет, поэтому если файла нет локально, проксируем его с домена
+// админки (источник правды для загрузок). Origin переопределяется через ENV.
+const ADMIN_UPLOADS_ORIGIN = (
+  process.env.ADMIN_UPLOADS_ORIGIN ?? "https://rocketmind-admin-rocketmind.amvera.io"
+).replace(/\/$/, "");
+
+const IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
+
 const MIME: Record<string, string> = {
   png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
   webp: "image/webp", svg: "image/svg+xml", gif: "image/gif",
@@ -18,6 +29,23 @@ const MIME: Record<string, string> = {
   xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 };
 
+/** Тянет файл с домена админки, когда его нет в локальном /data/uploads. */
+async function proxyFromAdmin(segments: string[]): Promise<NextResponse> {
+  const upstreamUrl = `${ADMIN_UPLOADS_ORIGIN}/uploads/${segments.map(encodeURIComponent).join("/")}`;
+  try {
+    const upstream = await fetch(upstreamUrl, { signal: AbortSignal.timeout(10_000) });
+    if (!upstream.ok) return new NextResponse(null, { status: upstream.status === 404 ? 404 : 502 });
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+    const ext = path.extname(upstreamUrl).slice(1).toLowerCase();
+    const mimeType = upstream.headers.get("content-type") ?? MIME[ext] ?? "application/octet-stream";
+    return new NextResponse(buffer, {
+      headers: { "Content-Type": mimeType, "Cache-Control": IMMUTABLE_CACHE },
+    });
+  } catch {
+    return new NextResponse(null, { status: 502 });
+  }
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ path: string[] }> },
@@ -31,8 +59,9 @@ export async function GET(
     return new NextResponse(null, { status: 403 });
   }
 
+  // Локальный файл (общий том в dev) — отдаём напрямую. Иначе проксируем с админки.
   if (!fs.existsSync(resolved)) {
-    return new NextResponse(null, { status: 404 });
+    return proxyFromAdmin(segments);
   }
 
   const ext = path.extname(resolved).slice(1).toLowerCase();
@@ -46,7 +75,7 @@ export async function GET(
   return new NextResponse(buffer, {
     headers: {
       "Content-Type": mimeType,
-      "Cache-Control": "public, max-age=31536000, immutable",
+      "Cache-Control": IMMUTABLE_CACHE,
     },
   });
 }
