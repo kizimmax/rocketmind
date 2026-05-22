@@ -52,11 +52,15 @@ const EMPTY_SECTION: HomeSection = {
 function productsForFilter(all: ProductLike[], filterKey: string): ProductLike[] {
   const filter = PRODUCTS_FILTER_KEYS.find((f) => f.key === filterKey);
   if (!filter) return [];
+  // Только опубликованные: скрытые страницы не должны попадать в список
+  // блока «Разделы» (и на живую главную их тоже не выводит — там
+  // catalog-запрос идёт со status: "published").
+  const published = all.filter((p) => p.status === "published");
   if (filterKey === "expert") {
-    return all.filter((p) => p.expertProduct === true);
+    return published.filter((p) => p.expertProduct === true);
   }
   if (filter.category) {
-    return all.filter((p) => p.sectionId === filter.category);
+    return published.filter((p) => p.sectionId === filter.category);
   }
   return [];
 }
