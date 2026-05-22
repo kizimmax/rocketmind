@@ -1,9 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Button, Textarea } from "@rocketmind/ui";
-import { Send, Loader2, UserCircle } from "lucide-react";
+import { Button, Textarea, DotGridLens, GlowingEffect } from "@rocketmind/ui";
+import { Loader2 } from "lucide-react";
 import type { TeacherAgent } from "./teacher-sidebar";
+import { getAgentHistory, streamMessage } from "@/lib/ivan-client";
+
+/** Инициалы для аватара-плейсхолдера — как getInitials в apps/saas. */
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
 
 type Msg = {
   id: string;
@@ -26,7 +37,7 @@ interface TeacherChatProps {
 
 /**
  * Чат с ОДНИМ экспертом (per-agent). У каждого агента своя история
- * (GET /api/chat?agentId). Переключение агента в сайдбаре → своя переписка.
+ * (GET /course/messages?agentId). Переключение агента в сайдбаре → своя переписка.
  */
 export function TeacherChat({ selectedAgent, programClosed = false }: TeacherChatProps) {
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -34,9 +45,11 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
   const [streaming, setStreaming] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const agentId = selectedAgent?.id ?? null;
+  const canSend = draft.trim().length > 0 && !streaming && !!selectedAgent;
 
   // История выбранного агента — перезагружаем при смене агента.
   useEffect(() => {
@@ -45,10 +58,10 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
     if (!agentId) return;
     let cancelled = false;
     setLoadingHistory(true);
-    fetch(`/api/chat?agentId=${encodeURIComponent(agentId)}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data: { messages?: { id: string; role: "user" | "assistant"; content: string }[] }) => {
-        if (!cancelled) setMessages((data.messages ?? []).map((m) => ({ id: m.id, role: m.role, content: m.content })));
+    getAgentHistory(agentId)
+      .then((history) => {
+        if (!cancelled)
+          setMessages(history.map((m) => ({ id: m.id, role: m.role, content: m.content })));
       })
       .catch(() => {})
       .finally(() => !cancelled && setLoadingHistory(false));
@@ -77,12 +90,7 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
     abortRef.current = ctrl;
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agentId: selectedAgent.id, content }),
-        signal: ctrl.signal,
-      });
+      const res = await streamMessage(selectedAgent.id, content, ctrl.signal);
       if (!res.body) throw new Error("no body");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -146,62 +154,121 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
   }
 
   return (
-    <div className="flex flex-1 flex-col">
-      {/* Header — активный эксперт */}
-      <header className="flex items-center gap-3 border-b border-border px-6 py-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-rm-gray-1/60">
-          {selectedAgent?.avatarUrl ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={selectedAgent.avatarUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <UserCircle className="h-6 w-6 text-muted-foreground" />
-          )}
-        </div>
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[length:var(--text-14)] font-medium text-foreground">
-            {selectedAgent ? selectedAgent.name : "Выберите AI-эксперта"}
-          </span>
-          {selectedAgent?.role && (
-            <span className="truncate text-[length:var(--text-12)] text-muted-foreground">{selectedAgent.role}</span>
-          )}
-        </div>
-      </header>
+    <div className="relative flex flex-1 flex-col overflow-hidden">
+      {/* Фон — точечная сетка с линзой, как в saas */}
+      <DotGridLens
+        gridGap={10}
+        baseRadius={0.75}
+        maxScale={2.8}
+        lensRadius={100}
+        className="pointer-events-auto absolute inset-0 z-0"
+      />
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-5">
-        <div className="mx-auto flex max-w-2xl flex-col gap-4">
-          {!selectedAgent ? (
-            <p className="text-center text-[length:var(--text-12)] text-muted-foreground">
-              Выберите AI-эксперта в сайдбаре слева.
+      <div ref={scrollRef} className="relative z-10 flex-1 overflow-y-auto">
+        {!selectedAgent ? (
+          <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
+            <p className="text-[length:var(--text-14)] text-muted-foreground">
+              Выберите AI-эксперта в сайдбаре.
             </p>
-          ) : loadingHistory && messages.length === 0 ? (
-            <p className="text-center text-[length:var(--text-12)] text-muted-foreground">Загрузка…</p>
-          ) : messages.length === 0 ? (
-            <p className="text-center text-[length:var(--text-12)] text-muted-foreground">
+          </div>
+        ) : loadingHistory && messages.length === 0 ? (
+          <div className="flex h-full items-center justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : messages.length === 0 ? (
+          /* Пустой чат — крупный аватар эксперта + интро, как EmptyExpertChat в saas */
+          <div className="flex h-full flex-col items-center justify-center px-6 py-12">
+            <div className="mb-4 h-24 w-24 overflow-hidden rounded-full bg-background">
+              {selectedAgent.avatarUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={selectedAgent.avatarUrl}
+                  alt={selectedAgent.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center font-[family-name:var(--font-heading-family)] text-[length:var(--text-32)] font-bold text-muted-foreground">
+                  {getInitials(selectedAgent.name)}
+                </span>
+              )}
+            </div>
+            <h3 className="mb-1 font-[family-name:var(--font-heading-family)] text-[length:var(--text-20)] font-bold uppercase">
+              {selectedAgent.name}
+            </h3>
+            {selectedAgent.role && (
+              <p className="mb-2 font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground">
+                {selectedAgent.role}
+              </p>
+            )}
+            <p className="max-w-sm text-center text-[length:var(--text-14)] text-muted-foreground">
               {selectedAgent.valueDescription || `Напишите ${selectedAgent.name} первое сообщение.`}
             </p>
-          ) : (
-            messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] whitespace-pre-wrap rounded-sm px-3 py-2 text-[length:var(--text-14)] ${
-                    msg.role === "user" ? "bg-foreground text-background" : "bg-rm-gray-1/40 text-foreground"
-                  }`}
-                >
-                  {msg.content || (msg.pending ? <Dots /> : "")}
-                  {msg.pending && msg.content && (
-                    <span className="ml-1 inline-block h-3 w-[2px] animate-pulse bg-current align-middle" />
-                  )}
+          </div>
+        ) : (
+          <div className="mx-auto max-w-2xl space-y-4 px-5 py-8">
+            {messages.map((msg) =>
+              msg.role === "user" ? (
+                <div key={msg.id} className="flex justify-end">
+                  <div className="max-w-[75%] space-y-1">
+                    <div className="rounded-sm bg-rm-gray-2 px-4 py-3 text-[length:var(--text-14)] text-foreground">
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              ) : (
+                <div key={msg.id} className="flex justify-start">
+                  <div className="w-full min-w-0 space-y-1 lg:max-w-[75%]">
+                    {selectedAgent && (
+                      <div className="mb-1 flex items-center gap-1.5">
+                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-background">
+                          {selectedAgent.avatarUrl ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={selectedAgent.avatarUrl}
+                              alt={selectedAgent.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center text-[length:var(--text-14)] font-bold text-muted-foreground">
+                              {getInitials(selectedAgent.name)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[length:var(--text-12)] font-medium">
+                            {selectedAgent.name}
+                          </span>
+                          {selectedAgent.role && (
+                            <span className="text-[length:var(--text-12)] text-muted-foreground">
+                              {selectedAgent.role}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div className="relative rounded-sm bg-background px-4 py-3 text-[length:var(--text-14)] text-foreground">
+                      <GlowingEffect variant="yellow" borderWidth={2} disabled={false} />
+                      {msg.content ? (
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      ) : msg.pending ? (
+                        <Dots />
+                      ) : null}
+                      {msg.pending && msg.content && (
+                        <span className="ml-0.5 inline-block h-[1em] w-[2px] animate-blink bg-foreground align-text-bottom" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+        )}
       </div>
 
       {/* Composer / плашка подписки */}
       {programClosed ? (
-        <div className="border-t border-border bg-rm-gray-1/30 px-6 py-4">
+        <div className="relative z-10 border-t border-border bg-rm-gray-1/30 px-6 py-4">
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left">
             <p className="text-[length:var(--text-14)] text-muted-foreground">
               Чтобы продолжить диалог — оформите подписку.
@@ -215,24 +282,51 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
           </div>
         </div>
       ) : (
-        <div className="border-t border-border px-6 py-4">
-          <div className="mx-auto flex max-w-2xl items-end gap-2">
-            <Textarea
-              variant="chat"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder={selectedAgent ? "Сообщение…" : "Выберите эксперта"}
-              disabled={!selectedAgent}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-            />
-            <Button size="sm" onClick={send} disabled={!draft.trim() || streaming || !selectedAgent}>
-              {streaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </Button>
+        <div className="relative z-10 px-3.5 pb-3.5 pt-2">
+          <div className="mx-auto max-w-2xl">
+            <div className="relative rounded-sm border-2 border-border bg-background/80 backdrop-blur-sm transition-colors has-[textarea:focus]:border-ring">
+              <GlowingEffect variant="yellow" borderWidth={2} disabled={false} />
+              <div className="relative">
+                <Textarea
+                  ref={textareaRef}
+                  variant="chat"
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      send();
+                    }
+                  }}
+                  placeholder={selectedAgent ? "Введите сообщение..." : "Выберите эксперта"}
+                  disabled={!selectedAgent}
+                  className="border-0 bg-transparent pl-3.5 pr-12 focus-visible:border-0 focus-visible:ring-0"
+                  rows={1}
+                />
+                <Button
+                  size="icon"
+                  variant={canSend ? "default" : "ghost"}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={send}
+                  disabled={!canSend}
+                  className="absolute bottom-2 right-2"
+                  aria-label="Отправить"
+                >
+                  {streaming ? (
+                    <Loader2 className="size-5 animate-spin" />
+                  ) : (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="size-6">
+                      <path
+                        d="M12.0468 4.58813L5 11.6131M12.0468 4.58813L12.0468 19.4117M12.0468 4.58813L19 11.6131"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

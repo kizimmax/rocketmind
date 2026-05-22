@@ -1,5 +1,4 @@
 import type { Student, StudentProgramSummary } from "./auth-context";
-import { ivanCall, type IvanResult } from "./ivan-api";
 
 export type IvanRole = {
   _id: string;
@@ -20,6 +19,7 @@ export type IvanUser = {
   _id: string;
   email: string;
   firstName?: string;
+  lastName?: string;
   profession?: string; // → Student.role («Роль в бизнесе»)
   fieldOfActivity?: string; // → Student.industry («Сфера деятельности»)
   city?: string; // → Student.region («Регион»)
@@ -40,7 +40,7 @@ export type IvanCourseAgent = {
   baseMessages?: unknown[];
 };
 
-/** Агент в формате сайдбара saas-teacher (как ждёт /api/programs/active). */
+/** Агент в формате сайдбара saas-teacher. */
 export type TeacherAgent = {
   id: string;
   slug: string;
@@ -78,27 +78,6 @@ export function mapMessage(m: IvanCourseMessage): ChatMessage {
     agentId: m.agent ?? null,
     createdAt: m.createdAt,
   };
-}
-
-/** GET /profile с relay-куки и авто-refresh на 401. */
-export function fetchProfile(cookie: string | null): Promise<IvanResult<IvanUser>> {
-  return ivanCall<IvanUser>({ path: "/profile", cookie, retryOn401: true });
-}
-
-/**
- * История диалога с КОНКРЕТНЫМ агентом (per-agent чат — у каждого эксперта
- * своя переписка; то, что у юзера один OpenAI thread, на UX не влияет).
- * GET /course/messages?agentId — у Ивана пагинация (берём первую страницу).
- */
-export function fetchAgentHistory(
-  cookie: string | null,
-  agentId: string,
-): Promise<IvanResult<{ messages: IvanCourseMessage[] }>> {
-  return ivanCall<{ messages: IvanCourseMessage[] }>({
-    path: `/course/messages?agentId=${encodeURIComponent(agentId)}&limit=200`,
-    cookie,
-    retryOn401: true,
-  });
 }
 
 /**
@@ -142,7 +121,7 @@ export function mapUserToStudent(u: IvanUser): Student {
     id: u._id,
     email: u.email,
     firstName: u.firstName ?? null,
-    lastName: null, // у Ивана только firstName
+    lastName: u.lastName ?? null,
     role: u.profession ?? null, // «Роль в бизнесе» ← profession
     industry: u.fieldOfActivity ?? null, // «Сфера деятельности»
     region: u.city ?? null, // «Регион» = city

@@ -1,19 +1,36 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth, type Student } from "@/lib/auth-context";
-import { Button } from "@rocketmind/ui";
-import { LogOut, UserCircle, Lock } from "lucide-react";
+import { useTheme } from "next-themes";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@rocketmind/ui";
+import { LogOut, UserCircle, Lock, EllipsisVertical, Sun, Moon } from "lucide-react";
 
-export type TeacherAgent = {
-  id: string;
-  slug: string;
-  name: string;
-  role: string;
-  valueDescription: string;
-  avatarUrl: string | null;
-  isAvailable: boolean;
+type FontSize = "sm" | "md" | "lg";
+
+const FONT_SIZE_MAP: Record<FontSize, string> = {
+  sm: "100%",
+  md: "112.5%",
+  lg: "125%",
 };
+
+function applyFontSize(size: FontSize) {
+  document.documentElement.style.fontSize = FONT_SIZE_MAP[size];
+}
+
+// Единый тип агента — из lib/ivan-auth (маппер mapAgent). Импорт для локального
+// использования + ре-экспорт, чтобы `{ TeacherAgent } from "./teacher-sidebar"`
+// у существующих потребителей не ломался.
+import type { TeacherAgent } from "@/lib/ivan-auth";
+export type { TeacherAgent };
 
 interface TeacherSidebarProps {
   student: Student;
@@ -21,6 +38,8 @@ interface TeacherSidebarProps {
   selectedAgentId: string | null;
   onSelectAgent: (id: string) => void;
   loading: boolean;
+  /** Закрыть мобильный drawer после выбора/перехода (на десктопе не передаётся). */
+  onNavigate?: () => void;
 }
 
 export function TeacherSidebar({
@@ -29,11 +48,15 @@ export function TeacherSidebar({
   selectedAgentId,
   onSelectAgent,
   loading,
+  onNavigate,
 }: TeacherSidebarProps) {
   const { logout } = useAuth();
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col border-r border-border bg-rm-gray-1/30">
+    <aside className="flex h-full w-72 shrink-0 flex-col border-r border-border bg-rm-gray-1/30">
+      {/* Текстовый логотип сверху — как LogoHeader в saas */}
+      <TeacherLogoHeader />
+
       {/* Agents list */}
       <div className="flex-1 overflow-y-auto px-2 py-3">
         <div className="px-2 pb-2 text-[length:var(--text-10)] uppercase tracking-wide text-muted-foreground">
@@ -56,7 +79,10 @@ export function TeacherSidebar({
                 <li key={agent.id}>
                   <button
                     type="button"
-                    onClick={() => onSelectAgent(agent.id)}
+                    onClick={() => {
+                      onSelectAgent(agent.id);
+                      onNavigate?.();
+                    }}
                     className={`flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left transition-colors ${
                       isSelected
                         ? "bg-foreground/10 text-foreground"
@@ -93,20 +119,68 @@ export function TeacherSidebar({
         )}
       </div>
 
-      {/* User — клик ведёт на /profile (анкета редактируется там) */}
-      <div className="flex items-center gap-2 border-t border-border px-3 py-3">
-        <Link
-          href="/profile"
-          className="flex min-w-0 flex-1 items-center gap-2 hover:opacity-80 transition-opacity"
-          title="Профиль и анкета"
-        >
+      {/* User — меню: размер шрифта, тема, профиль, выход (как UserMenu в saas) */}
+      <div className="border-t border-border px-3 py-3">
+        <TeacherUserMenu student={student} onLogout={logout} onNavigate={onNavigate} />
+      </div>
+    </aside>
+  );
+}
+
+function TeacherLogoHeader() {
+  const { resolvedTheme } = useTheme();
+  const bp = process.env.NEXT_PUBLIC_BASE_PATH || "";
+  const src =
+    resolvedTheme === "dark"
+      ? `${bp}/text_logo_dark_background_en.svg`
+      : `${bp}/text_logo_light_background_en.svg`;
+
+  return (
+    <div className="flex items-center border-b border-border px-4 py-3">
+      <Link href="/" aria-label="На главную">
+        <Image src={src} alt="Rocketmind" width={140} height={24} priority />
+      </Link>
+    </div>
+  );
+}
+
+function TeacherUserMenu({
+  student,
+  onLogout,
+  onNavigate,
+}: {
+  student: Student;
+  onLogout: () => void;
+  onNavigate?: () => void;
+}) {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [fontSize, setFontSize] = useState<FontSize>("sm");
+
+  useEffect(() => {
+    const saved = (localStorage.getItem("rm-font-size") as FontSize) ?? "sm";
+    setFontSize(saved);
+    applyFontSize(saved);
+  }, []);
+
+  function handleFontSize(size: FontSize) {
+    setFontSize(size);
+    localStorage.setItem("rm-font-size", size);
+    applyFontSize(size);
+  }
+
+  const displayName =
+    [student.firstName, student.lastName].filter(Boolean).join(" ") || student.email;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex w-full items-center gap-2 rounded-sm px-1 py-1 transition-colors hover:bg-foreground/5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-foreground/10">
             <UserCircle className="h-5 w-5 text-foreground" />
           </div>
-          <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-w-0 flex-1 flex-col text-left">
             <span className="truncate text-[length:var(--text-12)] text-foreground">
-              {[student.firstName, student.lastName].filter(Boolean).join(" ") ||
-                student.email}
+              {displayName}
             </span>
             {student.role && (
               <span className="truncate text-[length:var(--text-10)] text-muted-foreground">
@@ -114,16 +188,61 @@ export function TeacherSidebar({
               </span>
             )}
           </div>
-        </Link>
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={() => logout()}
-          title="Выйти"
+          <EllipsisVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="top" className="z-[80] w-64">
+        {/* Размер шрифта */}
+        <div className="flex items-center gap-2 px-3 py-3">
+          <span className="flex-1 text-[length:var(--text-16)]">Размер</span>
+          <div className="flex gap-1">
+            {(["sm", "md", "lg"] as const).map((s, i) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => handleFontSize(s)}
+                className={`flex h-9 w-9 items-center justify-center rounded-sm font-medium transition-colors ${
+                  fontSize === s
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-rm-gray-1 hover:text-foreground"
+                }`}
+                style={{ fontSize: i === 0 ? "12px" : i === 1 ? "15px" : "18px" }}
+              >
+                Аа
+              </button>
+            ))}
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        {/* Смена темы */}
+        <DropdownMenuItem
+          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+          className="h-auto py-3 text-[length:var(--text-16)] [&_svg]:!size-5"
         >
-          <LogOut className="h-3.5 w-3.5" />
-        </Button>
-      </div>
-    </aside>
+          {resolvedTheme === "dark" ? (
+            <Sun className="mr-3 h-5 w-5" />
+          ) : (
+            <Moon className="mr-3 h-5 w-5" />
+          )}
+          {resolvedTheme === "dark" ? "Светлая тема" : "Тёмная тема"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {/* Профиль / анкета */}
+        <DropdownMenuItem asChild className="h-auto py-3 text-[length:var(--text-16)] [&_svg]:!size-5">
+          <Link href="/profile" onClick={() => onNavigate?.()}>
+            <UserCircle className="mr-3 h-5 w-5" />
+            Профиль
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={onLogout}
+          className="h-auto py-3 text-[length:var(--text-16)] [&_svg]:!size-5 text-[var(--rm-red-500)]"
+        >
+          <LogOut className="mr-3 h-5 w-5" />
+          Выйти
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

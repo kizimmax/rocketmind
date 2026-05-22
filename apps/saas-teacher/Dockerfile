@@ -10,9 +10,10 @@ RUN npm install --ignore-scripts && npm run postinstall
 # Build shared UI package first.
 RUN npm run build --workspace=packages/ui
 
-# Build saas-teacher (SSR — auth/чат/join проксируют на API Ивана). Prisma
-# больше не используется (бэк целиком на стороне Ивана).
+# Build saas-teacher. Браузер ходит к API Ивана НАПРЯМУЮ (без BFF) —
+# базовый URL вшивается на сборке (NEXT_PUBLIC_*). Prisma не используется.
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_BASE_URL=https://api.rocketmind.ru/api/v1
 RUN npm run build --workspace=apps/saas-teacher
 
 # Разыменовать симлинки в public/. apps/saas-teacher/public/ai-mascots →

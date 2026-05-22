@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, Button, Input } from "@rocketmind/ui";
 import { Loader2, ChevronRight } from "lucide-react";
 import type { Student } from "@/lib/auth-context";
+import { updateProfile } from "@/lib/ivan-client";
 
 interface OnboardingModalProps {
   student: Student;
@@ -62,12 +63,7 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
     if (!firstName.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/students/me", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, role, industry, region }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await updateProfile({ firstName, lastName, role, industry, region });
       await onComplete();
     } catch (err) {
       console.error(err);
@@ -81,11 +77,7 @@ export function OnboardingModal({ student, onComplete }: OnboardingModalProps) {
     setSaving(true);
     try {
       if (firstName.trim() || lastName.trim() || role.trim() || industry.trim() || region.trim()) {
-        await fetch("/api/students/me", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ firstName, lastName, role, industry, region }),
-        }).catch(() => {});
+        await updateProfile({ firstName, lastName, role, industry, region }).catch(() => {});
       }
       await onComplete();
     } finally {
