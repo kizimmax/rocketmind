@@ -1,131 +1,183 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Switch } from "@rocketmind/ui";
-import { UserCircle, Loader2 } from "lucide-react";
+import { UserCircle, Loader2, ChevronUp, ChevronDown, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api-client";
 
 type Agent = {
   id: string;
-  slug: string;
   name: string;
   role: string;
-  valueDescription: string;
-  avatarMascot: { imagePath: string } | null;
-  avatarPath: string | null;
+  avatarUrl: string | null;
 };
 
 interface AgentsBlockProps {
   programId: string;
-  initialEnabled: { agentId: string; isAvailable: boolean }[];
+  /** Упорядоченный массив agentId программы (group.agents). */
+  initialAgentIds: string[];
 }
 
-export function AgentsBlock({ programId, initialEnabled }: AgentsBlockProps) {
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [enabled, setEnabled] = useState<Map<string, boolean>>(
-    () => new Map(initialEnabled.map((e) => [e.agentId, e.isAvailable])),
-  );
+/**
+ * Состав и ПОРЯДОК AI-экспертов внутри программы. Порядок = позиция в массиве
+ * group.agents[] (его и видит ученик в сайдбаре). Управление: ↑/↓ — переставить,
+ * ×  — убрать из программы, + — добавить. Любое изменение сохраняет весь массив
+ * через PATCH /api/programs/{id} (Иван заменяет agents[] целиком).
+ */
+export function AgentsBlock({ programId, initialAgentIds }: AgentsBlockProps) {
+  const [all, setAll] = useState<Agent[]>([]);
+  const [order, setOrder] = useState<string[]>(initialAgentIds);
   const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState<Set<string>>(new Set());
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    apiFetch("/api/ai-agents?target=saas-teacher")
+    apiFetch("/api/ai-agents")
       .then((r) => r.json())
-      .then(setAgents)
+      .then((rows: Agent[]) => setAll(Array.isArray(rows) ? rows : []))
       .catch(() => toast.error("Не удалось загрузить AI-экспертов"))
       .finally(() => setLoading(false));
   }, []);
 
-  async function toggle(agentId: string, value: boolean) {
-    setPending((s) => new Set(s).add(agentId));
-    // optimistic
-    setEnabled((m) => new Map(m).set(agentId, value));
+  async function persist(next: string[]) {
+    const prev = order;
+    setOrder(next); // optimistic
+    setSaving(true);
     try {
-      const res = await apiFetch("/api/program-agents", {
-        method: "POST",
+      const res = await apiFetch(`/api/programs/${programId}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ programId, agentId, isAvailable: value }),
+        body: JSON.stringify({ agents: next }),
       });
       if (!res.ok) throw new Error(await res.text());
-    } catch (err) {
-      console.error(err);
-      toast.error("Ошибка");
-      // revert
-      setEnabled((m) => new Map(m).set(agentId, !value));
+    } catch {
+      toast.error("Не удалось сохранить порядок");
+      setOrder(prev); // revert
     } finally {
-      setPending((s) => {
-        const next = new Set(s);
-        next.delete(agentId);
-        return next;
-      });
+      setSaving(false);
     }
   }
 
+  function move(idx: number, dir: -1 | 1) {
+    const next = [...order];
+    const j = idx + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[idx], next[j]] = [next[j], next[idx]];
+    persist(next);
+  }
+
+  const byId = new Map(all.map((a) => [a.id, a]));
+  const inProgram = order.map((id) => byId.get(id)).filter((a): a is Agent => !!a);
+  const available = all.filter((a) => !order.includes(a.id));
+
   return (
     <div className="rounded border border-border bg-rm-gray-1/30 p-5">
-      <h2 className="mb-4 text-[length:var(--text-14)] font-medium uppercase tracking-wide text-muted-foreground">
-        AI-эксперты программы
-      </h2>
+      <div className="mb-4 flex items-center gap-2">
+        <h2 className="text-[length:var(--text-14)] font-medium uppercase tracking-wide text-muted-foreground">
+          AI-эксперты программы
+        </h2>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+      </div>
 
       {loading ? (
         <div className="flex justify-center p-4 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
-      ) : agents.length === 0 ? (
-        <p className="text-[length:var(--text-12)] text-muted-foreground">
-          Нет AI-экспертов с привязкой к saas-teacher. Добавьте их в разделе{" "}
-          <a className="underline underline-offset-2" href="/ai-agents">
-            AI-эксперты
-          </a>
-          .
-        </p>
       ) : (
-        <div className="divide-y divide-border">
-          {agents.map((agent) => {
-            const isOn = enabled.get(agent.id) ?? false;
-            const isPending = pending.has(agent.id);
-            const avatar = agent.avatarMascot?.imagePath ?? agent.avatarPath;
-            return (
-              <div key={agent.id} className="flex items-center gap-3 py-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded bg-rm-gray-1/60">
-                  {avatar ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={avatar}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <UserCircle className="h-6 w-6 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-[length:var(--text-14)] font-medium text-foreground">
-                    {agent.name}
+        <>
+          {/* В программе — упорядоченный список со стрелками */}
+          {inProgram.length === 0 ? (
+            <p className="mb-4 text-[length:var(--text-12)] text-muted-foreground">
+              В программе пока нет AI-экспертов. Добавьте из списка ниже.
+            </p>
+          ) : (
+            <ol className="mb-4 divide-y divide-border">
+              {inProgram.map((agent, idx) => (
+                <li key={agent.id} className="flex items-center gap-3 py-2.5">
+                  <span className="w-5 shrink-0 text-center text-[length:var(--text-12)] text-muted-foreground">
+                    {idx + 1}
                   </span>
-                  {agent.role && (
-                    <span className="truncate text-[length:var(--text-12)] text-muted-foreground">
-                      {agent.role}
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-rm-gray-1/60">
+                    {agent.avatarUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={agent.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <UserCircle className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-[length:var(--text-14)] font-medium text-foreground">
+                      {agent.name}
                     </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-[length:var(--text-12)] ${isOn ? "text-foreground" : "text-muted-foreground"}`}
+                    {agent.role && (
+                      <span className="truncate text-[length:var(--text-12)] text-muted-foreground">
+                        {agent.role}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => move(idx, -1)}
+                      disabled={idx === 0 || saving}
+                      className="rounded-sm p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+                      title="Выше"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => move(idx, 1)}
+                      disabled={idx === inProgram.length - 1 || saving}
+                      className="rounded-sm p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+                      title="Ниже"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => persist(order.filter((id) => id !== agent.id))}
+                      disabled={saving}
+                      className="ml-1 rounded-sm p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-30"
+                      title="Убрать из программы"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+
+          {/* Доступные — кнопка добавить */}
+          {available.length > 0 && (
+            <div className="border-t border-border pt-3">
+              <p className="mb-2 text-[length:var(--text-10)] uppercase tracking-wide text-muted-foreground">
+                Добавить в программу
+              </p>
+              <div className="flex flex-col gap-1">
+                {available.map((agent) => (
+                  <button
+                    key={agent.id}
+                    type="button"
+                    onClick={() => persist([...order, agent.id])}
+                    disabled={saving}
+                    className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-left transition-colors hover:bg-foreground/5 disabled:opacity-50"
                   >
-                    {isOn ? "Доступен" : "Скрыт"}
-                  </span>
-                  <Switch
-                    checked={isOn}
-                    onCheckedChange={(v) => toggle(agent.id, v)}
-                    disabled={isPending}
-                  />
-                </div>
+                    <Plus className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate text-[length:var(--text-14)] text-foreground">
+                      {agent.name}
+                    </span>
+                    {agent.role && (
+                      <span className="truncate text-[length:var(--text-12)] text-muted-foreground">
+                        · {agent.role}
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

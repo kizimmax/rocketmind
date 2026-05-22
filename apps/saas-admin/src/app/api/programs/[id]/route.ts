@@ -1,81 +1,43 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { resolvePlaceId } from "@/lib/resolve-place";
+import { type NextRequest, NextResponse } from "next/server";
+import { applySetCookies, ivanCall } from "@/lib/ivan-api";
 import { requirePermission } from "@/lib/auth";
+import { groupBody, mapGroupDetail, type IvanCourseGroup } from "@/lib/ivan-auth";
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requirePermission(req, "programs.list", "VIEW");
   if (gate instanceof NextResponse) return gate;
   const { id } = await params;
-  const program = await prisma.program.findUnique({
-    where: { id },
-    include: {
-      place: true,
-      agents: { include: { agent: { include: { avatarMascot: true } } } },
-      students: { orderBy: { joinedAt: "desc" } },
-    },
-  });
-  if (!program) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  return NextResponse.json(program);
+  const cookie = req.headers.get("cookie");
+  const r = await ivanCall<IvanCourseGroup>({ path: `/course/groups/${id}`, cookie, retryOn401: true });
+  if (!r.ok || !r.data) return NextResponse.json({ error: "not_found" }, { status: r.status || 404 });
+  return applySetCookies(NextResponse.json(mapGroupDetail(r.data)), r.setCookies);
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const gate = await requirePermission(request, "programs.list", "EDIT");
-  if (gate instanceof NextResponse) return gate;
-  const { id } = await params;
-  const existing = await prisma.program.findUnique({ where: { id } });
-  if (!existing) return NextResponse.json({ error: "not_found" }, { status: 404 });
-
-  const body = await request.json();
-  const data: Record<string, unknown> = {};
-
-  if (typeof body.title === "string") {
-    const title = body.title.trim();
-    if (!title) return NextResponse.json({ error: "title_required" }, { status: 400 });
-    data.title = title;
-  }
-  if ("placeName" in body) {
-    data.placeId = await resolvePlaceId(body.placeName);
-  }
-  if ("startsAt" in body) {
-    const d = body.startsAt ? new Date(body.startsAt) : null;
-    if (!d || Number.isNaN(d.getTime())) {
-      return NextResponse.json({ error: "startsAt_invalid" }, { status: 400 });
-    }
-    data.startsAt = d;
-  }
-  if ("endsAt" in body) {
-    const d = body.endsAt ? new Date(body.endsAt) : null;
-    if (!d || Number.isNaN(d.getTime())) {
-      return NextResponse.json({ error: "endsAt_invalid" }, { status: 400 });
-    }
-    data.endsAt = d;
-  }
-  if (typeof body.isActive === "boolean") {
-    data.isActive = body.isActive;
-  }
-
-  const updated = await prisma.program.update({ where: { id }, data, include: { place: true } });
-  return NextResponse.json(updated);
-}
-
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+// PATCH принимает: title, isActive, agents[] (порядок/состав — заменяет массив),
+// updateQRCode (ротация QR). Всё прокидывается в PUT /course/groups/{id}.
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const gate = await requirePermission(req, "programs.list", "EDIT");
   if (gate instanceof NextResponse) return gate;
   const { id } = await params;
-  try {
-    await prisma.program.delete({ where: { id } });
-  } catch {
-    return NextResponse.json({ error: "not_found" }, { status: 404 });
-  }
-  return NextResponse.json({ ok: true });
+  const body = await req.json().catch(() => ({}));
+  const cookie = req.headers.get("cookie");
+  const r = await ivanCall<IvanCourseGroup>({
+    method: "PUT",
+    path: `/course/groups/${id}`,
+    body: groupBody(body),
+    cookie,
+    retryOn401: true,
+  });
+  if (!r.ok || !r.data) return NextResponse.json({ error: "update_failed" }, { status: r.status || 502 });
+  return applySetCookies(NextResponse.json(mapGroupDetail(r.data)), r.setCookies);
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await requirePermission(req, "programs.list", "EDIT");
+  if (gate instanceof NextResponse) return gate;
+  const { id } = await params;
+  const cookie = req.headers.get("cookie");
+  const r = await ivanCall({ method: "DELETE", path: `/course/groups/${id}`, cookie, retryOn401: true });
+  if (!r.ok) return NextResponse.json({ error: "delete_failed" }, { status: r.status || 502 });
+  return applySetCookies(NextResponse.json({ ok: true }), r.setCookies);
 }

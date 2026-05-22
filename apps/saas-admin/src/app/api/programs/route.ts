@@ -1,47 +1,34 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { resolvePlaceId } from "@/lib/resolve-place";
+import { type NextRequest, NextResponse } from "next/server";
+import { applySetCookies, ivanCall } from "@/lib/ivan-api";
 import { requirePermission } from "@/lib/auth";
+import { groupBody, mapGroupDetail, mapGroupList, type IvanCourseGroup } from "@/lib/ivan-auth";
 
-export async function GET(request: Request) {
-  const gate = await requirePermission(request, "programs.list", "VIEW");
+// Программы = CourseGroup Ивана.
+export async function GET(req: NextRequest) {
+  const gate = await requirePermission(req, "programs.list", "VIEW");
   if (gate instanceof NextResponse) return gate;
-  const programs = await prisma.program.findMany({
-    include: { place: true, _count: { select: { students: true, agents: true } } },
-    orderBy: { startsAt: "desc" },
-  });
-  return NextResponse.json(programs);
+  const cookie = req.headers.get("cookie");
+  const r = await ivanCall<IvanCourseGroup[]>({ path: "/course/groups", cookie, retryOn401: true });
+  if (!r.ok) return NextResponse.json({ error: "fetch_failed" }, { status: r.status || 502 });
+  const rows = (Array.isArray(r.data) ? r.data : []).map(mapGroupList);
+  return applySetCookies(NextResponse.json(rows), r.setCookies);
 }
 
-export async function POST(request: Request) {
-  const gate = await requirePermission(request, "programs.list", "EDIT");
+export async function POST(req: NextRequest) {
+  const gate = await requirePermission(req, "programs.list", "EDIT");
   if (gate instanceof NextResponse) return gate;
-  const body = await request.json();
-  const title = String(body.title ?? "").trim();
-  if (!title) return NextResponse.json({ error: "title_required" }, { status: 400 });
-
-  const startsAt = body.startsAt ? new Date(body.startsAt) : null;
-  const endsAt = body.endsAt ? new Date(body.endsAt) : null;
-  if (!startsAt || Number.isNaN(startsAt.getTime())) {
-    return NextResponse.json({ error: "startsAt_required" }, { status: 400 });
+  const body = await req.json().catch(() => ({}));
+  if (!String(body.title ?? "").trim()) {
+    return NextResponse.json({ error: "title_required" }, { status: 400 });
   }
-  if (!endsAt || Number.isNaN(endsAt.getTime())) {
-    return NextResponse.json({ error: "endsAt_required" }, { status: 400 });
-  }
-  if (endsAt < startsAt) {
-    return NextResponse.json({ error: "endsAt_before_startsAt" }, { status: 400 });
-  }
-
-  const placeId = await resolvePlaceId(body.placeName);
-
-  const program = await prisma.program.create({
-    data: {
-      title,
-      placeId,
-      startsAt,
-      endsAt,
-    },
-    include: { place: true },
+  const cookie = req.headers.get("cookie");
+  const r = await ivanCall<IvanCourseGroup>({
+    method: "POST",
+    path: "/course/groups",
+    body: groupBody(body),
+    cookie,
+    retryOn401: true,
   });
-  return NextResponse.json(program, { status: 201 });
+  if (!r.ok || !r.data) return NextResponse.json({ error: "create_failed" }, { status: r.status || 502 });
+  return applySetCookies(NextResponse.json(mapGroupDetail(r.data), { status: 201 }), r.setCookies);
 }

@@ -17,9 +17,15 @@ export type IvanUser = {
   city?: string;
   /** Роль доступа. null/отсутствует → НЕ админ (только saas-teacher). */
   role?: IvanRole | null;
+  courseGroup?: { _id: string } | string | null;
   lastLogin?: string;
   createdAt?: string;
 };
+
+function refId(v: { _id: string } | string | null | undefined): string | null {
+  if (!v) return null;
+  return typeof v === "string" ? v : v._id;
+}
 
 /** GET /profile с relay-куки и авто-refresh на 401. */
 export function fetchProfile(cookie: string | null): Promise<IvanResult<IvanUser>> {
@@ -77,4 +83,89 @@ export function agentBody(body: Record<string, unknown>): Record<string, unknown
     if (Number.isFinite(n)) out.serial = Math.trunc(n);
   }
   return out;
+}
+
+// ── CourseGroup (программы) ───────────────────────────────────────────────────
+
+export type IvanCourseGroup = {
+  _id: string;
+  name: string;
+  agents?: ({ _id: string } | string)[];
+  active?: boolean;
+  qrCode?: string | null;
+};
+
+function normIds(arr: IvanCourseGroup["agents"]): string[] {
+  return (Array.isArray(arr) ? arr : [])
+    .map((a) => (typeof a === "string" ? a : a?._id))
+    .filter((x): x is string => !!x);
+}
+
+export type ClientGroupListItem = {
+  id: string;
+  title: string;
+  isActive: boolean;
+  qrCode: string | null;
+  agentCount: number;
+};
+
+export type ClientGroupDetail = {
+  id: string;
+  title: string;
+  isActive: boolean;
+  qrCode: string | null;
+  /** Упорядоченный массив agentId — порядок = порядок агентов в программе. */
+  agents: string[];
+};
+
+export function mapGroupList(g: IvanCourseGroup): ClientGroupListItem {
+  return {
+    id: g._id,
+    title: g.name,
+    isActive: g.active ?? true,
+    qrCode: g.qrCode ?? null,
+    agentCount: normIds(g.agents).length,
+  };
+}
+
+export function mapGroupDetail(g: IvanCourseGroup): ClientGroupDetail {
+  return {
+    id: g._id,
+    title: g.name,
+    isActive: g.active ?? true,
+    qrCode: g.qrCode ?? null,
+    agents: normIds(g.agents),
+  };
+}
+
+/** Тело PUT/POST для /course/groups. agents[] заменяет массив целиком. */
+export function groupBody(body: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (typeof body.title === "string") out.name = body.title.trim();
+  if (typeof body.isActive === "boolean") out.active = body.isActive;
+  if (Array.isArray(body.agents)) {
+    out.agents = body.agents.filter((x): x is string => typeof x === "string");
+  }
+  if (body.updateQRCode === true) out.updateQRCode = true;
+  return out;
+}
+
+// ── Students (ученики = User с courseGroup) ──────────────────────────────────
+
+export type ClientStudent = {
+  id: string;
+  email: string;
+  firstName: string;
+  role: string | null;
+  courseGroupId: string | null;
+};
+
+export function mapStudent(u: IvanUser): ClientStudent {
+  return {
+    id: u._id,
+    email: u.email,
+    firstName: u.firstName ?? "",
+    role: u.role?.name ?? null,
+    courseGroupId: refId(u.courseGroup),
+  };
 }
