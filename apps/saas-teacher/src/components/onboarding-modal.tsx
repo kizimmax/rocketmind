@@ -18,22 +18,22 @@ const PROMO_SLIDES: { title: string; body: string; image?: string }[] = [
   {
     title: "Добро пожаловать в Rocketmind Teacher",
     body: "Здесь вы будете работать с AI-экспертами над вашим проектом по ходу программы.",
-    image: "/onboarding/slide-1.png",
+    image: "/demo/slide-1.png",
   },
   {
     title: "Каждый AI-эксперт — отдельный наставник",
     body: "Они независимы, но видят контекст вашего проекта — не нужно объяснять одно и то же дважды.",
-    image: "/onboarding/slide-2.png",
+    image: "/demo/slide-2.png",
   },
   {
     title: "Артефакты сохраняются",
     body: "Канвасы и результаты диалогов остаются в проекте и доступны другим AI-экспертам.",
-    image: "/onboarding/slide-3.png",
+    image: "/demo/slide-3.png",
   },
   {
     title: "Доступ открывается по ходу программы",
     body: "Преподаватель открывает новых AI-экспертов каждый день. Заглядывайте в сайдбар.",
-    image: "/onboarding/slide-4.png",
+    image: "/demo/slide-4.png",
   },
 ];
 
