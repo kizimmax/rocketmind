@@ -8,6 +8,7 @@ import { OnboardingModal } from "./onboarding-modal";
 import { ProgramClosedModal } from "./program-closed-modal";
 import { useAuth, type Student } from "@/lib/auth-context";
 import { getAccessibleAgents } from "@/lib/ivan-client";
+import { consumePendingJoin } from "@/lib/join";
 
 interface TeacherShellProps {
   student: Student;
@@ -96,7 +97,21 @@ export function TeacherShell({ student }: TeacherShellProps) {
   }
 
   useEffect(() => {
-    loadAgents();
+    // Сначала «дожимаем» отложенный QR-join (юзер сканировал QR до регистрации),
+    // потом грузим агентов. Если join прошёл — обновляем профиль (появилась группа).
+    let cancelled = false;
+    consumePendingJoin()
+      .then((joined) => {
+        if (cancelled) return;
+        if (joined) refresh();
+      })
+      .finally(() => {
+        if (!cancelled) loadAgents();
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selectedAgent =
