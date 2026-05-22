@@ -88,8 +88,8 @@ export type HistoryPage = {
   pagination: Pagination;
 };
 
-/** Лимит у Ивана ограничен сверху 50 (см. спеку). */
-export const HISTORY_PAGE_SIZE = 50;
+/** Размер страницы истории. Лимит у Ивана ≤ 50; берём по 20 (мельче — отзывчивее скролл). */
+export const HISTORY_PAGE_SIZE = 20;
 
 const EMPTY_PAGINATION: Pagination = {
   page: 1,
