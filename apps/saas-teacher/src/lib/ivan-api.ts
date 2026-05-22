@@ -10,11 +10,11 @@
  */
 import { NextResponse } from "next/server";
 
-const IVAN_API_URL = process.env.IVAN_API_URL ?? "";
+const BACK_API = process.env.BACK_API ?? "";
 
 function baseUrl(): string {
-  if (!IVAN_API_URL) throw new Error("IVAN_API_URL is not set");
-  return IVAN_API_URL.replace(/\/$/, "");
+  if (!BACK_API) throw new Error("BACK_API is not set");
+  return BACK_API.replace(/\/$/, "");
 }
 
 /**

@@ -4,6 +4,8 @@ _Дата: 2026-05-21. Все гэпы закрыты Иваном. Сверен
 
 **Контекст:** фронты `saas-admin` и `saas-teacher` переезжают на API Ивана. Свою Postgres-базу и свою авторизацию для них убираем — данные и токены на стороне Ивана (Mongo). `site` + `site-admin` остаются на нашем Postgres.
 
+**Env в Amvera (для обоих фронтов):** Иван заводит `BACK_API` = `https://r-accel-back-rocketmind.amvera.io/api/v1`. `DATABASE_URL` / `JWT_SECRET` / `STUDENT_JWT_SECRET` больше не нужны.
+
 > ⚠️ Концептуально: **`CourseGroup` — это НЕ программа/мероприятие**, а бандл контроля доступа: набор агентов + какие группы пользователей к ним допущены. Поэтому нет ни `place`, ни (пока) дат. Наша UI-модель «Программа» = группа доступа users↔agents.
 
 ---
@@ -63,15 +65,14 @@ _Дата: 2026-05-21. Все гэпы закрыты Иваном. Сверен
 - `error` → `{ message, code }`
 Заголовки корректные (text/event-stream, no-cache, X-Accel-Buffering: no). Диалог по `(user, agent)`, без project; история `GET /course/messages?agentId&page&limit`.
 
-**Открытый дизайн-вопрос (отправлен Ивану):** thread один на пользователя, общий для ВСЕХ агентов (`user.openAiThreadId`, разные assistantId на одном thread). Следствия: (1) per-agent история расходится с реальным контекстом thread; (2) персона-бленд между агентами; (3) безлимитный рост thread. Уточняем: общий контекст by design или нужен thread per (user, agent).
+**Дизайн-вопрос про thread — РЕШЕНО (Maxi):** один thread на пользователя, общий для всех агентов — by design. Историю **объединяем** (единая лента на юзера, выбор агента = кто отвечает следующим). Фронт уже сделан так (Phase 3).
 
 **Наша сторона (Phase 3):** BFF должен стримить SSE насквозь — текущий `ivanCall` буферит JSON, нужен отдельный стрим-путь (fetch → ReadableStream → NextResponse, форвард кук).
 
 ### Роли и права (saas-admin)
-- `GET /profile` отдаёт `role` с populated `permissions[]`?
-- Какие роли есть (имена)? Как отличить админа от ученика (teacher пускает любого, admin — только админ-роли)? Системные роли (`isSystem`)?
-- Формат/словарь `Role.permissions[]` (строки вида `users.read`/`agents.write`?) — для гейтинга разделов админки.
-- `GET /roles` — список ролей с их `_id` (для `PUT /users/{id}/role`, который берёт roleId).
+- ✅ **Гейт доступа в админку (ответ Ивана 2026-05-21):** у юзеров по умолчанию роли нет / `role = null`. **Есть роль (non-null) → пускаем в saas-admin**, нет → только saas-teacher. → `requireAuth` админки = `profile.role != null`.
+- ⏳ Формат/словарь `Role.permissions[]` (строки вида `users.read`/`agents.write`?) — для гранулярного гейтинга разделов. На MVP гейтим присутствием роли; гранулярность позже.
+- `GET /profile` отдаёт `role` с populated `permissions[]` (предполагаем да — `User.role: Role`); `GET /roles` — список ролей с `_id` (для `PUT /users/{id}/role`).
 
 ## 🟢 Этап 2 (отложено)
 - `audit-log` админских действий.
