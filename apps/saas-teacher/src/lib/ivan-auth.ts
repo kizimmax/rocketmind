@@ -86,33 +86,19 @@ export function fetchProfile(cookie: string | null): Promise<IvanResult<IvanUser
 }
 
 /**
- * Единая история юзера по всем агентам (решение Maxi: один тред на юзера).
- * У Ивана GET /course/messages требует agentId, поэтому собираем по доступным
- * агентам и мёржим по createdAt. TODO: попросить Ивана unified-эндпоинт без
- * agentId, чтобы убрать N+1.
+ * История диалога с КОНКРЕТНЫМ агентом (per-agent чат — у каждого эксперта
+ * своя переписка; то, что у юзера один OpenAI thread, на UX не влияет).
+ * GET /course/messages?agentId — у Ивана пагинация (берём первую страницу).
  */
-export async function fetchUnifiedHistory(
+export function fetchAgentHistory(
   cookie: string | null,
-): Promise<{ messages: ChatMessage[]; setCookies: string[] }> {
-  const ag = await ivanCall<IvanCourseAgent[]>({
-    path: "/course/agents/accessible",
+  agentId: string,
+): Promise<IvanResult<{ messages: IvanCourseMessage[] }>> {
+  return ivanCall<{ messages: IvanCourseMessage[] }>({
+    path: `/course/messages?agentId=${encodeURIComponent(agentId)}&limit=200`,
     cookie,
     retryOn401: true,
   });
-  const setCookies = [...ag.setCookies];
-  const ids = (Array.isArray(ag.data) ? ag.data : []).map((a) => a._id);
-
-  const all: ChatMessage[] = [];
-  for (const id of ids) {
-    const r = await ivanCall<{ messages: IvanCourseMessage[] }>({
-      path: `/course/messages?agentId=${encodeURIComponent(id)}&limit=200`,
-      cookie,
-    });
-    setCookies.push(...r.setCookies);
-    for (const m of r.data?.messages ?? []) all.push(mapMessage(m));
-  }
-  all.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-  return { messages: all, setCookies };
 }
 
 /**

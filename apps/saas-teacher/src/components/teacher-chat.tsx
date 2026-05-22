@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Textarea } from "@rocketmind/ui";
 import { Send, Loader2, UserCircle } from "lucide-react";
 import type { TeacherAgent } from "./teacher-sidebar";
@@ -9,8 +9,6 @@ type Msg = {
   id: string;
   role: "user" | "assistant";
   content: string;
-  /** для assistant — какой агент ответил (для подписи в единой ленте) */
-  agentId?: string | null;
   pending?: boolean;
 };
 
@@ -20,46 +18,44 @@ function uid() {
 
 interface TeacherChatProps {
   agents: TeacherAgent[];
-  /** Кто отвечает на следующее сообщение (выбор в сайдбаре). */
+  /** Активный эксперт — у каждого своя переписка. */
   selectedAgent: TeacherAgent | null;
   /** Программа закрыта → новые сообщения недоступны, чат read-only. */
   programClosed?: boolean;
 }
 
 /**
- * Единая лента диалога на пользователя (один тред у Ивана). Все агенты пишут
- * в одну ленту; выбор агента в сайдбаре определяет, кто ответит следующим.
- * Каждый ответ агента подписан его аватаром/именем.
+ * Чат с ОДНИМ экспертом (per-agent). У каждого агента своя история
+ * (GET /api/chat?agentId). Переключение агента в сайдбаре → своя переписка.
  */
-export function TeacherChat({ agents, selectedAgent, programClosed = false }: TeacherChatProps) {
+export function TeacherChat({ selectedAgent, programClosed = false }: TeacherChatProps) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [draft, setDraft] = useState("");
   const [streaming, setStreaming] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const agentById = useMemo(() => {
-    const m = new Map<string, TeacherAgent>();
-    for (const a of agents) m.set(a.id, a);
-    return m;
-  }, [agents]);
+  const agentId = selectedAgent?.id ?? null;
 
-  // Единая история юзера (по всем агентам) — грузим один раз.
+  // История выбранного агента — перезагружаем при смене агента.
   useEffect(() => {
+    abortRef.current?.abort();
+    setMessages([]);
+    if (!agentId) return;
     let cancelled = false;
-    fetch("/api/chat", { cache: "no-store" })
+    setLoadingHistory(true);
+    fetch(`/api/chat?agentId=${encodeURIComponent(agentId)}`, { cache: "no-store" })
       .then((r) => r.json())
-      .then((data: { messages?: { id: string; role: "user" | "assistant"; content: string; agentId: string | null }[] }) => {
-        if (cancelled) return;
-        setMessages((data.messages ?? []).map((m) => ({ ...m })));
+      .then((data: { messages?: { id: string; role: "user" | "assistant"; content: string }[] }) => {
+        if (!cancelled) setMessages((data.messages ?? []).map((m) => ({ id: m.id, role: m.role, content: m.content })));
       })
       .catch(() => {})
       .finally(() => !cancelled && setLoadingHistory(false));
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [agentId]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -71,11 +67,9 @@ export function TeacherChat({ agents, selectedAgent, programClosed = false }: Te
     if (!content || streaming || !selectedAgent) return;
     setDraft("");
 
-    const agentId = selectedAgent.id;
     const userMsg: Msg = { id: uid(), role: "user", content };
     const assistantId = uid();
-    const placeholder: Msg = { id: assistantId, role: "assistant", content: "", agentId, pending: true };
-    setMessages((m) => [...m, userMsg, placeholder]);
+    setMessages((m) => [...m, userMsg, { id: assistantId, role: "assistant", content: "", pending: true }]);
     setStreaming(true);
 
     abortRef.current?.abort();
@@ -86,7 +80,7 @@ export function TeacherChat({ agents, selectedAgent, programClosed = false }: Te
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agentId, content }),
+        body: JSON.stringify({ agentId: selectedAgent.id, content }),
         signal: ctrl.signal,
       });
       if (!res.body) throw new Error("no body");
@@ -122,11 +116,7 @@ export function TeacherChat({ agents, selectedAgent, programClosed = false }: Te
             );
           } else if (event === "done") {
             const am = payload.agentMessage as { _id?: string } | undefined;
-            setMessages((m) =>
-              m.map((x) =>
-                x.id === assistantId ? { ...x, id: am?._id ?? x.id, pending: false } : x,
-              ),
-            );
+            setMessages((m) => m.map((x) => (x.id === assistantId ? { ...x, id: am?._id ?? x.id, pending: false } : x)));
           } else if (event === "error") {
             const msg = String(payload.message ?? "Ошибка");
             setMessages((m) =>
@@ -157,7 +147,7 @@ export function TeacherChat({ agents, selectedAgent, programClosed = false }: Te
 
   return (
     <div className="flex flex-1 flex-col">
-      {/* Header — кто отвечает следующим */}
+      {/* Header — активный эксперт */}
       <header className="flex items-center gap-3 border-b border-border px-6 py-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded bg-rm-gray-1/60">
           {selectedAgent?.avatarUrl ? (
@@ -171,62 +161,45 @@ export function TeacherChat({ agents, selectedAgent, programClosed = false }: Te
           <span className="truncate text-[length:var(--text-14)] font-medium text-foreground">
             {selectedAgent ? selectedAgent.name : "Выберите AI-эксперта"}
           </span>
-          <span className="truncate text-[length:var(--text-12)] text-muted-foreground">
-            {selectedAgent ? "ответит на следующее сообщение" : "в сайдбаре слева"}
-          </span>
+          {selectedAgent?.role && (
+            <span className="truncate text-[length:var(--text-12)] text-muted-foreground">{selectedAgent.role}</span>
+          )}
         </div>
       </header>
 
-      {/* Messages — единая лента */}
+      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-5">
         <div className="mx-auto flex max-w-2xl flex-col gap-4">
-          {loadingHistory && messages.length === 0 ? (
+          {!selectedAgent ? (
+            <p className="text-center text-[length:var(--text-12)] text-muted-foreground">
+              Выберите AI-эксперта в сайдбаре слева.
+            </p>
+          ) : loadingHistory && messages.length === 0 ? (
             <p className="text-center text-[length:var(--text-12)] text-muted-foreground">Загрузка…</p>
           ) : messages.length === 0 ? (
             <p className="text-center text-[length:var(--text-12)] text-muted-foreground">
-              Начните диалог — задайте вопрос выбранному AI-эксперту.
+              {selectedAgent.valueDescription || `Напишите ${selectedAgent.name} первое сообщение.`}
             </p>
           ) : (
-            messages.map((msg) => {
-              const agent = msg.role === "assistant" && msg.agentId ? agentById.get(msg.agentId) : null;
-              return (
+            messages.map((msg) => (
+              <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  key={msg.id}
-                  className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
+                  className={`max-w-[85%] whitespace-pre-wrap rounded-sm px-3 py-2 text-[length:var(--text-14)] ${
+                    msg.role === "user" ? "bg-foreground text-background" : "bg-rm-gray-1/40 text-foreground"
+                  }`}
                 >
-                  {agent && (
-                    <div className="mb-1 flex items-center gap-1.5 px-1 text-[length:var(--text-10)] text-muted-foreground">
-                      <div className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded-full bg-rm-gray-1/60">
-                        {agent.avatarUrl ? (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img src={agent.avatarUrl} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <UserCircle className="h-3 w-3 text-muted-foreground" />
-                        )}
-                      </div>
-                      <span className="truncate">{agent.name}</span>
-                    </div>
+                  {msg.content || (msg.pending ? <Dots /> : "")}
+                  {msg.pending && msg.content && (
+                    <span className="ml-1 inline-block h-3 w-[2px] animate-pulse bg-current align-middle" />
                   )}
-                  <div
-                    className={`max-w-[85%] whitespace-pre-wrap rounded-sm px-3 py-2 text-[length:var(--text-14)] ${
-                      msg.role === "user"
-                        ? "bg-foreground text-background"
-                        : "bg-rm-gray-1/40 text-foreground"
-                    }`}
-                  >
-                    {msg.content || (msg.pending ? <Dots /> : "")}
-                    {msg.pending && msg.content && (
-                      <span className="ml-1 inline-block h-3 w-[2px] animate-pulse bg-current align-middle" />
-                    )}
-                  </div>
                 </div>
-              );
-            })
+              </div>
+            ))
           )}
         </div>
       </div>
 
-      {/* Composer (или плашка подписки, если программа закрыта) */}
+      {/* Composer / плашка подписки */}
       {programClosed ? (
         <div className="border-t border-border bg-rm-gray-1/30 px-6 py-4">
           <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left">
@@ -248,7 +221,7 @@ export function TeacherChat({ agents, selectedAgent, programClosed = false }: Te
               variant="chat"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder={selectedAgent ? "Сообщение…" : "Выберите AI-эксперта в сайдбаре"}
+              placeholder={selectedAgent ? "Сообщение…" : "Выберите эксперта"}
               disabled={!selectedAgent}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {

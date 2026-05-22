@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { applySetCookies, ivanStream } from "@/lib/ivan-api";
-import { fetchUnifiedHistory } from "@/lib/ivan-auth";
+import { fetchAgentHistory, mapMessage } from "@/lib/ivan-auth";
 
 /**
  * POST /api/chat — прокси на POST /course/messages Ивана (SSE насквозь).
@@ -24,12 +24,14 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET /api/chat — единая история юзера по всем агентам (один тред на юзера).
+ * GET /api/chat?agentId=… — история диалога с конкретным агентом (per-agent чат).
  */
 export async function GET(request: NextRequest) {
   const cookie = request.headers.get("cookie");
-  if (!cookie) return NextResponse.json({ messages: [] });
+  const agentId = new URL(request.url).searchParams.get("agentId");
+  if (!cookie || !agentId) return NextResponse.json({ messages: [] });
 
-  const { messages, setCookies } = await fetchUnifiedHistory(cookie);
-  return applySetCookies(NextResponse.json({ messages }), setCookies);
+  const r = await fetchAgentHistory(cookie, agentId);
+  const messages = (r.data?.messages ?? []).map(mapMessage);
+  return applySetCookies(NextResponse.json({ messages }), r.setCookies);
 }
