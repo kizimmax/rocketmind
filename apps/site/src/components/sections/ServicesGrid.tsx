@@ -4,6 +4,12 @@ import { getHomePage, type HomeSectionItem } from "@/lib/unique";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
+/** Логотипы партнёров по умолчанию — подставляются, если в CMS они не заданы. */
+const DEFAULT_PARTNER_LOGOS: NonNullable<ServiceSection["partnerBlock"]>["logos"] = [
+  { src: `${BASE_PATH}/partners/partner-logo-1.1.svg`, width: 230, height: 46 },
+  { src: `${BASE_PATH}/partners/partner-logo-2.2.png`, width: 182, height: 60 },
+];
+
 /**
  * Собирает карточки категории из централизованного списка продуктов,
  * отфильтрованного по showInMenu и отсортированного по `order` (см.
@@ -25,6 +31,17 @@ export async function ServicesGrid() {
   const home = await getHomePage();
   const overrides: HomeSectionItem[] = home.sections?.sections ?? [];
   const overrideByKey = new Map(overrides.map((s) => [s.filterKey, s]));
+
+  // Жёлтый блок «Программы с ведущими бизнес-школами» под каруселью «Онлайн-школа».
+  // Редактируется в CMS главной (блок «partnershipsMini»). null = блок выключен.
+  const pm = home.partnershipsMini;
+  const academyPartnerBlock: ServiceSection["partnerBlock"] = pm
+    ? {
+        title: pm.title,
+        description: pm.description,
+        logos: pm.logos.length > 0 ? pm.logos.map((l) => ({ src: l.src })) : DEFAULT_PARTNER_LOGOS,
+      }
+    : undefined;
 
   function applyOverride(
     filterKey: string,
@@ -99,15 +116,7 @@ export async function ServicesGrid() {
         catalogHref: "/products/academy",
         catalogLabel: "Все курсы",
         showImages: true,
-        partnerBlock: {
-          title: "Программы с ведущими\nбизнес-школами",
-          description:
-            "Обучаем топ-менеджеров крупных компаний, помогаем трансформировать бизнес с помощью бизнес-дизайна",
-          logos: [
-            { src: `${BASE_PATH}/partners/partner-logo-1.1.svg`, width: 230, height: 46 },
-            { src: `${BASE_PATH}/partners/partner-logo-2.2.png`, width: 182, height: 60 },
-          ],
-        },
+        partnerBlock: academyPartnerBlock,
       },
       cards: cardsFromProducts(allProducts, "academy", (p) => ({
         title: p.menuTitle,

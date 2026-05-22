@@ -12,7 +12,7 @@ interface PartnershipsMiniEditorProps {
 
 type Logo = { src: string; alt: string };
 
-const DEFAULT_TITLE = "Программы с ведущими бизнес-школами";
+const DEFAULT_TITLE = "Программы с ведущими\nбизнес-школами";
 const DEFAULT_DESCRIPTION =
   "Обучаем топ-менеджеров крупных компаний, помогаем трансформировать бизнес с помощью бизнес-дизайна";
 
@@ -69,7 +69,7 @@ export function PartnershipsMiniEditor({ data, onUpdate }: PartnershipsMiniEdito
             multiline
             placeholder="Заголовок"
           >
-            <h3 className="font-[family-name:var(--font-heading-family)] text-[24px] md:text-[32px] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-[#0A0A0A]">
+            <h3 className="font-[family-name:var(--font-heading-family)] text-[24px] md:text-[32px] font-bold uppercase leading-[1.1] tracking-[-0.02em] text-[#0A0A0A] whitespace-pre-line">
               {title}
             </h3>
           </InlineEdit>

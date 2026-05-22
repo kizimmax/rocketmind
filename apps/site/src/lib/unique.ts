@@ -285,7 +285,7 @@ const HOME_HERO_DEFAULTS: HomeHeroData = {
 };
 
 const PARTNERSHIPS_MINI_DEFAULTS: HomePartnershipsMiniData = {
-  title: "Программы с ведущими бизнес-школами",
+  title: "Программы с ведущими\nбизнес-школами",
   description:
     "Обучаем топ-менеджеров крупных компаний, помогаем трансформировать бизнес с помощью бизнес-дизайна",
   logos: [],
