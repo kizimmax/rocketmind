@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api-client";
+import { getStudents } from "@/lib/ivan-client";
 
 type Student = {
   id: string;
@@ -23,11 +23,8 @@ export function StudentsBlock({ programId }: { programId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiFetch("/api/students")
-      .then((r) => r.json())
-      .then((rows: Student[]) =>
-        setStudents((Array.isArray(rows) ? rows : []).filter((s) => s.courseGroupId === programId)),
-      )
+    getStudents()
+      .then((rows) => setStudents(rows.filter((s) => s.courseGroupId === programId)))
       .catch(() => toast.error("Не удалось загрузить учеников"))
       .finally(() => setLoading(false));
   }, [programId]);

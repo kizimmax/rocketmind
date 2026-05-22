@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button, Input } from "@rocketmind/ui";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api-client";
+import { getAdminUser, getRoles, updateAdminUser } from "@/lib/ivan-client";
 
 interface UserDetail {
   id: string;
@@ -38,18 +38,15 @@ export default function UserDetailPage() {
 
   function load() {
     setLoading(true);
-    Promise.all([
-      apiFetch(`/api/admin/users/${id}`).then((r) => r.json()),
-      apiFetch(`/api/roles`).then((r) => r.json()),
-    ])
-      .then(([u, rs]: [{ user: UserDetail }, Role[]]) => {
-        setUser(u.user);
-        setRoles(Array.isArray(rs) ? rs : []);
-        setFirstName(u.user.firstName);
-        setProfession(u.user.profession);
-        setFieldOfActivity(u.user.fieldOfActivity);
-        setCity(u.user.city);
-        setRoleId(u.user.roleId ?? "");
+    Promise.all([getAdminUser(id), getRoles()])
+      .then(([u, rs]) => {
+        setUser(u);
+        setRoles(rs);
+        setFirstName(u.firstName);
+        setProfession(u.profession);
+        setFieldOfActivity(u.fieldOfActivity);
+        setCity(u.city);
+        setRoleId(u.roleId ?? "");
       })
       .catch(() => toast.error("Не удалось загрузить"))
       .finally(() => setLoading(false));
@@ -74,17 +71,11 @@ export default function UserDetailPage() {
   async function save() {
     setSaving(true);
     try {
-      const res = await apiFetch(`/api/admin/users/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, profession, fieldOfActivity, city, roleId }),
-      });
-      if (!res.ok) {
-        toast.error("Не удалось сохранить");
-        return;
-      }
+      await updateAdminUser(id, { firstName, profession, fieldOfActivity, city, roleId });
       toast.success("Сохранено");
       load();
+    } catch {
+      toast.error("Не удалось сохранить");
     } finally {
       setSaving(false);
     }

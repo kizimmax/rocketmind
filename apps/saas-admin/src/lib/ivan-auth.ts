@@ -1,5 +1,3 @@
-import { ivanCall, type IvanResult } from "./ivan-api";
-
 export type IvanRole = {
   _id: string;
   name: string;
@@ -25,11 +23,6 @@ export type IvanUser = {
 function refId(v: { _id: string } | string | null | undefined): string | null {
   if (!v) return null;
   return typeof v === "string" ? v : v._id;
-}
-
-/** GET /profile с relay-куки и авто-refresh на 401. */
-export function fetchProfile(cookie: string | null): Promise<IvanResult<IvanUser>> {
-  return ivanCall<IvanUser>({ path: "/profile", cookie, retryOn401: true });
 }
 
 // ── CourseAgent ──────────────────────────────────────────────────────────────

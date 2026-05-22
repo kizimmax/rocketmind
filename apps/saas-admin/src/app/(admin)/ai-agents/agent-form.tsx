@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Button, Input, Textarea } from "@rocketmind/ui";
-import { apiFetch } from "@/lib/api-client";
+import { createAgent, updateAgent, deleteAgent } from "@/lib/ivan-client";
+import { ApiError } from "@/lib/api";
 import { toast } from "sonner";
 import { UserCircle, Loader2, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -57,19 +58,13 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
         avatarUrl: state.avatarUrl,
         openAiAssistantId: state.openAiAssistantId,
       };
-      const res = await apiFetch(isEdit ? `/api/ai-agents/${agent!.id}` : "/api/ai-agents", {
-        method: isEdit ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        toast.error(`Ошибка: ${err.error ?? res.status}`);
-        return;
-      }
-      const saved = (await res.json()) as Agent;
+      const saved = isEdit
+        ? await updateAgent(agent!.id, payload)
+        : await createAgent(payload);
       toast.success(isEdit ? "Сохранено" : "AI-эксперт создан");
       onSaved(saved);
+    } catch (e) {
+      toast.error(`Ошибка: ${e instanceof ApiError ? e.message : "не удалось сохранить"}`);
     } finally {
       setSaving(false);
     }
@@ -77,11 +72,11 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
 
   async function handleDelete() {
     if (!agent) return;
-    const res = await apiFetch(`/api/ai-agents/${agent.id}`, { method: "DELETE" });
-    if (res.ok) {
+    try {
+      await deleteAgent(agent.id);
       toast.success("AI-эксперт удалён");
       onDeleted?.(agent.id);
-    } else {
+    } catch {
       toast.error("Ошибка удаления");
     }
   }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { apiFetch } from "@/lib/api-client";
+import { getAgents, createAgent } from "@/lib/ivan-client";
 import { Button, Input, Tabs, TabsList, TabsTrigger } from "@rocketmind/ui";
 import { Plus, UserCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -28,9 +28,8 @@ export default function AiAgentsPage() {
 
   function load() {
     setLoading(true);
-    apiFetch("/api/ai-agents")
-      .then((r) => r.json())
-      .then((rows: Agent[]) => setAgents(Array.isArray(rows) ? rows : []))
+    getAgents()
+      .then((rows) => setAgents(rows))
       .catch(() => toast.error("Не удалось загрузить AI-экспертов"))
       .finally(() => setLoading(false));
   }
@@ -44,20 +43,13 @@ export default function AiAgentsPage() {
     if (!name) return;
     setCreating(true);
     try {
-      const res = await apiFetch("/api/ai-agents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-      });
-      if (!res.ok) {
-        toast.error("Ошибка создания");
-        return;
-      }
-      const created = (await res.json()) as Agent;
+      const created = await createAgent({ name });
       setNewName("");
       setIsCreating(false);
       toast.success(`AI-эксперт «${name}» создан`);
       router.push(`/ai-agents/${created.id}`);
+    } catch {
+      toast.error("Ошибка создания");
     } finally {
       setCreating(false);
     }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api-client";
+import { getAdminUsers } from "@/lib/ivan-client";
 
 interface UserRow {
   id: string;
@@ -17,9 +17,8 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiFetch("/api/admin/users")
-      .then((r) => r.json())
-      .then((data: { users: UserRow[] }) => setUsers(data.users ?? []))
+    getAdminUsers()
+      .then((rows) => setUsers(rows))
       .catch(() => toast.error("Не удалось загрузить пользователей"))
       .finally(() => setLoading(false));
   }, []);
