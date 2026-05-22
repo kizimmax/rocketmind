@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const cookie = req.headers.get("cookie");
   const r = await ivanCall<IvanCourseAgent[]>({ path: "/course/agents", cookie, retryOn401: true });
   if (!r.ok) return NextResponse.json({ error: "fetch_failed" }, { status: r.status || 502 });
-  const agents = (Array.isArray(r.data) ? r.data : []).map(mapAgent).sort((a, b) => a.serial - b.serial);
+  const agents = (Array.isArray(r.data) ? r.data : []).map(mapAgent);
   return applySetCookies(NextResponse.json(agents), r.setCookies);
 }
 

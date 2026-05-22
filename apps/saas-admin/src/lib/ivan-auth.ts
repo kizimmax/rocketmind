@@ -34,7 +34,7 @@ export function fetchProfile(cookie: string | null): Promise<IvanResult<IvanUser
 
 // ── CourseAgent ──────────────────────────────────────────────────────────────
 
-/** CourseAgent из спеки Ивана. Поля финальные (новых не добавляем). */
+/** CourseAgent из спеки Ивана. (serial у Ивана нет — порядок в программе через group.agents[].) */
 export type IvanCourseAgent = {
   _id: string;
   name: string;
@@ -44,7 +44,6 @@ export type IvanCourseAgent = {
   baseMessages?: string[];
   role?: string;
   docs?: string;
-  serial?: number;
 };
 
 /** Форма агента для админ-UI (наш контракт). */
@@ -54,7 +53,6 @@ export type ClientAgent = {
   role: string;
   valueDescription: string;
   avatarUrl: string | null;
-  serial: number;
   openAiAssistantId: string;
 };
 
@@ -65,7 +63,6 @@ export function mapAgent(a: IvanCourseAgent): ClientAgent {
     role: a.role ?? "",
     valueDescription: a.description ?? "",
     avatarUrl: a.avatar ?? null,
-    serial: a.serial ?? 0,
     openAiAssistantId: a.openAiAssistantId ?? "",
   };
 }
@@ -78,10 +75,6 @@ export function agentBody(body: Record<string, unknown>): Record<string, unknown
   if (typeof body.valueDescription === "string") out.description = body.valueDescription;
   if ("avatarUrl" in body) out.avatar = body.avatarUrl || null;
   if (typeof body.openAiAssistantId === "string") out.openAiAssistantId = body.openAiAssistantId;
-  if (body.serial !== undefined) {
-    const n = Number(body.serial);
-    if (Number.isFinite(n)) out.serial = Math.trunc(n);
-  }
   return out;
 }
 
@@ -203,10 +196,10 @@ export function mapRole(r: IvanRole): ClientRole {
   return { id: r._id, name: r.name, isSystem: !!r.isSystem };
 }
 
-/** Тело PUT /users/{id} (edit данных). */
+/** Тело PUT /users/{id} (edit данных). courseGroup — id группы (Иван добавил приём id). */
 export function userBody(body: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  for (const k of ["firstName", "profession", "fieldOfActivity", "city"] as const) {
+  for (const k of ["firstName", "profession", "fieldOfActivity", "city", "courseGroup"] as const) {
     if (typeof body[k] === "string") out[k] = body[k];
   }
   return out;

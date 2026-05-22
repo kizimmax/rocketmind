@@ -13,8 +13,6 @@ export type Agent = {
   role: string;
   valueDescription: string;
   avatarUrl: string | null;
-  /** Порядковый номер — порядок в админке и в сайдбаре saas-teacher. */
-  serial: number;
   /** ID ассистента OpenAI (через него идёт диалог). */
   openAiAssistantId: string;
 };
@@ -31,7 +29,6 @@ const EMPTY: Omit<Agent, "id"> = {
   role: "",
   valueDescription: "",
   avatarUrl: null,
-  serial: 0,
   openAiAssistantId: "",
 };
 
@@ -58,7 +55,6 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
         role: state.role,
         valueDescription: state.valueDescription,
         avatarUrl: state.avatarUrl,
-        serial: state.serial,
         openAiAssistantId: state.openAiAssistantId,
       };
       const res = await apiFetch(isEdit ? `/api/ai-agents/${agent!.id}` : "/api/ai-agents", {
@@ -143,28 +139,6 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
               placeholder="Что AI-эксперт делает для ученика, чем полезен"
               rows={3}
             />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-              Порядковый номер
-            </label>
-            <Input
-              type="number"
-              min={0}
-              step={1}
-              value={state.serial}
-              onChange={(e) =>
-                setState((s) => ({
-                  ...s,
-                  serial: Number.isFinite(e.target.valueAsNumber) ? e.target.valueAsNumber : 0,
-                }))
-              }
-              className="max-w-[140px]"
-            />
-            <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground/70">
-              Порядок в админке и в сайдбаре saas-teacher. По возрастанию.
-            </p>
           </div>
 
           <div>
