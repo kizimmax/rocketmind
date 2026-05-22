@@ -4,7 +4,7 @@ _Дата: 2026-05-21. Все гэпы закрыты Иваном. Сверен
 
 **Контекст:** фронты `saas-admin` и `saas-teacher` переезжают на API Ивана. Свою Postgres-базу и свою авторизацию для них убираем — данные и токены на стороне Ивана (Mongo). `site` + `site-admin` остаются на нашем Postgres.
 
-**Env в Amvera (для обоих фронтов):** Иван заводит `BACK_API` = `https://r-accel-back-rocketmind.amvera.io/api/v1`. `DATABASE_URL` / `JWT_SECRET` / `STUDENT_JWT_SECRET` больше не нужны.
+**Env в Amvera (для обоих фронтов):** Иван заводит `BACK_API` = `https://api.rocketmind.ru/api/v1` (бэк привязан к домену 2026-05-22; раньше был `r-accel-back-rocketmind.amvera.io/api/v1`). `DATABASE_URL` / `JWT_SECRET` / `STUDENT_JWT_SECRET` больше не нужны.
 
 > ⚠️ Концептуально: **`CourseGroup` — это НЕ программа/мероприятие**, а бандл контроля доступа: набор агентов + какие группы пользователей к ним допущены. Поэтому нет ни `place`, ни (пока) дат. Наша UI-модель «Программа» = группа доступа users↔agents.
 

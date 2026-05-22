@@ -169,3 +169,45 @@ export function mapStudent(u: IvanUser): ClientStudent {
     courseGroupId: refId(u.courseGroup),
   };
 }
+
+// ── Users / Roles (управление в админке) ─────────────────────────────────────
+
+export type ClientAdminUser = {
+  id: string;
+  firstName: string;
+  email: string;
+  /** Имя роли (null → обычный ученик, не админ). */
+  role: string | null;
+  roleId: string | null;
+  profession: string;
+  fieldOfActivity: string;
+  city: string;
+};
+
+export function mapAdminUser(u: IvanUser): ClientAdminUser {
+  return {
+    id: u._id,
+    firstName: u.firstName ?? "",
+    email: u.email,
+    role: u.role?.name ?? null,
+    roleId: u.role?._id ?? null,
+    profession: u.profession ?? "",
+    fieldOfActivity: u.fieldOfActivity ?? "",
+    city: u.city ?? "",
+  };
+}
+
+export type ClientRole = { id: string; name: string; isSystem: boolean };
+
+export function mapRole(r: IvanRole): ClientRole {
+  return { id: r._id, name: r.name, isSystem: !!r.isSystem };
+}
+
+/** Тело PUT /users/{id} (edit данных). */
+export function userBody(body: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of ["firstName", "profession", "fieldOfActivity", "city"] as const) {
+    if (typeof body[k] === "string") out[k] = body[k];
+  }
+  return out;
+}
