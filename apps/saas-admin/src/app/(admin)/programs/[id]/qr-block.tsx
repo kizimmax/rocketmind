@@ -5,7 +5,7 @@ import QRCode from "qrcode";
 import { Button } from "@rocketmind/ui";
 import { Loader2, QrCode, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api-client";
+import { updateGroup } from "@/lib/ivan-client";
 
 const TEACHER_BASE_URL = process.env.NEXT_PUBLIC_TEACHER_URL || "http://localhost:3005";
 
@@ -39,15 +39,9 @@ export function QrBlock({ programId, initialQrCode, onQrChange }: QrBlockProps) 
   async function rotate() {
     setRotating(true);
     try {
-      const res = await apiFetch(`/api/programs/${programId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ updateQRCode: true }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      setCode(data.qrCode ?? null);
-      onQrChange(data.qrCode ?? null);
+      const updated = await updateGroup(programId, { updateQRCode: true });
+      setCode(updated.qrCode ?? null);
+      onQrChange(updated.qrCode ?? null);
       toast.success(code ? "QR обновлён" : "QR сгенерирован");
     } catch (err) {
       console.error(err);

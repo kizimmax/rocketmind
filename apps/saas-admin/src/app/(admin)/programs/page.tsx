@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api-client";
+import { getGroups, createGroup } from "@/lib/ivan-client";
+import { ApiError } from "@/lib/api";
 import { Button, Input } from "@rocketmind/ui";
 import { Plus, Users, Bot, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -24,9 +25,8 @@ export default function ProgramsPage() {
 
   function load() {
     setLoading(true);
-    apiFetch("/api/programs")
-      .then((r) => r.json())
-      .then((p) => setPrograms(Array.isArray(p) ? p : []))
+    getGroups()
+      .then((p) => setPrograms(p))
       .catch(() => toast.error("Не удалось загрузить"))
       .finally(() => setLoading(false));
   }
@@ -42,20 +42,13 @@ export default function ProgramsPage() {
     }
     setSaving(true);
     try {
-      const res = await apiFetch("/api/programs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        toast.error(`Ошибка: ${err.error ?? res.status}`);
-        return;
-      }
+      await createGroup({ title });
       toast.success("Программа создана");
       setTitle("");
       setCreating(false);
       load();
+    } catch (e) {
+      toast.error(`Ошибка: ${e instanceof ApiError ? e.message : "не удалось создать"}`);
     } finally {
       setSaving(false);
     }

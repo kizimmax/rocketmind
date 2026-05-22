@@ -9,8 +9,10 @@ RUN npm install --ignore-scripts && npm run postinstall
 # Build shared UI package first (saas-admin импортирует @rocketmind/ui).
 RUN npm run build --workspace=packages/ui
 
-# Build saas-admin (SSR). Prisma больше не используется — auth/данные на API
-# Ивана (BACK_API).
+# Build saas-admin. Браузер ходит к API Ивана НАПРЯМУЮ (без BFF) — базовый URL
+# вшивается на сборке (NEXT_PUBLIC_*). Prisma не используется.
+ENV NEXT_PUBLIC_API_BASE_URL=https://api.rocketmind.ru/api/v1
+ENV NEXT_PUBLIC_TEACHER_URL=https://agents.rocketmind.ru
 RUN npm run build --workspace=apps/saas-admin
 
 # Разыменовать симлинки в public (next start не следует за ними).

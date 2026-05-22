@@ -9,6 +9,12 @@ import {
   type ReactNode,
 } from "react";
 import type { ClientPermission } from "@/lib/permissions-client";
+import {
+  getMe,
+  logout as apiLogout,
+  requestCode as apiRequestCode,
+  verifyCode as apiVerifyCode,
+} from "@/lib/ivan-client";
 
 export interface CurrentUser {
   id: string;
@@ -40,19 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   const refreshMe = useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/me", { cache: "no-store" });
-      if (!res.ok) {
-        setCurrentUser(null);
-        setPermissions([]);
-        return;
-      }
-      const data = (await res.json()) as { user: CurrentUser; permissions: ClientPermission[] };
-      setCurrentUser(data.user);
-      setPermissions(data.permissions ?? []);
-    } catch {
-      /* keep current state on transient network errors */
-    }
+    const user = await getMe();
+    setCurrentUser(user);
+    setPermissions([]); // MVP: роль есть → полный доступ (SUPER_ADMIN байпасит слой)
   }, []);
 
   useEffect(() => {
@@ -60,27 +56,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshMe]);
 
   const requestCode = useCallback(async (email: string) => {
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    if (!res.ok) {
-      const err = (await res.json().catch(() => ({}))) as { error?: string };
-      throw new Error(err.error ?? "request_failed");
-    }
+    await apiRequestCode(email);
     setPendingEmail(email);
   }, []);
 
   const verifyCode = useCallback(
     async (code: string): Promise<boolean> => {
       if (!pendingEmail) return false;
-      const res = await fetch("/api/admin/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: pendingEmail, code }),
-      });
-      if (!res.ok) return false;
+      try {
+        await apiVerifyCode(pendingEmail, code);
+      } catch {
+        return false;
+      }
       await refreshMe();
       setPendingEmail(null);
       return true;
@@ -89,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
+    await apiLogout();
     setCurrentUser(null);
     setPermissions([]);
     setPendingEmail(null);

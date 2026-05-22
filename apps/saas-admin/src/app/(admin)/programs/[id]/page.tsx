@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api-client";
+import { getGroup, updateGroup, deleteGroup } from "@/lib/ivan-client";
 import { Button, Switch } from "@rocketmind/ui";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -29,22 +29,18 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     setLoading(true);
-    apiFetch(`/api/programs/${id}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(String(r.status));
-        return r.json();
-      })
-      .then((p: Program) => setProgram(p))
+    getGroup(id)
+      .then((p) => setProgram(p))
       .catch(() => toast.error("Не удалось загрузить программу"))
       .finally(() => setLoading(false));
   }, [id]);
 
   async function handleDelete() {
-    const res = await apiFetch(`/api/programs/${id}`, { method: "DELETE" });
-    if (res.ok) {
+    try {
+      await deleteGroup(id);
       toast.success("Программа удалена");
       router.push("/programs");
-    } else {
+    } catch {
       toast.error("Ошибка");
     }
   }
@@ -54,12 +50,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ id: st
     const prev = program.isActive;
     setProgram((p) => (p ? { ...p, isActive: next } : p));
     try {
-      const res = await apiFetch(`/api/programs/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: next }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await updateGroup(id, { isActive: next });
       toast.success(next ? "Программа активна" : "Программа закрыта");
     } catch {
       setProgram((p) => (p ? { ...p, isActive: prev } : p));

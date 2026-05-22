@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { UserCircle, Loader2, ChevronUp, ChevronDown, X, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api-client";
+import { getAgents, updateGroup } from "@/lib/ivan-client";
 
 type Agent = {
   id: string;
@@ -31,9 +31,8 @@ export function AgentsBlock({ programId, initialAgentIds }: AgentsBlockProps) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    apiFetch("/api/ai-agents")
-      .then((r) => r.json())
-      .then((rows: Agent[]) => setAll(Array.isArray(rows) ? rows : []))
+    getAgents()
+      .then((rows) => setAll(rows))
       .catch(() => toast.error("Не удалось загрузить AI-экспертов"))
       .finally(() => setLoading(false));
   }, []);
@@ -43,12 +42,7 @@ export function AgentsBlock({ programId, initialAgentIds }: AgentsBlockProps) {
     setOrder(next); // optimistic
     setSaving(true);
     try {
-      const res = await apiFetch(`/api/programs/${programId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agents: next }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await updateGroup(programId, { agents: next });
     } catch {
       toast.error("Не удалось сохранить порядок");
       setOrder(prev); // revert

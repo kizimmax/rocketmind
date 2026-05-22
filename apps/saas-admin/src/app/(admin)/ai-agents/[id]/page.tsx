@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@rocketmind/ui";
 import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
-import { apiFetch } from "@/lib/api-client";
+import { getAgent } from "@/lib/ivan-client";
+import { ApiError } from "@/lib/api";
 import { AgentEditor, type Agent } from "../agent-form";
 
 export default function AgentEditPage({
@@ -22,19 +23,12 @@ export default function AgentEditPage({
 
   useEffect(() => {
     setLoading(true);
-    apiFetch(`/api/ai-agents/${id}`)
-      .then((r) => {
-        if (r.status === 404) {
-          setNotFound(true);
-          return null;
-        }
-        if (!r.ok) throw new Error(String(r.status));
-        return r.json();
+    getAgent(id)
+      .then((a) => setAgent(a))
+      .catch((e) => {
+        if (e instanceof ApiError && e.status === 404) setNotFound(true);
+        else toast.error("Не удалось загрузить AI-эксперта");
       })
-      .then((a: Agent | null) => {
-        if (a) setAgent(a);
-      })
-      .catch(() => toast.error("Не удалось загрузить AI-эксперта"))
       .finally(() => setLoading(false));
   }, [id]);
 
