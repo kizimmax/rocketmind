@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button, Input } from "@rocketmind/ui";
 import { ArrowLeft, Loader2, Check } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { updateProfile } from "@/lib/ivan-client";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -35,12 +36,7 @@ export default function ProfilePage() {
   async function save() {
     setSaving(true);
     try {
-      const res = await fetch("/api/students/me", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, role, industry, region }),
-      });
-      if (!res.ok) throw new Error(await res.text());
+      await updateProfile({ firstName, lastName, role, industry, region });
       await refresh();
       setSavedAt(Date.now());
     } catch (err) {

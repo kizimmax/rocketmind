@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { joinGroup } from "@/lib/ivan-client";
+import { ApiError } from "@/lib/api";
 
 /**
  * /join?code=<qrCode> — точка входа после сканирования QR группы.
@@ -26,24 +28,18 @@ export default function JoinPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/programs/join", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ qrCode: code }),
-        });
+        await joinGroup(code);
         if (cancelled) return;
-        if (res.ok) {
-          window.location.href = "/";
-          return;
-        }
-        if (res.status === 401) {
+        window.location.href = "/";
+      } catch (e) {
+        if (cancelled) return;
+        const status = e instanceof ApiError ? e.status : 0;
+        if (status === 401) {
           const returnTo = `/join?code=${encodeURIComponent(code)}`;
           window.location.href = `/login?returnTo=${encodeURIComponent(returnTo)}`;
           return;
         }
-        setError(res.status === 404 ? "invalid" : "failed");
-      } catch {
-        if (!cancelled) setError("failed");
+        setError(status === 404 ? "invalid" : "failed");
       }
     })();
     return () => {

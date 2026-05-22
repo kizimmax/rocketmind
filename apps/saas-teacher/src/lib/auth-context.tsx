@@ -8,6 +8,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import {
+  getProfile,
+  logout as apiLogout,
+  requestCode as apiRequestCode,
+  verifyCode as apiVerifyCode,
+} from "./ivan-client";
 
 export type StudentProgramSummary = {
   id: string;
@@ -57,13 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/me", { cache: "no-store" });
-      if (!res.ok) {
-        setStudent(null);
-        return;
-      }
-      const data = await res.json();
-      setStudent(data.student ?? null);
+      setStudent(await getProfile());
     } catch {
       setStudent(null);
     }
@@ -74,27 +74,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const requestCode = useCallback(async (email: string) => {
-    const res = await fetch("/api/auth/request-code", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error ?? "request_failed");
-    }
+    await apiRequestCode(email);
     setPendingEmail(email);
   }, []);
 
   const verifyCode = useCallback(
     async (code: string): Promise<boolean> => {
       if (!pendingEmail) return false;
-      const res = await fetch("/api/auth/verify-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: pendingEmail, code }),
-      });
-      if (!res.ok) return false;
+      try {
+        await apiVerifyCode(pendingEmail, code);
+      } catch {
+        return false;
+      }
       await refresh();
       setPendingEmail(null);
       return true;
@@ -103,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    await apiLogout();
     setStudent(null);
     setPendingEmail(null);
   }, []);
