@@ -126,8 +126,14 @@ export async function ivanCall<T = unknown>(c: IvanCall): Promise<IvanResult<T>>
     }
   }
 
-  const data = (await res.json().catch(() => null)) as T | null;
-  return { status: res.status, ok: res.ok, data, setCookies: relay.map(rewriteSetCookie) };
+  let parsed = (await res.json().catch(() => null)) as unknown;
+  // Иван оборачивает ответы в конверт { success, message, data }. Разворачиваем
+  // payload, чтобы мапперы читали реальные поля (на ошибке конверта нет 'data' —
+  // оставляем как есть, роуты смотрят на r.ok).
+  if (parsed && typeof parsed === "object" && "success" in parsed && "data" in parsed) {
+    parsed = (parsed as { data: unknown }).data;
+  }
+  return { status: res.status, ok: res.ok, data: parsed as T | null, setCookies: relay.map(rewriteSetCookie) };
 }
 
 /** Навесить relay-куки на ответ браузеру. */
