@@ -24,105 +24,91 @@ interface AuthState {
   isLoading: boolean;
   currentUser: CurrentUser | null;
   permissions: ClientPermission[];
-  login: (login: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  logout: () => void;
+  pendingEmail: string | null;
+  requestCode: (email: string) => Promise<void>;
+  verifyCode: (code: string) => Promise<boolean>;
+  logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
-const TOKEN_KEY = "rm_admin_token";
-const USER_KEY = "rm_admin_user";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthed, setIsAuthed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [permissions, setPermissions] = useState<ClientPermission[]>([]);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   const refreshMe = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/me");
+      const res = await fetch("/api/admin/me", { cache: "no-store" });
       if (!res.ok) {
-        // Session went stale (token invalidated, user frozen, etc.). Hard reset.
-        setIsAuthed(false);
         setCurrentUser(null);
         setPermissions([]);
-        try {
-          localStorage.removeItem(TOKEN_KEY);
-          localStorage.removeItem(USER_KEY);
-        } catch { /* ignore */ }
         return;
       }
       const data = (await res.json()) as { user: CurrentUser; permissions: ClientPermission[] };
       setCurrentUser(data.user);
       setPermissions(data.permissions ?? []);
-      try {
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-      } catch { /* ignore */ }
     } catch {
       /* keep current state on transient network errors */
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    try {
-      const token = localStorage.getItem(TOKEN_KEY);
-      const userJson = localStorage.getItem(USER_KEY);
-      if (token) {
-        setIsAuthed(true);
-        if (userJson) setCurrentUser(JSON.parse(userJson) as CurrentUser);
-      }
-    } catch { /* ignore */ }
-    setIsLoading(false);
-
-    // Always re-fetch /me when there's a token, to pick up permission/role
-    // changes the user couldn't see otherwise.
-    try {
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (token) {
-        refreshMe().catch(() => { /* handled inside */ });
-      }
-    } catch { /* ignore */ }
-    return () => { cancelled = true; void cancelled; };
+    refreshMe().finally(() => setIsLoading(false));
   }, [refreshMe]);
 
-  const login = useCallback(async (loginValue: string, password: string) => {
-    try {
-      const res = await fetch("/api/admin/login", {
+  const requestCode = useCallback(async (email: string) => {
+    const res = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(err.error ?? "request_failed");
+    }
+    setPendingEmail(email);
+  }, []);
+
+  const verifyCode = useCallback(
+    async (code: string): Promise<boolean> => {
+      if (!pendingEmail) return false;
+      const res = await fetch("/api/admin/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ login: loginValue, password }),
+        body: JSON.stringify({ email: pendingEmail, code }),
       });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { error?: string } | null;
-        return { ok: false, error: body?.error };
-      }
-      const data = (await res.json()) as { token?: string; user?: CurrentUser };
-      if (!data.token || !data.user) return { ok: false, error: "invalid_response" };
-      localStorage.setItem(TOKEN_KEY, data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-      setIsAuthed(true);
-      setCurrentUser(data.user);
+      if (!res.ok) return false;
       await refreshMe();
-      return { ok: true };
-    } catch {
-      return { ok: false, error: "network" };
-    }
-  }, [refreshMe]);
+      setPendingEmail(null);
+      return true;
+    },
+    [pendingEmail, refreshMe],
+  );
 
-  const logout = useCallback(() => {
-    setIsAuthed(false);
+  const logout = useCallback(async () => {
+    await fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
     setCurrentUser(null);
     setPermissions([]);
-    try {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-    } catch { /* ignore */ }
+    setPendingEmail(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthed, isLoading, currentUser, permissions, login, logout, refreshMe }}>
+    <AuthContext.Provider
+      value={{
+        isAuthed: currentUser !== null,
+        isLoading,
+        currentUser,
+        permissions,
+        pendingEmail,
+        requestCode,
+        verifyCode,
+        logout,
+        refreshMe,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

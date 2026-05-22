@@ -1,37 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { type NextRequest, NextResponse } from "next/server";
+import { applySetCookies } from "@/lib/ivan-api";
+import { fetchProfile } from "@/lib/ivan-auth";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Returns the freshest copy of the authenticated user + their permissions.
- * Called on app boot so the client sees up-to-date role/permissions even if
- * an admin changed them while the user was offline.
+ * Текущий пользователь для клиента. Источник — /profile Ивана.
+ * Нет роли → 403 (в админку не пускаем). На MVP роль маппим в SUPER_ADMIN
+ * и отдаём пустой permissions[] (клиент байпасит permission-слой для SUPER_ADMIN).
  */
 export async function GET(req: NextRequest) {
-  const auth = await requireAuth(req);
-  if (auth instanceof NextResponse) return auth;
+  const cookie = req.headers.get("cookie");
+  if (!cookie) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const [user, permissions] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: auth.id },
-      select: {
-        id: true,
-        login: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        email: true,
-        status: true,
-      },
-    }),
-    prisma.userPermission.findMany({
-      where: { userId: auth.id },
-      select: { path: true, accessLevel: true },
-    }),
-  ]);
-
-  if (!user) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  return NextResponse.json({ user, permissions });
+  const r = await fetchProfile(cookie);
+  if (!r.ok || !r.data) {
+    return applySetCookies(NextResponse.json({ error: "unauthorized" }, { status: 401 }), r.setCookies);
+  }
+  if (!r.data.role) {
+    return applySetCookies(NextResponse.json({ error: "forbidden" }, { status: 403 }), r.setCookies);
+  }
+  const u = r.data;
+  const user = {
+    id: u._id,
+    login: u.email,
+    firstName: u.firstName ?? "",
+    lastName: "",
+    role: "SUPER_ADMIN",
+    email: u.email,
+  };
+  return applySetCookies(NextResponse.json({ user, permissions: [] }), r.setCookies);
 }
