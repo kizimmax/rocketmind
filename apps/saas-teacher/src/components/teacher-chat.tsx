@@ -222,13 +222,14 @@ export function TeacherChat({ selectedAgent, programClosed = false }: TeacherCha
 
   return (
     <div className="relative flex flex-1 flex-col overflow-hidden">
-      {/* Фон — точечная сетка с линзой, как в saas */}
+      {/* Фон — точечная сетка с линзой, как в saas. opacity-80: на 20% прозрачнее
+          (одинаково на десктопе и мобиле). */}
       <DotGridLens
         gridGap={10}
         baseRadius={0.75}
         maxScale={2.8}
         lensRadius={100}
-        className="pointer-events-auto absolute inset-0 z-0"
+        className="pointer-events-auto absolute inset-0 z-0 opacity-80"
       />
 
       {/* Messages */}
