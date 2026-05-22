@@ -2279,6 +2279,7 @@ className="
 - **Hover:** `hover:border-muted-foreground` в светлой, `dark:hover:border-white/[0.20]` в тёмной (единственный вариант для всех bg-card карточек)
 - **Image-area (S/M):** фото/обложка занимает верхние `38%` карточки (золотое сечение)
 - **Badge:** mono-шрифт, uppercase, `4px` radius, `--rm-gray-1` фон
+- **Пустая обложка (skeleton):** если у карточки нет изображения — `CoverSkeleton` (`@rocketmind/ui`): тёмный фон `#121212` + два круга по центру (бордер `2px` `#404040` = `--rm-gray-3` в тёмной теме), малый круг слева, крупный справа, группа отцентрована. Бордер всегда `2px` независимо от размера карточки (`vector-effect: non-scaling-stroke`). Применяется в `ProductImageCard` (Онлайн-школа / AI-продукты) и `ArticleCard` (Медиа). Источник геометрии — Figma node `1971-18016`.
 
 ---
 

@@ -722,6 +722,7 @@ export default function ComponentsPage() {
               <p className="text-muted-foreground text-[length:var(--text-14)] mb-4">
                 Карточки для разделов «Онлайн-школа» и «AI-продукты». Изображение cover 220px, бейдж -22px overlap.
                 Вариант «wide» — 2 колонки с фактоидами из hero.
+                Если обложки нет — скелетон <code>CoverSkeleton</code>: два круга (бордер 2px, #404040) по центру на тёмном фоне (см. карточки ниже).
               </p>
               <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>1 колонка</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -757,6 +758,7 @@ export default function ComponentsPage() {
               <p className="text-muted-foreground text-[length:var(--text-14)] mb-4">
                 Карточка статьи для раздела «Медиа». Обложка сверху (overlap −22px), бейдж типа (sky — урок, terracotta — кейс), теги, автор и дата.
                 Вариант «wide» — двухколоночный: обложка слева, заголовок и описание во всю ширину.
+                Если обложки нет — скелетон <code>CoverSkeleton</code>: два круга (бордер 2px, #404040) по центру на тёмном фоне (см. карточки ниже).
               </p>
               <p className={`${mono} text-[length:var(--text-12)] uppercase tracking-[0.08em] text-muted-foreground mb-2`}>Default — обложка сверху</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

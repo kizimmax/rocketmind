@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils"
 import { Tag } from "./tag"
 import { Author } from "./author"
 import { GlowingEffect } from "./glowing-effect"
+import { CoverSkeleton } from "./cover-skeleton"
 
 export type ArticleCardVariant = "default" | "wide"
 
@@ -297,7 +298,7 @@ function DefaultLayout({
             aria-hidden
           />
         ) : (
-          <div className="h-full w-full bg-[color:var(--rm-gray-1)]" aria-hidden />
+          <CoverSkeleton />
         )}
         <div
           className="pointer-events-none absolute inset-0"
@@ -354,7 +355,7 @@ function WideLayout({
             aria-hidden
           />
         ) : (
-          <div className="h-full w-full bg-[color:var(--rm-gray-1)]" aria-hidden />
+          <CoverSkeleton />
         )}
       </div>
 

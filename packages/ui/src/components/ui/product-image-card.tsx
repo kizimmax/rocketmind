@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "../../lib/utils";
 import { GlowingEffect } from "./glowing-effect";
+import { CoverSkeleton } from "./cover-skeleton";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -30,20 +31,6 @@ export interface ProductImageCardProps {
   /** Compact wide: min-h 350px, max 2 factoids (for mixed grids with 1-col cards) */
   compact?: boolean;
   className?: string;
-}
-
-// ── Placeholder ───────────────────────────────────────────────────────────────
-
-function ImagePlaceholder() {
-  return (
-    <div className="flex h-full w-full items-center justify-center bg-[#111] text-[#404040]">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-        <path d="m21 15-5-5L5 21" />
-      </svg>
-    </div>
-  );
 }
 
 // ── Tag badge ─────────────────────────────────────────────────────────────────
@@ -97,7 +84,7 @@ export function ProductImageCard({
           {image ? (
             <img src={image} alt="" className="w-full h-full object-cover" />
           ) : (
-            <ImagePlaceholder />
+            <CoverSkeleton />
           )}
           {/* Tag: absolute over image — desktop only */}
           {tag && (
@@ -180,7 +167,7 @@ export function ProductImageCard({
             {image ? (
               <img src={image} alt="" className="w-full h-full object-cover" />
             ) : (
-              <ImagePlaceholder />
+              <CoverSkeleton />
             )}
           </div>
           {tag && (

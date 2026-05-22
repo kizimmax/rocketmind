@@ -32,6 +32,7 @@ export * from './components/ui/search-combobox';
 export * from './components/ui/separator';
 export * from './components/ui/show-more';
 export * from './components/ui/skeleton';
+export * from './components/ui/cover-skeleton';
 export * from './components/ui/sonner';
 export * from './components/ui/switch';
 export * from './components/ui/table';
