@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { joinGroup } from "@/lib/ivan-client";
 import { ApiError } from "@/lib/api";
+import { setPendingJoin, clearPendingJoin } from "@/lib/join";
 
 /**
  * /join?code=<qrCode> — точка входа после сканирования QR группы.
@@ -25,20 +26,30 @@ export default function JoinPage() {
       return;
     }
 
+    // Сохраняем код сразу: если юзер уйдёт регистрироваться, после входа
+    // join «дожмётся» из localStorage (consumePendingJoin в шелле) — повторно
+    // сканировать QR не придётся.
+    setPendingJoin(code);
+
     let cancelled = false;
     (async () => {
       try {
         await joinGroup(code);
         if (cancelled) return;
+        clearPendingJoin();
         window.location.href = "/";
       } catch (e) {
         if (cancelled) return;
         const status = e instanceof ApiError ? e.status : 0;
         if (status === 401) {
+          // Не авторизован → на вход. Код уже в localStorage; returnTo —
+          // быстрый путь для happy-case, localStorage — страховка.
           const returnTo = `/join?code=${encodeURIComponent(code)}`;
           window.location.href = `/login?returnTo=${encodeURIComponent(returnTo)}`;
           return;
         }
+        // Мёртвый код — чистим, чтобы не пытаться снова после входа.
+        if (status === 404 || status === 400) clearPendingJoin();
         setError(status === 404 ? "invalid" : "failed");
       }
     })();
