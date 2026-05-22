@@ -266,6 +266,42 @@ export async function PUT(
   }
 }
 
+/**
+ * Лёгкое частичное обновление страницы (сейчас — только `status`).
+ *
+ * Зачем отдельный PATCH вместо PUT: PUT пересобирает весь `content` из блоков и
+ * имеет тяжёлые сайд-эффекты (для academy-страниц вызывает writeConfig
+ * partnerships.json → mkdir CONFIG_DIR). Из-за этого простое переключение
+ * статуса падало 500 и не сохранялось. PATCH трогает только колонку `status`,
+ * без пересборки контента и записи конфигов.
+ */
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const gate = await requirePermission(request, "pages", "EDIT");
+  if (gate instanceof NextResponse) return gate;
+  const { slug: rawSlug } = await params;
+  const pageId = decodeURIComponent(rawSlug);
+  const url = pageId.startsWith("/") ? pageId : `/${pageId}`;
+
+  const existing = await prisma.page.findUnique({ where: { url } });
+  if (!existing) return NextResponse.json({ error: "not found" }, { status: 404 });
+
+  const body = await request.json().catch(() => ({}));
+  const ALLOWED_STATUS = ["published", "hidden", "archived"];
+  const data: { status?: string } = {};
+  if (typeof body.status === "string" && ALLOWED_STATUS.includes(body.status)) {
+    data.status = body.status;
+  }
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: "no valid fields" }, { status: 400 });
+  }
+
+  await prisma.page.update({ where: { id: existing.id }, data });
+  return NextResponse.json({ ok: true, status: data.status });
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },

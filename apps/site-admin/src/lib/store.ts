@@ -410,17 +410,18 @@ export function AdminStoreProvider({ children }: { children: ReactNode }) {
           saveToLS(next);
           return next;
         }
-        // Персистим смену статуса на сервер полным объектом SitePage
-        // (как reorderPages): PUT /api/pages/[slug]. Без этого статус менялся
-        // только в памяти и слетал при перезагрузке. Синтетические страницы
-        // не имеют записи в БД — PUT не делаем.
+        // Персистим смену статуса лёгким PATCH (только колонка status).
+        // НЕ через PUT: PUT пересобирает весь content и для academy-страниц
+        // дёргает writeConfig(partnerships.json) → mkdir CONFIG_DIR, из-за чего
+        // тоглл статуса падал 500 и не сохранялся. Синтетические страницы
+        // (unique/products) не имеют записи в БД — PATCH не делаем.
         const updated = next.find((p) => p.id === pageId);
         if (updated && !SYNTHETIC_PAGE_IDS.has(updated.id)) {
           apiFetch(`/api/pages/${encodeURIComponent(updated.id)}`, {
-            method: "PUT",
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updated),
-          }).catch(() => { /* ignore — single-admin, перезапишется при следующем save */ });
+            body: JSON.stringify({ status }),
+          }).catch(() => { /* ignore — single-admin */ });
         }
         return next;
       });
