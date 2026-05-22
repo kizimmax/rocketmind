@@ -18,7 +18,6 @@ const RULES: Record<string, RouteRule> = {
   "ai-agents": { permissionPath: "ai-agents" },
   programs: { permissionPath: "programs" },
   users: { rolesAllowed: ["SUPER_ADMIN", "ADMIN"] },
-  "audit-log": { rolesAllowed: ["SUPER_ADMIN"] },
   profile: {}, // always accessible to any authed user
 };
 
