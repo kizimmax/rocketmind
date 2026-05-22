@@ -12,6 +12,7 @@ import {
 } from "@/components/paragraphs-editor";
 import { useItemDnd } from "@/lib/use-item-dnd";
 import { PRODUCTS_FILTER_KEYS } from "@/lib/constants";
+import { PartnershipsMiniEditor } from "./partnerships-mini-editor";
 
 type HomeSection = {
   filterKey: string;
@@ -37,6 +38,10 @@ type ProductLike = {
 interface HomeSectionsEditorProps {
   data: Record<string, unknown>;
   onUpdate: (data: Record<string, unknown>) => void;
+  /** Данные блока partnershipsMini (жёлтый блок под каруселью академии) и его
+   *  updater. Прокидываются из BlockList, чтобы редактировать его внутри секции. */
+  partnerData?: Record<string, unknown>;
+  onUpdatePartner?: (data: Record<string, unknown>) => void;
 }
 
 const EMPTY_SECTION: HomeSection = {
@@ -65,7 +70,7 @@ function productsForFilter(all: ProductLike[], filterKey: string): ProductLike[]
   return [];
 }
 
-export function HomeSectionsEditor({ data, onUpdate }: HomeSectionsEditorProps) {
+export function HomeSectionsEditor({ data, onUpdate, partnerData, onUpdatePartner }: HomeSectionsEditorProps) {
   const sections = Array.isArray(data.sections) ? (data.sections as HomeSection[]) : [];
 
   const [allPages, setAllPages] = useState<ProductLike[]>([]);
@@ -353,6 +358,17 @@ export function HomeSectionsEditor({ data, onUpdate }: HomeSectionsEditorProps) 
                     </div>
                   )}
                 </div>
+
+                {/* Жёлтый блок «Программы с бизнес-школами» — только для академии.
+                    Редактируется здесь же; на сайте рендерится под каруселью. */}
+                {section.filterKey === "academy" && onUpdatePartner && (
+                  <div className="border-t border-[#404040] pt-4">
+                    <span className="mb-3 block font-[family-name:var(--font-mono-family)] text-[length:var(--text-10)] uppercase tracking-[0.06em] text-[#939393]">
+                      Жёлтый блок под каруселью — заголовок, подпись, логотипы
+                    </span>
+                    <PartnershipsMiniEditor data={partnerData ?? {}} onUpdate={onUpdatePartner} />
+                  </div>
+                )}
               </div>
             );
           })}

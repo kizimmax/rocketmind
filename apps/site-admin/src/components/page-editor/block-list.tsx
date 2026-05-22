@@ -58,7 +58,14 @@ export function BlockList({
   const [draggableId, setDraggableId] = useState<string | null>(null);
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  const sorted = [...blocks].sort((a, b) => a.order - b.order);
+  // Блок partnershipsMini («Программы с бизнес-школами») редактируется ВЛОЖЕННО
+  // внутри секции «Онлайн-школа» блока «Разделы» (homeSections) — туда же, где он
+  // и рендерится на сайте (под каруселью академии). Поэтому как отдельный блок в
+  // списке его не показываем, а его data+updater прокидываем в HomeSectionsEditor.
+  const pmBlock = blocks.find((b) => b.type === "partnershipsMini");
+  const sorted = [...blocks]
+    .sort((a, b) => a.order - b.order)
+    .filter((b) => b.type !== "partnershipsMini");
 
   const toggleCollapse = useCallback((blockId: string) => {
     setCollapsedIds((prev) => {
@@ -251,6 +258,12 @@ export function BlockList({
                     hasExperts={hasExperts}
                     experts={experts}
                     onUpdate={(data) => onUpdateBlock(block.id, data)}
+                    partnerData={block.type === "homeSections" && pmBlock ? pmBlock.data : undefined}
+                    onUpdatePartner={
+                      block.type === "homeSections" && pmBlock
+                        ? (data) => onUpdateBlock(pmBlock.id, data)
+                        : undefined
+                    }
                   />
                 </div>
               )}

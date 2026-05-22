@@ -30,11 +30,15 @@ interface BlockEditorProps {
   hasExperts: boolean;
   experts: Array<{ name: string; image: string | null }>;
   onUpdate: (data: Record<string, unknown>) => void;
+  /** Данные блока partnershipsMini — прокидываются в HomeSectionsEditor, чтобы
+   *  жёлтый блок «Программы с бизнес-школами» редактировался внутри секции академии. */
+  partnerData?: Record<string, unknown>;
+  onUpdatePartner?: (data: Record<string, unknown>) => void;
 }
 
 const IMAGE_HERO_SECTIONS = new Set(["academy", "ai-products"]);
 
-export function BlockEditor({ block, sectionId, hasExperts, experts, onUpdate }: BlockEditorProps) {
+export function BlockEditor({ block, sectionId, hasExperts, experts, onUpdate, partnerData, onUpdatePartner }: BlockEditorProps) {
   switch (block.type) {
     case "hero":
       if (block.data.variant === "about") {
@@ -50,7 +54,14 @@ export function BlockEditor({ block, sectionId, hasExperts, experts, onUpdate }:
     case "methodology":
       return <MethodologyEditor data={block.data} onUpdate={onUpdate} />;
     case "homeSections":
-      return <HomeSectionsEditor data={block.data} onUpdate={onUpdate} />;
+      return (
+        <HomeSectionsEditor
+          data={block.data}
+          onUpdate={onUpdate}
+          partnerData={partnerData}
+          onUpdatePartner={onUpdatePartner}
+        />
+      );
     case "about":
     case "customSection":
       return <AboutEditor data={block.data} onUpdate={onUpdate} />;
