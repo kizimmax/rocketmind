@@ -129,7 +129,13 @@ export function DotGridLens({
       mouse.y = -9999;
     }
 
-    const ro = new ResizeObserver(resize);
+    // На статичном пути (touch / reduced-motion) rAF-цикла нет, а resize() чистит
+    // canvas (смена width) — поэтому после ресайза нужно перерисовать вручную,
+    // иначе на мобиле сетка пропадает после первого же layout-сдвига.
+    const ro = new ResizeObserver(() => {
+      resize();
+      if (isTouchOnly || reducedMotion) draw();
+    });
     ro.observe(container);
     resize();
 
