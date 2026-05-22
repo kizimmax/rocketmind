@@ -78,7 +78,9 @@ export default function LoginPage() {
     try {
       const success = await verifyCode(code);
       if (success) {
-        window.location.href = "/";
+        // Поддержка возврата после /join (QR-вход требует авторизации).
+        const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+        window.location.href = returnTo || "/";
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);

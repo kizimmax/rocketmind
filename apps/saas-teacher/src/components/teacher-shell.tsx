@@ -50,8 +50,9 @@ export function TeacherShell({ student }: TeacherShellProps) {
     setProgramClosedModalShown(true);
   }
 
-  const needsOnboarding =
-    !student.firstName || !student.project;
+  // Онбординг — только пока не заполнено имя. Шаг «создать проект» убран:
+  // у Ивана нет модели проектов, чат идёт напрямую к User+Group (Phase 3).
+  const needsOnboarding = !student.firstName;
 
   function loadAgents() {
     setLoading(true);
@@ -74,7 +75,6 @@ export function TeacherShell({ student }: TeacherShellProps) {
     loadAgents();
   }, []);
 
-  const project = student.project;
   const selectedAgent =
     agents.find((a) => a.id === selectedAgentId) ?? null;
 
@@ -82,26 +82,17 @@ export function TeacherShell({ student }: TeacherShellProps) {
     <div className={`flex min-h-dvh ${needsOnboarding ? "overflow-hidden" : ""}`}>
       <TeacherSidebar
         student={student}
-        project={project}
         agents={agents}
         selectedAgentId={selectedAgentId}
         onSelectAgent={setSelectedAgentId}
         loading={loading}
       />
       <main className="flex flex-1 flex-col">
-        {selectedAgent && project ? (
-          <TeacherChat
-            agent={selectedAgent}
-            projectId={project.id}
-            programClosed={programClosed}
-          />
-        ) : (
-          <div className="flex flex-1 items-center justify-center px-6 text-center text-muted-foreground">
-            {agents.length === 0
-              ? "Преподаватель ещё не открыл доступ ни к одному AI-эксперту. Загляните позже."
-              : "Выберите AI-эксперта в сайдбаре."}
-          </div>
-        )}
+        <TeacherChat
+          agents={agents}
+          selectedAgent={selectedAgent}
+          programClosed={programClosed}
+        />
       </main>
 
       {needsOnboarding && (

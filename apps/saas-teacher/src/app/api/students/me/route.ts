@@ -1,33 +1,32 @@
-import { NextResponse } from "next/server";
-import { getCurrentStudent } from "@/lib/student-auth";
-import { prisma } from "@/lib/prisma";
+import { type NextRequest, NextResponse } from "next/server";
+import { applySetCookies, ivanCall } from "@/lib/ivan-api";
+import { type IvanUser, mapUserToStudent } from "@/lib/ivan-auth";
 
-export async function PATCH(request: Request) {
-  const student = await getCurrentStudent();
-  if (!student) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-
+// PATCH профиля → PUT /profile Ивана.
+// Маппинг полей анкеты: role→profession, industry→fieldOfActivity, region→city.
+// lastName у Ивана нет — игнорируем.
+export async function PATCH(request: NextRequest) {
+  const cookie = request.headers.get("cookie");
   const body = await request.json().catch(() => ({}));
-  const data: Record<string, unknown> = {};
-  if (typeof body.firstName === "string") data.firstName = body.firstName.trim();
-  if (typeof body.lastName === "string") data.lastName = body.lastName.trim();
-  if (typeof body.role === "string") data.role = body.role.trim();
-  if (typeof body.industry === "string") data.industry = body.industry.trim();
-  if (typeof body.region === "string") data.region = body.region.trim();
 
-  const updated = await prisma.student.update({
-    where: { id: student.id },
-    data,
-  });
+  const payload: Record<string, string> = {};
+  if (typeof body.firstName === "string") payload.firstName = body.firstName.trim();
+  if (typeof body.role === "string") payload.profession = body.role.trim();
+  if (typeof body.industry === "string") payload.fieldOfActivity = body.industry.trim();
+  if (typeof body.region === "string") payload.city = body.region.trim();
 
-  return NextResponse.json({
-    student: {
-      id: updated.id,
-      email: updated.email,
-      firstName: updated.firstName,
-      lastName: updated.lastName,
-      role: updated.role,
-      industry: updated.industry,
-      region: updated.region,
-    },
+  const r = await ivanCall<IvanUser>({
+    method: "PUT",
+    path: "/profile",
+    body: payload,
+    cookie,
+    retryOn401: true,
   });
+  if (!r.ok || !r.data) {
+    return applySetCookies(
+      NextResponse.json({ error: "unauthorized" }, { status: r.status || 401 }),
+      r.setCookies,
+    );
+  }
+  return applySetCookies(NextResponse.json({ student: mapUserToStudent(r.data) }), r.setCookies);
 }

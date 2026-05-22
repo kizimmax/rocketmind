@@ -4,58 +4,42 @@ import { useState } from "react";
 import { Button, Input, Textarea } from "@rocketmind/ui";
 import { apiFetch } from "@/lib/api-client";
 import { toast } from "sonner";
-import { UserCircle, Loader2, Trash2, AlertTriangle } from "lucide-react";
-import { MascotPicker, type Mascot } from "./mascot-picker";
+import { UserCircle, Loader2, Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export type Agent = {
   id: string;
-  slug: string;
   name: string;
   role: string;
   valueDescription: string;
-  avatarMascotId: string | null;
-  avatarMascot: Mascot | null;
-  avatarPath: string | null;
-  /** «Обучающие» ↔ targets ∋ "saas-teacher"; «Акселератор» ↔ targets ∋ "saas". */
-  targets: string[];
-  /** Порядковый номер — определяет порядок в админке и в сайдбаре saas-teacher. */
-  serial: number;
-  n8nWebhookUrl: string;
-  n8nSecret: string | null;
-  systemPrompt: string | null;
-  notes: string | null;
+  avatarUrl: string | null;
+  /** ID ассистента OpenAI (через него идёт диалог). */
+  openAiAssistantId: string;
 };
 
 interface AgentEditorProps {
   agent: Agent | null; // null = create mode
   onSaved: (agent: Agent) => void;
   onDeleted?: (id: string) => void;
-  /** Optional cancel handler (e.g. router.back). Hidden if undefined. */
   onCancel?: () => void;
 }
 
-const EMPTY: Omit<Agent, "id" | "slug"> = {
+const EMPTY: Omit<Agent, "id"> = {
   name: "",
   role: "",
   valueDescription: "",
-  avatarMascotId: null,
-  avatarMascot: null,
-  avatarPath: null,
-  targets: ["saas-teacher"],
-  serial: 0,
-  n8nWebhookUrl: "",
-  n8nSecret: null,
-  systemPrompt: null,
-  notes: null,
+  avatarUrl: null,
+  openAiAssistantId: "",
 };
 
 export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditorProps) {
   const isEdit = !!agent;
-  const [state, setState] = useState<Omit<Agent, "id" | "slug">>(() =>
+  const [state, setState] = useState<Omit<Agent, "id">>(() =>
     agent ? { ...agent } : { ...EMPTY },
   );
-  const [picker, setPicker] = useState(false);
+  // Системный промпт пока косметический: в payload не уходит (промпт живёт в
+  // OpenAI Assistant). Подключим, когда переедем с openAiAssistantId.
+  const [systemPrompt, setSystemPrompt] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -64,30 +48,20 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
       toast.error("Введите имя AI-эксперта");
       return;
     }
-
     setSaving(true);
     try {
       const payload = {
         name: state.name,
         role: state.role,
         valueDescription: state.valueDescription,
-        avatarMascotId: state.avatarMascotId,
-        avatarPath: state.avatarPath,
-        targets: state.targets,
-        serial: state.serial,
-        n8nWebhookUrl: state.n8nWebhookUrl,
-        n8nSecret: state.n8nSecret,
-        systemPrompt: state.systemPrompt,
-        notes: state.notes,
+        avatarUrl: state.avatarUrl,
+        openAiAssistantId: state.openAiAssistantId,
       };
-      const res = await apiFetch(
-        isEdit ? `/api/ai-agents/${agent!.id}` : "/api/ai-agents",
-        {
-          method: isEdit ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
+      const res = await apiFetch(isEdit ? `/api/ai-agents/${agent!.id}` : "/api/ai-agents", {
+        method: isEdit ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         toast.error(`Ошибка: ${err.error ?? res.status}`);
@@ -112,35 +86,20 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
     }
   }
 
-  const avatarUrl = state.avatarMascot?.imagePath ?? state.avatarPath ?? null;
-
   return (
     <>
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* ── Left column: основные поля ── */}
+        {/* ── Left column ── */}
         <div className="space-y-4">
-          {/* Avatar + крупный инпут имени */}
+          {/* Avatar (URL) + крупный инпут имени */}
           <div className="flex items-start gap-4">
-            <div className="flex flex-col items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setPicker(true)}
-                className="flex h-20 w-20 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40 transition-colors hover:border-foreground/40"
-              >
-                {avatarUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <UserCircle className="h-10 w-10 text-muted-foreground" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setPicker(true)}
-                className="text-[length:var(--text-12)] text-foreground underline-offset-2 hover:underline"
-              >
-                Выбрать
-              </button>
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-rm-gray-1/40">
+              {state.avatarUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={state.avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <UserCircle className="h-10 w-10 text-muted-foreground" />
+              )}
             </div>
             <Input
               value={state.name}
@@ -150,141 +109,69 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
             />
           </div>
 
-          {/* Role */}
           <div>
             <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-              Роль
+              Ссылка на аватар
             </label>
             <Input
-              value={state.role}
-              onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}
-              placeholder="напр. Бизнес-моделирование"
+              value={state.avatarUrl ?? ""}
+              onChange={(e) => setState((s) => ({ ...s, avatarUrl: e.target.value || null }))}
+              placeholder="https://… (загрузка файлом — позже через /file/upload)"
             />
           </div>
 
-          {/* Value */}
+          <div>
+            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">Роль</label>
+            <Input
+              value={state.role}
+              onChange={(e) => setState((s) => ({ ...s, role: e.target.value }))}
+              placeholder="напр. Наставник по бизнес-модели"
+            />
+          </div>
+
           <div>
             <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
               Описание пользы
             </label>
             <Textarea
               value={state.valueDescription}
-              onChange={(e) =>
-                setState((s) => ({ ...s, valueDescription: e.target.value }))
-              }
+              onChange={(e) => setState((s) => ({ ...s, valueDescription: e.target.value }))}
               placeholder="Что AI-эксперт делает для ученика, чем полезен"
               rows={3}
             />
           </div>
 
-          {/* Serial — порядковый номер для сортировки в списках. */}
           <div>
             <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-              Порядковый номер
+              OpenAI Assistant ID
             </label>
             <Input
-              type="number"
-              min={0}
-              step={1}
-              value={state.serial}
-              onChange={(e) =>
-                setState((s) => ({
-                  ...s,
-                  serial: Number.isFinite(e.target.valueAsNumber)
-                    ? e.target.valueAsNumber
-                    : 0,
-                }))
-              }
-              className="max-w-[140px]"
-            />
-            <p className="mt-1 text-[length:var(--text-12)] text-muted-foreground/70">
-              Определяет порядок в админке и в сайдбаре saas-teacher. По возрастанию.
-            </p>
-          </div>
-
-          {/* Webhook */}
-          <div>
-            <div className="mb-1 flex items-center gap-2">
-              <label className="text-[length:var(--text-12)] text-muted-foreground">
-                n8n webhook URL
-              </label>
-              {!state.n8nWebhookUrl.trim() && (
-                <span className="inline-flex items-center gap-1 rounded-sm bg-destructive/15 px-1.5 py-0.5 text-[length:var(--text-10)] font-medium uppercase tracking-wide text-destructive">
-                  <AlertTriangle className="h-3 w-3" />
-                  Не подключен
-                </span>
-              )}
-            </div>
-            <Input
-              value={state.n8nWebhookUrl}
-              onChange={(e) =>
-                setState((s) => ({ ...s, n8nWebhookUrl: e.target.value }))
-              }
-              placeholder="https://n8n.example.com/webhook/agent-xyz"
-              className={
-                !state.n8nWebhookUrl.trim()
-                  ? "border-destructive/50 focus-visible:border-destructive"
-                  : undefined
-              }
-            />
-            {!state.n8nWebhookUrl.trim() && (
-              <p className="mt-1 text-[length:var(--text-10)] text-destructive">
-                Без webhook агент не отвечает — диалог с ним работать не будет.
-              </p>
-            )}
-          </div>
-
-          {/* Secret */}
-          <div>
-            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-              Shared secret (опц., для HMAC-подписи)
-            </label>
-            <Input
-              value={state.n8nSecret ?? ""}
-              onChange={(e) =>
-                setState((s) => ({ ...s, n8nSecret: e.target.value || null }))
-              }
-              placeholder="optional"
-            />
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
-              Заметки
-            </label>
-            <Textarea
-              value={state.notes ?? ""}
-              onChange={(e) =>
-                setState((s) => ({ ...s, notes: e.target.value || null }))
-              }
-              rows={2}
+              value={state.openAiAssistantId}
+              onChange={(e) => setState((s) => ({ ...s, openAiAssistantId: e.target.value }))}
+              placeholder="asst_…"
             />
           </div>
         </div>
 
-        {/* ── Right column: системный промпт (большая область) ── */}
+        {/* ── Right column: системный промпт (косметический) ── */}
         <div className="flex flex-col">
           <label className="mb-1 block text-[length:var(--text-12)] text-muted-foreground">
             Системный промпт
           </label>
           <Textarea
-            value={state.systemPrompt ?? ""}
-            onChange={(e) =>
-              setState((s) => ({ ...s, systemPrompt: e.target.value || null }))
-            }
+            value={systemPrompt}
+            onChange={(e) => setSystemPrompt(e.target.value)}
             rows={24}
-            placeholder="Сейчас сами инструкции живут в n8n/OpenAI. Это поле — черновик: текст сохранится в БД, но в payload AI-эксперту пока не уходит."
+            placeholder="Сейчас инструкции живут в OpenAI Assistant. Это поле — черновик, в бэк пока не уходит."
             className="flex-1 min-h-[400px] font-[family-name:var(--font-mono-family)] text-[length:var(--text-12)]"
           />
           <p className="mt-1 text-[length:var(--text-10)] text-muted-foreground">
-            <span className="uppercase tracking-wide">В разработке.</span>{" "}
-            Когда подключим передачу промпта в n8n — пометку снимем.
+            <span className="uppercase tracking-wide">В разработке.</span> Подключим, когда
+            промпт будет редактироваться на стороне бэка.
           </p>
         </div>
       </div>
 
-      {/* Action bar — sticky внизу страницы */}
       <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
         <div>
           {isEdit && (
@@ -311,20 +198,6 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
           </Button>
         </div>
       </div>
-
-      <MascotPicker
-        open={picker}
-        onOpenChange={setPicker}
-        selectedId={state.avatarMascotId}
-        onSelect={(m) => {
-          setState((s) => ({
-            ...s,
-            avatarMascotId: m?.id ?? null,
-            avatarMascot: m,
-          }));
-          setPicker(false);
-        }}
-      />
 
       <ConfirmDialog
         open={confirmDelete}

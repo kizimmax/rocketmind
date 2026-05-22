@@ -1,71 +1,52 @@
-import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
-import { Role, User } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { fetchProfile, type IvanUser } from "./ivan-auth";
 
-const JWT_SECRET = process.env.JWT_SECRET || "";
-const TOKEN_TTL = "30d";
+/**
+ * Авторизация saas-admin против API Ивана (Mongo).
+ *
+ * Гейт доступа в админку (решение Ивана): у юзера есть роль (role != null) →
+ * пускаем; нет роли → только saas-teacher. Гранулярное дерево прав на MVP не
+ * используем: любой юзер с ролью трактуется как полный админ. Чтобы не трогать
+ * 22 роута и весь permission-слой (server requirePermission и client
+ * isPathVisible байпасят SUPER_ADMIN), маппим роль в "SUPER_ADMIN".
+ * TODO: когда Иван даст имена ролей + словарь Role.permissions[], вернуть
+ * настоящую иерархию (ADMIN/EDITOR + per-section гейтинг).
+ */
 
-export interface JwtPayload {
-  userId: string;
+export type Role = "SUPER_ADMIN" | "ADMIN" | "EDITOR";
+
+export interface AuthedUser {
+  id: string;
   login: string;
+  firstName: string;
+  lastName: string;
   role: Role;
+  status: "ACTIVE" | "FROZEN";
+  email: string | null;
   tokenVersion: number;
 }
 
-export type AuthedUser = Pick<
-  User,
-  "id" | "login" | "firstName" | "lastName" | "role" | "status" | "email" | "tokenVersion"
->;
-
-export function signToken(payload: JwtPayload): string {
-  if (!JWT_SECRET) throw new Error("JWT_SECRET не задан в ENV");
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_TTL });
+function mapToAuthed(u: IvanUser): AuthedUser {
+  return {
+    id: u._id,
+    login: u.email,
+    firstName: u.firstName ?? "",
+    lastName: "",
+    role: "SUPER_ADMIN", // MVP: любой юзер с ролью = полный админ
+    status: "ACTIVE",
+    email: u.email,
+    tokenVersion: 0,
+  };
 }
 
-export function verifyToken(token: string): JwtPayload | null {
-  if (!JWT_SECRET) return null;
-  try {
-    return jwt.verify(token, JWT_SECRET) as JwtPayload;
-  } catch {
-    return null;
-  }
-}
-
-export function extractToken(req: NextRequest): string | null {
-  const auth = req.headers.get("authorization") || "";
-  if (auth.startsWith("Bearer ")) return auth.slice(7);
-  return req.cookies.get("rm_admin_token")?.value || null;
-}
-
-/**
- * Full auth check: validates JWT signature, then loads the user and confirms
- * status === ACTIVE and tokenVersion matches. Use this in API routes that
- * need a live, non-frozen user.
- */
+/** Валидирует сессию через /profile Ивана. Возвращает null, если не авторизован или у юзера нет роли. */
 export async function authenticate(req: NextRequest): Promise<AuthedUser | null> {
-  const token = extractToken(req);
-  if (!token) return null;
-  const payload = verifyToken(token);
-  if (!payload) return null;
-
-  const user = await prisma.user.findUnique({
-    where: { id: payload.userId },
-    select: {
-      id: true,
-      login: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      status: true,
-      email: true,
-      tokenVersion: true,
-    },
-  });
-  if (!user) return null;
-  if (user.status === "FROZEN") return null;
-  if (user.tokenVersion !== payload.tokenVersion) return null;
-  return user;
+  const cookie = req.headers.get("cookie");
+  if (!cookie) return null;
+  const r = await fetchProfile(cookie);
+  if (!r.ok || !r.data) return null;
+  if (!r.data.role) return null; // нет роли → не админ
+  return mapToAuthed(r.data);
 }
 
 export async function requireAuth(req: NextRequest): Promise<AuthedUser | NextResponse> {
@@ -74,100 +55,35 @@ export async function requireAuth(req: NextRequest): Promise<AuthedUser | NextRe
   return user;
 }
 
+// На MVP роль есть → полный доступ. Иерархию вернём, когда Иван даст имена ролей.
 export async function requireAdmin(req: NextRequest): Promise<AuthedUser | NextResponse> {
-  const result = await requireAuth(req);
-  if (result instanceof NextResponse) return result;
-  if (result.role !== "SUPER_ADMIN" && result.role !== "ADMIN") {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  }
-  return result;
+  return requireAuth(req);
 }
 
 export async function requireSuperAdmin(req: NextRequest): Promise<AuthedUser | NextResponse> {
-  const result = await requireAuth(req);
-  if (result instanceof NextResponse) return result;
-  if (result.role !== "SUPER_ADMIN") {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  }
-  return result;
+  return requireAuth(req);
 }
 
-/**
- * Guard for content endpoints: authenticates the user, then checks they have
- * `level` access on `path` in the permission tree. SUPER_ADMIN bypasses.
- *
- * Convention: use `VIEW` for GET handlers (or omit the call entirely for
- * universally-readable lists) and `EDIT` for POST/PUT/PATCH/DELETE.
- */
 export async function requirePermission(
   req: Request | NextRequest,
-  path: string,
-  level: "VIEW" | "EDIT",
+  _path: string,
+  _level: "VIEW" | "EDIT",
 ): Promise<AuthedUser | NextResponse> {
-  // Route handlers sometimes type the arg as Request, but at runtime in the
-  // App Router it's always NextRequest — safe to cast for cookie access.
-  const result = await requireAuth(req as NextRequest);
-  if (result instanceof NextResponse) return result;
-  if (result.role === "SUPER_ADMIN") return result;
-
-  const RANK = { VIEW: 1, EDIT: 2 } as const;
-  const required = RANK[level];
-
-  const perms = await prisma.userPermission.findMany({
-    where: { userId: result.id },
-    select: { path: true, accessLevel: true },
-  });
-
-  for (const p of perms) {
-    const ancestorOrSelf = p.path === path || path.startsWith(p.path + ".");
-    if (ancestorOrSelf && RANK[p.accessLevel] >= required) {
-      return result;
-    }
-  }
-  return NextResponse.json({ error: "forbidden", path, level }, { status: 403 });
+  return requireAuth(req as NextRequest);
 }
 
-/**
- * Like requirePermission, but passes if ANY of the supplied paths is granted.
- * Used by endpoints that serve multiple sidebar sections from one route —
- * e.g. /api/articles serves both `media.articles` and `cases` (cases are
- * articles with type="case").
- */
 export async function requireAnyPermission(
   req: Request | NextRequest,
-  paths: string[],
-  level: "VIEW" | "EDIT",
+  _paths: string[],
+  _level: "VIEW" | "EDIT",
 ): Promise<AuthedUser | NextResponse> {
-  const result = await requireAuth(req as NextRequest);
-  if (result instanceof NextResponse) return result;
-  if (result.role === "SUPER_ADMIN") return result;
-
-  const RANK = { VIEW: 1, EDIT: 2 } as const;
-  const required = RANK[level];
-
-  const perms = await prisma.userPermission.findMany({
-    where: { userId: result.id },
-    select: { path: true, accessLevel: true },
-  });
-
-  for (const want of paths) {
-    for (const p of perms) {
-      const ancestorOrSelf = p.path === want || want.startsWith(p.path + ".");
-      if (ancestorOrSelf && RANK[p.accessLevel] >= required) {
-        return result;
-      }
-    }
-  }
-  return NextResponse.json({ error: "forbidden", paths, level }, { status: 403 });
+  return requireAuth(req as NextRequest);
 }
 
 /**
- * Bumps tokenVersion, invalidating every JWT issued before this call.
- * Use after: password change, role change, permission change, freeze, email change.
+ * No-op: сессии теперь у Ивана, локально инвалидировать нечего. Оставлен ради
+ * совместимости с роутами, которые звали его после смены пароля/прав/заморозки.
  */
-export async function invalidateSessions(userId: string): Promise<void> {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { tokenVersion: { increment: 1 } },
-  });
+export async function invalidateSessions(_userId: string): Promise<void> {
+  /* no-op */
 }

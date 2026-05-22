@@ -7,27 +7,25 @@ import { Loader2, QrCode, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api-client";
 
-const TEACHER_BASE_URL =
-  process.env.NEXT_PUBLIC_TEACHER_URL || "http://localhost:3004";
+const TEACHER_BASE_URL = process.env.NEXT_PUBLIC_TEACHER_URL || "http://localhost:3005";
 
-function buildJoinUrl(programId: string, token: string): string {
-  return `${TEACHER_BASE_URL.replace(/\/$/, "")}/join?p=${programId}&t=${token}`;
+function buildJoinUrl(code: string): string {
+  return `${TEACHER_BASE_URL.replace(/\/$/, "")}/join?code=${encodeURIComponent(code)}`;
 }
 
 interface QrBlockProps {
   programId: string;
-  initialToken: string | null;
-  onTokenChange: (token: string | null) => void;
+  initialQrCode: string | null;
+  onQrChange: (code: string | null) => void;
 }
 
-export function QrBlock({ programId, initialToken, onTokenChange }: QrBlockProps) {
-  const [token, setToken] = useState<string | null>(initialToken);
+export function QrBlock({ programId, initialQrCode, onQrChange }: QrBlockProps) {
+  const [code, setCode] = useState<string | null>(initialQrCode);
   const [rotating, setRotating] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const joinUrl = token ? buildJoinUrl(programId, token) : null;
+  const joinUrl = code ? buildJoinUrl(code) : null;
 
-  // render QR onto canvas whenever token changes
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !joinUrl) return;
@@ -35,22 +33,22 @@ export function QrBlock({ programId, initialToken, onTokenChange }: QrBlockProps
       width: 320,
       margin: 1,
       color: { dark: "#000000", light: "#ffffff" },
-    }).catch(() => {
-      toast.error("Не удалось отрисовать QR");
-    });
+    }).catch(() => toast.error("Не удалось отрисовать QR"));
   }, [joinUrl]);
 
   async function rotate() {
     setRotating(true);
     try {
-      const res = await apiFetch(`/api/programs/${programId}/regenerate-qr`, {
-        method: "POST",
+      const res = await apiFetch(`/api/programs/${programId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updateQRCode: true }),
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
-      setToken(data.joinToken);
-      onTokenChange(data.joinToken);
-      toast.success(token ? "QR обновлён" : "QR сгенерирован");
+      setCode(data.qrCode ?? null);
+      onQrChange(data.qrCode ?? null);
+      toast.success(code ? "QR обновлён" : "QR сгенерирован");
     } catch (err) {
       console.error(err);
       toast.error("Ошибка");
@@ -63,7 +61,6 @@ export function QrBlock({ programId, initialToken, onTokenChange }: QrBlockProps
     const canvas = canvasRef.current;
     if (!canvas) return;
     try {
-      // Composite onto white background to ensure JPEG (no alpha) looks right
       const composited = document.createElement("canvas");
       composited.width = canvas.width;
       composited.height = canvas.height;
@@ -72,18 +69,12 @@ export function QrBlock({ programId, initialToken, onTokenChange }: QrBlockProps
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, composited.width, composited.height);
       ctx.drawImage(canvas, 0, 0);
-
       await new Promise<void>((resolve, reject) => {
         composited.toBlob(
           async (blob) => {
-            if (!blob) {
-              reject(new Error("no_blob"));
-              return;
-            }
+            if (!blob) return reject(new Error("no_blob"));
             try {
-              await navigator.clipboard.write([
-                new ClipboardItem({ "image/jpeg": blob }),
-              ]);
+              await navigator.clipboard.write([new ClipboardItem({ "image/jpeg": blob })]);
               resolve();
             } catch (e) {
               reject(e);
@@ -96,7 +87,7 @@ export function QrBlock({ programId, initialToken, onTokenChange }: QrBlockProps
       toast.success("JPEG скопирован в буфер обмена");
     } catch (err) {
       console.error(err);
-      toast.error("Не удалось скопировать. Откройте сайт по HTTPS или используйте другой браузер.");
+      toast.error("Не удалось скопировать. Откройте по HTTPS или другой браузер.");
     }
   }
 
@@ -107,30 +98,18 @@ export function QrBlock({ programId, initialToken, onTokenChange }: QrBlockProps
       </h2>
 
       <div className="flex items-start gap-4">
-        <Button
-          size="sm"
-          onClick={rotate}
-          disabled={rotating}
-          className="shrink-0"
-        >
-          {rotating ? (
-            <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-          ) : (
-            <QrCode className="mr-1 h-4 w-4" />
-          )}
-          {token ? "Обновить QR" : "Сгенерировать QR"}
+        <Button size="sm" onClick={rotate} disabled={rotating} className="shrink-0">
+          {rotating ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <QrCode className="mr-1 h-4 w-4" />}
+          {code ? "Обновить QR" : "Сгенерировать QR"}
         </Button>
-
-        {token && (
+        {code && (
           <p className="max-w-md text-[length:var(--text-12)] leading-[1.4] text-muted-foreground">
-            При обновлении QR по предыдущему больше невозможно
-            <br />
-            будет войти в обучающий сервис с AI-экспертами.
+            При обновлении QR по предыдущему больше нельзя будет войти.
           </p>
         )}
       </div>
 
-      {token && (
+      {code && (
         <div className="mt-5 flex flex-col items-start gap-3">
           <canvas
             ref={canvasRef}
@@ -144,9 +123,7 @@ export function QrBlock({ programId, initialToken, onTokenChange }: QrBlockProps
               Скопировать JPEG
             </Button>
             {joinUrl && (
-              <code className="break-all text-[length:var(--text-10)] text-muted-foreground">
-                {joinUrl}
-              </code>
+              <code className="break-all text-[length:var(--text-10)] text-muted-foreground">{joinUrl}</code>
             )}
           </div>
         </div>
