@@ -7,6 +7,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Button, Input } from "@rocketmind/ui";
 import { toast } from "sonner";
 import { getAdminUser, getRoles, updateAdminUser } from "@/lib/ivan-client";
+import { ApiError } from "@/lib/api";
 
 interface UserDetail {
   id: string;
@@ -69,13 +70,25 @@ export default function UserDetailPage() {
   }, [user, firstName, profession, fieldOfActivity, city, roleId]);
 
   async function save() {
+    if (!user) return;
+    // Шлём только изменённое: смена роли не должна тащить лишний PUT /users/{id}
+    // (он мог падать и ронять всю операцию вместе с назначением роли).
+    const changed: Record<string, string> = {};
+    if (firstName !== user.firstName) changed.firstName = firstName;
+    if (profession !== user.profession) changed.profession = profession;
+    if (fieldOfActivity !== user.fieldOfActivity) changed.fieldOfActivity = fieldOfActivity;
+    if (city !== user.city) changed.city = city;
+    if (roleId !== (user.roleId ?? "")) changed.roleId = roleId;
+
+    if (Object.keys(changed).length === 0) return;
+
     setSaving(true);
     try {
-      await updateAdminUser(id, { firstName, profession, fieldOfActivity, city, roleId });
+      await updateAdminUser(id, changed);
       toast.success("Сохранено");
       load();
-    } catch {
-      toast.error("Не удалось сохранить");
+    } catch (e) {
+      toast.error(`Не удалось сохранить${e instanceof ApiError ? `: ${e.message}` : ""}`);
     } finally {
       setSaving(false);
     }
