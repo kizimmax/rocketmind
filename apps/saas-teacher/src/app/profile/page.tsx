@@ -55,7 +55,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="h-dvh overflow-y-auto bg-background">
       <div className="mx-auto max-w-xl px-6 py-8">
         <Link
           href="/"
