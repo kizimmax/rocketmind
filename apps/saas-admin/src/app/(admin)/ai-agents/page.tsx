@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getAgents, createAgent } from "@/lib/ivan-client";
-import { Button, Input, Tabs, TabsList, TabsTrigger } from "@rocketmind/ui";
+import { getAgents } from "@/lib/ivan-client";
+import { Button, Tabs, TabsList, TabsTrigger } from "@rocketmind/ui";
 import { Plus, UserCircle } from "lucide-react";
 import { toast } from "sonner";
 import type { Agent } from "./agent-form";
@@ -22,9 +22,6 @@ export default function AiAgentsPage() {
 
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [creating, setCreating] = useState(false);
 
   function load() {
     setLoading(true);
@@ -37,23 +34,6 @@ export default function AiAgentsPage() {
   useEffect(() => {
     load();
   }, []);
-
-  async function handleCreate() {
-    const name = newName.trim();
-    if (!name) return;
-    setCreating(true);
-    try {
-      const created = await createAgent({ name });
-      setNewName("");
-      setIsCreating(false);
-      toast.success(`AI-эксперт «${name}» создан`);
-      router.push(`/ai-agents/${created.id}`);
-    } catch {
-      toast.error("Ошибка создания");
-    } finally {
-      setCreating(false);
-    }
-  }
 
   return (
     <div className="flex flex-1 flex-col p-6">
@@ -81,43 +61,10 @@ export default function AiAgentsPage() {
       ) : (
         <>
           <div className="mb-6">
-            {isCreating ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  size="sm"
-                  placeholder="Имя AI-эксперта"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleCreate();
-                    if (e.key === "Escape") {
-                      setIsCreating(false);
-                      setNewName("");
-                    }
-                  }}
-                  autoFocus
-                  className="max-w-xs"
-                />
-                <Button size="sm" onClick={handleCreate} disabled={!newName.trim() || creating}>
-                  Создать
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setIsCreating(false);
-                    setNewName("");
-                  }}
-                >
-                  Отмена
-                </Button>
-              </div>
-            ) : (
-              <Button variant="outline" size="sm" onClick={() => setIsCreating(true)}>
-                <Plus className="mr-1 h-4 w-4" />
-                Добавить
-              </Button>
-            )}
+            <Button variant="outline" size="sm" onClick={() => router.push("/ai-agents/new")}>
+              <Plus className="mr-1 h-4 w-4" />
+              Добавить
+            </Button>
           </div>
 
           {loading ? (

@@ -81,6 +81,16 @@ export function AgentEditor({ agent, onSaved, onDeleted, onCancel }: AgentEditor
       toast.error("Введите имя AI-эксперта");
       return;
     }
+    // Бэк Ивана требует avatar + openAiAssistantId при создании — валидируем,
+    // чтобы дать понятную ошибку вместо «тихого» 400.
+    if (!state.openAiAssistantId) {
+      toast.error("Выберите ассистента OpenAI");
+      return;
+    }
+    if (!state.avatarUrl) {
+      toast.error("Загрузите фото эксперта");
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
